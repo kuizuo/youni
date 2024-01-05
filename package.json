@@ -1,0 +1,54 @@
+{
+  "name": "youni",
+  "version": "0.1.0",
+  "packageManager": "pnpm@8.10.2",
+  "description": "",
+  "author": "Kuizuo <hi@kuizuo.cn> (https://kuizuo.cn)",
+  "license": "MIT",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --ignore-path ./.prettierignore --write ",
+      "eslint --cache --fix"
+    ]
+  },
+  "scripts": {
+    "prepare": "if [ \"$NODE_ENV\" = \"production\" ]; then echo 'skip prepare in production' ;else husky install && pnpm run prisma:generate; fi",
+    "bootstrap": "pnpm install",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "bundle": "pnpm -F server run bundle",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "preinstall": "npx only-allow pnpm",
+    "reinstall": "rimraf pnpm-lock.yaml && rimraf package.lock.json && rimraf node_modules && npm run bootstrap",
+    "migrate:dev": "turbo run migrate:dev",
+    "migrate:deploy": "turbo run migrate:deploy",
+    "prisma:generate": "turbo run generate"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.1.0",
+    "@youni/prisma": "*",
+    "cross-env": "7.0.3",
+    "eslint": "^8.54.0",
+    "husky": "^7.0.4",
+    "prisma": "5.7.1",
+    "rimraf": "^5.0.5",
+    "turbo": "^1.10.16",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.1.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "prisma/*"
+  ]
+}
