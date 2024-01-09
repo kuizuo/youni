@@ -13,6 +13,7 @@ module.exports = antfu({
     'unused-imports/no-unused-imports': 2,
 
     'ts/consistent-type-imports': 'off',
+    'ts/prefer-ts-expect-error': 'off',
     'node/prefer-global/process': 'off',
     'node/prefer-global/buffer': 'off',
 
