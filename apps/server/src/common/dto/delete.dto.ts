@@ -1,8 +1,8 @@
-import { IsDefined, IsNotEmpty, IsNumber } from 'class-validator'
+import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
-export class BatchDeleteDto {
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber({}, { each: true })
-  ids: number[]
-}
+const BatchDeleteSchema = z.object({
+  ids: z.array(z.number()),
+})
+
+export class BatchDeleteDto extends createZodDto(BatchDeleteSchema) {}

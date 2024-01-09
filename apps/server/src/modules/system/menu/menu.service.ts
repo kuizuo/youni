@@ -8,8 +8,6 @@ import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { ExtendedPrismaClient } from '~/shared/database/prisma.extension'
 
-import { deleteEmptyChildren, generatorMenu } from '~/utils'
-
 import { RoleService } from '../role/role.service'
 
 import { MenuDto, MenuQueryDto, MenuUpdateDto } from './menu.dto'
@@ -24,9 +22,6 @@ export class MenuService {
     private roleService: RoleService,
   ) {}
 
-  /**
-   * 获取所有菜单以及权限
-   */
   async list({
     name,
     path,
@@ -44,13 +39,7 @@ export class MenuService {
       },
       orderBy: { order: 'asc' },
     })
-    const menuList = generatorMenu(menus)
 
-    if (!isEmpty(menuList)) {
-      deleteEmptyChildren(menuList)
-      return menuList
-    }
-    // 如果生产树形结构为空，则返回原始菜单列表
     return menus
   }
 
@@ -71,8 +60,8 @@ export class MenuService {
     })
   }
 
-  async getMenus(uid: number) {
-    const roles = await this.roleService.getRolesByUser(uid)
+  async getMenus(uid: string) {
+    const roles = await this.roleService.getRolesByUserId(uid)
 
     if (this.roleService.hasAdminRole(roles.map(r => r.id))) {
       return await this.prisma.menu.findMany({ orderBy: { order: 'asc' } })
@@ -163,8 +152,8 @@ export class MenuService {
   /**
    * 获取当前用户的所有权限
    */
-  async getPermissions(uid: number): Promise<string[]> {
-    const roles = await this.roleService.getRolesByUser(uid)
+  async getPermissions(uid: string): Promise<string[]> {
+    const roles = await this.roleService.getRolesByUserId(uid)
     let permission: any[] = []
     let result: any = null
     if (this.roleService.hasAdminRole(roles.map(r => r.id))) {
@@ -216,7 +205,7 @@ export class MenuService {
   /**
    * 刷新指定用户ID的权限
    */
-  async refreshPerms(uid: number): Promise<void> {
+  async refreshPerms(uid: string): Promise<void> {
     const perms = await this.getPermissions(uid)
     const online = await this.redis.get(`admin:token:${uid}`)
     if (online) {
@@ -235,7 +224,7 @@ export class MenuService {
         .map(i => i.split('admin:token:')[1])
         .filter(i => i)
         .forEach(async (uid) => {
-          const perms = await this.getPermissions(Number.parseInt(uid))
+          const perms = await this.getPermissions(uid)
           await this.redis.set(`admin:perms:${uid}`, JSON.stringify(perms))
         })
     }

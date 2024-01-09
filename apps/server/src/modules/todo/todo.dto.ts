@@ -1,14 +1,17 @@
-import { ApiProperty, IntersectionType, PartialType } from '@nestjs/swagger'
-import { IsString } from 'class-validator'
+import { TodoOptionalDefaultsSchema, TodoSchema } from '@youni/prisma/zod'
+import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
-import { PagerDto } from '~/common/dto/pager.dto'
+import { baseCursorSchema } from '~/common/dto/pager.dto'
 
-export class TodoDto {
-  @ApiProperty({ description: '名称' })
-  @IsString()
-  value: string
-}
+const TodoInputSchema = TodoOptionalDefaultsSchema.extend({
+})
 
-export class TodoUpdateDto extends PartialType(TodoDto) {}
+export class TodoDto extends createZodDto(TodoInputSchema) {}
 
-export class TodoQueryDto extends IntersectionType(PagerDto, TodoDto) {}
+export class TodoUpdateDto extends createZodDto(TodoInputSchema.partial()) {}
+
+export class TodoCursorDto extends createZodDto(baseCursorSchema.extend({
+  sortBy: z.enum(['createdAt', 'updateAt']).optional(),
+  select: z.array(TodoSchema.keyof()).optional(),
+})) {}

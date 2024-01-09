@@ -1,45 +1,30 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { Expose, Transform } from 'class-transformer'
-import { Allow, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
+import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
-export enum Order {
-  ASC = 'ASC',
-  DESC = 'DESC',
-}
+export const basePagerSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(10).optional(),
+  page: z.coerce.number().int().min(1).default(1).optional(),
+  sortBy: z.string().optional(),
+  sortOrder: z.coerce
+    .number()
+    .or(z.literal(1))
+    .or(z.literal(-1))
+    .or(z.enum(['asc', 'desc']))
+    .transform((val) => {
+      if (val === 'asc')
+        return 1
+      if (val === 'desc')
+        return -1
+      return val
+    })
+    .optional(),
+})
 
-export class PagerDto<T = any> {
-  @ApiProperty({ minimum: 1, default: 1 })
-  @Min(1)
-  @IsInt()
-  @Expose()
-  @IsOptional({ always: true })
-  @Transform(({ value: val }) => (val ? Number.parseInt(val) : 1), {
-    toClassOnly: true,
-  })
-  page?: number
+export class PagerDto extends createZodDto(basePagerSchema) {}
 
-  @ApiProperty({ minimum: 1, maximum: 100, default: 10 })
-  @Min(1)
-  @Max(100)
-  @IsInt()
-  @IsOptional({ always: true })
-  @Expose()
-  @Transform(({ value: val }) => (val ? Number.parseInt(val) : 10), {
-    toClassOnly: true,
-  })
-  pageSize?: number
+export const baseCursorSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(20).default(10).optional(),
+  cursor: z.coerce.number().int().min(1).default(1).optional(),
+})
 
-  @ApiProperty()
-  @IsString()
-  @IsOptional()
-  field?: string // | keyof T
-
-  @ApiProperty({ enum: Order })
-  @IsEnum(Order)
-  @IsOptional()
-  @Transform(({ value }) => (value === 'asc' ? Order.ASC : Order.DESC))
-  order?: Order
-
-  @Allow()
-  _t?: number
-}
+export class CursorDto extends createZodDto(baseCursorSchema) {}

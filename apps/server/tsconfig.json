@@ -9,8 +9,9 @@
     "paths": {
       "~/*": ["src/*"]
     },
-    "strictBindCallApply": false,
-    "strictNullChecks": false,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
     "noFallthroughCasesInSwitch": false,
     "noImplicitAny": false,
     "declaration": true,

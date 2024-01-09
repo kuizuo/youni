@@ -41,7 +41,7 @@ const strategies = [LocalStrategy, JwtStrategy, GoogleStrategy]
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const { jwtSecret, jwtExprire }
-          = configService.get<ISecurityConfig>('security')
+          = configService.get<ISecurityConfig>('security')!
 
         return {
           secret: jwtSecret,

@@ -12,9 +12,9 @@ export class TodoService {
 
   // async list({
   //   page,
-  //   pageSize,
+  //   limit,
   // }: TodoQueryDto): Promise<Pagination<TodoEntity>> {
-  //   return paginate(this.todoRepository, { page, pageSize })
+  //   return paginate(this.todoRepository, { page, limit })
   // }
 
   // async create(dto: TodoDto) {

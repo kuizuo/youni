@@ -10,6 +10,7 @@ import {
 import { AuthGuard } from '@nestjs/passport'
 import { ApiTags } from '@nestjs/swagger'
 
+import { Prisma } from '@youni/prisma'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { ResOp } from '~/common/model/response.model'
@@ -41,7 +42,7 @@ export class GoogleController {
     @Res() res: FastifyReply,
   ) {
     const user = await this.authService.loginByGoogle(
-      req.user,
+      req.user as unknown as Prisma.UserCreateInput,
     )
 
     const { accessToken } = await this.tokenService.generateAccessToken(user.id)

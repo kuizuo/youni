@@ -21,8 +21,8 @@ const providers: Provider<any>[] = [
         transport: configService.get<IMailerConfig>('mailer'),
         defaults: {
           from: {
-            name: configService.get<IAppConfig>('app').name,
-            address: configService.get<IMailerConfig>('mailer').auth.user,
+            name: configService.get<IAppConfig>('app')!.name,
+            address: configService.get<IMailerConfig>('mailer')!.auth.user,
           },
         },
         template: {

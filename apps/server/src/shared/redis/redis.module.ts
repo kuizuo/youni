@@ -18,7 +18,7 @@ const providers: Provider[] = [
   {
     provide: REDIS_PUBSUB,
     useFactory: (configService: ConfigService) => {
-      const redisOptions: RedisOptions = configService.get<IRedisConfig>('redis')
+      const redisOptions: RedisOptions = configService.get<IRedisConfig>('redis')!
       return new RedisSubPub(redisOptions)
     },
     inject: [ConfigService],
@@ -33,7 +33,7 @@ const providers: Provider[] = [
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const redisOptions: RedisOptions = configService.get<IRedisConfig>('redis')
+        const redisOptions: RedisOptions = configService.get<IRedisConfig>('redis')!
 
         return {
           isGlobal: true,

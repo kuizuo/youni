@@ -7,7 +7,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiTags } from '@nestjs/swagger'
 
 import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
@@ -37,41 +37,36 @@ export class RoleController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: '获取角色列表' })
   @Perm(permissions.LIST)
   async list() {
     return this.roleService.list()
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取角色信息' })
   @Perm(permissions.READ)
-  async info(@IdParam() id: number) {
-    return this.roleService.info(id)
+  async getRoleById(@IdParam() id: number) {
+    return this.roleService.getRoleById(id)
   }
 
   @Post()
-  @ApiOperation({ summary: '新增角色' })
   @Perm(permissions.CREATE)
-  async create(@Body() dto: RoleDto): Promise<void> {
+  async create(@Body() dto: RoleDto) {
     await this.roleService.create(dto)
   }
 
   @Put(':id')
-  @ApiOperation({ summary: '更新角色' })
   @Perm(permissions.UPDATE)
   async update(
     @IdParam() id: number,
     @Body() dto: RoleUpdateDto,
-  ): Promise<void> {
+  ) {
     await this.roleService.update(id, dto)
     // await this.menuService.refreshOnlineUserPerms()
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '删除角色' })
   @Perm(permissions.DELETE)
-  async delete(@IdParam() id: number): Promise<void> {
+  async delete(@IdParam() id: number) {
     if (await this.roleService.checkUserByRoleId(id))
       throw new BadRequestException('该角色存在关联用户，无法删除')
 

@@ -1,15 +1,19 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
 
+import { Prisma } from '@youni/prisma'
 import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { UserService } from '~/modules/user/user.service'
-import { md5, randomValue } from '~/utils'
 
 // import { LoginLogService } from '../system/log/services/login-log.service'
+import { md5 } from '~/utils/crypto.util'
+
+import { randomValue } from '~/utils/tool.util'
+
 import { MenuService } from '../system/menu/menu.service'
 import { RoleService } from '../system/role/role.service'
 
@@ -62,7 +66,7 @@ export class AuthService {
     if (user.password !== comparePassword)
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
-    const roles = await this.roleService.getRolesByUser(user.id)
+    const roles = await this.roleService.getRolesByUserId(user.id)
 
     // 包含access_token和refresh_token
     const token = await this.tokenService.generateAccessToken(user.id, roles.map(r => r.value))
@@ -81,19 +85,20 @@ export class AuthService {
     return token.accessToken
   }
 
-  async loginByGoogle(info) {
-    const exist = await this.userService.findUserByEmail(info.email)
+  async loginByGoogle(info: Prisma.UserCreateInput) {
+    const exist = await this.userService.findUserByEmail(info.email!)
     const role = await this.roleService.getDefaultRole()
 
     const user = isNil(exist)
       ? await this.userService.create({
-        username: info.email,
-        email: info.email,
-        nickname: info.nickname,
-        roleIds: [role.id],
-        avatar: info.avatar,
+        username: info.email!,
+        email: info.email!,
+        nickname: info.nickname!,
+        avatar: info.avatar!,
         password: randomValue(10),
-        provider: 'google',
+        provider: 'Google',
+        roleIds: [role!.id],
+        deptId: 1,
       })
       : exist
 
@@ -111,11 +116,11 @@ export class AuthService {
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
   }
 
-  async loginLog(uid: number, ip: string, ua: string) {
+  async loginLog(uid: string, ip: string, ua: string) {
     // await this.loginLogService.create(uid, ip, ua)
   }
 
-  async logout(uid: number) {
+  async logout(uid: string) {
     // 删除token
     await this.userService.forbidden(uid)
   }
@@ -132,21 +137,21 @@ export class AuthService {
   /**
    * 清除登录状态信息
    */
-  async clearLoginStatus(uid: number): Promise<void> {
+  async clearLoginStatus(uid: string): Promise<void> {
     await this.userService.forbidden(uid)
   }
 
   /**
    * 获取菜单列表
    */
-  async getMenus(uid: number) {
+  async getMenus(uid: string) {
     // return this.menuService.getMenus(uid)
   }
 
   /**
    * 获取权限列表
    */
-  async getPermissions(uid: number) {
+  async getPermissions(uid: string) {
     const permissions = await this.menuService.getPermissions(uid)
 
     await this.setPermissionsCache(uid, permissions)
@@ -154,20 +159,20 @@ export class AuthService {
     return permissions
   }
 
-  async getPermissionsCache(uid: number) {
+  async getPermissionsCache(uid: string) {
     const permissionString = await this.redis.get(`auth:permission:${uid}`)
     return permissionString ? JSON.parse(permissionString) : []
   }
 
-  async setPermissionsCache(uid: number, permissions: string[]): Promise<void> {
+  async setPermissionsCache(uid: string, permissions: string[]): Promise<void> {
     await this.redis.set(`auth:permission:${uid}`, JSON.stringify(permissions))
   }
 
-  async getPasswordVersionByUid(uid: number): Promise<string> {
+  async getPasswordVersionByUid(uid: string) {
     return this.redis.get(`auth:passwordVersion:${uid}`)
   }
 
-  async getTokenByUid(uid: number): Promise<string> {
+  async getTokenByUid(uid: string) {
     return this.redis.get(`auth:token:${uid}`)
   }
 }

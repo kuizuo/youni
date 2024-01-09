@@ -1,7 +1,7 @@
 import os from 'node:os'
 
 class Snowflake {
-  private static readonly epoch = 1617235200000n // 自定义起始时间（以毫秒为单位）
+  private static readonly epoch = 1704067200000n // 自定义起始时间（以毫秒为单位）
   private static readonly workerIdBits = 5n
   private static readonly datacenterIdBits = 5n
   private static readonly sequenceBits = 12n

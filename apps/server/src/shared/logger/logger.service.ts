@@ -33,7 +33,7 @@ export class MyLogger extends ConsoleLogger {
   }
 
   protected get maxFiles(): number {
-    return this.configService.get('app.logger.maxFiles')
+    return this.configService.get('app.logger.maxFiles') as number
   }
 
   protected initWinston(): void {

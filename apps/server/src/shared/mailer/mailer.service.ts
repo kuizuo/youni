@@ -9,7 +9,7 @@ import Redis from 'ioredis'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { AppConfig, IAppConfig } from '~/config'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { randomValue } from '~/utils'
+import { randomValue } from '~/utils/tool.util'
 
 @Injectable()
 export class MailerService {
@@ -27,8 +27,8 @@ export class MailerService {
 
     await this.redis.set(`captcha:${to}`, code, 'EX', 60 * 5)
 
-    const limitCountOfDay = await this.redis.get(`captcha:${to}:limit-day`)
-    const ipLimitCountOfDay = await this.redis.get(`ip:${ip}:send:limit-day`)
+    const limitCountOfDay = await this.redis.get(`captcha:${to}:limit-day`) || 0
+    const ipLimitCountOfDay = await this.redis.get(`ip:${ip}:send:limit-day`) || 0
 
     await this.redis.set(`ip:${ip}:send:limit`, 1, 'EX', 60)
     await this.redis.set(`captcha:${to}:limit`, 1, 'EX', 60)
@@ -68,10 +68,7 @@ export class MailerService {
       throw new BusinessException(ErrorEnum.TOO_MANY_REQUESTS)
 
     // 1天一个邮箱最多接收5条
-    let limitCountOfDay: string | number = await this.redis.get(
-      `captcha:${to}:limit-day`,
-    )
-    limitCountOfDay = limitCountOfDay ? Number(limitCountOfDay) : 0
+    const limitCountOfDay: string | number = Number(await this.redis.get(`captcha:${to}:limit-day`)) || 0
     if (limitCountOfDay > LIMIT_TIME) {
       throw new BusinessException(
         ErrorEnum.MAXIMUM_FIVE_VERIFICATION_CODES_PER_DAY,
@@ -79,10 +76,7 @@ export class MailerService {
     }
 
     // 1天一个ip最多发送5条
-    let ipLimitCountOfDay: string | number = await this.redis.get(
-      `ip:${ip}:send:limit-day`,
-    )
-    ipLimitCountOfDay = ipLimitCountOfDay ? Number(ipLimitCountOfDay) : 0
+    const ipLimitCountOfDay = Number(await this.redis.get(`ip:${ip}:send:limit-day`)) || 0
     if (ipLimitCountOfDay > LIMIT_TIME) {
       throw new BusinessException(
         ErrorEnum.MAXIMUM_FIVE_VERIFICATION_CODES_PER_DAY,

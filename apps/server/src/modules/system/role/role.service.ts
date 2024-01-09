@@ -1,22 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common'
 
-import { ExtendedPrismaClient } from '~/shared/database/prisma.extension'
+import { BizException } from '~/common/exceptions/biz.exception'
+import { ExtendedPrismaClient, PRISMA_CLIENT } from '~/shared/database/prisma.extension'
+
+import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 
 import { RoleDto, RoleUpdateDto } from './role.dto'
 
 @Injectable()
 export class RoleService {
-  constructor(
-    @Inject('PRISMA_CLIENT')
-    private readonly prisma: ExtendedPrismaClient,
-  ) {}
+  @Inject(PRISMA_CLIENT)
+  private readonly prisma: ExtendedPrismaClient
 
   async list() {
     return await this.prisma.role.findMany()
   }
 
-  async info(id: number) {
-    const info = await this.prisma.role.findUnique({ where: { id }, include: {
+  async getRoleById(id: number) {
+    return this.prisma.role.findUniqueOrThrow({ where: { id }, include: {
       menus: {
         where: {
           roles: { some: { id } },
@@ -25,9 +26,7 @@ export class RoleService {
           id: true,
         },
       },
-    } })
-
-    return info
+    } }).catch(resourceNotFoundWrapper(new BizException('角色未找到')))
   }
 
   async delete(id: number) {
@@ -39,32 +38,45 @@ export class RoleService {
     })
   }
 
-  async create({ menuIds, ...data }: RoleDto): Promise<{ roleId: number }> {
-    const role = await this.prisma.role.create({
-      data: {
-        ...data,
-        // menus: {
-        //   connectc: menuIds.map(id => ({ id })),
-        // },
+  async create(dto: RoleDto) {
+    const { menuIds, ...data } = dto
+
+    const role = await this.prisma.role.upsert({
+      where: {
+        value: data.value,
       },
-    })
-
-    return { roleId: role.id }
-  }
-
-  async update(id, { menuIds, ...data }: RoleUpdateDto) {
-    await this.prisma.role.update({
-      where: { id },
-      data: {
+      create: {
+        ...data,
+        menus: {
+          connect: menuIds.map(id => ({ id })),
+        },
+      },
+      update: {
         ...data,
         menus: {
           connect: menuIds.map(id => ({ id })),
         },
       },
     })
+
+    return role
   }
 
-  async getRolesByUser(id: number) {
+  async update(id: number, dto: RoleUpdateDto) {
+    const { menuIds, ...data } = dto
+
+    await this.prisma.role.update({
+      where: { id },
+      data: {
+        ...data,
+        menus: {
+          connect: menuIds!.map(id => ({ id })),
+        },
+      },
+    })
+  }
+
+  async getRolesByUserId(id: string) {
     const roles = await this.prisma.role.findMany({
       where: {
         users: { some: { id } },
@@ -89,7 +101,7 @@ export class RoleService {
     return this.prisma.role.findFirst({ where: { default: true } })
   }
 
-  async isAdminRoleByUser(uid: number) {
+  async isAdminRoleByUser(uid: string) {
     return await this.prisma.role.exists({
       where: {
         users: { some: { id: uid } },
@@ -102,9 +114,9 @@ export class RoleService {
   }
 
   async checkUserByRoleId(id: number): Promise<boolean> {
-    return await this.prisma.role.exists({
+    return await this.prisma.user.exists({
       where: {
-        users: {
+        roles: {
           some: { id },
         },
       },

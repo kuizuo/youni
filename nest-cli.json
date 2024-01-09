@@ -1,13 +1,13 @@
 {
   "language": "ts",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/api/src",
+  "sourceRoot": "apps/server/src",
   "monorepo": true,
-  "root": "apps/api",
+  "root": "apps/server",
   "compilerOptions": {
     "plugins": ["@nestjs/swagger"],
     "deleteOutDir": true,
-    "tsConfigPath": "apps/api/tsconfig.json"
+    "tsConfigPath": "apps/server/tsconfig.json"
   },
   "plugins": [
     {
@@ -20,13 +20,13 @@
     }
   ],
   "projects": {
-    "api": {
+    "server": {
       "type": "application",
-      "root": "apps/api",
+      "root": "apps/server",
       "entryFile": "main",
-      "sourceRoot": "apps/api/src",
+      "sourceRoot": "apps/server/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api/tsconfig.json"
+        "tsConfigPath": "apps/server/tsconfig.json"
       }
     }
   }

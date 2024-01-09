@@ -42,18 +42,19 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
+  id        String     @id @default(uuid())
   username  String     @unique()
-  password  String     @db.VarChar(255)
+  password  String     @db.VarChar(80)
+  psalt     String     @db.VarChar(32)
   avatar    String?    @db.VarChar(255)
   email     String?    @unique() @db.VarChar(255)
   phone     String?    @db.VarChar(255)
   remark    String?    @db.VarChar(255)
-  psalt     String     @db.VarChar(32)
   status    Int?       @default(1) @db.SmallInt
   createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime   @updatedAt @map("updated_at")
   nickname  String?    @db.VarChar(255)
+  provider  Provider?
   profile   Profile?
   deptId    Int?
   dept      Dept?      @relation(fields: [deptId], references: [id])
@@ -61,19 +62,20 @@ model User {
   todos     Todo[]
   tokens    Token[]
   LoginLogs LoginLog[]
+  Post      Post[]
 }
 
 model Profile {
-  id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id])
-  userId Int  @unique
+  id     Int    @id @default(autoincrement())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
 }
 
 model Role {
   id        Int      @id @default(autoincrement())
-  value     String   @unique() @db.VarChar(255)
-  name      String   @unique() @db.VarChar(50)
-  remark    String?  @db.VarChar(255)
+  name      String
+  value     String   @unique()
+  remark    String?
   default   Boolean  @default(false) @db.Boolean
   status    Int?     @default(1) @db.SmallInt
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -85,13 +87,13 @@ model Role {
 model Menu {
   id         Int      @id @default(autoincrement())
   parent     Int?
-  path       String?  @db.VarChar(255)
-  name       String   @db.VarChar(255)
-  permission String?  @db.VarChar(255)
+  path       String?
+  name       String
+  permission String?
   type       Int      @default(0) @db.SmallInt
-  icon       String?  @default("") @db.VarChar(255)
+  icon       String?  @default("")
   order      Int?     @default(0)
-  component  String?  @db.VarChar(255)
+  component  String?
   keepalive  Int      @default(1) @db.SmallInt
   show       Int      @default(1) @db.SmallInt
   status     Int      @default(1) @db.SmallInt
@@ -103,15 +105,14 @@ model Menu {
 
 model Dept {
   id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(255)
+  name      String
   orderNo   Int?     @default(0)
-  mpath     String?  @default("") @db.VarChar(255)
+  mpath     String?  @default("")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at")
   parentId  Int?     @unique
   parent    Dept?    @relation("DeptToDept", fields: [parentId], references: [id])
   children  Dept[]   @relation("DeptToDept")
-  userId    Int?
   user      User[]
 }
 
@@ -120,7 +121,7 @@ model Token {
   value        String      @db.VarChar(500)
   expiredAt    DateTime    @db.Timestamptz(6)
   createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  userId       Int?
+  userId       String?
   user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   refreshToken FreshToken?
 }
@@ -136,31 +137,31 @@ model FreshToken {
 
 model Todo {
   id        Int      @id @default(autoincrement())
-  value     String   @db.VarChar(255)
+  value     String
   status    Int      @default(0) @db.SmallInt
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at")
-  userId    Int
+  userId    String
   user      User     @relation(fields: [userId], references: [id])
 }
 
 model LoginLog {
   id        Int      @id @default(autoincrement())
-  ip        String?  @db.VarChar(255)
+  ip        String?
   ua        String?  @db.VarChar(500)
-  address   String?  @db.VarChar(255)
-  provider  String?  @db.VarChar(255)
+  address   String?
+  provider  String?
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at")
-  userId    Int
+  userId    String
   user      User     @relation(fields: [userId], references: [id])
 }
 
 model Config {
   id        Int      @id @default(autoincrement())
-  key       String   @unique() @db.VarChar(50)
-  name      String   @db.VarChar(50)
-  value     String?  @db.VarChar(255)
+  key       String   @unique()
+  name      String
+  value     String?
   remark    String?  @db.VarChar(255)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -168,7 +169,7 @@ model Config {
 
 model Task {
   id         Int       @id @default(autoincrement())
-  name       String    @unique() @db.VarChar(50)
+  name       String    @unique()
   service    String    @db.VarChar(255)
   type       Int       @default(0) @db.SmallInt
   status     Int       @default(1) @db.SmallInt
@@ -194,4 +195,19 @@ model TaskLog {
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @map("updated_at")
   sys_task     Task?    @relation(fields: [task_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum Provider {
+  Google
+  Github
 }

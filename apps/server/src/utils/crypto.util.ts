@@ -25,6 +25,6 @@ export function aesDecrypt(data) {
   return dec.toString(CryptoJS.enc.Utf8)
 }
 
-export function md5(str: string) {
+export function md5(str: string): string {
   return CryptoJS.MD5(str).toString()
 }

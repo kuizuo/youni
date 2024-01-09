@@ -45,3 +45,4 @@ prisma/client
 prisma/schemas
 prisma/zod
 prisma/dist
+prisma/dbml

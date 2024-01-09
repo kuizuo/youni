@@ -1,6 +1,6 @@
 declare global {
   interface IAuthUser {
-    uid: number
+    uid: string
     pv: number
     exp?: number
     iat?: number

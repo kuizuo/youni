@@ -14,9 +14,10 @@ import type { FastifyRequest } from 'fastify'
 import { catchError, tap } from 'rxjs'
 
 import { CacheService } from '~/shared/redis/cache.service'
-import { hashString } from '~/utils'
 import { getIp } from '~/utils/ip.util'
 import { getRedisKey } from '~/utils/redis.util'
+
+import { hashString } from '~/utils/tool.util'
 
 import { HTTP_IDEMPOTENCE_KEY, HTTP_IDEMPOTENCE_OPTIONS } from '../decorators/idempotence.decorator'
 

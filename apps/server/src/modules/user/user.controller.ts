@@ -40,8 +40,8 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: '查询用户' })
   @Perm(permissions.READ)
-  async read(@IdParam() id: number) {
-    return this.userService.info(id)
+  async getUserById(@IdParam() id: string) {
+    return this.userService.getUserById(id)
   }
 
   @Post()
@@ -54,7 +54,7 @@ export class UserController {
   @Put(':id')
   @ApiOperation({ summary: '更新用户' })
   @Perm(permissions.UPDATE)
-  async update(@IdParam() id: number, @Body() dto: UserUpdateDto) {
+  async update(@IdParam() id: string, @Body() dto: UserUpdateDto) {
     await this.userService.update(id, dto)
     // await this.menuService.refreshPerms(id)
   }
@@ -62,7 +62,7 @@ export class UserController {
   @Delete(':id')
   @ApiOperation({ summary: '删除用户' })
   @Perm(permissions.DELETE)
-  async delete(@IdParam() id: number) {
+  async delete(@IdParam() id: string) {
     await this.userService.delete([id])
     await this.userService.multiForbidden([id])
   }

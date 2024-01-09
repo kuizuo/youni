@@ -54,7 +54,7 @@ export class RbacGuard implements CanActivate {
       return true
 
     // 管理员放开所有权限
-    if (user.roles.includes(Roles.ADMIN))
+    if (user.roles?.includes(Roles.ADMIN))
       return true
 
     const allPermissions = await this.authService.getPermissionsCache(user.uid) ?? await this.authService.getPermissions(user.uid)

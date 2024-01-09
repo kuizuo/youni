@@ -6,7 +6,7 @@ import { ISecurityConfig, SecurityConfig } from '~/config'
 
 import { RoleService } from '~/modules/system/role/role.service'
 import { ExtendedPrismaClient } from '~/shared/database/prisma.extension'
-import { generateUUID } from '~/utils'
+import { generateUUID } from '~/utils/tool.util'
 
 /**
  * 令牌服务
@@ -32,7 +32,7 @@ export class TokenService {
       if (now.isAfter(refreshToken.expired_at))
         return null
 
-      const roles = await this.roleService.getRolesByUser(user.id)
+      const roles = await this.roleService.getRolesByUserId(user.id)
 
       // 如果没过期则生成新的access_token和refresh_token
       const token = await this.generateAccessToken(user.id, roles.map(item => item.value))
@@ -49,7 +49,7 @@ export class TokenService {
     return jwtSign
   }
 
-  async generateAccessToken(uid: number, roles: string[] = []) {
+  async generateAccessToken(uid: string, roles: string[] = []) {
     const payload: IAuthUser = {
       uid,
       pv: 1,
@@ -109,14 +109,14 @@ export class TokenService {
     const accessToken = await this.prisma.token.findFirst({
       where: { value },
     })
-    await this.prisma.token.delete({ where: { id: accessToken.id } })
+    await this.prisma.token.delete({ where: { id: accessToken?.id } })
   }
 
   async removeRefreshToken(value: string) {
     const freshToken = await this.prisma.freshToken.findFirst({
       where: { value },
     })
-    await this.prisma.freshToken.delete({ where: { id: freshToken.id } })
+    await this.prisma.freshToken.delete({ where: { id: freshToken?.id } })
   }
 
   async verifyAccessToken(token: string) {

@@ -1,7 +1,5 @@
 import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common'
-import { ApiExtraModels, ApiOperation, ApiTags } from '@nestjs/swagger'
-
-import { ApiResult } from '~/common/decorators/api-result.decorator'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 
@@ -10,15 +8,13 @@ import { AuthUser } from '~/modules/auth/decorators/auth-user.decorator'
 
 import { PasswordUpdateDto } from '~/modules/user/dto/password.dto'
 
-import { AccountInfo } from '../../user/user.model'
 import { UserService } from '../../user/user.service'
 import { AuthService } from '../auth.service'
-import { UpdateProfileDto } from '../dto/account.dto'
+import { UpdateProfileDto } from '../dtos/account.dto'
 import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 
 @ApiTags('Account - 账户模块')
 @ApiSecurityAuth()
-@ApiExtraModels(AccountInfo)
 @UseGuards(JwtAuthGuard)
 @Controller('account')
 export class AccountController {
@@ -29,9 +25,8 @@ export class AccountController {
 
   @Get('profile')
   @ApiOperation({ summary: '获取账户资料' })
-  @ApiResult({ type: AccountInfo })
   @AllowAnon()
-  async profile(@AuthUser() user: IAuthUser): Promise<AccountInfo> {
+  async profile(@AuthUser() user: IAuthUser) {
     return this.userService.getProfile(user.uid)
   }
 
@@ -61,7 +56,6 @@ export class AccountController {
 
   @Get('permissions')
   @ApiOperation({ summary: '获取权限列表' })
-  @ApiResult({ type: [String] })
   @AllowAnon()
   async permissions(@AuthUser() user: IAuthUser) {
     return this.authService.getPermissions(user.uid)

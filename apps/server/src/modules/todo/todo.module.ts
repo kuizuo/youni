@@ -6,7 +6,6 @@ import { TodoService } from './todo.service'
 const providers: Provider[] = [TodoService]
 
 @Module({
-  imports: [],
   controllers: [TodoController],
   providers,
   exports: [...providers],
