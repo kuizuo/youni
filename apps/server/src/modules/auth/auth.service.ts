@@ -98,7 +98,6 @@ export class AuthService {
         password: randomValue(10),
         provider: 'Google',
         roleIds: [role!.id],
-        deptId: 1,
       })
       : exist
 

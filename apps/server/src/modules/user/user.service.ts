@@ -46,7 +46,6 @@ export class UserService {
       .findUnique({
         select: {
           avatar: true,
-          dept: true,
           email: true,
           nickname: true,
         },
@@ -146,7 +145,7 @@ export class UserService {
    */
   async update(
     id: string,
-    { password, deptId, roleIds, status, ...data }: Partial<UserDto>,
+    { password, roleIds, status, ...data }: Partial<UserDto>,
   ) {
     await this.prisma.$transaction(async (tx) => {
       if (password)
@@ -164,7 +163,6 @@ export class UserService {
         where: { id },
         include: {
           roles: true,
-          dept: true,
         },
       })
 
@@ -177,17 +175,6 @@ export class UserService {
           },
         },
       })
-
-      // await this.prisma.user.update({
-      //   where: { id },
-      //   data: {
-      //     dept: {
-      //       connect: {
-      //         id: deptId,
-      //       },
-      //     },
-      //   },
-      // })
     })
     if (status === 0) {
       // 禁用状态
@@ -202,8 +189,12 @@ export class UserService {
         username: true,
         status: true,
       },
-      where: { id },
-      include: { roles: true, dept: true },
+      where: {
+        id,
+      },
+      include: {
+        roles: true,
+      },
     })
 
     return user
@@ -229,28 +220,25 @@ export class UserService {
     const {
       page,
       limit,
-
       keyword,
       status,
     } = dto
 
-    // return await this.prisma.user.paginate({
-    //   where: {
-    //     ...(username && { username: { contains: username } }),
-    //     ...(nickname && { nickname: { contains: nickname } }),
-    //     ...(email && { email: { contains: email } }),
-    //     ...(status && { status }),
-    //     ...(deptId && { dept: { id: deptId } }),
-    //   },
-    //   include: {
-    //     dept: true,
-    //     roles: true,
-    //   },
-    // }).withPages({
-    //   page,
-    //   limit,
-    //   includePageCount: true,
-    // })
+    return await this.prisma.user.paginate({
+      where: {
+        ...(keyword && { username: { contains: keyword } }),
+        ...(keyword && { nickname: { contains: keyword } }),
+        ...(keyword && { email: { contains: keyword } }),
+        ...(status && { status }),
+      },
+      include: {
+        roles: true,
+      },
+    }).withPages({
+      page,
+      limit,
+      includePageCount: true,
+    })
   }
 
   /**

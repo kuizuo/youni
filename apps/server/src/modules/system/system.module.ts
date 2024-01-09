@@ -11,7 +11,6 @@ const modules = [
   UserModule,
   RoleModule,
   MenuModule,
-  // DeptModule,
   // DictModule,
   // LogModule,
   // TaskModule,
