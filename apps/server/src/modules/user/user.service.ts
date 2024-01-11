@@ -72,9 +72,6 @@ export class UserService {
     return user
   }
 
-  /**
-   * 更改密码
-   */
   async updatePassword(uid: string, dto: PasswordUpdateDto): Promise<void> {
     const user = await this.findUserById(uid)
 
@@ -94,9 +91,6 @@ export class UserService {
     await this.upgradePasswordV(user.id)
   }
 
-  /**
-   * 直接更改密码
-   */
   async forceUpdatePassword(uid: string, password: string): Promise<void> {
     const user = await this.findUserById(uid)
 
@@ -110,9 +104,6 @@ export class UserService {
     await this.upgradePasswordV(user.id)
   }
 
-  /**
-   * 增加系统用户
-   */
   async create({
     username,
     password,
@@ -140,9 +131,6 @@ export class UserService {
     return user
   }
 
-  /**
-   * 更新用户信息
-   */
   async update(
     id: string,
     { password, roleIds, status, ...data }: Partial<UserDto>,
@@ -200,9 +188,6 @@ export class UserService {
     return user
   }
 
-  /**
-   * 根据ID列表删除用户
-   */
   async delete(userIds: string[]): Promise<void | never> {
     // FIXME:
     if (userIds.includes(''))
@@ -213,9 +198,6 @@ export class UserService {
     })
   }
 
-  /**
-   * 查询用户列表
-   */
   async paginate(dto: UserQueryDto) {
     const {
       page,
@@ -241,18 +223,12 @@ export class UserService {
     })
   }
 
-  /**
-   * 禁用用户
-   */
   async forbidden(uid: string): Promise<void> {
     await this.redis.del(`admin:passwordVersion:${uid}`)
     await this.redis.del(`admin:token:${uid}`)
     await this.redis.del(`admin:perms:${uid}`)
   }
 
-  /**
-   * 禁用多个用户
-   */
   async multiForbidden(uids: string[]): Promise<void> {
     if (uids) {
       const pvs: string[] = []
@@ -269,9 +245,6 @@ export class UserService {
     }
   }
 
-  /**
-   * 升级用户版本密码
-   */
   async upgradePasswordV(id: string): Promise<void> {
     // admin:passwordVersion:${param.id}
     const v = await this.redis.get(`admin:passwordVersion:${id}`)
@@ -279,9 +252,6 @@ export class UserService {
       await this.redis.set(`admin:passwordVersion:${id}`, Number.parseInt(v) + 1)
   }
 
-  /**
-   * 判断用户名是否存在
-   */
   async exist(username: string) {
     const exists = await this.prisma.user.exists({
       where: { username },
@@ -290,9 +260,6 @@ export class UserService {
     return exists
   }
 
-  /**
-   * 注册
-   */
   async register({ username, ...data }: RegisterDto) {
     const exists = await this.prisma.user.exists({
       where: { username },

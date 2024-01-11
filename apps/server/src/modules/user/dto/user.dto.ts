@@ -11,7 +11,6 @@ const UserInputSchema = UserOptionalDefaultsSchema.extend({
   psalt: z.string().optional(),
   remark: z.string().optional(),
   roleIds: z.array(z.number()),
-  // deptId: z.number(),
 })
 
 export class UserDto extends createZodDto(UserInputSchema) {

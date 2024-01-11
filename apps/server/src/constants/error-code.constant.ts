@@ -30,7 +30,7 @@ export enum ErrorEnum {
   REQUEST_INVALIDATED = '1104:当前请求已失效',
   ACCOUNT_LOGGED_IN_ELSEWHERE = '1105:您的账号已在其他地方登录',
   GUEST_ACCOUNT_RESTRICTED_OPERATION = '1106:游客账号不允许操作',
-  REQUESTED_RESOURCE_NOT_FOUND = '1107:所请求的资源不存在',
+  RESOURCE_NOT_FOUND = '1107:所请求的资源不存在',
   AUTH_FAILED = '1108:认证失败',
 
   TOO_MANY_REQUESTS = '1201:请求频率过快，请一分钟后再试',
