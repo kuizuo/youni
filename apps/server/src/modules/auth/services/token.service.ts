@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import { ISecurityConfig, SecurityConfig } from '~/config'
 
 import { RoleService } from '~/modules/system/role/role.service'
-import { ExtendedPrismaClient } from '~/shared/database/prisma.extension'
+import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 import { generateUUID } from '~/utils/tool.util'
 
 /**
@@ -16,7 +16,7 @@ export class TokenService {
   constructor(
     @Inject(SecurityConfig.KEY)
     private readonly securityConfig: ISecurityConfig,
-    @Inject('PRISMA_CLIENT')
+    @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
     private readonly jwtService: JwtService,
     private readonly roleService: RoleService,

@@ -1,7 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 import { BizException } from '~/common/exceptions/biz.exception'
-import { ExtendedPrismaClient, PRISMA_CLIENT } from '~/shared/database/prisma.extension'
+import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 
 import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 
@@ -9,8 +9,10 @@ import { RoleDto, RoleUpdateDto } from './role.dto'
 
 @Injectable()
 export class RoleService {
-  @Inject(PRISMA_CLIENT)
-  private readonly prisma: ExtendedPrismaClient
+  constructor(
+    @InjectPrismaClient()
+    private readonly prisma: ExtendedPrismaClient,
+  ) {}
 
   async list() {
     return await this.prisma.role.findMany()

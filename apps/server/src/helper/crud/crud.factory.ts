@@ -22,7 +22,7 @@ import { PagerDto } from '~/common/dto/pager.dto'
 import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 
-import { AllModelNames, ExtendedPrismaClient, PRISMA_CLIENT } from '~/shared/database/prisma.extension'
+import { AllModelNames, ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 
 export function BaseCrudFactory<
@@ -44,7 +44,7 @@ export function BaseCrudFactory<
 
   @Controller(apiPrefix || pluralizeName)
   class BaseController {
-    @Inject('PRISMA_CLIENT')
+    @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient
 
     private get db() {

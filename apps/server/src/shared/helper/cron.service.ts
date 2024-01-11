@@ -1,17 +1,17 @@
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { CronExpression } from '@nestjs/schedule'
 import dayjs from 'dayjs'
 
 import { CronOnce } from '~/common/decorators/cron-once.decorator'
 
-import { ExtendedPrismaClient } from '../database/prisma.extension'
+import { ExtendedPrismaClient, InjectPrismaClient } from '../database/prisma.extension'
 
 @Injectable()
 export class CronService {
   private logger: Logger
   constructor(
-    @Inject('PRISMA_CLIENT')
+    @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
     private readonly configService: ConfigService,
   ) {

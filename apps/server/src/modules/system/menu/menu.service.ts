@@ -1,12 +1,12 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
 
 import { concat, isEmpty, uniq } from 'lodash'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { ExtendedPrismaClient } from '~/shared/database/prisma.extension'
+import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 
 import { RoleService } from '../role/role.service'
 
@@ -17,7 +17,7 @@ export class MenuService {
   constructor(
     @InjectRedis()
     private readonly redis: Redis,
-    @Inject('PRISMA_CLIENT')
+    @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
     private roleService: RoleService,
   ) {}

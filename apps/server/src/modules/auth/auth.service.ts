@@ -22,7 +22,8 @@ import { TokenService } from './services/token.service'
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRedis() private readonly redis: Redis,
+    @InjectRedis()
+    private readonly redis: Redis,
     private readonly userService: UserService,
     private readonly menuService: MenuService,
     private readonly roleService: RoleService,

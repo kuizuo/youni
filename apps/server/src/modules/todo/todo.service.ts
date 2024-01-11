@@ -1,14 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
-import { ExtendedPrismaClient } from '~/shared/database/prisma.extension'
+import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 
 @Injectable()
 export class TodoService {
-  constructor(
-    @Inject('CUSTOM_PRISMA_CLIENT')
-    private prisma: ExtendedPrismaClient,
-  ) {
-  }
+  @InjectPrismaClient()
+  private prisma: ExtendedPrismaClient
 
   // async list({
   //   page,

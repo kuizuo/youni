@@ -1,5 +1,5 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 
@@ -8,7 +8,7 @@ import { ErrorEnum } from '~/constants/error-code.constant'
 
 import { RegisterDto } from '~/modules/auth/dtos/auth.dto'
 
-import { ExtendedPrismaClient } from '~/shared/database/prisma.extension'
+import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 
 import { md5 } from '~/utils/crypto.util'
 import { resourceNotFoundWrapper } from '~/utils/prisma.util'
@@ -24,9 +24,11 @@ import { UserDto, UserQueryDto } from './dto/user.dto'
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRedis() private redis: Redis,
-    @Inject('PRISMA_CLIENT') private prisma: ExtendedPrismaClient,
-    private roleService: RoleService,
+    @InjectRedis()
+    private readonly redis: Redis,
+    @InjectPrismaClient()
+    private readonly prisma: ExtendedPrismaClient,
+    private readonly roleService: RoleService,
   ) {}
 
   async findUserById(id: string) {
