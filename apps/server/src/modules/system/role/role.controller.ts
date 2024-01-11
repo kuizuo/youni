@@ -4,14 +4,15 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
   Put,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
-import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 
+import { IdDto } from '~/common/dto/id.dto'
 import { Perm, PermissionMap } from '~/modules/auth/decorators/permission.decorator'
 
 import { MenuService } from '../menu/menu.service'
@@ -44,7 +45,7 @@ export class RoleController {
 
   @Get(':id')
   @Perm(permissions.READ)
-  async getRoleById(@IdParam() id: number) {
+  async getRoleById(@Param() { id }: IdDto) {
     return this.roleService.getRoleById(id)
   }
 
@@ -57,7 +58,7 @@ export class RoleController {
   @Put(':id')
   @Perm(permissions.UPDATE)
   async update(
-    @IdParam() id: number,
+    @Param() { id }: IdDto,
     @Body() dto: RoleUpdateDto,
   ) {
     await this.roleService.update(id, dto)
@@ -66,7 +67,7 @@ export class RoleController {
 
   @Delete(':id')
   @Perm(permissions.DELETE)
-  async delete(@IdParam() id: number) {
+  async delete(@Param() { id }: IdDto) {
     if (await this.roleService.checkUserByRoleId(id))
       throw new BadRequestException('该角色存在关联用户，无法删除')
 

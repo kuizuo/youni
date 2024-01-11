@@ -7,6 +7,8 @@ import { DEFAULT_LIMIT } from '~/common/dto/pager.dto'
 
 import { DatabaseConfig } from '~/config/database.config'
 
+import { snowflakeGeneratorMiddleware } from './middlewares/snowflake.middleware'
+
 export const PRISMA_CLIENT = Symbol('PRISMA_CLIENT')
 
 export function InjectPrismaClient() {
@@ -27,6 +29,8 @@ export function getExtendedClient({ url }: { url?: string }) {
       },
     ],
   })
+
+  prismaClient.$use(snowflakeGeneratorMiddleware)
 
   const extendedPrismaClient = prismaClient.$extends({
     result: {},

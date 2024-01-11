@@ -33,7 +33,7 @@ export class MenuController {
   // @Get(':id')
   // @ApiOperation({ summary: '获取菜单或权限信息' })
   // @Perm(permissions.READ)
-  // async info(@IdParam() id: number) {
+  // async info(@Param() { id }: IdDto) {
   //   return this.menuService.getMenuItemAndParentInfo(id)
   // }
 
@@ -60,7 +60,7 @@ export class MenuController {
   // @ApiOperation({ summary: '更新菜单或权限' })
   // @Perm(permissions.UPDATE)
   // async update(
-  //   @IdParam() id: number,
+  //   @Param() { id }: IdDto,
   //   @Body() dto: MenuUpdateDto,
   // ): Promise<void> {
   //   // check
@@ -78,7 +78,7 @@ export class MenuController {
   // @Delete(':id')
   // @ApiOperation({ summary: '删除菜单或权限' })
   // @Perm(permissions.DELETE)
-  // async delete(@IdParam() id: number): Promise<void> {
+  // async delete(@Param() { id }: IdDto): Promise<void> {
   //   if (await this.menuService.checkRoleByMenuId(id))
   //     throw new BadRequestException('该菜单存在关联角色，无法删除')
 

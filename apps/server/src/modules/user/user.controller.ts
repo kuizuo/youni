@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, Post, Put, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
-import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
+import { IdDto } from '~/common/dto/id.dto'
 import { Perm, PermissionMap } from '~/modules/auth/decorators/permission.decorator'
 import { MenuService } from '~/modules/system/menu/menu.service'
 
@@ -40,7 +40,7 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: '查询用户' })
   @Perm(permissions.READ)
-  async getUserById(@IdParam() id: string) {
+  async getUserById(@Param() { id }: IdDto) {
     return this.userService.getUserById(id)
   }
 
@@ -54,7 +54,7 @@ export class UserController {
   @Put(':id')
   @ApiOperation({ summary: '更新用户' })
   @Perm(permissions.UPDATE)
-  async update(@IdParam() id: string, @Body() dto: UserUpdateDto) {
+  async update(@Param() { id }: IdDto, @Body() dto: UserUpdateDto) {
     await this.userService.update(id, dto)
     // await this.menuService.refreshPerms(id)
   }
@@ -62,7 +62,7 @@ export class UserController {
   @Delete(':id')
   @ApiOperation({ summary: '删除用户' })
   @Perm(permissions.DELETE)
-  async delete(@IdParam() id: string) {
+  async delete(@Param() { id }: IdDto) {
     await this.userService.delete([id])
     await this.userService.multiForbidden([id])
   }

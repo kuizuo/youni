@@ -18,7 +18,7 @@ export class RoleService {
     return await this.prisma.role.findMany()
   }
 
-  async getRoleById(id: number) {
+  async getRoleById(id: string) {
     return this.prisma.role.findUniqueOrThrow({ where: { id }, include: {
       menus: {
         where: {
@@ -31,8 +31,8 @@ export class RoleService {
     } }).catch(resourceNotFoundWrapper(new BizException('角色未找到')))
   }
 
-  async delete(id: number) {
-    if (id === 1)
+  async delete(id: string) {
+    if (id === '1')
       throw new Error('不能删除超级管理员')
 
     await this.prisma.role.delete({
@@ -64,7 +64,7 @@ export class RoleService {
     return role
   }
 
-  async update(id: number, dto: RoleUpdateDto) {
+  async update(id: string, dto: RoleUpdateDto) {
     const { menuIds, ...data } = dto
 
     await this.prisma.role.update({
