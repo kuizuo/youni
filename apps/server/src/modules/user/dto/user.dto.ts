@@ -10,12 +10,10 @@ const UserInputSchema = UserOptionalDefaultsSchema.extend({
   phone: z.string().optional(),
   psalt: z.string().optional(),
   remark: z.string().optional(),
-  roleIds: z.array(z.number()),
+  roleIds: z.array(z.string()).optional(),
 })
 
-export class UserDto extends createZodDto(UserInputSchema) {
-
-}
+export class UserDto extends createZodDto(UserInputSchema) {}
 
 export class UserUpdateDto extends createZodDto(UserInputSchema.partial()) {}
 

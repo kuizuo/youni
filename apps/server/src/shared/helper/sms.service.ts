@@ -27,7 +27,11 @@ enum TemplateEnum {
 export class SmsService {
   private client: any // Client
 
-  constructor(@InjectRedis() private redis: Redis, private configService: ConfigService) {
+  constructor(
+    @InjectRedis()
+    private readonly redis: Redis,
+    private readonly configService: ConfigService,
+  ) {
     const clientConfig = {
       credential: {
         secretId: this.configService.get('sms.secretId'),

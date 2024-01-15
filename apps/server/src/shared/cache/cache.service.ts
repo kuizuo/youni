@@ -1,12 +1,12 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Emitter } from '@socket.io/redis-emitter'
 import { Cache } from 'cache-manager'
 import type { Redis } from 'ioredis'
 
 import { RedisIoAdapterKey } from '~/common/adapters/socket.adapter'
+import { RedisKeys } from '~/constants/cache.constant'
 
-import { API_CACHE_PREFIX } from '~/constants/cache.constant'
 import { getRedisKey } from '~/utils/redis.util'
 
 // 获取器
@@ -16,10 +16,13 @@ export type TCacheResult<T> = Promise<T | undefined>
 @Injectable()
 export class CacheService {
   private cache!: Cache
+  private logger = new Logger(CacheService.name)
 
-  private ioRedis!: Redis
   constructor(@Inject(CACHE_MANAGER) cache: Cache) {
     this.cache = cache
+    this.redisClient.on('ready', () => {
+      this.logger.log('Redis is ready!')
+    })
   }
 
   private get redisClient(): Redis {
@@ -53,16 +56,36 @@ export class CacheService {
     return this._emitter
   }
 
-  public async cleanCatch() {
+  async cacheGet<T>(options: {
+    key: string | (Record<string, any> | string | undefined | number)[]
+    getValueFun: () => Promise<T>
+    /**
+     * 过期时间，单位秒
+     */
+    expireTime?: number
+  }): Promise<T> {
     const redis = this.getClient()
-    const keys: string[] = await redis.keys(`${API_CACHE_PREFIX}*`)
-    await Promise.all(keys.map(key => redis.del(key)))
-  }
+    const { key, getValueFun, expireTime } = options
+    const cacheKey = getRedisKey(
+      RedisKeys.CacheGet,
+      Array.isArray(key) ? key.join('_') : key,
+    )
+    const cacheValue = await redis.get(cacheKey)
+    if (!cacheValue)
+      return setValue()
 
-  public async cleanAllRedisKey() {
-    const redis = this.getClient()
-    const keys: string[] = await redis.keys(getRedisKey('*'))
+    try {
+      return JSON.parse(cacheValue)
+    }
+    catch (err) {
+      this.logger.error(err)
+      return setValue()
+    }
 
-    await Promise.all(keys.map(key => redis.del(key)))
+    async function setValue() {
+      const value = await getValueFun()
+      await redis.set(cacheKey, JSON.stringify(value), 'EX', expireTime || 60)
+      return value
+    }
   }
 }

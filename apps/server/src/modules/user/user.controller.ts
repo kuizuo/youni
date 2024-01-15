@@ -4,7 +4,6 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import { IdDto } from '~/common/dto/id.dto'
 import { Perm, PermissionMap } from '~/modules/auth/decorators/permission.decorator'
-import { MenuService } from '~/modules/system/menu/menu.service'
 
 import { UserPasswordDto } from './dto/password.dto'
 import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
@@ -26,8 +25,7 @@ export const permissions: PermissionMap<'user'> = {
 @Controller('users')
 export class UserController {
   constructor(
-    private userService: UserService,
-    private menuService: MenuService,
+    private readonly userService: UserService,
   ) {}
 
   @Get()

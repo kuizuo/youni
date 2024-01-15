@@ -1,4 +1,7 @@
 export enum RedisKeys {
+
+  CacheGet = 'cache_get',
+
   AccessIp = 'access_ip',
   Like = 'like',
   View = 'view',

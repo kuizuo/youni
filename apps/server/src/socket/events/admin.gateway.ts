@@ -10,7 +10,7 @@ import {
 import { Server } from 'socket.io'
 
 import { AuthService } from '~/modules/auth/auth.service'
-import { CacheService } from '~/shared/redis/cache.service'
+import { CacheService } from '~/shared/cache/cache.service'
 
 import { createAuthGateway } from '../shared/auth.gateway'
 

@@ -19,7 +19,7 @@ export class MenuService {
     private readonly redis: Redis,
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
-    private roleService: RoleService,
+    private readonly roleService: RoleService,
   ) {}
 
   async list({
@@ -51,7 +51,7 @@ export class MenuService {
     })
   }
 
-  async update(id: number, menu: MenuUpdateDto): Promise<void> {
+  async update(id: string, menu: MenuUpdateDto): Promise<void> {
     await this.prisma.menu.update({
       where: { id },
       data: {
@@ -102,7 +102,7 @@ export class MenuService {
   /**
    * 查找当前菜单下的子菜单，目录以及菜单
    */
-  async findChildMenus(mid: number) {
+  async findChildMenus(mid: string) {
     const allMenus: any = []
     const menus = await this.prisma.menu.findMany({ where: { parent: mid } })
     // if (_.isEmpty(menus)) {
@@ -124,7 +124,7 @@ export class MenuService {
    * 获取某个菜单的信息
    * @param mid menu id
    */
-  async getMenuItemInfo(mid: number) {
+  async getMenuItemInfo(mid: string) {
     const menu = await this.prisma.menu.findUnique({ where: { id: mid } })
     return menu
   }
@@ -132,7 +132,7 @@ export class MenuService {
   /**
    * 获取某个菜单以及关联的父菜单的信息
    */
-  async getMenuItemAndParentInfo(mid: number) {
+  async getMenuItemAndParentInfo(mid: string) {
     const menu = await this.prisma.menu.findUnique({ where: { id: mid } })
     let parentMenu
     if (menu && menu.parent)
@@ -198,7 +198,7 @@ export class MenuService {
   /**
    * 删除多项菜单
    */
-  async deleteMenuItem(mids: number[]): Promise<void> {
+  async deleteMenuItem(mids: string[]): Promise<void> {
     await this.prisma.menu.deleteMany({ where: { id: { in: mids } } })
   }
 
@@ -233,7 +233,7 @@ export class MenuService {
   /**
    * 根据菜单ID查找是否有关联角色
    */
-  async checkRoleByMenuId(id: number): Promise<boolean> {
+  async checkRoleByMenuId(id: string): Promise<boolean> {
     return !!(await this.prisma.menu.exists({
       where: {
         roles: {

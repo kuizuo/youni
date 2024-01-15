@@ -84,7 +84,7 @@ model Role {
 
 model Menu {
   id         String   @id @default("")
-  parent     Int?
+  parent     String?
   path       String?
   name       String
   permission String?

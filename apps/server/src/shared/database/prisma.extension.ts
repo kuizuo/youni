@@ -15,7 +15,7 @@ export function InjectPrismaClient() {
   return Inject(PRISMA_CLIENT)
 }
 
-export function getExtendedClient({ url }: { url?: string }) {
+export function getExtendedPrismaClient({ url }: { url?: string }) {
   const prismaClient = new PrismaClient({
     datasources: {
       db: {
@@ -67,9 +67,9 @@ export function getExtendedClient({ url }: { url?: string }) {
   return extendedPrismaClient
 }
 
-export type ExtendedPrismaClient = ReturnType<typeof getExtendedClient>
+export type ExtendedPrismaClient = ReturnType<typeof getExtendedPrismaClient>
 
-export const extendedPrismaClient = getExtendedClient({ url: DatabaseConfig().url })
+export const extendedPrismaClient = getExtendedPrismaClient({ url: DatabaseConfig().url })
 
 export type AllModelNames = _Prisma.TypeMap['meta']['modelProps']
 

@@ -4,7 +4,6 @@ import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE, HttpAdapterHost } from '@nestjs/core'
 
 import * as config from '~/config'
-import { SharedModule } from '~/shared/shared.module'
 
 import { AllExceptionsFilter } from './common/filters/any-exception.filter'
 
@@ -14,7 +13,11 @@ import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { SystemModule } from './modules/system/system.module'
+import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
+import { HelperModule } from './shared/helper/helper.module'
+import { LoggerModule } from './shared/logger/logger.module'
+import { RedisModule } from './shared/redis/redis.module'
 
 @Module({
   imports: [
@@ -23,8 +26,11 @@ import { DatabaseModule } from './shared/database/database.module'
       envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
       load: [...Object.values(config)],
     }),
+    LoggerModule,
+    CacheModule,
     DatabaseModule,
-    SharedModule,
+    RedisModule,
+    HelperModule,
 
     // AuthModule,
     SystemModule,

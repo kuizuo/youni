@@ -18,16 +18,16 @@ export class TodoService {
   //   await this.todoRepository.save(dto)
   // }
 
-  // async update(id: number, dto: TodoUpdateDto) {
+  // async update(id: string, dto: TodoUpdateDto) {
   //   await this.todoRepository.update(id, dto)
   // }
 
-  // async delete(id: number) {
+  // async delete(id: string) {
   //   const item = await this.detail(id)
   //   await this.todoRepository.remove(item)
   // }
 
-  async batchDelete(ids: number[]) {
+  async batchDelete(ids: string[]) {
     const items = await this.prisma.todo.deleteMany({
       where: {
         id: { in: ids },

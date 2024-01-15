@@ -13,7 +13,7 @@ import { Reflector } from '@nestjs/core'
 import type { FastifyRequest } from 'fastify'
 import { catchError, tap } from 'rxjs'
 
-import { CacheService } from '~/shared/redis/cache.service'
+import { CacheService } from '~/shared/cache/cache.service'
 import { getIp } from '~/utils/ip.util'
 import { getRedisKey } from '~/utils/redis.util'
 

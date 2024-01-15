@@ -6,7 +6,7 @@ import { Throttle, ThrottlerGuard } from '@nestjs/throttler'
 import { Ip } from '~/common/decorators/http.decorator'
 
 import { UserService } from '~/modules/user/user.service'
-import { MailerService } from '~/shared/mailer/mailer.service'
+import { MailerService } from '~/shared/helper/mailer/mailer.service'
 
 import { AuthService } from '../auth.service'
 import { Public } from '../decorators/public.decorator'

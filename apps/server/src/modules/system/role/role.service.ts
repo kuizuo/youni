@@ -88,7 +88,7 @@ export class RoleService {
     return roles
   }
 
-  async getRolesByIds(ids: number[]) {
+  async getRolesByIds(ids: string[]) {
     const roles = await this.prisma.role.findMany({
       where: {
         id: { in: ids },
@@ -111,11 +111,11 @@ export class RoleService {
     })
   }
 
-  hasAdminRole(rids: number[]): boolean {
-    return rids.includes(1)
+  hasAdminRole(rids: string[]): boolean {
+    return rids.includes('1')
   }
 
-  async checkUserByRoleId(id: number): Promise<boolean> {
+  async checkUserByRoleId(id: string): Promise<boolean> {
     return await this.prisma.user.exists({
       where: {
         roles: {

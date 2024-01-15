@@ -16,7 +16,6 @@ import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 import { randomValue } from '~/utils/tool.util'
 
 import { UpdateProfileDto } from '../auth/dtos/account.dto'
-import { RoleService } from '../system/role/role.service'
 
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto } from './dto/user.dto'
@@ -28,7 +27,6 @@ export class UserService {
     private readonly redis: Redis,
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
-    private readonly roleService: RoleService,
   ) {}
 
   async findUserById(id: string) {
@@ -117,6 +115,9 @@ export class UserService {
       return exist
 
     const psalt = randomValue(32)
+
+    if (!roleIds)
+      roleIds = ['1']
 
     const user = await this.prisma.user.create({
       data: {

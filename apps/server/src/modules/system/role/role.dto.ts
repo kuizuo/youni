@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { defaultSchemaOmit } from '~/utils/zod.util'
 
 export const RoleInputSchema = RoleOptionalDefaultsSchema.extend({
-  menuIds: z.number().array().optional().default([]),
+  menuIds: z.array(z.string()).optional().default([]),
 }).omit(defaultSchemaOmit)
 
 export class RoleDto extends createZodDto(RoleInputSchema) {}
