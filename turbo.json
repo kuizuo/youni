@@ -19,6 +19,7 @@
     "lint": {},
     "clean": {
       "cache": false
-    }
+    },
+    "test": {}
   }
 }

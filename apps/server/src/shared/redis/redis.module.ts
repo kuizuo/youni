@@ -1,5 +1,5 @@
 import { RedisModule as NestRedisModule } from '@liaoliaots/nestjs-redis'
-import { Module, Provider } from '@nestjs/common'
+import { Global, Module, Provider } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
 import { RedisOptions } from 'ioredis'
@@ -22,6 +22,7 @@ const providers: Provider[] = [
   RedisPubSubService,
 ]
 
+@Global()
 @Module({
   imports: [
     NestRedisModule.forRootAsync({

@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "ES2022",
+    "target": "es2022",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "baseUrl": "./",
     "module": "commonjs",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["src/*"],
+      "@/*": ["src/*"],
+      "@test/*": ["./test/*"]
     },
+    "types": ["vitest/globals"],
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
