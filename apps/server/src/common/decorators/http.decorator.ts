@@ -6,7 +6,7 @@ import type { FastifyRequest } from 'fastify'
 import { getIp } from '~/utils/ip.util'
 
 /**
- * 快速获取IP
+ * 快速获取 IP
  */
 export const Ip = createParamDecorator((_, context: ExecutionContext) => {
   const request = context.switchToHttp().getRequest<FastifyRequest>()
@@ -19,4 +19,12 @@ export const Ip = createParamDecorator((_, context: ExecutionContext) => {
 export const Uri = createParamDecorator((_, context: ExecutionContext) => {
   const request = context.switchToHttp().getRequest<FastifyRequest>()
   return request.routerPath
+})
+
+/**
+ * 快速获取 cookies
+ */
+export const Cookies = createParamDecorator((data: string, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<FastifyRequest>()
+  return data ? request.cookies?.[data] : request.cookies
 })
