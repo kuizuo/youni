@@ -1,7 +1,8 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
-
 import { Prisma } from '@youni/prisma'
+import { compareSync } from 'bcrypt'
+
 import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
 
@@ -10,9 +11,8 @@ import { ErrorEnum } from '~/constants/error-code.constant'
 import { UserService } from '~/modules/user/user.service'
 
 // import { LoginLogService } from '../system/log/services/login-log.service'
-import { md5 } from '~/utils/crypto.util'
 
-import { randomValue } from '~/utils/tool.util'
+import { randomValue, sleep } from '~/utils/tool.util'
 
 import { MenuService } from '../system/menu/menu.service'
 import { RoleService } from '../system/role/role.service'
@@ -31,15 +31,18 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async validateUser(credential: string, password: string): Promise<any> {
+  async validateUser(credential: string, password: string) {
     const user = await this.userService.findUserByUsername(credential)
 
     if (isEmpty(user))
       throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
 
-    const comparePassword = md5(`${password}${user.psalt}`)
-    if (user.password !== comparePassword)
+    const isSamePassword = compareSync(password, user.password)
+
+    if (!isSamePassword) {
+      await sleep(2000)
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
+    }
 
     if (user) {
       const { password, ...result } = user
@@ -63,9 +66,12 @@ export class AuthService {
     if (isEmpty(user))
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
-    const comparePassword = md5(`${password}${user.psalt}`)
-    if (user.password !== comparePassword)
+    const isSamePassword = compareSync(password, user.password)
+
+    if (!isSamePassword) {
+      await sleep(2000)
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
+    }
 
     const roles = await this.roleService.getRolesByUserId(user.id)
 
@@ -103,17 +109,6 @@ export class AuthService {
       : exist
 
     return user
-  }
-
-  /**
-   * 效验账号密码
-   */
-  async checkPassword(username: string, password: string) {
-    const user = await this.userService.findUserByUsername(username)
-
-    const comparePassword = md5(`${password}${user.psalt}`)
-    if (user.password !== comparePassword)
-      throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
   }
 
   async loginLog(uid: string, ip: string, ua: string) {

@@ -54,6 +54,7 @@
     "@types/lodash": "^4.14.201",
     "@youni/prisma": "workspace:*",
     "axios": "^1.6.1",
+    "bcrypt": "^5.1.1",
     "bull": "^4.11.4",
     "cache-manager": "^5.2.4",
     "cache-manager-ioredis-yet": "^1.2.2",

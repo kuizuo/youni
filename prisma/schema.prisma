@@ -45,7 +45,6 @@ model User {
   id        String     @id @default("")
   username  String     @unique()
   password  String     @db.VarChar(80)
-  psalt     String     @db.VarChar(32)
   avatar    String?    @db.VarChar(255)
   email     String?    @unique() @db.VarChar(255)
   phone     String?    @db.VarChar(255)

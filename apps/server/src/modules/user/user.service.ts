@@ -1,5 +1,6 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { BadRequestException, Injectable } from '@nestjs/common'
+import { compareSync, hashSync } from 'bcrypt'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 
@@ -10,10 +11,7 @@ import { RegisterDto } from '~/modules/auth/dtos/auth.dto'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 
-import { md5 } from '~/utils/crypto.util'
 import { resourceNotFoundWrapper } from '~/utils/prisma.util'
-
-import { randomValue } from '~/utils/tool.util'
 
 import { UpdateProfileDto } from '../auth/dtos/account.dto'
 
@@ -73,18 +71,19 @@ export class UserService {
   }
 
   async updatePassword(uid: string, dto: PasswordUpdateDto): Promise<void> {
+    const { oldPassword, newPassword } = dto
     const user = await this.findUserById(uid)
 
-    const comparePassword = md5(`${dto.oldPassword}${user.psalt}`)
+    const isSamePassword = compareSync(oldPassword, user.password)
+
     // 原密码不一致，不允许更改
-    if (user.password !== comparePassword)
+    if (!isSamePassword)
       throw new BusinessException(ErrorEnum.PASSWORD_MISMATCH)
 
-    const password = md5(`${dto.newPassword}${user.psalt}`)
     await this.prisma.user.update({
       where: { id: uid },
       data: {
-        password,
+        password: hashSync(newPassword, 10),
       },
     })
 
@@ -94,11 +93,10 @@ export class UserService {
   async forceUpdatePassword(uid: string, password: string): Promise<void> {
     const user = await this.findUserById(uid)
 
-    const newPassword = md5(`${password}${user.psalt}`)
     await this.prisma.user.update({
       where: { id: uid },
       data: {
-        password: newPassword,
+        password: hashSync(password, 10),
       },
     })
     await this.upgradePasswordV(user.id)
@@ -114,17 +112,14 @@ export class UserService {
     if (!isEmpty(exist))
       return exist
 
-    const psalt = randomValue(32)
-
     if (!roleIds)
       roleIds = ['1']
 
     const user = await this.prisma.user.create({
       data: {
         username,
-        password,
+        password: hashSync(password, 10),
         ...data,
-        psalt,
         roles: {
           connect: roleIds.map(id => ({ id })),
         },
@@ -271,16 +266,13 @@ export class UserService {
       throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
 
     return await this.prisma.$transaction(async (tx) => {
-      const salt = randomValue(32)
-
-      const password = md5(`${data.password ?? 'a123456'}${salt}`)
+      const password = hashSync(data.password, 10)
 
       const user = tx.user.create({
         data: {
           ...data,
           username,
           password,
-          psalt: salt,
           status: 1,
         },
       })
