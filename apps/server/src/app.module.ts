@@ -12,6 +12,7 @@ import { IdempotenceInterceptor } from './common/interceptors/idempotence.interc
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
+import { AuthModule } from './modules/auth/auth.module'
 import { SystemModule } from './modules/system/system.module'
 import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
@@ -32,7 +33,7 @@ import { RedisModule } from './shared/redis/redis.module'
     RedisModule,
     HelperModule,
 
-    // AuthModule,
+    AuthModule,
     SystemModule,
     // TasksModule,
     // ToolsModule,
@@ -54,7 +55,6 @@ import { RedisModule } from './shared/redis/redis.module'
   ],
   providers: [
 
-    // { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     { provide: APP_INTERCEPTOR, useFactory: () => new TimeoutInterceptor(15 * 1000) },
     { provide: APP_INTERCEPTOR, useClass: IdempotenceInterceptor },

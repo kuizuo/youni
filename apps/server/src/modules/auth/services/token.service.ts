@@ -35,7 +35,7 @@ export class TokenService {
       const roles = await this.roleService.getRolesByUserId(user.id)
 
       // 如果没过期则生成新的access_token和refresh_token
-      const token = await this.generateAccessToken(user.id, roles.map(item => item.value))
+      const token = await this.generateToken(user.id, roles.map(item => item.value))
 
       this.prisma.token.delete({ where: { id: accessTokenId } })
       return token
@@ -49,7 +49,7 @@ export class TokenService {
     return jwtSign
   }
 
-  async generateAccessToken(uid: string, roles: string[] = []) {
+  async generateToken(uid: string, roles: string[] = []) {
     const payload: IAuthUser = {
       uid,
       pv: 1,

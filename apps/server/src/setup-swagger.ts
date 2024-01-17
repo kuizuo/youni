@@ -2,10 +2,14 @@ import { INestApplication, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
+import { patchNestJsSwagger } from 'nestjs-zod'
+
 import { API_SECURITY_AUTH } from './common/decorators/swagger.decorator'
 import { ResOp, TreeResult } from './common/model/response.model'
 import type { IAppConfig } from './config'
 import { isDev } from './global/env'
+
+patchNestJsSwagger()
 
 export function setupSwagger(
   app: INestApplication,

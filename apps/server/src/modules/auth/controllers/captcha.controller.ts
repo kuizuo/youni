@@ -1,6 +1,6 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Controller, Get, Query, UseGuards } from '@nestjs/common'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiTags } from '@nestjs/swagger'
 
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler'
 
@@ -22,7 +22,6 @@ export class CaptchaController {
   constructor(@InjectRedis() private redis: Redis) {}
 
   @Get('image')
-  @ApiOperation({ summary: '获取登录图片验证码' })
   @Public()
   @Throttle({ default: { limit: 2, ttl: 600000 } })
   async captchaByImg(@Query() dto: ImageCaptchaDto): Promise<ImageCaptcha> {
@@ -36,14 +35,14 @@ export class CaptchaController {
       height: isEmpty(height) ? 50 : height,
       charPreset: '1234567890',
     })
-    const result = {
-      img: `data:image/svg+xml;base64,${Buffer.from(svg.data).toString(
+    const data = {
+      image: `data:image/svg+xml;base64,${Buffer.from(svg.data).toString(
         'base64',
       )}`,
       id: generateUUID(),
     }
     // 5分钟过期时间
-    await this.redis.set(`captcha:img:${result.id}`, svg.text, 'EX', 60 * 5)
-    return result
+    await this.redis.set(`captcha:img:${data.id}`, svg.text, 'EX', 60 * 5)
+    return data
   }
 }

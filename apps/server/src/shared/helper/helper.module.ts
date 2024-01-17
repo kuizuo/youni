@@ -44,6 +44,6 @@ const providers: Provider[] = [
     MailerModule,
   ],
   providers,
-  exports: providers,
+  exports: [MailerModule, ...providers],
 })
 export class HelperModule {}

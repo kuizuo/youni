@@ -1,7 +1,9 @@
 import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiTags } from '@nestjs/swagger'
 
 import { Ip } from '~/common/decorators/http.decorator'
+
+import { ProtectKeys } from '~/common/decorators/protect-keys.decorator'
 
 import { UserService } from '../../user/user.service'
 
@@ -22,25 +24,27 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  @ApiOperation({ summary: '登录' })
   async login(
     @Body() dto: PasswordLoginDto,
     @Ip() ip: string,
     @Headers('user-agent') ua: string,
   ): Promise<LoginToken> {
+    const { username, password } = dto
     // await this.loginService.checkImgCaptcha(dto.captchaId, dto.verifyCode);
-    const token = await this.authService.login(
-      dto.username,
-      dto.password,
+
+    const user = await this.authService.validateUser(username, password)
+
+    const jwt = await this.authService.sign(
+      user.id,
       ip,
       ua,
     )
-    return { token }
+    return { authToken: jwt }
   }
 
   @Post('register')
-  @ApiOperation({ summary: '注册' })
-  async register(@Body() dto: RegisterDto): Promise<void> {
-    await this.userService.register(dto)
+  @ProtectKeys(['passowrd'])
+  async register(@Body() dto: RegisterDto) {
+    return await this.userService.register(dto)
   }
 }

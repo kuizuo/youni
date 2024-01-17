@@ -4,7 +4,6 @@ import { Prisma } from '@youni/prisma'
 import { compareSync } from 'bcrypt'
 
 import Redis from 'ioredis'
-import { isEmpty, isNil } from 'lodash'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
@@ -34,7 +33,7 @@ export class AuthService {
   async validateUser(credential: string, password: string) {
     const user = await this.userService.findUserByUsername(credential)
 
-    if (isEmpty(user))
+    if (!user)
       throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
 
     const isSamePassword = compareSync(password, user.password)
@@ -44,69 +43,46 @@ export class AuthService {
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
     }
 
-    if (user) {
-      const { password, ...result } = user
-      return result
-    }
-
-    return null
+    const { password: _p, ...result } = user
+    return result
   }
 
-  /**
-   * 获取登录JWT
-   * 返回null则账号密码有误，不存在该用户
-   */
-  async login(
-    username: string,
-    password: string,
+  async sign(
+    userId: string,
     ip: string,
     ua: string,
   ): Promise<string> {
-    const user = await this.userService.findUserByUsername(username)
-    if (isEmpty(user))
-      throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
+    const roles = await this.roleService.getRolesByUserId(userId)
 
-    const isSamePassword = compareSync(password, user.password)
+    const { accessToken, refreshToken } = await this.tokenService.generateToken(userId, roles.map(r => r.value))
 
-    if (!isSamePassword) {
-      await sleep(2000)
-      throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
-    }
-
-    const roles = await this.roleService.getRolesByUserId(user.id)
-
-    // 包含access_token和refresh_token
-    const token = await this.tokenService.generateAccessToken(user.id, roles.map(r => r.value))
-
-    await this.redis.set(`auth:token:${user.id}`, token.accessToken)
+    await this.redis.set(`auth:token:${userId}`, accessToken)
 
     // 设置密码版本号 当密码修改时，版本号+1
-    await this.redis.set(`auth:passwordVersion:${user.id}`, 1)
+    await this.redis.set(`auth:passwordVersion:${userId}`, 1)
 
     // 设置菜单权限
-    const permissions = await this.menuService.getPermissions(user.id)
-    await this.setPermissionsCache(user.id, permissions)
+    const permissions = await this.menuService.getPermissions(userId)
+    await this.setPermissionsCache(userId, permissions)
 
     // await this.loginLogService.create(user.id, ip, ua)
 
-    return token.accessToken
+    return accessToken
   }
 
   async loginByGoogle(info: Prisma.UserCreateInput) {
     const exist = await this.userService.findUserByEmail(info.email!)
     const role = await this.roleService.getDefaultRole()
 
-    const user = isNil(exist)
-      ? await this.userService.create({
-        username: info.email!,
-        email: info.email!,
-        nickname: info.nickname!,
-        avatar: info.avatar!,
-        password: randomValue(10),
-        provider: 'Google',
-        roleIds: [role!.id],
-      })
-      : exist
+    const user = exist ?? await this.userService.create({
+      username: info.email!,
+      email: info.email!,
+      nickname: info.nickname!,
+      avatar: info.avatar!,
+      password: randomValue(10),
+      provider: 'Google',
+      roleIds: [role!.id],
+    })
 
     return user
   }

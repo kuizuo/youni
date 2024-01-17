@@ -250,25 +250,18 @@ export class UserService {
       await this.redis.set(`admin:passwordVersion:${id}`, Number.parseInt(v) + 1)
   }
 
-  async exist(username: string) {
-    const exists = await this.prisma.user.exists({
-      where: { username },
-    })
-
-    return exists
-  }
-
   async register({ username, ...data }: RegisterDto) {
     const exists = await this.prisma.user.exists({
       where: { username },
     })
-    if (!isEmpty(exists))
+
+    if (exists)
       throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
 
     return await this.prisma.$transaction(async (tx) => {
       const password = hashSync(data.password, 10)
 
-      const user = tx.user.create({
+      const user = await tx.user.create({
         data: {
           ...data,
           username,

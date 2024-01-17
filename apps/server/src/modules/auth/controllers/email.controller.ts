@@ -1,5 +1,5 @@
 import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiTags } from '@nestjs/swagger'
 
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler'
 
@@ -31,7 +31,6 @@ export class EmailController {
   ) {}
 
   @Post('send')
-  @ApiOperation({ summary: '发送邮箱验证码' })
   @Public()
   @Throttle({ default: { limit: 2, ttl: 600000 } })
   async sendEmailCode(
@@ -50,7 +49,6 @@ export class EmailController {
   }
 
   @Post('login')
-  @ApiOperation({ summary: '邮箱登录' })
   @Public()
   async login(
     @Body() dto: EmailLoginDto,
@@ -61,15 +59,12 @@ export class EmailController {
 
     const user = await this.userService.findUserByUsername(dto.email)
 
-    const token = await this.tokenService.generateAccessToken(user.id)
+    const { accessToken } = await this.tokenService.generateToken(user.id)
 
-    await this.authService.loginLog(user.id, ip, ua)
-
-    return { token: token.accessToken }
+    return { authToken: accessToken }
   }
 
   @Post('register')
-  @ApiOperation({ summary: '邮箱注册' })
   @Public()
   async email_register(
     @Body() dto: EmailRegisterDto,

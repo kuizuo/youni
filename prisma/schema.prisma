@@ -43,12 +43,13 @@ datasource db {
 
 model User {
   id        String     @id @default("")
-  username  String     @unique()
+  username  String     @unique() @db.VarChar(80)
   password  String     @db.VarChar(80)
-  avatar    String?    @db.VarChar(255)
-  email     String?    @unique() @db.VarChar(255)
+  /// @zod.string.url()
+  avatar    String?    @db.VarChar(1024)
+  /// @zod.string.email()
+  email     String?    @unique() @db.VarChar(80)
   phone     String?    @db.VarChar(255)
-  remark    String?    @db.VarChar(255)
   status    Int?       @default(1) @db.SmallInt
   createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime   @updatedAt @map("updated_at")

@@ -26,8 +26,8 @@ import { TokenService } from '../services/token.service'
 @Public()
 export class GoogleController {
   constructor(
-    private authService: AuthService,
-    private tokenService: TokenService,
+    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
     @Inject(AppConfig.KEY) private readonly appConfig: IAppConfig,
   ) {}
 
@@ -45,7 +45,7 @@ export class GoogleController {
       req.user as unknown as Prisma.UserCreateInput,
     )
 
-    const { accessToken } = await this.tokenService.generateAccessToken(user.id)
+    const { accessToken } = await this.tokenService.generateToken(user.id)
 
     res.setCookie('token', accessToken).send(
       new ResOp(HttpStatus.OK, {

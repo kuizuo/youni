@@ -19,8 +19,8 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 @Controller('account')
 export class AccountController {
   constructor(
-    private userService: UserService,
-    private authService: AuthService,
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
   ) {}
 
   @Get('profile')
@@ -33,7 +33,7 @@ export class AccountController {
   @Put('profile')
   @ApiOperation({ summary: '更改账户资料' })
   @AllowAnon()
-  async update(
+  async updateProfile(
     @AuthUser() user: IAuthUser,
     @Body() dto: UpdateProfileDto,
   ): Promise<void> {
