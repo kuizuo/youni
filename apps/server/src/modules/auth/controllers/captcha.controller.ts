@@ -11,7 +11,6 @@ import * as svgCaptcha from 'svg-captcha'
 import { generateUUID } from '~/utils/tool.util'
 
 import { Public } from '../decorators/public.decorator'
-
 import { ImageCaptchaDto } from '../dtos/captcha.dto'
 import { ImageCaptcha } from '../models/auth.model'
 

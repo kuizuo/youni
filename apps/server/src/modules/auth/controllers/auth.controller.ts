@@ -2,11 +2,9 @@ import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
 import { Ip } from '~/common/decorators/http.decorator'
-
 import { ProtectKeys } from '~/common/decorators/protect-keys.decorator'
 
 import { UserService } from '../../user/user.service'
-
 import { AuthService } from '../auth.service'
 import { Public } from '../decorators/public.decorator'
 import { PasswordLoginDto, RegisterDto } from '../dtos/auth.dto'
@@ -30,7 +28,7 @@ export class AuthController {
     @Headers('user-agent') ua: string,
   ): Promise<LoginToken> {
     const { username, password } = dto
-    // await this.loginService.checkImgCaptcha(dto.captchaId, dto.verifyCode);
+    // await this.captchaService.checkImgCaptcha(captchaId, verifyCode);
 
     const user = await this.authService.validateUser(username, password)
 

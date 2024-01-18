@@ -1,22 +1,12 @@
-import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Post, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler'
 
 import { Ip } from '~/common/decorators/http.decorator'
-
-import { UserService } from '~/modules/user/user.service'
 import { MailerService } from '~/shared/helper/mailer/mailer.service'
 
-import { AuthService } from '../auth.service'
 import { Public } from '../decorators/public.decorator'
-
-import { RegisterDto } from '../dtos/auth.dto'
 import { SendEmailCodeDto } from '../dtos/captcha.dto'
-import { EmailLoginDto, EmailRegisterDto } from '../dtos/email.dto'
-import { LoginToken } from '../models/auth.model'
-import { CaptchaService } from '../services/captcha.service'
-import { TokenService } from '../services/token.service'
 
 @ApiTags('Auth - 认证模块')
 @UseGuards(ThrottlerGuard)
@@ -24,58 +14,20 @@ import { TokenService } from '../services/token.service'
 export class EmailController {
   constructor(
     private mailerService: MailerService,
-    private userService: UserService,
-    private tokenService: TokenService,
-    private authService: AuthService,
-    private captchaService: CaptchaService,
   ) {}
 
   @Post('send')
   @Public()
-  @Throttle({ default: { limit: 2, ttl: 600000 } })
+  @Throttle({ default: { limit: 2, ttl: 60 * 1000 } })
   async sendEmailCode(
     @Body() dto: SendEmailCodeDto,
     @Ip() ip: string,
   ): Promise<void> {
-    // FIXME: test
-    // await this.captchaService.checkImgCaptcha(dto.captchaId, dto.verifyCode)
     const { email } = dto
 
-    // FIXME: test
-    // await this.mailerService.checkLimit(email, ip)
+    await this.mailerService.checkLimit(email, ip)
     const { code } = await this.mailerService.sendVerificationCode(email)
 
     await this.mailerService.log(email, code, ip)
-  }
-
-  @Post('login')
-  @Public()
-  async login(
-    @Body() dto: EmailLoginDto,
-    @Ip() ip: string,
-    @Headers('user-agent') ua: string,
-  ): Promise<LoginToken> {
-    await this.mailerService.checkCode(dto.email, dto.code)
-
-    const user = await this.userService.findUserByUsername(dto.email)
-
-    const { accessToken } = await this.tokenService.generateToken(user.id)
-
-    return { authToken: accessToken }
-  }
-
-  @Post('register')
-  @Public()
-  async email_register(
-    @Body() dto: EmailRegisterDto,
-  ) {
-    await this.mailerService.checkCode(dto.email, dto.code)
-
-    const param: RegisterDto = {
-      username: dto.email,
-      password: dto.password,
-    }
-
-    await this.userService.register(param)
   }
 }

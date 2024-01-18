@@ -10,11 +10,9 @@ import { isDev } from '~/global/env'
 
 import { CronService } from './cron.service'
 import { MailerModule } from './mailer/mailer.module'
-import { SmsService } from './sms.service'
 
 const providers: Provider[] = [
   CronService,
-  SmsService,
 ]
 
 @Global()

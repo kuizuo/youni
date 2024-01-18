@@ -2,10 +2,8 @@ import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
-
 import { AllowAnon } from '~/modules/auth/decorators/allow-anon.decorator'
 import { AuthUser } from '~/modules/auth/decorators/auth-user.decorator'
-
 import { PasswordUpdateDto } from '~/modules/user/dto/password.dto'
 
 import { UserService } from '../../user/user.service'
