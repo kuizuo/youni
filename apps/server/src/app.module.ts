@@ -13,6 +13,7 @@ import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { AuthModule } from './modules/auth/auth.module'
+import { HealthModule } from './modules/health/health.module'
 import { SystemModule } from './modules/system/system.module'
 import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
@@ -37,7 +38,7 @@ import { RedisModule } from './shared/redis/redis.module'
     SystemModule,
     // TasksModule,
     // ToolsModule,
-    // HealthModule,
+    HealthModule,
     // SocketModule,
 
     // biz
