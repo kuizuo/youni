@@ -13,20 +13,23 @@ import { ApiTags } from '@nestjs/swagger'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 
 import { IdDto } from '~/common/dto/id.dto'
-import { Perm, PermissionMap } from '~/modules/auth/decorators/permission.decorator'
+import {
+  Perm,
+  PermissionValue,
+} from '~/modules/auth/decorators/permission.decorator'
 
 import { MenuService } from '../menu/menu.service'
 
 import { RoleDto, RoleUpdateDto } from './role.dto'
 import { RoleService } from './role.service'
 
-export const permissions: PermissionMap<'role'> = {
+export const permissions = {
   LIST: 'role:list',
   CREATE: 'role:create',
   READ: 'role:read',
   UPDATE: 'role:update',
   DELETE: 'role:delete',
-} as const
+} satisfies Record<string, PermissionValue<'role'>>
 
 @ApiTags('System - 角色模块')
 @ApiSecurityAuth()
@@ -57,12 +60,9 @@ export class RoleController {
 
   @Put(':id')
   @Perm(permissions.UPDATE)
-  async update(
-    @Param() { id }: IdDto,
-    @Body() dto: RoleUpdateDto,
-  ) {
+  async update(@Param() { id }: IdDto, @Body() dto: RoleUpdateDto) {
     await this.roleService.update(id, dto)
-    // await this.menuService.refreshOnlineUserPerms()
+    await this.menuService.refreshOnlineUserPerms()
   }
 
   @Delete(':id')
@@ -72,6 +72,6 @@ export class RoleController {
       throw new BadRequestException('该角色存在关联用户，无法删除')
 
     await this.roleService.delete(id)
-    // await this.menuService.refreshOnlineUserPerms()
+    await this.menuService.refreshOnlineUserPerms()
   }
 }

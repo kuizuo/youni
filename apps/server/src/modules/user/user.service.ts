@@ -7,7 +7,7 @@ import { isEmpty } from 'lodash'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 
-import { RegisterDto } from '~/modules/auth/dtos/auth.dto'
+import { RegisterDto } from '~/modules/auth/auth.dto'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 

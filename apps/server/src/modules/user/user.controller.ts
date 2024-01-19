@@ -3,13 +3,13 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import { IdDto } from '~/common/dto/id.dto'
-import { Perm, PermissionMap } from '~/modules/auth/decorators/permission.decorator'
+import { Perm, PermissionValue } from '~/modules/auth/decorators/permission.decorator'
 
 import { UserPasswordDto } from './dto/password.dto'
 import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
 import { UserService } from './user.service'
 
-export const permissions: PermissionMap<'user'> = {
+export const permissions = {
   LIST: 'user:list',
   CREATE: 'user:create',
   READ: 'user:read',
@@ -17,8 +17,8 @@ export const permissions: PermissionMap<'user'> = {
   DELETE: 'user:delete',
 
   PASSWORD_UPDATE: 'user:password:update',
-  PASSWORD_RESET: 'user:pass:reset',
-} as const
+  PASSWORD_RESET: 'user:password:reset',
+} satisfies Record<string, PermissionValue<'user'>>
 
 @ApiTags('System - 用户模块')
 @ApiSecurityAuth()

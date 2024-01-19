@@ -5,17 +5,17 @@ import { ApiTags } from '@nestjs/swagger'
 
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 
-import { PermissionMap } from '~/modules/auth/decorators/permission.decorator'
+import { PermissionValue } from '~/modules/auth/decorators/permission.decorator'
 
 import { MenuService } from './menu.service'
 
-export const permissions: PermissionMap = {
-  LIST: 'system:menu:list',
-  CREATE: 'system:menu:create',
-  READ: 'system:menu:read',
-  UPDATE: 'system:menu:update',
-  DELETE: 'system:menu:delete',
-} as const
+export const permissions = {
+  LIST: 'menu:list',
+  CREATE: 'menu:create',
+  READ: 'menu:read',
+  UPDATE: 'menu:update',
+  DELETE: 'menu:delete',
+} satisfies Record<string, PermissionValue<'menu'>>
 
 @ApiTags('System - 菜单权限模块')
 @ApiSecurityAuth()
