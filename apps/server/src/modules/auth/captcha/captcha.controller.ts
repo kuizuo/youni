@@ -10,9 +10,9 @@ import * as svgCaptcha from 'svg-captcha'
 
 import { generateUUID } from '~/utils/tool.util'
 
+import { ImageCaptcha } from '../auth.model'
 import { Public } from '../decorators/public.decorator'
-import { ImageCaptchaDto } from '../dtos/captcha.dto'
-import { ImageCaptcha } from '../models/auth.model'
+import { ImageCaptchaDto } from './captcha.dto'
 
 @ApiTags('Captcha - 验证码模块')
 @UseGuards(ThrottlerGuard)

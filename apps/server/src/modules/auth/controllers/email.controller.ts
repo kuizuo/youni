@@ -6,7 +6,7 @@ import { Ip } from '~/common/decorators/http.decorator'
 import { MailerService } from '~/shared/helper/mailer/mailer.service'
 
 import { Public } from '../decorators/public.decorator'
-import { SendEmailCodeDto } from '../dtos/captcha.dto'
+import { SendEmailCodeDto } from '../captcha/captcha.dto'
 
 @ApiTags('Auth - 认证模块')
 @UseGuards(ThrottlerGuard)

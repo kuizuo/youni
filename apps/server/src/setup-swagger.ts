@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { patchNestJsSwagger } from 'nestjs-zod'
 
 import { API_SECURITY_AUTH } from './common/decorators/swagger.decorator'
-import { ResOp, TreeResult } from './common/model/response.model'
+import { ResOp } from './common/model/response.model'
 import type { IAppConfig } from './config'
 import { isDev } from './global/env'
 
@@ -35,7 +35,7 @@ export function setupSwagger(
 
   const document = SwaggerModule.createDocument(app, documentBuilder.build(), {
     ignoreGlobalPrefix: false,
-    extraModels: [ResOp, TreeResult],
+    extraModels: [ResOp],
   })
 
   SwaggerModule.setup('api-docs', app, document)

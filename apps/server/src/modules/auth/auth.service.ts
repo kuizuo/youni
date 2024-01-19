@@ -5,7 +5,7 @@ import { compareSync } from 'bcrypt'
 
 import Redis from 'ioredis'
 
-import { BusinessException } from '~/common/exceptions/biz.exception'
+import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { UserService } from '~/modules/user/user.service'
 
@@ -16,6 +16,7 @@ import { randomValue, sleep } from '~/utils/tool.util'
 import { MenuService } from '../system/menu/menu.service'
 import { RoleService } from '../system/role/role.service'
 
+import { LoginType } from './auth.constant'
 import { TokenService } from './services/token.service'
 
 @Injectable()
@@ -30,17 +31,21 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async validateUser(credential: string, password: string) {
-    const user = await this.userService.findUserByUsername(credential)
+  async validateUser(credential: string, password: string, type: LoginType) {
+    const user = type === 'account'
+      ? await this.userService.findUserByUsername(credential)
+      : type === 'email'
+        ? await this.userService.findUserByEmail(credential)
+        : null
 
     if (!user)
-      throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
+      throw new BizException(ErrorEnum.USER_NOT_FOUND)
 
     const isSamePassword = compareSync(password, user.password)
 
     if (!isSamePassword) {
-      await sleep(2000)
-      throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
+      await sleep(1500)
+      throw new BizException(ErrorEnum.INVALID_USERNAME_PASSWORD)
     }
 
     const { password: _p, ...result } = user

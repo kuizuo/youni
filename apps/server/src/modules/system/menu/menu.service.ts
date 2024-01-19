@@ -4,7 +4,7 @@ import Redis from 'ioredis'
 
 import { concat, isEmpty, uniq } from 'lodash'
 
-import { BusinessException } from '~/common/exceptions/biz.exception'
+import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
 
@@ -83,16 +83,16 @@ export class MenuService {
   async check(dto: Partial<MenuDto>) {
     if (dto.type === 2 && !dto.parent) {
       // 无法直接创建权限，必须有parent
-      throw new BusinessException(ErrorEnum.PERMISSION_REQUIRES_PARENT)
+      throw new BizException(ErrorEnum.PERMISSION_REQUIRES_PARENT)
     }
     if (dto.type === 1 && dto.parent) {
       const parent = await this.getMenuItemInfo(dto.parent)
       if (isEmpty(parent))
-        throw new BusinessException(ErrorEnum.PARENT_MENU_NOT_FOUND)
+        throw new BizException(ErrorEnum.PARENT_MENU_NOT_FOUND)
 
       if (parent && parent.type === 1) {
         // 当前新增为菜单但父节点也为菜单时为非法操作
-        throw new BusinessException(
+        throw new BizException(
           ErrorEnum.ILLEGAL_OPERATION_DIRECTORY_PARENT,
         )
       }

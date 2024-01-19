@@ -5,38 +5,37 @@ import {
   RESPONSE_SUCCESS_MSG,
 } from '~/constants/response.constant'
 
-export class ResOp<T = any> {
-  @ApiProperty({ type: 'object' })
+export interface IBaseResponse<T = any> {
+  ok?: boolean
+  code?: number
+  msg?: string
   data?: T
+}
+
+export class ResOp<T = any> {
+  @ApiProperty({ type: 'boolean', default: true })
+  ok: boolean
 
   @ApiProperty({ type: 'number', default: RESPONSE_SUCCESS_CODE })
   code: number
 
   @ApiProperty({ type: 'string', default: RESPONSE_SUCCESS_MSG })
-  message: string
+  msg: string
 
-  constructor(code: number, data: T, message = RESPONSE_SUCCESS_MSG) {
-    this.code = code
-    this.data = data
-    this.message = message
+  @ApiProperty({ type: 'object' })
+  data?: T
+
+  constructor({
+    code,
+    msg,
+    ok,
+    data,
+  }: IBaseResponse<T>) {
+    this.code = code ?? RESPONSE_SUCCESS_CODE
+    this.msg = msg ?? RESPONSE_SUCCESS_MSG
+    this.ok = ok ?? true
+
+    if (data)
+      this.data = data
   }
-
-  static success<T>(data?: T, message?: string) {
-    return new ResOp(RESPONSE_SUCCESS_CODE, data, message)
-  }
-
-  static error(code: number, message) {
-    return new ResOp(code, {}, message)
-  }
-}
-
-export class TreeResult<T> {
-  @ApiProperty()
-  id: number
-
-  @ApiProperty()
-  parentId: number
-
-  @ApiProperty()
-  children?: TreeResult<T>[]
 }

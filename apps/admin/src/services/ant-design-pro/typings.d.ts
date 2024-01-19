@@ -1,6 +1,3 @@
-// @ts-ignore
-/* eslint-disable */
-
 declare namespace API {
   type CurrentUser = {
     name?: string;
@@ -59,13 +56,6 @@ declare namespace API {
   type FakeCaptcha = {
     code?: number;
     status?: string;
-  };
-
-  type LoginParams = {
-    username?: string;
-    password?: string;
-    autoLogin?: boolean;
-    type?: string;
   };
 
   type ErrorResponse = {

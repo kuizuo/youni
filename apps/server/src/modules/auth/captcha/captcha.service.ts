@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 
-import { BusinessException } from '~/common/exceptions/biz.exception'
+import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 
 @Injectable()
@@ -21,7 +21,7 @@ export class CaptchaService {
   async checkImgCaptcha(id: string, code: string): Promise<void> {
     const result = await this.redis.get(`captcha:img:${id}`)
     if (isEmpty(result) || code.toLowerCase() !== result?.toLowerCase())
-      throw new BusinessException(ErrorEnum.INVALID_VERIFICATION_CODE)
+      throw new BizException(ErrorEnum.INVALID_VERIFICATION_CODE)
 
     // 校验成功后移除验证码
     await this.redis.del(`captcha:img:${id}`)

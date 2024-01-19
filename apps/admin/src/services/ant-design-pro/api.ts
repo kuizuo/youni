@@ -1,12 +1,13 @@
-// @ts-ignore
-/* eslint-disable */
 import { request } from '@umijs/max';
+import { IBaseResponse } from '@server/common/model/response.model';
+import { LoginResult } from '@server/modules/auth/auth.model';
+import { LoginDto } from '@server/modules/auth/auth.dto';
 
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
     data: API.CurrentUser;
-  }>('/api/currentUser', {
+  }>('/api/account/profile', {
     method: 'GET',
     ...(options || {}),
   });
@@ -20,9 +21,9 @@ export async function outLogin(options?: { [key: string]: any }) {
   });
 }
 
-/** 登录接口 POST /api/login/account */
-export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/login/account', {
+/** 登录接口 POST /api/auth/login/ */
+export async function login(body: LoginDto, options?: { [key: string]: any }) {
+  return request<IBaseResponse<LoginResult>>('/api/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

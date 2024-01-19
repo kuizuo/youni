@@ -1,3 +1,7 @@
+import { z } from 'zod'
+
+import { LoginTypeEnum } from './auth.dto'
+
 export const PUBLIC_KEY = '__public_key__'
 
 export const PERMISSION_KEY = '__permission_key__'
@@ -26,3 +30,5 @@ export const Roles = {
 } as const
 
 export type Role = (typeof Roles)[keyof typeof Roles]
+
+export type LoginType = z.infer<typeof LoginTypeEnum>

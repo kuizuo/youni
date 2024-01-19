@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  HttpStatus,
   Inject,
   Req,
   Res,
@@ -48,8 +47,10 @@ export class GoogleController {
     const { accessToken } = await this.tokenService.generateToken(user.id)
 
     res.setCookie('token', accessToken).send(
-      new ResOp(HttpStatus.OK, {
-        token: accessToken,
+      new ResOp({
+        data: {
+          token: accessToken,
+        },
       }),
     )
   }

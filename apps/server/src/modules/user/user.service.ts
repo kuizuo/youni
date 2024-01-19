@@ -4,7 +4,7 @@ import { compareSync, hashSync } from 'bcrypt'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 
-import { BusinessException } from '~/common/exceptions/biz.exception'
+import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 
 import { RegisterDto } from '~/modules/auth/auth.dto'
@@ -52,7 +52,7 @@ export class UserService {
         },
         include: { roles: true },
       })
-      .catch(resourceNotFoundWrapper(new BusinessException(ErrorEnum.USER_NOT_FOUND)))
+      .catch(resourceNotFoundWrapper(new BizException(ErrorEnum.USER_NOT_FOUND)))
 
     return user
   }
@@ -78,7 +78,7 @@ export class UserService {
 
     // 原密码不一致，不允许更改
     if (!isSamePassword)
-      throw new BusinessException(ErrorEnum.PASSWORD_MISMATCH)
+      throw new BizException(ErrorEnum.PASSWORD_MISMATCH)
 
     await this.prisma.user.update({
       where: { id: uid },
@@ -256,7 +256,7 @@ export class UserService {
     })
 
     if (exists)
-      throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
+      throw new BizException(ErrorEnum.SYSTEM_USER_EXISTS)
 
     return await this.prisma.$transaction(async (tx) => {
       const password = hashSync(data.password, 10)

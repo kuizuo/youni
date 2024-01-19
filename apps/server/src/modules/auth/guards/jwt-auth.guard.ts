@@ -58,7 +58,7 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     // const pv = await this.authService.getPasswordVersionByUid(request.user.uid)
     // if (pv !== `${request.user.pv}`) {
     //   // 密码版本不一致，登录期间已更改过密码
-    //   throw new BusinessException(ErrorEnum.INVALID_LOGIN)
+    //   throw new BizException(ErrorEnum.INVALID_LOGIN)
     // }
 
     // 不允许多端登录

@@ -13,7 +13,7 @@ describe('userService', () => {
 
   it('should register user successfully', async () => {
     const userModel = generateMockUser()
-    await proxy.service.register(userModel)
+    await proxy.service.register({ ...userModel, type: 'account' })
 
     const user = await prisma.user.findUnique({
       where: {
@@ -27,8 +27,7 @@ describe('userService', () => {
 
   it('should throw if existed', async () => {
     const userModel = generateMockUser()
-    await proxy.service.register(userModel)
 
-    await expect(proxy.service.register(userModel)).rejects.toThrowError()
+    await expect(proxy.service.register({ ...userModel, type: 'account' })).rejects.toThrowError()
   })
 })

@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core'
 import { FastifyRequest } from 'fastify'
 
-import { BusinessException } from '~/common/exceptions/biz.exception'
+import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { AuthService } from '~/modules/auth/auth.service'
 
@@ -71,7 +71,7 @@ export class RbacGuard implements CanActivate {
       canNext = allPermissions.includes(payloadPermission)
 
     if (!canNext)
-      throw new BusinessException(ErrorEnum.NO_PERMISSION)
+      throw new BizException(ErrorEnum.NO_PERMISSION)
 
     return true
   }

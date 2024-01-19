@@ -1,0 +1,1 @@
+import '@youni/prisma/global'

@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 
 import Redis from 'ioredis'
 
-import { BusinessException } from '~/common/exceptions/biz.exception'
+import { BizException } from '~/common/exceptions/biz.exception'
 import { AppConfig, IAppConfig } from '~/config'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { randomValue } from '~/utils/tool.util'
@@ -42,7 +42,7 @@ export class MailerService {
   async checkCode(to, code) {
     const ret = await this.redis.get(`captcha:${to}`)
     if (ret !== code)
-      throw new BusinessException(ErrorEnum.INVALID_VERIFICATION_CODE)
+      throw new BizException(ErrorEnum.INVALID_VERIFICATION_CODE)
 
     await this.redis.del(`captcha:${to}`)
   }
@@ -53,12 +53,12 @@ export class MailerService {
     // 1分钟最多接收1条
     const limit = await this.redis.get(`captcha:${to}:limit`)
     if (limit)
-      throw new BusinessException(ErrorEnum.TOO_MANY_REQUESTS)
+      throw new BizException(ErrorEnum.TOO_MANY_REQUESTS)
 
     // 1天一个邮箱最多接收5条
     const limitCountOfDay: string | number = Number(await this.redis.get(`captcha:${to}:limit-day`)) || 0
     if (limitCountOfDay > LIMIT_TIME) {
-      throw new BusinessException(
+      throw new BizException(
         ErrorEnum.MAXIMUM_FIVE_VERIFICATION_CODES_PER_DAY,
       )
     }
@@ -101,7 +101,7 @@ export class MailerService {
     }
     catch (error) {
       console.log(error)
-      throw new BusinessException(ErrorEnum.VERIFICATION_CODE_SEND_FAILED)
+      throw new BizException(ErrorEnum.VERIFICATION_CODE_SEND_FAILED)
     }
 
     return {

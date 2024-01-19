@@ -3,6 +3,6 @@ export class ImageCaptcha {
   image: string
 }
 
-export class LoginToken {
+export class LoginResult {
   authToken: string
 }

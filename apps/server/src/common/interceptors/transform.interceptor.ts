@@ -1,7 +1,6 @@
 import {
   CallHandler,
   ExecutionContext,
-  HttpStatus,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common'
@@ -57,7 +56,9 @@ export class TransformInterceptor implements NestInterceptor {
 
         // data = this.serialize(data)
 
-        return new ResOp(HttpStatus.OK, data ?? null)
+        return new ResOp({
+          data,
+        })
       }),
     )
   }

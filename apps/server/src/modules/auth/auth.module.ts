@@ -12,13 +12,12 @@ import { MenuModule } from '../system/menu/menu.module'
 import { RoleModule } from '../system/role/role.module'
 import { UserModule } from '../user/user.module'
 
+import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
+import { CaptchaModule } from './captcha/captcha.module'
 import { AccountController } from './controllers/account.controller'
-import { AuthController } from './controllers/auth.controller'
-import { CaptchaController } from './controllers/captcha.controller'
 import { EmailController } from './controllers/email.controller'
 import { GoogleController } from './controllers/google.controller'
-import { CaptchaService } from './services/captcha.service'
 import { TokenService } from './services/token.service'
 import { GoogleStrategy } from './strategies/google.strategy'
 import { JwtStrategy } from './strategies/jwt.strategy'
@@ -27,11 +26,10 @@ import { LocalStrategy } from './strategies/local.strategy'
 const controllers = [
   AuthController,
   AccountController,
-  CaptchaController,
   EmailController,
   GoogleController,
 ]
-const providers: Provider[] = [AuthService, TokenService, CaptchaService]
+const providers: Provider[] = [AuthService, TokenService]
 const strategies = [LocalStrategy, JwtStrategy, GoogleStrategy]
 
 @Module({
@@ -51,6 +49,7 @@ const strategies = [LocalStrategy, JwtStrategy, GoogleStrategy]
       },
       inject: [ConfigService],
     }),
+    CaptchaModule,
     UserModule,
     RoleModule,
     MenuModule,
