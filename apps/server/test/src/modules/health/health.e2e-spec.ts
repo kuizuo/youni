@@ -13,7 +13,7 @@ describe('Health', () => {
       url: '/health/network',
     })
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toEqual(200)
   })
 
   it('GET /health/database', async () => {
@@ -22,7 +22,7 @@ describe('Health', () => {
       url: '/health/database',
     })
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toEqual(200)
   })
 
   it('GET /health/memory-heap', async () => {
@@ -31,7 +31,7 @@ describe('Health', () => {
       url: '/health/memory-heap',
     })
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toEqual(200)
   })
 
   it('GET /health/memory-rss', async () => {
@@ -40,7 +40,7 @@ describe('Health', () => {
       url: '/health/memory-rss',
     })
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toEqual(200)
   })
 
   it('GET /health/disk', async () => {
@@ -48,6 +48,6 @@ describe('Health', () => {
       method: 'GET',
       url: '/health/disk',
     })
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toEqual(200)
   })
 })

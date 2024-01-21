@@ -12,6 +12,7 @@ import { generateUUID } from '~/utils/tool.util'
 
 import { ImageCaptcha } from '../auth.model'
 import { Public } from '../decorators/public.decorator'
+
 import { ImageCaptchaDto } from './captcha.dto'
 
 @ApiTags('Captcha - 验证码模块')

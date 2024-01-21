@@ -50,6 +50,7 @@
     "@umijs/route-utils": "^2.2.2",
     "antd": "^5.2.2",
     "classnames": "^2.3.2",
+    "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "omit.js": "^2.0.2",
@@ -86,10 +87,10 @@
     "prettier": "^2.8.4",
     "swagger-ui-dist": "^4.15.5",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.5",
+    "typescript": "^5.3.0",
     "umi-presets-pro": "^2.0.2"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=18.0.0"
   }
 }

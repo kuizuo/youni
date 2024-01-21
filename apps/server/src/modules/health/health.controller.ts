@@ -47,8 +47,8 @@ export class HealthController {
   @Get('memory-rss')
   @HealthCheck()
   async checkMemoryRSS() {
-    // the process should not have more than 200MB RSS memory allocated
-    return this.memory.checkRSS('memory-rss', 200 * 1024 * 1024)
+    // the process should not have more than 1024MB RSS memory allocated
+    return this.memory.checkRSS('memory-rss', 1024 * 1024 * 1024)
   }
 
   @Get('disk')

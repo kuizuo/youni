@@ -1,6 +1,6 @@
 import { request } from '@umijs/max';
-import { IBaseResponse } from '@server/common/model/response.model';
 import { LoginResult } from '@server/modules/auth/auth.model';
+import { IBaseResponse } from '@server/common/model/response.model';
 import { LoginDto } from '@server/modules/auth/auth.dto';
 
 /** 获取当前的用户 GET /api/currentUser */

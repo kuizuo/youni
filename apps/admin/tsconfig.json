@@ -1,24 +1,31 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "importHelpers": true,
-    "jsx": "preserve",
-    "esModuleInterop": true,
-    "sourceMap": true,
-    "baseUrl": "./",
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "removeComments": true,
+    "noImplicitAny": false,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
     "skipLibCheck": true,
-    "experimentalDecorators": true,
-    "strict": true,
-    "resolveJsonModule": true,
+    "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"],
       "@@/*": ["./src/.umi/*"],
       "@@test/*": ["./src/.umi-test/*"],
-      "@server/*": ["../server/src/*"]
+      "@server/*": ["../server/src/*"],
+      "@model": ["../../prisma/client/index.d.ts"]
     }
   },
-  "include": ["./**/*.d.ts", "./**/*.ts", "./**/*.tsx"]
 }

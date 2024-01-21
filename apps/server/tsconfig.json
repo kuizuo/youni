@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "es2022",
+    "target": "es2021",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "baseUrl": "./",
-    "module": "commonjs",
+    "baseUrl": ".",
+    "module": "CommonJS",
     "paths": {
-      "~/*": ["src/*"],
-      "@/*": ["src/*"],
-      "@test/*": ["./test/*"]
+      "~/*": ["./src/*"],
+      "@/*": ["./src/*"],
+      "@test/*": ["./test/*"],
+      "@server": ["./src"],
+      "@server/*": ["./src/*"]
     },
+    "resolveJsonModule": true,
     "types": ["vitest/globals"],
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
-    "noFallthroughCasesInSwitch": false,
     "noImplicitAny": false,
     "declaration": true,
     "outDir": "./dist",
@@ -23,7 +25,6 @@
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": false,
     "skipLibCheck": true
   },
   "exclude": ["node_modules", "dist"]

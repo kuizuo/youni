@@ -37,6 +37,7 @@ describe('Auth', () => {
       body: {
         username,
         password,
+        type: 'account',
       },
     })
 
@@ -49,7 +50,10 @@ describe('Auth', () => {
     const response = await proxy.app.inject({
       method: 'POST',
       url: '/auth/register',
-      body: mockUser,
+      body: {
+        ...mockUser,
+        type: 'account',
+      },
     })
 
     expect(response.statusCode).toBe(201)

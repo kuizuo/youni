@@ -27,6 +27,7 @@ describe('userService', () => {
 
   it('should throw if existed', async () => {
     const userModel = generateMockUser()
+    await proxy.service.register({ ...userModel, type: 'account' })
 
     await expect(proxy.service.register({ ...userModel, type: 'account' })).rejects.toThrowError()
   })

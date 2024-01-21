@@ -14,6 +14,7 @@ import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/pris
 import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 
 import { UpdateProfileDto } from '../auth/dtos/account.dto'
+import { RoleService } from '../system/role/role.service'
 
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto } from './dto/user.dto'
@@ -25,6 +26,8 @@ export class UserService {
     private readonly redis: Redis,
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
+
+    private readonly roleService: RoleService,
   ) {}
 
   async findUserById(id: string) {
@@ -40,21 +43,27 @@ export class UserService {
   }
 
   async getProfile(uid: string) {
-    const user = await this.prisma.user
-      .findUnique({
+    return await this.prisma.user
+      .findUniqueOrThrow({
         select: {
+          id: true,
+          username: true,
           avatar: true,
           email: true,
           nickname: true,
+          roles: {
+            select: {
+              id: true,
+              name: true,
+              value: true,
+            },
+          },
         },
         where: {
           id: uid,
         },
-        include: { roles: true },
       })
       .catch(resourceNotFoundWrapper(new BizException(ErrorEnum.USER_NOT_FOUND)))
-
-    return user
   }
 
   async updateProfile(uid: string, info: UpdateProfileDto) {
@@ -250,13 +259,15 @@ export class UserService {
       await this.redis.set(`admin:passwordVersion:${id}`, Number.parseInt(v) + 1)
   }
 
-  async register({ username, ...data }: RegisterDto) {
+  async register({ username, type, ...data }: RegisterDto) {
     const exists = await this.prisma.user.exists({
       where: { username },
     })
 
     if (exists)
       throw new BizException(ErrorEnum.SYSTEM_USER_EXISTS)
+
+    const defaultRole = await this.roleService.getDefaultRole()
 
     return await this.prisma.$transaction(async (tx) => {
       const password = hashSync(data.password, 10)
@@ -267,7 +278,11 @@ export class UserService {
           username,
           password,
           status: 1,
+          roles: {
+            connect: { id: defaultRole!.id },
+          },
         },
+
       })
 
       return user

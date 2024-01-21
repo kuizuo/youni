@@ -24,6 +24,7 @@ import { flushSync } from 'react-dom';
 import { LoginResult } from '@server/modules/auth/auth.model';
 import { LoginType } from '@server/modules/auth/auth.constant';
 import { LoginDto } from '@server/modules/auth/auth.dto';
+import { setToken } from '@/utils/auth';
 
 const ActionIcons = () => {
   const langClassName = useEmotionCss(({ token }) => {
@@ -112,7 +113,8 @@ const Login: React.FC = () => {
           defaultMessage: '登录成功！',
         });
         message.success(defaultLoginSuccessMessage);
-        // TODO: set token
+        setToken(response.data?.authToken!)
+
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         history.push(urlParams.get('redirect') || '/');

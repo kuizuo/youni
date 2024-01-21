@@ -2,11 +2,17 @@
 /* eslint-disable */
 // API 更新时间：
 // API 唯一标识：
-import * as pet from './pet';
-import * as store from './store';
-import * as user from './user';
+import * as authrenzhengmokuai from './authrenzhengmokuai';
+import * as accountzhanghumokuai from './accountzhanghumokuai';
+import * as captchayanzhengmamokuai from './captchayanzhengmamokuai';
+import * as systemyonghumokuai from './systemyonghumokuai';
+import * as systemjiaosemokuai from './systemjiaosemokuai';
+import * as healthjiankangjiancha from './healthjiankangjiancha';
 export default {
-  pet,
-  store,
-  user,
+  authrenzhengmokuai,
+  accountzhanghumokuai,
+  captchayanzhengmamokuai,
+  systemyonghumokuai,
+  systemjiaosemokuai,
+  healthjiankangjiancha,
 };
