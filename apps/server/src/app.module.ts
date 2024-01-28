@@ -14,12 +14,14 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
+import { TodoModule } from './modules/todo/todo.module'
 import { UserModule } from './modules/user/user.module'
 import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
 import { HelperModule } from './shared/helper/helper.module'
 import { LoggerModule } from './shared/logger/logger.module'
 import { RedisModule } from './shared/redis/redis.module'
+import { TRPCModule } from './shared/trpc/trpc.module'
 import { SocketModule } from './socket/socket.module'
 
 @Module({
@@ -51,7 +53,8 @@ import { SocketModule } from './socket/socket.module'
     // ChatModule, // 聊天
     // end biz
 
-    // TodoModule,
+    TodoModule,
+    TRPCModule,
   ],
   providers: [
 

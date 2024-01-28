@@ -17,6 +17,7 @@ import type { IAppConfig } from './config'
 import { isDev, isMainProcess } from './global/env'
 import { setupSwagger } from './setup-swagger'
 import { MyLogger } from './shared/logger/logger.service'
+import { TRPCService } from './shared/trpc/trpc.service'
 
 declare const module: any
 
@@ -41,6 +42,9 @@ async function bootstrap() {
   isDev && app.useGlobalInterceptors(new LoggingInterceptor())
 
   app.useWebSocketAdapter(new RedisIoAdapter(app))
+
+  const trpc = app.get(TRPCService)
+  trpc.applyMiddleware(app)
 
   setupSwagger(app, configService)
 

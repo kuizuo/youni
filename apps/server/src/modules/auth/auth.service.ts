@@ -43,6 +43,10 @@ export class AuthService {
     return result
   }
 
+  async validateToken(token: string) {
+    return await this.tokenService.verifyToken(token)
+  }
+
   async sign(
     userId: string,
     role: Role,

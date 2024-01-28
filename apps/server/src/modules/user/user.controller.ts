@@ -62,7 +62,6 @@ export class UserController {
   @Perm(permissions.DELETE)
   async delete(@Param() { id }: IdDto) {
     await this.userService.delete([id])
-    await this.userService.multiForbidden([id])
   }
 
   @Post(':id/password')

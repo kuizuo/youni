@@ -66,11 +66,11 @@ export class TokenService {
       throw new BizException(ErrorEnum.JWTInvalid)
 
     try {
-      const result = this.jwtService.verify(token)
+      const result = this.jwtService.verify(jwt) as IAuthUser
       if (!result)
         return false
 
-      return await this.isTokenInRedis(token)
+      return await this.isTokenInRedis(result.uid)
     }
     catch (error) {
       return false
