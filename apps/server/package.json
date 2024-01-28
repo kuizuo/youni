@@ -96,6 +96,7 @@
     "stacktrace-js": "^2.0.2",
     "svg-captcha": "^1.4.0",
     "systeminformation": "^5.21.16",
+    "trpc-playground": "^1.0.4",
     "ua-parser-js": "^1.0.37",
     "unplugin-swc": "^1.4.4",
     "winston": "^3.11.0",

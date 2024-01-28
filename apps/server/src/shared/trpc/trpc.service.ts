@@ -1,9 +1,11 @@
+import { nextTick } from 'node:process'
+
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, Reflector } from '@nestjs/core'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { fastifyRequestHandler } from '@trpc/server/adapters/fastify'
-
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { getFastifyPlugin } from 'trpc-playground/handlers/fastify'
 
 import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
@@ -92,7 +94,6 @@ export class TRPCService implements OnModuleInit {
       })
 
     const appRouter = trpc.mergeRouters(...(routers as any as Routers))
-
     this.appRouter = appRouter
     return appRouter
   }
@@ -112,6 +113,17 @@ export class TRPCService implements OnModuleInit {
           this.logger.error(error)
         },
       })
+    })
+
+    nextTick(async () => {
+      _app.register(
+        await getFastifyPlugin({
+          router: this.appRouter,
+          trpcApiEndpoint: '/api/trpc',
+          playgroundEndpoint: '/api/trpc-playground',
+        }) as any,
+        { prefix: '/api/trpc-playground' },
+      )
     })
   }
 }
