@@ -8,6 +8,8 @@ import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 import * as svgCaptcha from 'svg-captcha'
 
+import { RedisKeys } from '~/constants/cache.constant'
+import { getRedisKey } from '~/utils/redis.util'
 import { generateUUID } from '~/utils/tool.util'
 
 import { ImageCaptcha } from '../auth.model'
@@ -42,7 +44,7 @@ export class CaptchaController {
       id: generateUUID(),
     }
     // 5分钟过期时间
-    await this.redis.set(`captcha:img:${data.id}`, svg.text, 'EX', 60 * 5)
+    await this.redis.set(getRedisKey(RedisKeys.CaptchaStore, data.id), svg.text, 'EX', 5 * 60)
     return data
   }
 }

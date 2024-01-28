@@ -5,7 +5,9 @@ import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 
 import { BizException } from '~/common/exceptions/biz.exception'
+import { RedisKeys } from '~/constants/cache.constant'
 import { ErrorEnum } from '~/constants/error-code.constant'
+import { getRedisKey } from '~/utils/redis.util'
 
 @Injectable()
 export class CaptchaService {
@@ -19,12 +21,13 @@ export class CaptchaService {
    * 校验图片验证码
    */
   async checkImgCaptcha(id: string, code: string): Promise<void> {
-    const result = await this.redis.get(`captcha:img:${id}`)
+    const key = getRedisKey(RedisKeys.CaptchaStore, id)
+    const result = await this.redis.get(key)
     if (isEmpty(result) || code.toLowerCase() !== result?.toLowerCase())
       throw new BizException(ErrorEnum.INVALID_VERIFICATION_CODE)
 
     // 校验成功后移除验证码
-    await this.redis.del(`captcha:img:${id}`)
+    await this.redis.del(key)
   }
 
   async log(

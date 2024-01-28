@@ -1,5 +1,6 @@
 export enum RedisKeys {
   JWTStore = 'jwt_store',
+  CaptchaStore = 'captcha_store',
   CacheGet = 'cache_get',
 
   AccessIp = 'access_ip',
