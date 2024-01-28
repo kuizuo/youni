@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Menu" ALTER COLUMN "parent" SET DATA TYPE TEXT;

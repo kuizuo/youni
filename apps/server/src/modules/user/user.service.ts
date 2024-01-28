@@ -1,5 +1,5 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { compareSync, hashSync } from 'bcrypt'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
@@ -13,8 +13,8 @@ import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/pris
 
 import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 
+import { Role } from '../auth/auth.constant'
 import { UpdateProfileDto } from '../auth/dtos/account.dto'
-import { RoleService } from '../system/role/role.service'
 
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto } from './dto/user.dto'
@@ -27,7 +27,6 @@ export class UserService {
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
 
-    private readonly roleService: RoleService,
   ) {}
 
   async findUserById(id: string) {
@@ -51,13 +50,7 @@ export class UserService {
           avatar: true,
           email: true,
           nickname: true,
-          roles: {
-            select: {
-              id: true,
-              name: true,
-              value: true,
-            },
-          },
+          role: true,
         },
         where: {
           id: uid,
@@ -95,8 +88,6 @@ export class UserService {
         password: hashSync(newPassword, 10),
       },
     })
-
-    await this.upgradePasswordV(user.id)
   }
 
   async forceUpdatePassword(uid: string, password: string): Promise<void> {
@@ -108,30 +99,23 @@ export class UserService {
         password: hashSync(password, 10),
       },
     })
-    await this.upgradePasswordV(user.id)
   }
 
   async create({
     username,
     password,
-    roleIds,
     ...data
   }: UserDto) {
     const exist = await this.prisma.user.findFirst({ where: { username } })
     if (!isEmpty(exist))
       return exist
 
-    if (!roleIds)
-      roleIds = ['1']
-
     const user = await this.prisma.user.create({
       data: {
         username,
         password: hashSync(password, 10),
         ...data,
-        roles: {
-          connect: roleIds.map(id => ({ id })),
-        },
+        role: Role.User,
       },
     })
 
@@ -140,7 +124,7 @@ export class UserService {
 
   async update(
     id: string,
-    { password, roleIds, status, ...data }: Partial<UserDto>,
+    { password, status, ...data }: Partial<UserDto>,
   ) {
     await this.prisma.$transaction(async (tx) => {
       if (password)
@@ -153,28 +137,7 @@ export class UserService {
           status,
         },
       })
-
-      const user = await tx.user.findUnique({
-        where: { id },
-        include: {
-          roles: true,
-        },
-      })
-
-      await this.prisma.user.update({
-        where: { id },
-        data: {
-          roles: {
-            connect: roleIds?.map(roleId => ({ id: roleId })),
-            disconnect: user?.roles.filter(role => !roleIds?.includes(role.id)).map(role => ({ id: role.id })),
-          },
-        },
-      })
     })
-    if (status === 0) {
-      // 禁用状态
-      await this.forbidden(id)
-    }
   }
 
   async getUserById(id: string) {
@@ -187,21 +150,17 @@ export class UserService {
       where: {
         id,
       },
-      include: {
-        roles: true,
-      },
     })
 
     return user
   }
 
   async delete(userIds: string[]): Promise<void | never> {
-    // FIXME:
-    if (userIds.includes(''))
-      throw new BadRequestException('不能删除root用户!')
-
     await this.prisma.user.deleteMany({
-      where: { id: { in: userIds } },
+      where: {
+        id: { in: userIds },
+        role: { not: Role.Admin },
+      },
     })
   }
 
@@ -220,43 +179,11 @@ export class UserService {
         ...(keyword && { email: { contains: keyword } }),
         ...(status && { status }),
       },
-      include: {
-        roles: true,
-      },
     }).withPages({
       page,
       limit,
       includePageCount: true,
     })
-  }
-
-  async forbidden(uid: string): Promise<void> {
-    await this.redis.del(`admin:passwordVersion:${uid}`)
-    await this.redis.del(`admin:token:${uid}`)
-    await this.redis.del(`admin:perms:${uid}`)
-  }
-
-  async multiForbidden(uids: string[]): Promise<void> {
-    if (uids) {
-      const pvs: string[] = []
-      const ts: string[] = []
-      const ps: string[] = []
-      uids.forEach((e) => {
-        pvs.push(`admin:passwordVersion:${e}`)
-        ts.push(`admin:token:${e}`)
-        ps.push(`admin:perms:${e}`)
-      })
-      await this.redis.del(pvs)
-      await this.redis.del(ts)
-      await this.redis.del(ps)
-    }
-  }
-
-  async upgradePasswordV(id: string): Promise<void> {
-    // admin:passwordVersion:${param.id}
-    const v = await this.redis.get(`admin:passwordVersion:${id}`)
-    if (v)
-      await this.redis.set(`admin:passwordVersion:${id}`, Number.parseInt(v) + 1)
   }
 
   async register({ username, type, ...data }: RegisterDto) {
@@ -267,8 +194,6 @@ export class UserService {
     if (exists)
       throw new BizException(ErrorEnum.SYSTEM_USER_EXISTS)
 
-    const defaultRole = await this.roleService.getDefaultRole()
-
     return await this.prisma.$transaction(async (tx) => {
       const password = hashSync(data.password, 10)
 
@@ -278,9 +203,7 @@ export class UserService {
           username,
           password,
           status: 1,
-          roles: {
-            connect: { id: defaultRole!.id },
-          },
+          role: Role.User,
         },
 
       })

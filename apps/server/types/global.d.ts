@@ -1,10 +1,11 @@
+import { Role } from '~/modules/auth/auth.constant'
+
 declare global {
   interface IAuthUser {
     uid: string
-    pv: number
+    role: Role
     exp?: number
     iat?: number
-    roles?: string[]
   }
 
   export interface IListRespData<T = any> {

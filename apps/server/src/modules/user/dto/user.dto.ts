@@ -9,7 +9,6 @@ import { basePagerSchema } from '~/common/dto/pager.dto'
 const UserInputSchema = UserOptionalDefaultsSchema.extend({
   phone: z.string().optional(),
   remark: z.string().optional(),
-  roleIds: z.array(z.string()).optional(),
 })
 
 export class UserDto extends createZodDto(UserInputSchema) {}

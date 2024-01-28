@@ -7,11 +7,9 @@ import {
 import { Reflector } from '@nestjs/core'
 import { FastifyRequest } from 'fastify'
 
-import { BizException } from '~/common/exceptions/biz.exception'
-import { ErrorEnum } from '~/constants/error-code.constant'
 import { AuthService } from '~/modules/auth/auth.service'
 
-import { ALLOW_ANON_KEY, PERMISSION_KEY, PUBLIC_KEY, Roles } from '../auth.constant'
+import { ALLOW_ANON_KEY, PERMISSION_KEY, PUBLIC_KEY, Role } from '../auth.constant'
 
 @Injectable()
 export class RbacGuard implements CanActivate {
@@ -45,33 +43,31 @@ export class RbacGuard implements CanActivate {
 
     const payloadPermission = this.reflector.getAllAndOverride<
       string | string[]
-    >(PERMISSION_KEY,
-      [context.getHandler(), context.getClass()],
-    )
+    >(PERMISSION_KEY, [context.getHandler(), context.getClass()])
 
     // 控制器没有设置接口权限，则默认通过
     if (!payloadPermission)
       return true
 
     // 管理员放开所有权限
-    if (user.roles?.includes(Roles.ADMIN))
+    if (user.role === Role.Admin)
       return true
 
-    const allPermissions = await this.authService.getPermissionsCache(user.uid) ?? await this.authService.getPermissions(user.uid)
+    // const allPermissions = await this.authService.getPermissionsCache(user.uid) ?? await this.authService.getPermissions(user.uid)
 
-    let canNext = false
+    // let canNext = false
 
-    // handle permission strings
-    if (Array.isArray(payloadPermission)) {
-      // 只要有一个权限满足即可
-      canNext = payloadPermission.every(i => allPermissions.includes(i))
-    }
+    // // handle permission strings
+    // if (Array.isArray(payloadPermission)) {
+    //   // 只要有一个权限满足即可
+    //   canNext = payloadPermission.every(i => allPermissions.includes(i))
+    // }
 
-    if (typeof payloadPermission === 'string')
-      canNext = allPermissions.includes(payloadPermission)
+    // if (typeof payloadPermission === 'string')
+    //   canNext = allPermissions.includes(payloadPermission)
 
-    if (!canNext)
-      throw new BizException(ErrorEnum.NO_PERMISSION)
+    // if (!canNext)
+    //   throw new BizException(ErrorEnum.NO_PERMISSION)
 
     return true
   }

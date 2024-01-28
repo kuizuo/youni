@@ -40,22 +40,22 @@ export class AccountController {
     await this.authService.clearLoginStatus(user.uid)
   }
 
-  @Get('menus')
-  @AllowAnon()
-  async menu(@AuthUser() user: IAuthUser) {
-    return this.authService.getMenus(user.uid)
-  }
-
-  @Get('permissions')
-  @AllowAnon()
-  async permissions(@AuthUser() user: IAuthUser) {
-    return this.authService.getPermissions(user.uid)
-  }
-
   @Put('password')
   @AllowAnon()
   async password(
     @AuthUser() user: IAuthUser, @Body() dto: PasswordUpdateDto): Promise<void> {
     await this.userService.updatePassword(user.uid, dto)
   }
+
+  // @Get('menus')
+  // @AllowAnon()
+  // async menu(@AuthUser() user: IAuthUser) {
+  //   return this.authService.getMenus(user.uid)
+  // }
+
+  // @Get('permissions')
+  // @AllowAnon()
+  // async permissions(@AuthUser() user: IAuthUser) {
+  //   return this.authService.getPermissions(user.uid)
+  // }
 }

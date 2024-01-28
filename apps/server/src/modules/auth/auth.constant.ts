@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 import { LoginTypeEnum } from './auth.dto'
 
+export { Role } from '@youni/prisma'
+
 export const PUBLIC_KEY = '__public_key__'
 
 export const PERMISSION_KEY = '__permission_key__'
@@ -9,6 +11,8 @@ export const PERMISSION_KEY = '__permission_key__'
 export const RESOURCE_KEY = '__resource_key__'
 
 export const ALLOW_ANON_KEY = '__allow_anon_permission_key__'
+
+export type LoginType = z.infer<typeof LoginTypeEnum>
 
 export const AuthStrategy = {
   LOCAL: 'local',
@@ -20,15 +24,3 @@ export const AuthStrategy = {
   GITHUB: 'github',
   GOOGLE: 'google',
 } as const
-
-export const Roles = {
-  ADMIN: 'admin',
-  SELLER: 'seller',
-  EMPLOYER: 'employer',
-  USER: 'user',
-  GUEST: 'guest',
-} as const
-
-export type Role = (typeof Roles)[keyof typeof Roles]
-
-export type LoginType = z.infer<typeof LoginTypeEnum>

@@ -52,6 +52,12 @@ export default [
     component: './TableList',
   },
   {
+    name: '文章列表',
+    icon: 'table',
+    path: '/post',
+    component: './Post',
+  },
+  {
     path: '/',
     redirect: '/welcome',
   },

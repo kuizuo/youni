@@ -6,7 +6,6 @@ import {
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { FastifyRequest } from 'fastify'
-import { isEmpty, isNil } from 'lodash'
 
 import { AuthService } from '~/modules/auth/auth.service'
 
@@ -43,30 +42,13 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
       if (isPublic)
         return true
 
-      if (isEmpty(Authorization))
+      if (!Authorization)
         throw new UnauthorizedException('未登录')
 
-      // 判断 token 是否存在, 如果不存在则认证失败
-      const accessToken = isNil(Authorization)
-        ? undefined
-        : await this.tokenService.checkAccessToken(Authorization!)
-
-      if (!accessToken)
+      const ok = await this.tokenService.verifyToken(Authorization)
+      if (!ok)
         throw new UnauthorizedException('令牌无效')
     }
-
-    // const pv = await this.authService.getPasswordVersionByUid(request.user.uid)
-    // if (pv !== `${request.user.pv}`) {
-    //   // 密码版本不一致，登录期间已更改过密码
-    //   throw new BizException(ErrorEnum.INVALID_LOGIN)
-    // }
-
-    // 不允许多端登录
-    // const cacheToken = await this.authService.getTokenByUid(request.user.uid);
-    // if (Authorization !== cacheToken) {
-    //   // 与redis保存不一致 即二次登录
-    //   throw new ApiException(ErrorEnum.CODE_1106);
-    // }
 
     return result
   }

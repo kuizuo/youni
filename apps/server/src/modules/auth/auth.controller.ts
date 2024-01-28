@@ -24,20 +24,13 @@ export class AuthController {
 
   @Post('login')
   async login(
-    @Body() dto: LoginDto,
-    @Ip() ip: string,
-    @Headers('user-agent') ua: string,
-  ): Promise<LoginResult> {
+    @Body() dto: LoginDto, @Ip() ip: string, @Headers('user-agent') ua: string): Promise<LoginResult> {
     const { username, password, type } = dto
     // await this.captchaService.checkImgCaptcha(captchaId, verifyCode);
 
     const user = await this.authService.validateUser(username, password, type)
 
-    const jwt = await this.authService.sign(
-      user.id,
-      ip,
-      ua,
-    )
+    const jwt = await this.authService.sign(user.id, user.role, { ip, ua })
     return { authToken: jwt }
   }
 

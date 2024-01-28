@@ -42,82 +42,22 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default("")
-  username  String     @unique() @db.VarChar(80)
-  password  String     @db.VarChar(80)
+  id        String    @id @default("")
+  username  String    @unique() @db.VarChar(80)
+  password  String    @db.VarChar(80)
   /// @zod.string.url()
-  avatar    String?    @db.VarChar(1024)
+  avatar    String?   @db.VarChar(1024)
   /// @zod.string.email()
-  email     String?    @unique() @db.VarChar(80)
-  phone     String?    @db.VarChar(255)
-  status    Int?       @default(1) @db.SmallInt
-  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  nickname  String?    @db.VarChar(255)
+  email     String?   @unique() @db.VarChar(80)
+  nickname  String?   @db.VarChar(255)
+  phone     String?   @db.VarChar(255)
+  status    Int?      @default(1) @db.SmallInt
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  role      Role      @default(User)
   provider  Provider?
-  profile   Profile?
-  roles     Role[]
   todos     Todo[]
-  tokens    Token[]
-  LoginLogs LoginLog[]
   Post      Post[]
-}
-
-model Profile {
-  id     String @id @default("")
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique
-}
-
-model Role {
-  id        String   @id @default("")
-  name      String
-  value     String   @unique()
-  remark    String?
-  default   Boolean  @default(false) @db.Boolean
-  status    Int?     @default(1) @db.SmallInt
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at")
-  users     User[]
-  menus     Menu[]
-}
-
-model Menu {
-  id         String   @id @default("")
-  parent     String?
-  path       String?
-  name       String
-  permission String?
-  type       Int      @default(0) @db.SmallInt
-  icon       String?  @default("")
-  order      Int?     @default(0)
-  component  String?
-  keepalive  Int      @default(1) @db.SmallInt
-  show       Int      @default(1) @db.SmallInt
-  status     Int      @default(1) @db.SmallInt
-  external   Int      @default(0) @db.SmallInt
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  roles      Role[]
-}
-
-model Token {
-  id           String      @id @db.VarChar(36)
-  value        String      @db.VarChar(500)
-  expiredAt    DateTime    @db.Timestamptz(6)
-  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  userId       String?
-  user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  refreshToken FreshToken?
-}
-
-model FreshToken {
-  id        String   @id @db.VarChar(36)
-  value     String   @db.VarChar(500)
-  expiredAt DateTime @db.Timestamptz(6)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  tokenId   String?  @unique @db.VarChar(36)
-  token     Token?   @relation(fields: [tokenId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model Todo {
@@ -130,58 +70,6 @@ model Todo {
   user      User     @relation(fields: [userId], references: [id])
 }
 
-model LoginLog {
-  id        String   @id @default("")
-  ip        String?
-  ua        String?  @db.VarChar(500)
-  address   String?
-  provider  String?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at")
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model Config {
-  id        String   @id @default("")
-  key       String   @unique()
-  name      String
-  value     String?
-  remark    String?  @db.VarChar(255)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at")
-}
-
-model Task {
-  id         String    @id @default("")
-  name       String    @unique()
-  service    String    @db.VarChar(255)
-  type       Int       @default(0) @db.SmallInt
-  status     Int       @default(1) @db.SmallInt
-  start_time DateTime? @db.Timestamptz(6)
-  end_time   DateTime? @db.Timestamptz(6)
-  limit      Int?      @default(0)
-  cron       String?   @db.VarChar(255)
-  every      Int?
-  data       String?   @db.Text
-  job_opts   String?   @db.Text
-  remark     String?   @db.VarChar(255)
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-  taskLogs   TaskLog[]
-}
-
-model TaskLog {
-  id           String   @id @default("")
-  status       Int      @default(0) @db.SmallInt
-  detail       String?  @db.Text
-  consume_time Int?     @default(0)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  task_id      String?
-  sys_task     Task?    @relation(fields: [task_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
 model Post {
   id        String   @id @default("")
   title     String
@@ -190,6 +78,11 @@ model Post {
   updatedAt DateTime @updatedAt @map("updated_at")
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  Admin
+  User
 }
 
 enum Provider {

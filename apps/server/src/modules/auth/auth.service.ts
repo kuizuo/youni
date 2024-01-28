@@ -1,6 +1,5 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
-import { Prisma } from '@youni/prisma'
 import { compareSync } from 'bcrypt'
 
 import Redis from 'ioredis'
@@ -9,14 +8,9 @@ import { BizException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { UserService } from '~/modules/user/user.service'
 
-// import { LoginLogService } from '../system/log/services/login-log.service'
+import { sleep } from '~/utils/tool.util'
 
-import { randomValue, sleep } from '~/utils/tool.util'
-
-import { MenuService } from '../system/menu/menu.service'
-import { RoleService } from '../system/role/role.service'
-
-import { LoginType } from './auth.constant'
+import { LoginType, Role } from './auth.constant'
 import { TokenService } from './services/token.service'
 
 @Injectable()
@@ -25,9 +19,6 @@ export class AuthService {
     @InjectRedis()
     private readonly redis: Redis,
     private readonly userService: UserService,
-    private readonly menuService: MenuService,
-    private readonly roleService: RoleService,
-    // private readonly loginLogService: LoginLogService,
     private readonly tokenService: TokenService,
   ) {}
 
@@ -54,101 +45,18 @@ export class AuthService {
 
   async sign(
     userId: string,
-    ip: string,
-    ua: string,
+    role: Role,
+    otherInfo?: {
+      ip: string
+      ua: string
+    },
   ): Promise<string> {
-    const roles = await this.roleService.getRolesByUserId(userId)
+    const token = await this.tokenService.generateToken({ uid: userId, role }, otherInfo)
 
-    const { accessToken, refreshToken } = await this.tokenService.generateToken(userId, roles.map(r => r.value))
-
-    await this.redis.set(`auth:token:${userId}`, accessToken)
-
-    // 设置密码版本号 当密码修改时，版本号+1
-    await this.redis.set(`auth:passwordVersion:${userId}`, 1)
-
-    // 设置菜单权限
-    const permissions = await this.menuService.getPermissions(userId)
-    await this.setPermissionsCache(userId, permissions)
-
-    // await this.loginLogService.create(user.id, ip, ua)
-
-    return accessToken
+    return token
   }
 
-  async loginByGoogle(info: Prisma.UserCreateInput) {
-    const exist = await this.userService.findUserByEmail(info.email!)
-    const role = await this.roleService.getDefaultRole()
-
-    const user = exist ?? await this.userService.create({
-      username: info.email!,
-      email: info.email!,
-      nickname: info.nickname!,
-      avatar: info.avatar!,
-      password: randomValue(10),
-      provider: 'Google',
-      roleIds: [role!.id],
-    })
-
-    return user
-  }
-
-  async loginLog(uid: string, ip: string, ua: string) {
-    // await this.loginLogService.create(uid, ip, ua)
-  }
-
-  async logout(uid: string) {
-    // 删除token
-    await this.userService.forbidden(uid)
-  }
-
-  /**
-   * 重置密码
-   */
-  async resetPassword(username: string, password: string) {
-    const user = await this.userService.findUserByUsername(username)
-
-    await this.userService.forceUpdatePassword(user.id, password)
-  }
-
-  /**
-   * 清除登录状态信息
-   */
   async clearLoginStatus(uid: string): Promise<void> {
-    await this.userService.forbidden(uid)
-  }
-
-  /**
-   * 获取菜单列表
-   */
-  async getMenus(uid: string) {
-    // return this.menuService.getMenus(uid)
-  }
-
-  /**
-   * 获取权限列表
-   */
-  async getPermissions(uid: string) {
-    const permissions = await this.menuService.getPermissions(uid)
-
-    await this.setPermissionsCache(uid, permissions)
-
-    return permissions
-  }
-
-  async getPermissionsCache(uid: string) {
-    const permissionString = await this.redis.get(`auth:permission:${uid}`)
-    return permissionString ? JSON.parse(permissionString) : []
-  }
-
-  async setPermissionsCache(uid: string, permissions: string[]): Promise<void> {
-    await this.redis.set(`auth:permission:${uid}`, JSON.stringify(permissions))
-  }
-
-  async getPasswordVersionByUid(uid: string) {
-    return this.redis.get(`auth:passwordVersion:${uid}`)
-  }
-
-  async getTokenByUid(uid: string) {
-    return this.redis.get(`auth:token:${uid}`)
+    await this.tokenService.removeToken(uid)
   }
 }

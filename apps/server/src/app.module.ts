@@ -14,12 +14,13 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
-import { SystemModule } from './modules/system/system.module'
+import { UserModule } from './modules/user/user.module'
 import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
 import { HelperModule } from './shared/helper/helper.module'
 import { LoggerModule } from './shared/logger/logger.module'
 import { RedisModule } from './shared/redis/redis.module'
+import { SocketModule } from './socket/socket.module'
 
 @Module({
   imports: [
@@ -35,11 +36,9 @@ import { RedisModule } from './shared/redis/redis.module'
     HelperModule,
 
     AuthModule,
-    SystemModule,
-    // TasksModule,
-    // ToolsModule,
+    UserModule,
     HealthModule,
-    // SocketModule,
+    SocketModule,
 
     // biz
     // StoreModule, // 商店

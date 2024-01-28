@@ -7,9 +7,6 @@ import { PassportModule } from '@nestjs/passport'
 import { ISecurityConfig } from '~/config'
 import { isDev } from '~/global/env'
 
-// import { LogModule } from '../system/log/log.module'
-import { MenuModule } from '../system/menu/menu.module'
-import { RoleModule } from '../system/role/role.module'
 import { UserModule } from '../user/user.module'
 
 import { AuthController } from './auth.controller'
@@ -51,9 +48,6 @@ const strategies = [LocalStrategy, JwtStrategy, GoogleStrategy]
     }),
     CaptchaModule,
     UserModule,
-    RoleModule,
-    MenuModule,
-    // LogModule,
   ],
   controllers: [...controllers],
   providers: [...providers, ...strategies],

@@ -1,3 +1,4 @@
+import { Role } from '~/modules/auth/auth.constant'
 import { UserDto } from '~/modules/user/dto/user.dto'
 import { snowflake } from '~/shared/database/snowflake.util'
 import { randomValue } from '~/utils/tool.util'
@@ -10,5 +11,6 @@ export function generateMockUser(): UserDto {
     password: 'mockPassword123',
     email: `mockuser_${snowflake.nextId()}@example.com`,
     provider: 'Github',
+    role: Role.User,
   }
 }
