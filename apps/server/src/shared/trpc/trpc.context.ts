@@ -5,9 +5,9 @@ export async function createContext({
   res,
 }: trpcFastify.CreateFastifyContextOptions) {
   return {
-    authorization: req.headers.authorization as string | null,
-    lang: req.headers['accept-language'],
-    ua: req.headers['user-agent'],
+    req,
+    res,
+    user: { } as IAuthUser,
   }
 }
 export type Context = Awaited<ReturnType<typeof createContext>>

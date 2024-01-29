@@ -40,14 +40,15 @@ export class TRPCService implements OnModuleInit {
 
     this._procedureAuth = trpc.procedure.use(
       trpc.middleware(async (opts) => {
-        const authorization = opts.ctx.authorization
+        const authorization = opts.ctx.req.headers?.authorization
         if (!authorization)
           throw new BizException(ErrorEnum.AUTH_FAILED)
 
         const result = await authService.validateToken(authorization)
-        if (result !== true)
+        if (!result)
           throw new BizException(ErrorEnum.JWTInvalid)
 
+        opts.ctx.user = result
         return opts.next()
       }),
     )

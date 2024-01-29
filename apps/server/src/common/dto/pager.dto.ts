@@ -26,7 +26,7 @@ export class PagerDto extends createZodDto(basePagerSchema) {}
 
 export const baseCursorSchema = z.object({
   limit: z.coerce.number().int().min(1).max(20).default(DEFAULT_LIMIT).optional(),
-  cursor: z.coerce.number().int().min(1).default(1).optional(),
+  cursor: z.coerce.number().int().min(0).default(0).optional(),
 })
 
 export class CursorDto extends createZodDto(baseCursorSchema) {}

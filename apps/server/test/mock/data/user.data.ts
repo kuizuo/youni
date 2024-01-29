@@ -14,3 +14,7 @@ export function generateMockUser(): UserDto {
     role: Role.User,
   }
 }
+
+const mockUserData1 = generateMockUser()
+
+export { mockUserData1 }

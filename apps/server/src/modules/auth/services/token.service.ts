@@ -70,7 +70,11 @@ export class TokenService {
       if (!result)
         return false
 
-      return await this.isTokenInRedis(result.uid)
+      const has = await this.isTokenInRedis(result.uid)
+      if (!has)
+        return false
+
+      return result
     }
     catch (error) {
       return false

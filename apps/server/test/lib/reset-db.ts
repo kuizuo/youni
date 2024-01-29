@@ -13,8 +13,6 @@ export default async () => {
     for (const key of allNames) {
       if (key.startsWith('$'))
         continue
-      if (key === 'category')
-        continue
       tasks.push(c[key].deleteMany())
     }
     await Promise.all(tasks)
