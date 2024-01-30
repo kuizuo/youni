@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
-import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
-import { AllowAnon } from '~/modules/auth/decorators/allow-anon.decorator'
-import { AuthUser } from '~/modules/auth/decorators/auth-user.decorator'
-import { PasswordUpdateDto } from '~/modules/user/dto/password.dto'
+import { ApiSecurityAuth } from '@server/common/decorators/swagger.decorator'
+import { AllowAnon } from '@server/modules/auth/decorators/allow-anon.decorator'
+import { AuthUser } from '@server/modules/auth/decorators/auth-user.decorator'
+import { PasswordUpdateDto } from '@server/modules/user/dto/password.dto'
 
 import { UserService } from '../../user/user.service'
 import { AuthService } from '../auth.service'
@@ -30,7 +30,9 @@ export class AccountController {
   @Put('profile')
   @AllowAnon()
   async updateProfile(
-    @AuthUser() user: IAuthUser, @Body() dto: UpdateProfileDto): Promise<void> {
+    @AuthUser() user: IAuthUser, @Body()
+dto: UpdateProfileDto,
+  ): Promise<void> {
     await this.userService.updateProfile(user.uid, dto)
   }
 
@@ -43,7 +45,9 @@ export class AccountController {
   @Put('password')
   @AllowAnon()
   async password(
-    @AuthUser() user: IAuthUser, @Body() dto: PasswordUpdateDto): Promise<void> {
+    @AuthUser() user: IAuthUser, @Body()
+dto: PasswordUpdateDto,
+  ): Promise<void> {
     await this.userService.updatePassword(user.uid, dto)
   }
 

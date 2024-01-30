@@ -1,11 +1,9 @@
+import { TodoService } from '@server/modules/todo/todo.service'
+import { DatabaseModule } from '@server/shared/database/database.module'
 import { createServiceUnitTestApp } from '@test/helper/create-service-unit'
 import { prisma } from '@test/lib/prisma'
 import { mockUserData1 } from '@test/mock/data/user.data'
 import { Todo, User } from '@youni/prisma'
-
-import { TodoService } from '~/modules/todo/todo.service'
-
-import { DatabaseModule } from '~/shared/database/database.module'
 
 describe('todoService', () => {
   const proxy = createServiceUnitTestApp(TodoService, {

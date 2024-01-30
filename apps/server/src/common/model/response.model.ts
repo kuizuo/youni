@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import {
   RESPONSE_SUCCESS_CODE,
   RESPONSE_SUCCESS_MSG,
-} from '~/constants/response.constant'
+} from '@server/constants/response.constant'
 
 export interface IBaseResponse<T = any> {
   ok?: boolean

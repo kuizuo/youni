@@ -1,10 +1,9 @@
+import { AuthModule } from '@server/modules/auth/auth.module'
 import { createE2EApp } from '@test/helper/create-e2e-app'
 import { prisma } from '@test/lib/prisma'
 import { generateMockUser } from '@test/mock/data/user.data'
 import { hashSync } from 'bcrypt'
 import { pick } from 'lodash'
-
-import { AuthModule } from '~/modules/auth/auth.module'
 
 describe('Auth', () => {
   const proxy = createE2EApp({

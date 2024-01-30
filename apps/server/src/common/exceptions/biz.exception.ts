@@ -1,7 +1,8 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 
-import { ErrorEnum } from '~/constants/error-code.constant'
-import { RESPONSE_SUCCESS_CODE } from '~/constants/response.constant'
+import { ErrorEnum } from '@server/constants/error-code.constant'
+
+import { RESPONSE_SUCCESS_CODE } from '@server/constants/response.constant'
 
 /**
  * 业务异常抛出

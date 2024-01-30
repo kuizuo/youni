@@ -4,8 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 
-import { ISecurityConfig } from '~/config'
-import { isDev } from '~/global/env'
+import { ISecurityConfig } from '@server/config'
+import { isDev } from '@server/global/env'
 
 import { UserModule } from '../user/user.module'
 

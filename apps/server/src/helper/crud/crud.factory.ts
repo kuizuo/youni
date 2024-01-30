@@ -11,18 +11,17 @@ import {
   Put,
   Query,
 } from '@nestjs/common'
+
+import { IdDto } from '@server/common/dto/id.dto'
+import { PagerDto } from '@server/common/dto/pager.dto'
+import { BizException } from '@server/common/exceptions/biz.exception'
+import { ErrorEnum } from '@server/constants/error-code.constant'
+
+import { AllModelNames, ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
+import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 import { createZodDto } from 'nestjs-zod'
 import pluralize from 'pluralize'
-
 import { z } from 'zod'
-
-import { IdDto } from '~/common/dto/id.dto'
-import { PagerDto } from '~/common/dto/pager.dto'
-import { BizException } from '~/common/exceptions/biz.exception'
-import { ErrorEnum } from '~/constants/error-code.constant'
-
-import { AllModelNames, ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
-import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 
 export function BaseCrudFactory<
   M extends AllModelNames,

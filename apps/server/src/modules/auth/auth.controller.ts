@@ -1,8 +1,8 @@
 import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
-import { Ip } from '~/common/decorators/http.decorator'
-import { ProtectKeys } from '~/common/decorators/protect-keys.decorator'
+import { Ip } from '@server/common/decorators/http.decorator'
+import { ProtectKeys } from '@server/common/decorators/protect-keys.decorator'
 
 import { UserService } from '../user/user.service'
 
@@ -24,7 +24,10 @@ export class AuthController {
 
   @Post('login')
   async login(
-    @Body() dto: LoginDto, @Ip() ip: string, @Headers('user-agent') ua: string): Promise<LoginResult> {
+    @Body() dto: LoginDto, @Ip()
+ip: string, @Headers('user-agent')
+ua: string,
+  ): Promise<LoginResult> {
     const { username, password, type } = dto
     // await this.captchaService.checkImgCaptcha(captchaId, verifyCode);
 

@@ -3,10 +3,9 @@ import { Global, Module } from '@nestjs/common'
 
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
+import { IRedisConfig } from '@server/config'
 import { redisStore } from 'cache-manager-ioredis-yet'
 import { RedisOptions } from 'ioredis'
-
-import { IRedisConfig } from '~/config'
 
 import { CacheService } from './cache.service'
 

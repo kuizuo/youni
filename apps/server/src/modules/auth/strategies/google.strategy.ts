@@ -1,9 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
+import { AppConfig, GoogleConfig, IAppConfig, IGoogleConfig } from '@server/config'
 import { User } from '@youni/prisma'
 import { Strategy } from 'passport-google-oauth20'
-
-import { AppConfig, GoogleConfig, IAppConfig, IGoogleConfig } from '~/config'
 
 import { AuthStrategy } from '../auth.constant'
 

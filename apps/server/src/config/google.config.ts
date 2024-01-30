@@ -1,6 +1,6 @@
 import { ConfigType, registerAs } from '@nestjs/config'
 
-import { env } from '~/global/env'
+import { env } from '@server/global/env'
 
 export const GoogleConfig = registerAs('google', () => ({
   clientId: env('GOOGLE_CLIENT_ID'),

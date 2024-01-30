@@ -9,9 +9,8 @@ import {
 import { AuthGuard } from '@nestjs/passport'
 import { ApiTags } from '@nestjs/swagger'
 
+import { AppConfig, IAppConfig } from '@server/config'
 import { FastifyReply, FastifyRequest } from 'fastify'
-
-import { AppConfig, IAppConfig } from '~/config'
 
 import { AuthStrategy } from '../auth.constant'
 import { AuthService } from '../auth.service'
@@ -35,7 +34,9 @@ export class GoogleController {
   @Get('callback')
   @UseGuards(AuthGuard(AuthStrategy.GOOGLE))
   async googleAuthRedirect(
-    @Req() req: FastifyRequest, @Res() res: FastifyReply) {
+    @Req() req: FastifyRequest, @Res()
+res: FastifyReply,
+  ) {
     // FIXME:
     // const user = await this.authService.loginByGoogle(
     //   req.user as unknown as Prisma.UserCreateInput,

@@ -8,9 +8,8 @@ import {
   PrismaHealthIndicator,
 } from '@nestjs/terminus'
 
+import { InjectPrismaClient } from '@server/shared/database/prisma.extension'
 import { PrismaClient } from '@youni/prisma'
-
-import { InjectPrismaClient } from '~/shared/database/prisma.extension'
 
 @ApiTags('Health - 健康检查')
 @Controller('health')

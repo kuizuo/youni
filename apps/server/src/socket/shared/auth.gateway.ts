@@ -6,13 +6,13 @@ import type {
   OnGatewayDisconnect,
 } from '@nestjs/websockets'
 import { WebSocketServer } from '@nestjs/websockets'
-import { Namespace } from 'socket.io'
+
+import { EventBusEvents } from '@server/constants/event-bus.constant'
+
+import { TokenService } from '@server/modules/auth/services/token.service'
+import { CacheService } from '@server/shared/cache/cache.service'
 import type { Socket } from 'socket.io'
-
-import { EventBusEvents } from '~/constants/event-bus.constant'
-
-import { TokenService } from '~/modules/auth/services/token.service'
-import { CacheService } from '~/shared/cache/cache.service'
+import { Namespace } from 'socket.io'
 
 import { BroadcastBaseGateway } from '../base.gateway'
 import { BusinessEvents } from '../business-event.constant'

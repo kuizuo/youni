@@ -1,7 +1,7 @@
-import { Role } from '~/modules/auth/auth.constant'
-import { UserDto } from '~/modules/user/dto/user.dto'
-import { snowflake } from '~/shared/database/snowflake.util'
-import { randomValue } from '~/utils/tool.util'
+import { Role } from '@server/modules/auth/auth.constant'
+import { UserDto } from '@server/modules/user/dto/user.dto'
+import { snowflake } from '@server/shared/database/snowflake.util'
+import { randomValue } from '@server/utils/tool.util'
 
 export function generateMockUser(): UserDto {
   return {

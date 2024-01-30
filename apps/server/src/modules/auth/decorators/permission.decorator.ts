@@ -1,6 +1,6 @@
 import { SetMetadata, applyDecorators } from '@nestjs/common'
 
-import { AllModelNames } from '~/shared/database/prisma.extension'
+import { AllModelNames } from '@server/shared/database/prisma.extension'
 
 import { PERMISSION_KEY } from '../auth.constant'
 

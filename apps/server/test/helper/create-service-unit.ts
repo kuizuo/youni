@@ -2,7 +2,7 @@ import { ModuleMetadata } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 
-import * as config from '@/config'
+import * as config from '@server/config'
 
 type ClassType<T> = new (...args: any[]) => T
 export function createServiceUnitTestApp<T>(Service: ClassType<T>, module?: ModuleMetadata) {

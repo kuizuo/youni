@@ -5,9 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { AuthService } from '@server/modules/auth/auth.service'
 import { FastifyRequest } from 'fastify'
-
-import { AuthService } from '~/modules/auth/auth.service'
 
 import { ALLOW_ANON_KEY, PERMISSION_KEY, PUBLIC_KEY, Role } from '../auth.constant'
 

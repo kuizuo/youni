@@ -4,13 +4,12 @@ import { ApiTags } from '@nestjs/swagger'
 
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler'
 
+import { RedisKeys } from '@server/constants/cache.constant'
+import { getRedisKey } from '@server/utils/redis.util'
+import { generateUUID } from '@server/utils/tool.util'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 import * as svgCaptcha from 'svg-captcha'
-
-import { RedisKeys } from '~/constants/cache.constant'
-import { getRedisKey } from '~/utils/redis.util'
-import { generateUUID } from '~/utils/tool.util'
 
 import { ImageCaptcha } from '../auth.model'
 import { Public } from '../decorators/public.decorator'

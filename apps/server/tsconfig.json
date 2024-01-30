@@ -7,10 +7,7 @@
     "baseUrl": ".",
     "module": "CommonJS",
     "paths": {
-      "~/*": ["./src/*"],
-      "@/*": ["./src/*"],
       "@test/*": ["./test/*"],
-      "@server": ["./src"],
       "@server/*": ["./src/*"]
     },
     "resolveJsonModule": true,

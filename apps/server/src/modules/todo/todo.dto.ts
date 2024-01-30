@@ -1,8 +1,7 @@
+import { basePagerSchema } from '@server/common/dto/pager.dto'
 import { TodoOptionalDefaultsSchema } from '@youni/prisma/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-
-import { basePagerSchema } from '~/common/dto/pager.dto'
 
 export const TodoInputSchema = TodoOptionalDefaultsSchema.pick({
   value: true,

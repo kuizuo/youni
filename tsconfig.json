@@ -17,12 +17,8 @@
       "resolveJsonModule": true,
       "skipLibCheck": true,
       "paths": {
-        "@server/*": [
-          "./apps/server/src/*"
-        ],
-        "@prisma/client": [
-          "./prisma/client"
-        ]
+        "@server/*": ["./apps/server/src/*"],
+        "@prisma/client": ["./prisma/client"]
       },
     },
     "exclude": [

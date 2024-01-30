@@ -1,4 +1,4 @@
-import { Role } from '~/modules/auth/auth.constant'
+import { Role } from '@server/modules/auth/auth.constant'
 
 declare global {
   interface IAuthUser {

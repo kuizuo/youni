@@ -1,10 +1,9 @@
+import { basePagerSchema } from '@server/common/dto/pager.dto'
 import { UserOptionalDefaultsSchema } from '@youni/prisma/zod'
 
 import { createZodDto } from 'nestjs-zod'
 
 import { z } from 'zod'
-
-import { basePagerSchema } from '~/common/dto/pager.dto'
 
 const UserInputSchema = UserOptionalDefaultsSchema.extend({
   phone: z.string().optional(),

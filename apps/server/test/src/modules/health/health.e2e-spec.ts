@@ -1,6 +1,5 @@
+import { HealthModule } from '@server/modules/health/health.module'
 import { createE2EApp } from '@test/helper/create-e2e-app'
-
-import { HealthModule } from '~/modules/health/health.module'
 
 describe('Health', () => {
   const proxy = createE2EApp({

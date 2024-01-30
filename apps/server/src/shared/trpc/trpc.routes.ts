@@ -1,4 +1,4 @@
-import { TodoTrpcRouter } from '~/modules/todo/todo.trpc'
+import { TodoTrpcRouter } from '@server/modules/todo/todo.trpc'
 
 export type TRPCRouters = [
   TodoTrpcRouter,

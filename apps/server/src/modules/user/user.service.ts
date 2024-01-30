@@ -1,17 +1,17 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
+
+import { BizException } from '@server/common/exceptions/biz.exception'
+import { ErrorEnum } from '@server/constants/error-code.constant'
+
+import { RegisterDto } from '@server/modules/auth/auth.dto'
+
+import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
+
+import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 import { compareSync, hashSync } from 'bcrypt'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
-
-import { BizException } from '~/common/exceptions/biz.exception'
-import { ErrorEnum } from '~/constants/error-code.constant'
-
-import { RegisterDto } from '~/modules/auth/auth.dto'
-
-import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
-
-import { resourceNotFoundWrapper } from '~/utils/prisma.util'
 
 import { Role } from '../auth/auth.constant'
 import { UpdateProfileDto } from '../auth/dtos/account.dto'

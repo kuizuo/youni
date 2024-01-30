@@ -1,18 +1,18 @@
 import { Module } from '@nestjs/common'
 
 import { ConfigModule } from '@nestjs/config'
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE, HttpAdapterHost } from '@nestjs/core'
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, HttpAdapterHost } from '@nestjs/core'
 
-import * as config from '~/config'
+import * as config from '@server/config'
 
 import { AllExceptionsFilter } from './common/filters/any-exception.filter'
-
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter'
 import { IdempotenceInterceptor } from './common/interceptors/idempotence.interceptor'
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { AuthModule } from './modules/auth/auth.module'
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
 import { HealthModule } from './modules/health/health.module'
 import { TodoModule } from './modules/todo/todo.module'
 import { UserModule } from './modules/user/user.module'
@@ -74,7 +74,7 @@ import { SocketModule } from './socket/socket.module'
 
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
 
-    // { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
     // { provide: APP_GUARD, useClass: RbacGuard },
   ],
 })

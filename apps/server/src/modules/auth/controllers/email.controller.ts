@@ -2,11 +2,11 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler'
 
-import { Ip } from '~/common/decorators/http.decorator'
-import { MailerService } from '~/shared/helper/mailer/mailer.service'
+import { Ip } from '@server/common/decorators/http.decorator'
+import { MailerService } from '@server/shared/helper/mailer/mailer.service'
 
-import { Public } from '../decorators/public.decorator'
 import { SendEmailCodeDto } from '../captcha/captcha.dto'
+import { Public } from '../decorators/public.decorator'
 
 @ApiTags('Auth - 认证模块')
 @UseGuards(ThrottlerGuard)

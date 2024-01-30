@@ -1,7 +1,6 @@
+import { BizException } from '@server/common/exceptions/biz.exception'
 import { inferRouterInputs, inferRouterOutputs, initTRPC } from '@trpc/server'
 import { z } from 'zod'
-
-import { BizException } from '~/common/exceptions/biz.exception'
 
 import { Context } from './trpc.context'
 import { TRPCService } from './trpc.service'

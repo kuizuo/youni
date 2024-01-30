@@ -1,3 +1,5 @@
+import { Role } from '@server/modules/auth/constants'
+
 export type UserProfile = Awaited<
   ReturnType<import('./user.service').UserService['getProfile']>
 >
@@ -8,9 +10,5 @@ export interface Profile {
   avatar: string | null
   email: string | null
   nickname: string | null
-  roles: {
-    id: string
-    name: string
-    value: string
-  }[]
+  role: Role
 }

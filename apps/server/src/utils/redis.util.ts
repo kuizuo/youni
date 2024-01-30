@@ -1,4 +1,4 @@
-import type { RedisKeys } from '~/constants/cache.constant'
+import type { RedisKeys } from '@server/constants/cache.constant'
 
 type Prefix = 'youni'
 const prefix = 'youni'

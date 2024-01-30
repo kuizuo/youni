@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { MailerModule as NestMailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 
-import { IAppConfig, IMailerConfig } from '~/config'
+import { IAppConfig, IMailerConfig } from '@server/config'
 
 import { MailerService } from './mailer.service'
 

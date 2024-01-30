@@ -1,6 +1,6 @@
 import { Global, Module, Provider } from '@nestjs/common'
 
-import { UserModule } from '~/modules/user/user.module'
+import { UserModule } from '@server/modules/user/user.module'
 
 import { AuthModule } from '../modules/auth/auth.module'
 

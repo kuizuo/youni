@@ -5,18 +5,17 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify'
 
 import { Test } from '@nestjs/testing'
 
-import { fastifyApp } from '~/common/adapters/fastify.adapter'
-import { AllExceptionsFilter } from '~/common/filters/any-exception.filter'
-import { ZodValidationPipe } from '~/common/pipes/zod-validation.pipe'
-import { CacheModule } from '~/shared/cache/cache.module'
-import { DatabaseModule } from '~/shared/database/database.module'
+import { fastifyApp } from '@server/common/adapters/fastify.adapter'
+import { AllExceptionsFilter } from '@server/common/filters/any-exception.filter'
+import { ZodValidationPipe } from '@server/common/pipes/zod-validation.pipe'
+import * as config from '@server/config'
+import { CacheModule } from '@server/shared/cache/cache.module'
+import { DatabaseModule } from '@server/shared/database/database.module'
 
-import { HelperModule } from '~/shared/helper/helper.module'
+import { HelperModule } from '@server/shared/helper/helper.module'
 
-import { LoggerModule } from '~/shared/logger/logger.module'
-import { RedisModule } from '~/shared/redis/redis.module'
-
-import * as config from '@/config'
+import { LoggerModule } from '@server/shared/logger/logger.module'
+import { RedisModule } from '@server/shared/redis/redis.module'
 
 export function createE2EApp(module: ModuleMetadata) {
   const proxy: {

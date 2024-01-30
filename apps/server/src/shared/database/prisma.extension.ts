@@ -1,11 +1,9 @@
 import { Inject } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { DEFAULT_LIMIT } from '@server/common/dto/pager.dto'
+import { DatabaseConfig } from '@server/config/database.config'
 import { PrismaClient, Prisma as _Prisma } from '@youni/prisma'
 import { pagination } from 'prisma-extension-pagination'
-
-import { DEFAULT_LIMIT } from '~/common/dto/pager.dto'
-
-import { DatabaseConfig } from '~/config/database.config'
 
 import { snowflakeGeneratorMiddleware } from './middlewares/snowflake.middleware'
 

@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
-import { BatchDeleteDto } from '~/common/dto/delete.dto'
+import { BatchDeleteDto } from '@server/common/dto/delete.dto'
 
-import { IdDto } from '~/common/dto/id.dto'
+import { IdDto } from '@server/common/dto/id.dto'
 
 import { AuthUser } from '../auth/decorators/auth-user.decorator'
 import { Public } from '../auth/decorators/public.decorator'

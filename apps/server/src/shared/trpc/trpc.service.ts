@@ -3,14 +3,12 @@ import { nextTick } from 'node:process'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, Reflector } from '@nestjs/core'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
+import { BizException } from '@server/common/exceptions/biz.exception'
+import { ErrorEnum } from '@server/constants/error-code.constant'
+import { AuthService } from '@server/modules/auth/auth.service'
 import { fastifyRequestHandler } from '@trpc/server/adapters/fastify'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getFastifyPlugin } from 'trpc-playground/handlers/fastify'
-
-import { BizException } from '~/common/exceptions/biz.exception'
-import { ErrorEnum } from '~/constants/error-code.constant'
-
-import { AuthService } from '~/modules/auth/auth.service'
 
 import { TRPC_ROUTER } from './trpc.constant'
 import { createContext } from './trpc.context'

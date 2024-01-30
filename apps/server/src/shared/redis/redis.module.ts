@@ -2,9 +2,8 @@ import { RedisModule as NestRedisModule } from '@liaoliaots/nestjs-redis'
 import { Global, Module, Provider } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
+import { IRedisConfig } from '@server/config'
 import { RedisOptions } from 'ioredis'
-
-import { IRedisConfig } from '~/config'
 
 import { RedisSubPub } from './redis-subpub'
 import { REDIS_PUBSUB } from './redis.constant'

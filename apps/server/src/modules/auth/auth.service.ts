@@ -1,14 +1,13 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
+
+import { BizException } from '@server/common/exceptions/biz.exception'
+import { ErrorEnum } from '@server/constants/error-code.constant'
+import { UserService } from '@server/modules/user/user.service'
+
+import { sleep } from '@server/utils/tool.util'
 import { compareSync } from 'bcrypt'
-
 import Redis from 'ioredis'
-
-import { BizException } from '~/common/exceptions/biz.exception'
-import { ErrorEnum } from '~/constants/error-code.constant'
-import { UserService } from '~/modules/user/user.service'
-
-import { sleep } from '~/utils/tool.util'
 
 import { LoginType, Role } from './auth.constant'
 import { TokenService } from './services/token.service'

@@ -1,6 +1,6 @@
 import { ConfigType, registerAs } from '@nestjs/config'
 
-import { env } from '~/global/env'
+import { env } from '@server/global/env'
 
 const DATABASE = {
   url: env('DATABASE_URL'),

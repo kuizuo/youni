@@ -6,7 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule'
 
 import { ThrottlerModule } from '@nestjs/throttler'
 
-import { isDev } from '~/global/env'
+import { isDev } from '@server/global/env'
 
 import { CronService } from './cron.service'
 import { MailerModule } from './mailer/mailer.module'

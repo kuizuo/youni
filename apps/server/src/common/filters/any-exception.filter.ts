@@ -6,12 +6,12 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common'
+
+import { BizException } from '@server/common/exceptions/biz.exception'
+import { ErrorEnum } from '@server/constants/error-code.constant'
+
+import { isDev } from '@server/global/env'
 import { FastifyReply, FastifyRequest } from 'fastify'
-
-import { BizException } from '~/common/exceptions/biz.exception'
-import { ErrorEnum } from '~/constants/error-code.constant'
-
-import { isDev } from '~/global/env'
 
 import { ResOp } from '../model/response.model'
 

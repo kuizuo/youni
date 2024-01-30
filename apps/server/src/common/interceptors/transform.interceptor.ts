@@ -5,12 +5,11 @@ import {
   NestInterceptor,
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { ResOp } from '@server/common/model/response.model'
 import { isObjectLike, omit } from 'lodash'
 import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 import snakecaseKeys from 'snakecase-keys'
-
-import { ResOp } from '~/common/model/response.model'
 
 import { BYPASS_KEY } from '../decorators/bypass.decorator'
 import { OMIT_RESPONSE_PROTECT_KEY } from '../decorators/protect-keys.decorator'

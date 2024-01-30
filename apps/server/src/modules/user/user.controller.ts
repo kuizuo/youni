@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
-import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
-import { IdDto } from '~/common/dto/id.dto'
-import { Perm, PermissionValue } from '~/modules/auth/decorators/permission.decorator'
+import { ApiSecurityAuth } from '@server/common/decorators/swagger.decorator'
+import { IdDto } from '@server/common/dto/id.dto'
+import { Perm, PermissionValue } from '@server/modules/auth/decorators/permission.decorator'
 
 import { UserPasswordDto } from './dto/password.dto'
 import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'

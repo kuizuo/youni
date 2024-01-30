@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import { ExtendedPrismaClient, InjectPrismaClient } from '~/shared/database/prisma.extension'
+import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 
 import { TodoDto, TodoPagerDto, TodoUpdateDto } from './todo.dto'
 

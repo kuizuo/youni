@@ -1,8 +1,7 @@
+import { strongPasswordSchema } from '@server/modules/user/dto/password.dto'
 import { UserSchema } from '@youni/prisma/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
-
-import { strongPasswordSchema } from '~/modules/user/dto/password.dto'
 
 export class UpdateProfileDto extends createZodDto(
   UserSchema.pick({

@@ -5,9 +5,8 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
+import { AuthService } from '@server/modules/auth/auth.service'
 import { FastifyRequest } from 'fastify'
-
-import { AuthService } from '~/modules/auth/auth.service'
 
 import { AuthStrategy, PUBLIC_KEY } from '../auth.constant'
 import { TokenService } from '../services/token.service'

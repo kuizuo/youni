@@ -1,10 +1,9 @@
+import { UserService } from '@server/modules/user/user.service'
+import { DatabaseModule } from '@server/shared/database/database.module'
+import { RedisModule } from '@server/shared/redis/redis.module'
 import { createServiceUnitTestApp } from '@test/helper/create-service-unit'
 import { prisma } from '@test/lib/prisma'
 import { generateMockUser } from '@test/mock/data/user.data'
-
-import { UserService } from '~/modules/user/user.service'
-import { DatabaseModule } from '~/shared/database/database.module'
-import { RedisModule } from '~/shared/redis/redis.module'
 
 describe('userService', () => {
   const proxy = createServiceUnitTestApp(UserService, {
