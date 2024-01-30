@@ -1,7 +1,6 @@
-import { Role } from '@model'
-
-function isAdmin(roles: Role[]) {
-  return roles.some(role => role.value === 'admin')
+const Role = {
+  Admin: 'Admin',
+  User: 'User'
 }
 
 /**
@@ -10,6 +9,6 @@ function isAdmin(roles: Role[]) {
 export default function access(initialState: { currentUser?: API.CurrentUser } | undefined) {
   const { currentUser } = initialState ?? {};
   return {
-    canAdmin: currentUser && isAdmin(currentUser!.roles as Role[]),
+    canAdmin: currentUser && currentUser.role === Role.Admin,
   };
 }

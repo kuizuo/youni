@@ -1,52 +1,9 @@
 declare namespace API {
-  // type CurrentUser = {
-  //   name?: string;
-  //   avatar?: string;
-  //   userid?: string;
-  //   email?: string;
-  //   signature?: string;
-  //   title?: string;
-  //   group?: string;
-  //   tags?: { key?: string; label?: string }[];
-  //   notifyCount?: number;
-  //   unreadCount?: number;
-  //   country?: string;
-  //   access?: string;
-  //   geographic?: {
-  //     province?: { label?: string; key?: string };
-  //     city?: { label?: string; key?: string };
-  //   };
-  //   address?: string;
-  //   phone?: string;
-  // };
-
-  type CurrentUser = import('@server/modules/user/user').Profile;
+  type CurrentUser = import('@server/modules/user/user').UserProfile;
 
   type PageParams = {
     current?: number;
     pageSize?: number;
-  };
-
-  type RuleListItem = {
-    key?: number;
-    disabled?: boolean;
-    href?: string;
-    avatar?: string;
-    name?: string;
-    owner?: string;
-    desc?: string;
-    callNo?: number;
-    status?: number;
-    updatedAt?: string;
-    createdAt?: string;
-    progress?: number;
-  };
-
-  type RuleList = {
-    data?: RuleListItem[];
-    /** 列表的内容总数 */
-    total?: number;
-    success?: boolean;
   };
 
   type FakeCaptcha = {

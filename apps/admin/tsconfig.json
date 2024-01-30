@@ -23,9 +23,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@@/*": ["./src/.umi/*"],
-      "@@test/*": ["./src/.umi-test/*"],
       "@server/*": ["../server/src/*"],
       "@model": ["../../prisma/client/index.d.ts"]
     }
-  },
+  }
 }

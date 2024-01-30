@@ -63,7 +63,7 @@ model User {
 model Todo {
   id        String   @id @default("")
   value     String
-  status    Int      @default(0) @db.SmallInt
+  status    Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at")
   userId    String

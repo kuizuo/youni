@@ -53,9 +53,9 @@ describe('todoService', () => {
   })
 
   it('update todo', async () => {
-    const result = await proxy.service.update(todo.id, { status: 1 }, user.id)
+    const result = await proxy.service.update(todo.id, { status: true }, user.id)
 
-    expect(result.status).toEqual(1)
+    expect(result.status).toEqual(true)
   })
 
   it('delete todo', async () => {

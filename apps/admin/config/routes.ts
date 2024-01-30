@@ -46,10 +46,10 @@ export default [
     ],
   },
   {
-    name: 'list.table-list',
+    name: 'Todo list',
     icon: 'table',
-    path: '/list',
-    component: './TableList',
+    path: '/todoList',
+    component: './TodoList',
   },
   {
     name: '文章列表',

@@ -13,7 +13,7 @@ import { TodoService } from './todo.service'
 
 @ApiTags('Business - Todo模块')
 @Public()
-@Controller('todo')
+@Controller('todos')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
@@ -42,7 +42,7 @@ export class TodoController {
     await this.todoService.delete(id, user.uid)
   }
 
-  @Post('batchDelete')
+  @Delete()
   async batchDelete(@Body() dto: BatchDeleteDto, @AuthUser() user: IAuthUser) {
     const { ids } = dto
     await this.todoService.batchDelete(ids, user.uid)

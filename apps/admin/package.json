@@ -75,6 +75,7 @@
     "@umijs/fabric": "^2.14.1",
     "@umijs/lint": "^4.0.52",
     "@umijs/max": "^4.0.52",
+    "@youni/server": "*",
     "cross-env": "^7.0.3",
     "eslint": "^8.34.0",
     "express": "^4.18.2",
