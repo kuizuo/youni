@@ -32,7 +32,7 @@ export class TransformInterceptor implements NestInterceptor {
 
     const bypass = this.reflector.get<boolean>(
       BYPASS_KEY,
-      context.getHandler(),
+      handler,
     )
 
     if (bypass)

@@ -6,6 +6,8 @@ export { Role } from '@youni/prisma'
 
 export const PUBLIC_KEY = '__public_key__'
 
+export const ROLES_KEY = '__roles_key__'
+
 export const PERMISSION_KEY = '__permission_key__'
 
 export const RESOURCE_KEY = '__resource_key__'

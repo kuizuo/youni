@@ -41,7 +41,7 @@ export class UserService {
     return await this.prisma.user.findUniqueOrThrow({ where: { email } })
   }
 
-  async getProfile(uid: string) {
+  async getProfile(userId: string) {
     return await this.prisma.user
       .findUniqueOrThrow({
         select: {
@@ -53,15 +53,15 @@ export class UserService {
           role: true,
         },
         where: {
-          id: uid,
+          id: userId,
         },
       })
       .catch(resourceNotFoundWrapper(new BizException(ErrorEnum.USER_NOT_FOUND)))
   }
 
-  async updateProfile(uid: string, info: UpdateProfileDto) {
+  async updateProfile(userId: string, info: UpdateProfileDto) {
     const user = await this.prisma.user.update({
-      where: { id: uid },
+      where: { id: userId },
       data: {
         ...(info.nickname && { nickname: info.nickname }),
         ...(info.avatar && { avatar: info.avatar }),
@@ -72,9 +72,9 @@ export class UserService {
     return user
   }
 
-  async updatePassword(uid: string, dto: PasswordUpdateDto): Promise<void> {
+  async updatePassword(userId: string, dto: PasswordUpdateDto): Promise<void> {
     const { oldPassword, newPassword } = dto
-    const user = await this.findUserById(uid)
+    const user = await this.findUserById(userId)
 
     const isSamePassword = compareSync(oldPassword, user.password)
 
@@ -83,18 +83,18 @@ export class UserService {
       throw new BizException(ErrorEnum.PASSWORD_MISMATCH)
 
     await this.prisma.user.update({
-      where: { id: uid },
+      where: { id: userId },
       data: {
         password: hashSync(newPassword, 10),
       },
     })
   }
 
-  async forceUpdatePassword(uid: string, password: string): Promise<void> {
-    const user = await this.findUserById(uid)
+  async forceUpdatePassword(userId: string, password: string): Promise<void> {
+    const user = await this.findUserById(userId)
 
     await this.prisma.user.update({
-      where: { id: uid },
+      where: { id: userId },
       data: {
         password: hashSync(password, 10),
       },

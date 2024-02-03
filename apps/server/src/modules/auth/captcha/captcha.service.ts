@@ -33,8 +33,8 @@ export class CaptchaService {
     account: string,
     code: string,
     provider: 'sms' | 'email',
-    uid?: number,
+    userId?: number,
   ): Promise<void> {
-    // await this.captchaLogService.create(account, code, provider, uid)
+    // await this.captchaLogService.create(account, code, provider, userId)
   }
 }

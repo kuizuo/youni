@@ -26,7 +26,7 @@ export class TokenService {
     // store in redis
     await this.redis.hset(
       getRedisKey(RedisKeys.JWTStore),
-      payload.uid,
+      payload.id,
       JSON.stringify({
         token,
         date: new Date().toISOString(),
@@ -37,20 +37,20 @@ export class TokenService {
     return token
   }
 
-  async isTokenInRedis(uid: string) {
-    if (!uid)
+  async isTokenInRedis(userId: string) {
+    if (!userId)
       return false
     const key = getRedisKey(RedisKeys.JWTStore)
-    const has = await this.redis.hexists(key, uid)
+    const has = await this.redis.hexists(key, userId)
     return !!has
   }
 
-  async removeToken(uid: string) {
+  async removeToken(userId: string) {
     const key = getRedisKey(RedisKeys.JWTStore)
 
     await this.redis.hdel(
       key,
-      uid,
+      userId,
     )
   }
 
@@ -70,7 +70,7 @@ export class TokenService {
       if (!result)
         return false
 
-      const has = await this.isTokenInRedis(result.uid)
+      const has = await this.isTokenInRedis(result.id)
       if (!has)
         return false
 

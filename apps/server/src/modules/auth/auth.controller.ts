@@ -20,13 +20,14 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private userService: UserService,
-  ) {}
+  ) { }
 
   @Post('login')
   async login(
-    @Body() dto: LoginDto, @Ip()
-ip: string, @Headers('user-agent')
-ua: string,
+    @Body() dto: LoginDto,
+    @Ip()
+      ip: string, @Headers('user-agent')
+      ua: string,
   ): Promise<LoginResult> {
     const { username, password, type } = dto
     // await this.captchaService.checkImgCaptcha(captchaId, verifyCode);
@@ -38,7 +39,7 @@ ua: string,
   }
 
   @Post('register')
-  @ProtectKeys(['passowrd'])
+  @ProtectKeys(['password'])
   async register(@Body() dto: RegisterDto) {
     return await this.userService.register(dto)
   }

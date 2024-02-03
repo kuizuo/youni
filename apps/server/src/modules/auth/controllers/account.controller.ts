@@ -24,7 +24,7 @@ export class AccountController {
   @Get('profile')
   @AllowAnon()
   async profile(@AuthUser() user: IAuthUser) {
-    return this.userService.getProfile(user.uid)
+    return this.userService.getProfile(user.id)
   }
 
   @Put('profile')
@@ -33,13 +33,13 @@ export class AccountController {
     @AuthUser() user: IAuthUser, @Body()
 dto: UpdateProfileDto,
   ): Promise<void> {
-    await this.userService.updateProfile(user.uid, dto)
+    await this.userService.updateProfile(user.id, dto)
   }
 
   @Get('logout')
   @AllowAnon()
   async logout(@AuthUser() user: IAuthUser): Promise<void> {
-    await this.authService.clearLoginStatus(user.uid)
+    await this.authService.clearLoginStatus(user.id)
   }
 
   @Put('password')
@@ -48,18 +48,18 @@ dto: UpdateProfileDto,
     @AuthUser() user: IAuthUser, @Body()
 dto: PasswordUpdateDto,
   ): Promise<void> {
-    await this.userService.updatePassword(user.uid, dto)
+    await this.userService.updatePassword(user.id, dto)
   }
 
   // @Get('menus')
   // @AllowAnon()
   // async menu(@AuthUser() user: IAuthUser) {
-  //   return this.authService.getMenus(user.uid)
+  //   return this.authService.getMenus(user.id)
   // }
 
   // @Get('permissions')
   // @AllowAnon()
   // async permissions(@AuthUser() user: IAuthUser) {
-  //   return this.authService.getPermissions(user.uid)
+  //   return this.authService.getPermissions(user.id)
   // }
 }

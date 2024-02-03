@@ -13,6 +13,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { AuthModule } from './modules/auth/auth.module'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
+import { CaslModule } from './modules/casl/casl.module'
 import { HealthModule } from './modules/health/health.module'
 import { TodoModule } from './modules/todo/todo.module'
 import { UserModule } from './modules/user/user.module'
@@ -54,6 +55,9 @@ import { SocketModule } from './socket/socket.module'
     // end biz
 
     TodoModule,
+
+    // wait module load
+    CaslModule,
     TRPCModule,
   ],
   providers: [
@@ -75,7 +79,6 @@ import { SocketModule } from './socket/socket.module'
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
 
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-    // { provide: APP_GUARD, useClass: RbacGuard },
   ],
 })
 export class AppModule {}

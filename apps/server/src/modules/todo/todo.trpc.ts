@@ -27,38 +27,40 @@ export class TodoTrpcRouter implements OnModuleInit {
   private createRouter() {
     const procedureAuth = this.trpcService.procedureAuth
     return defineTrpcRouter('todo', {
-      list: procedureAuth.input(TodoPagerDto.schema).query(async (opt) => {
-        const { input, ctx: { user } } = opt
+      list: procedureAuth
+        .input(TodoPagerDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
 
-        return this.todoService.paginate(input, user.uid)
-      }),
+          return this.todoService.paginate(input, user.id)
+        }),
       id: procedureAuth.input(IdDto.schema).query(async (opt) => {
         const { input: { id }, ctx: { user } } = opt
 
-        return this.todoService.findOne(id, user.uid)
+        return this.todoService.findOne(id, user.id)
       }),
       create: procedureAuth.input(TodoInputSchema).mutation(async (opt) => {
         const { input, ctx: { user } } = opt
 
-        return this.todoService.create(input, user.uid)
+        return this.todoService.create(input, user.id)
       }),
       update: procedureAuth.input(TodoInputSchema.extend({ id: z.string() })).mutation(async (opt) => {
         const { input, ctx: { user } } = opt
         const { id, ...data } = input
 
-        return this.todoService.update(id, data, user.uid)
+        return this.todoService.update(id, data, user.id)
       }),
       delete: procedureAuth.input(IdDto.schema).mutation(async (opt) => {
         const { input, ctx: { user } } = opt
         const { id } = input
 
-        return this.todoService.delete(id, user.uid)
+        return this.todoService.delete(id, user.id)
       }),
       batchDelete: procedureAuth.input(BatchDeleteDto.schema).mutation(async (opt) => {
         const { input, ctx: { user } } = opt
         const { ids } = input
 
-        return this.todoService.batchDelete(ids, user.uid)
+        return this.todoService.batchDelete(ids, user.id)
       }),
     })
   }

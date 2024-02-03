@@ -69,6 +69,8 @@ export type ExtendedPrismaClient = ReturnType<typeof getExtendedPrismaClient>
 
 export const extendedPrismaClient = getExtendedPrismaClient({ url: DatabaseConfig().url })
 
+export type ModelName = _Prisma.ModelName
+
 export type AllModelNames = _Prisma.TypeMap['meta']['modelProps']
 
 export type ModelFindInput<T extends AllModelNames> = NonNullable<

@@ -54,12 +54,12 @@ export class AuthService {
       ua: string
     },
   ): Promise<string> {
-    const token = await this.tokenService.generateToken({ uid: userId, role }, otherInfo)
+    const token = await this.tokenService.generateToken({ id: userId, role }, otherInfo)
 
     return token
   }
 
-  async clearLoginStatus(uid: string): Promise<void> {
-    await this.tokenService.removeToken(uid)
+  async clearLoginStatus(userId: string): Promise<void> {
+    await this.tokenService.removeToken(userId)
   }
 }

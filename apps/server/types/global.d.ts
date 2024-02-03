@@ -2,7 +2,7 @@ import { Role } from '@server/modules/auth/auth.constant'
 
 declare global {
   interface IAuthUser {
-    uid: string
+    id: string
     role: Role
     exp?: number
     iat?: number
