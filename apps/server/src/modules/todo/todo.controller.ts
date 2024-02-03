@@ -28,8 +28,8 @@ export class TodoController {
 
   @Get(':id')
   @Policy({ model: 'Todo', action: Action.Read })
-  async findOne(@Param() { id }: IdDto, @AuthUser() user: IAuthUser) {
-    return this.todoService.findOne(id, user.id)
+  async findOne(@Param() { id }: IdDto) {
+    return this.todoService.findOne(id)
   }
 
   @Post()
@@ -40,14 +40,14 @@ export class TodoController {
 
   @Put(':id')
   @Policy({ model: 'Todo', action: Action.Update })
-  async update(@Param() { id }: IdDto, @Body() dto: TodoUpdateDto, @AuthUser() user: IAuthUser) {
-    await this.todoService.update(id, dto, user.id)
+  async update(@Param() { id }: IdDto, @Body() dto: TodoUpdateDto) {
+    await this.todoService.update(id, dto)
   }
 
   @Delete(':id')
   @Policy({ model: 'Todo', action: Action.Delete })
-  async delete(@Param() { id }: IdDto, @AuthUser() user: IAuthUser) {
-    await this.todoService.delete(id, user.id)
+  async delete(@Param() { id }: IdDto) {
+    await this.todoService.delete(id)
   }
 
   @Delete()

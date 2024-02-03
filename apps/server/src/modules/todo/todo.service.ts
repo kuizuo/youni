@@ -25,11 +25,10 @@ export class TodoService {
     }
   }
 
-  async findOne(id: string, userId?: string) {
+  async findOne(id: string) {
     return this.prisma.todo.findUniqueOrThrow({
       where: {
         id,
-        ...(userId && { userId }),
       },
     })
   }
@@ -44,20 +43,21 @@ export class TodoService {
     })
   }
 
-  async update(id: string, dto: TodoUpdateDto, userId: string) {
+  async update(id: string, dto: TodoUpdateDto) {
     return this.prisma.todo.update({
-      where: { id, userId },
+      where: { id },
       data: {
         ...dto,
       },
     })
   }
 
-  async delete(id: string, userId: string) {
-    return this.prisma.todo.delete({ where: {
-      id,
-      userId,
-    } })
+  async delete(id: string) {
+    return this.prisma.todo.delete({
+      where: {
+        id,
+      },
+    })
   }
 
   async batchDelete(ids: string[], userId: string) {

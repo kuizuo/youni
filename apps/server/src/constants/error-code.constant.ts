@@ -25,7 +25,7 @@ export enum ErrorEnum {
   DEFAULT_ROLE_NOT_FOUND = '1022:所分配的默认角色不存在',
 
   INVALID_LOGIN = '1101:登录无效，请重新登录',
-  NO_PERMISSION = '1102:无权限访问',
+  PERMISSION_DENIED = '1102:无权限访问',
   JWTInvalid = '1103:Jwt 无效',
   REQUEST_INVALIDATED = '1104:当前请求已失效',
   ACCOUNT_LOGGED_IN_ELSEWHERE = '1105:您的账号已在其他地方登录',

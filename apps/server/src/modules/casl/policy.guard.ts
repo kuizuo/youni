@@ -1,6 +1,7 @@
 import { subject } from '@casl/ability'
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import { getRequestItemId } from '@server/helper/get-request-item-id.helper'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 
 import { FastifyRequest } from 'fastify'
@@ -36,7 +37,7 @@ export class PolicyGuard implements CanActivate {
     const ability = this.abilityService.abilityMap[model].createForUser(user)
 
     // 获取请求资源的的 id
-    const id = this.getRequestItemId(request)
+    const id = getRequestItemId(request)
 
     if (id) {
       const item = await this.prisma[model].findUniqueOrThrow({
@@ -47,12 +48,5 @@ export class PolicyGuard implements CanActivate {
     }
 
     return ability.can(action, model)
-  }
-
-  private getRequestItemId = (request?: FastifyRequest): string => {
-    const { params = {}, body = {}, query = {} } = (request ?? {}) as any
-    const id = params.id ?? body.id ?? query.id
-
-    return id
   }
 }

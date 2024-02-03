@@ -1,14 +1,18 @@
 import { nextTick } from 'node:process'
 
+import { subject } from '@casl/ability'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, Reflector } from '@nestjs/core'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorEnum } from '@server/constants/error-code.constant'
 import { AuthService } from '@server/modules/auth/auth.service'
+import { AbilityService } from '@server/modules/casl/casl.service'
 import { fastifyRequestHandler } from '@trpc/server/adapters/fastify'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { getFastifyPlugin } from 'trpc-playground/handlers/fastify'
+
+import { ExtendedPrismaClient, InjectPrismaClient } from '../database/prisma.extension'
 
 import { TRPC_ROUTER } from './trpc.constant'
 import { createContext } from './trpc.context'
@@ -33,23 +37,56 @@ export class TRPCService implements OnModuleInit {
     private readonly discovery: DiscoveryService,
     private readonly reflector: Reflector,
     private readonly authService: AuthService,
+    private readonly abilityService: AbilityService,
+    @InjectPrismaClient()
+    private readonly prisma: ExtendedPrismaClient,
   ) {
     this.logger = new Logger('TRPCService')
 
-    this._procedureAuth = trpc.procedure.use(
-      trpc.middleware(async (opts) => {
-        const authorization = opts.ctx.req.headers?.authorization
-        if (!authorization)
-          throw new BizException(ErrorEnum.AUTH_FAILED)
+    this._procedureAuth = trpc.procedure
+    // auth middleware
+      .use(
+        trpc.middleware(async (opts) => {
+          const authorization = opts.ctx.req.headers?.authorization
+          if (!authorization)
+            throw new BizException(ErrorEnum.AUTH_FAILED)
 
-        const result = await authService.validateToken(authorization)
-        if (!result)
-          throw new BizException(ErrorEnum.JWTInvalid)
+          const result = await authService.validateToken(authorization)
+          if (!result)
+            throw new BizException(ErrorEnum.JWTInvalid)
 
-        opts.ctx.user = result
+          opts.ctx.user = result
+
+          return opts.next()
+        }),
+      )
+    // police middleware
+      .use(trpc.middleware(async (opts) => {
+        const { rawInput, ctx: { user }, meta } = opts
+
+        if (meta) {
+          const { action, model } = meta
+          const ability = this.abilityService.abilityMap[model].createForUser(user)
+
+          const id = (rawInput as { id: string }).id
+
+          if (id) {
+            const item = await this.prisma[model].findUniqueOrThrow({
+              where: { id },
+            })
+
+            const result = ability.can(action, subject(model, item))
+            if (!result)
+              throw new BizException(ErrorEnum.PERMISSION_DENIED)
+          }
+
+          const result = ability.can(action, model)
+          if (!result)
+            throw new BizException(ErrorEnum.PERMISSION_DENIED)
+        }
+
         return opts.next()
-      }),
-    )
+      }))
   }
 
   public get trpc() {

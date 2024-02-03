@@ -3,9 +3,10 @@ import { inferRouterInputs, inferRouterOutputs, initTRPC } from '@trpc/server'
 import { z } from 'zod'
 
 import { Context } from './trpc.context'
+import { Meta } from './trpc.meta'
 import { TRPCService } from './trpc.service'
 
-export const trpc = initTRPC.context<Context>().create({
+export const trpc = initTRPC.context<Context>().meta<Meta>().create({
   errorFormatter(opts) {
     const { shape, error, ctx } = opts
     let bizMessage = ''

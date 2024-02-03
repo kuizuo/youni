@@ -44,7 +44,7 @@ describe('todoService', () => {
   })
 
   it('get todo by id successful', async () => {
-    const result = await proxy.service.findOne(todo.id, user.id)
+    const result = await proxy.service.findOne(todo.id)
     expect(result).toBeDefined()
   })
 
@@ -53,13 +53,13 @@ describe('todoService', () => {
   })
 
   it('update todo', async () => {
-    const result = await proxy.service.update(todo.id, { status: true }, user.id)
+    const result = await proxy.service.update(todo.id, { status: true })
 
     expect(result.status).toEqual(true)
   })
 
   it('delete todo', async () => {
-    await proxy.service.delete(todo.id, user.id)
+    await proxy.service.delete(todo.id)
 
     expect(proxy.service.findOne(todo.id)).rejects.toThrowErrorMatchingInlineSnapshot(`[NotFoundError: No Todo found]`)
   })
