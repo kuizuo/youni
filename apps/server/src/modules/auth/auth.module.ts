@@ -1,4 +1,4 @@
-import { Module, Provider } from '@nestjs/common'
+import { Global, Module, Provider } from '@nestjs/common'
 
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
@@ -53,4 +53,5 @@ const strategies = [LocalStrategy, JwtStrategy, GoogleStrategy]
   providers: [...providers, ...strategies],
   exports: [JwtModule, ...providers],
 })
+@Global()
 export class AuthModule {}

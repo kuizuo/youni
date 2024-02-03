@@ -11,7 +11,10 @@ import {
 import { InjectPrismaClient } from '@server/shared/database/prisma.extension'
 import { PrismaClient } from '@youni/prisma'
 
+import { Public } from '../auth/decorators/public.decorator'
+
 @ApiTags('Health - 健康检查')
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(

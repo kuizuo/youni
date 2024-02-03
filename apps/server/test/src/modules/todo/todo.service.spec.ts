@@ -2,6 +2,7 @@ import { TodoService } from '@server/modules/todo/todo.service'
 import { DatabaseModule } from '@server/shared/database/database.module'
 import { createServiceUnitTestApp } from '@test/helper/create-service-unit'
 import { prisma } from '@test/lib/prisma'
+import resetDb from '@test/lib/reset-db'
 import { mockUserData1 } from '@test/mock/data/user.data'
 import { Todo, User } from '@youni/prisma'
 
@@ -14,6 +15,7 @@ describe('todoService', () => {
   let todo: Todo
 
   beforeAll(async () => {
+    await resetDb()
     user = await prisma.user.create({
       data: mockUserData1,
     })

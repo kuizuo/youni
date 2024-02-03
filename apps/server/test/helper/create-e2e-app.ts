@@ -1,6 +1,6 @@
 import { ModuleMetadata } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { APP_FILTER, APP_PIPE } from '@nestjs/core'
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
 
 import { Test } from '@nestjs/testing'
@@ -9,6 +9,9 @@ import { fastifyApp } from '@server/common/adapters/fastify.adapter'
 import { AllExceptionsFilter } from '@server/common/filters/any-exception.filter'
 import { ZodValidationPipe } from '@server/common/pipes/zod-validation.pipe'
 import * as config from '@server/config'
+import { AuthModule } from '@server/modules/auth/auth.module'
+import { JwtAuthGuard } from '@server/modules/auth/guards/jwt-auth.guard'
+import { CaslModule } from '@server/modules/casl/casl.module'
 import { CacheModule } from '@server/shared/cache/cache.module'
 import { DatabaseModule } from '@server/shared/database/database.module'
 
@@ -16,6 +19,7 @@ import { HelperModule } from '@server/shared/helper/helper.module'
 
 import { LoggerModule } from '@server/shared/logger/logger.module'
 import { RedisModule } from '@server/shared/redis/redis.module'
+import { TRPCModule } from '@server/shared/trpc/trpc.module'
 
 export function createE2EApp(module: ModuleMetadata) {
   const proxy: {
@@ -37,6 +41,10 @@ export function createE2EApp(module: ModuleMetadata) {
       DatabaseModule,
       RedisModule,
       HelperModule,
+
+      AuthModule,
+      CaslModule,
+      TRPCModule,
     )
     nestModule.providers ||= []
 
@@ -53,6 +61,7 @@ export function createE2EApp(module: ModuleMetadata) {
         provide: APP_FILTER,
         useClass: AllExceptionsFilter,
       },
+      { provide: APP_GUARD, useClass: JwtAuthGuard },
     )
 
     const testingModule = await Test.createTestingModule(nestModule).compile()

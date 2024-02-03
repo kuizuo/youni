@@ -1,5 +1,5 @@
 import { subject } from '@casl/ability'
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { getRequestItemId } from '@server/helper/get-request-item-id.helper'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
@@ -22,6 +22,9 @@ export class PolicyGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<FastifyRequest>()
 
     const { user } = context.switchToHttp().getRequest()
+
+    if (!user)
+      throw new UnauthorizedException()
 
     const policy = this.reflector.getAllAndOverride<PolicyObject>(CHECK_POLICY_KEY, [
       context.getHandler(),
