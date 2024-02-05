@@ -1,30 +1,33 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 
-import { ErrorEnum } from '@server/constants/error-code.constant'
-
-import { RESPONSE_SUCCESS_CODE } from '@server/constants/response.constant'
+import { ErrorCode, ErrorCodeEnum } from '@server/constants/error-code.constant'
 
 /**
  * 业务异常抛出
  */
 export class BizException extends HttpException {
-  private errorCode: number
+  public bizCode: ErrorCodeEnum
 
-  constructor(error: ErrorEnum | string) {
-    // 如果是非 ErrorEnum
-    if (!error.includes(':')) {
+  constructor(message: string)
+  constructor(code: ErrorCodeEnum)
+  constructor(arg: any) {
+    if (typeof arg == 'string') {
+      const message = arg
       super(
         HttpException.createBody({
-          code: RESPONSE_SUCCESS_CODE,
-          message: error,
+          code: ErrorCodeEnum.Default,
+          message,
         }),
         HttpStatus.OK,
       )
-      this.errorCode = RESPONSE_SUCCESS_CODE
+      this.bizCode = ErrorCodeEnum.Default
+
       return
     }
 
-    const [code, message] = error.split(':')
+    const code = arg as ErrorCodeEnum
+    const message = ErrorCode[code]
+
     super(
       HttpException.createBody({
         code,
@@ -33,11 +36,7 @@ export class BizException extends HttpException {
       HttpStatus.OK,
     )
 
-    this.errorCode = Number(code)
-  }
-
-  getErrorCode(): number {
-    return this.errorCode
+    this.bizCode = code
   }
 }
 

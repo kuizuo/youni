@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { RedisKeys } from '@server/constants/cache.constant'
-import { ErrorEnum } from '@server/constants/error-code.constant'
+import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { getRedisKey } from '@server/utils/redis.util'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
@@ -23,7 +23,7 @@ export class CaptchaService {
     const key = getRedisKey(RedisKeys.CaptchaStore, id)
     const result = await this.redis.get(key)
     if (isEmpty(result) || code.toLowerCase() !== result?.toLowerCase())
-      throw new BizException(ErrorEnum.INVALID_VERIFICATION_CODE)
+      throw new BizException(ErrorCodeEnum.VerificationCodeError)
 
     // 校验成功后移除验证码
     await this.redis.del(key)

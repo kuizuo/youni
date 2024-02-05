@@ -1,17 +1,18 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 
 import { MailerService as NestMailerService } from '@nestjs-modules/mailer'
 
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { AppConfig, IAppConfig } from '@server/config'
-import { ErrorEnum } from '@server/constants/error-code.constant'
+import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { randomValue } from '@server/utils/tool.util'
 import dayjs from 'dayjs'
 import Redis from 'ioredis'
 
 @Injectable()
 export class MailerService {
+  private readonly logger = new Logger(MailerService.name)
   constructor(
     @Inject(AppConfig.KEY) private appConfig: IAppConfig,
     @InjectRedis() private redis: Redis,
@@ -41,7 +42,7 @@ export class MailerService {
   async checkCode(to, code) {
     const ret = await this.redis.get(`captcha:${to}`)
     if (ret !== code)
-      throw new BizException(ErrorEnum.INVALID_VERIFICATION_CODE)
+      throw new BizException(ErrorCodeEnum.VerificationCodeError)
 
     await this.redis.del(`captcha:${to}`)
   }
@@ -52,13 +53,13 @@ export class MailerService {
     // 1分钟最多接收1条
     const limit = await this.redis.get(`captcha:${to}:limit`)
     if (limit)
-      throw new BizException(ErrorEnum.TOO_MANY_REQUESTS)
+      throw new BizException(ErrorCodeEnum.RequestTooFast)
 
     // 1天一个邮箱最多接收5条
     const limitCountOfDay: string | number = Number(await this.redis.get(`captcha:${to}:limit-day`)) || 0
     if (limitCountOfDay > LIMIT_TIME) {
       throw new BizException(
-        ErrorEnum.MAXIMUM_FIVE_VERIFICATION_CODES_PER_DAY,
+        ErrorCodeEnum.MaximumFiveVerificationCodesPerDay,
       )
     }
   }
@@ -99,8 +100,8 @@ export class MailerService {
       })
     }
     catch (error) {
-      console.log(error)
-      throw new BizException(ErrorEnum.VERIFICATION_CODE_SEND_FAILED)
+      this.logger.error(error)
+      throw new BizException(ErrorCodeEnum.VerificationCodeSendFail)
     }
 
     return {

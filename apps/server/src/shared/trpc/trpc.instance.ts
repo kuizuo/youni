@@ -17,7 +17,7 @@ export const trpc = initTRPC.context<Context>().meta<Meta>().create({
 
       bizMessage
         = BizError.message
-      code = BizError.getErrorCode()
+      code = BizError.bizCode
     }
 
     if (error.cause instanceof z.ZodError) {
@@ -29,7 +29,6 @@ export const trpc = initTRPC.context<Context>().meta<Meta>().create({
     return {
       ...shape,
       message: bizMessage || shape.message,
-      bizCode: code,
       data: {},
     }
   },

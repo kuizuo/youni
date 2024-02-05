@@ -2,7 +2,7 @@ import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
 
 import { BizException } from '@server/common/exceptions/biz.exception'
-import { ErrorEnum } from '@server/constants/error-code.constant'
+import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 
 import { RegisterDto } from '@server/modules/auth/auth.dto'
 
@@ -56,7 +56,7 @@ export class UserService {
           id: userId,
         },
       })
-      .catch(resourceNotFoundWrapper(new BizException(ErrorEnum.USER_NOT_FOUND)))
+      .catch(resourceNotFoundWrapper(new BizException(ErrorCodeEnum.UserNotFound)))
   }
 
   async updateProfile(userId: string, info: UpdateProfileDto) {
@@ -80,7 +80,7 @@ export class UserService {
 
     // 原密码不一致，不允许更改
     if (!isSamePassword)
-      throw new BizException(ErrorEnum.PASSWORD_MISMATCH)
+      throw new BizException(ErrorCodeEnum.PasswordMismatch)
 
     await this.prisma.user.update({
       where: { id: userId },
@@ -192,7 +192,7 @@ export class UserService {
     })
 
     if (exists)
-      throw new BizException(ErrorEnum.SYSTEM_USER_EXISTS)
+      throw new BizException('系统用户已存在')
 
     return await this.prisma.$transaction(async (tx) => {
       const password = hashSync(data.password, 10)

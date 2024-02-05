@@ -5,7 +5,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, Reflector } from '@nestjs/core'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
 import { BizException } from '@server/common/exceptions/biz.exception'
-import { ErrorEnum } from '@server/constants/error-code.constant'
+import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { AuthService } from '@server/modules/auth/auth.service'
 import { AbilityService } from '@server/modules/casl/casl.service'
 import { fastifyRequestHandler } from '@trpc/server/adapters/fastify'
@@ -49,11 +49,11 @@ export class TRPCService implements OnModuleInit {
         trpc.middleware(async (opts) => {
           const authorization = opts.ctx.req.headers?.authorization
           if (!authorization)
-            throw new BizException(ErrorEnum.AUTH_FAILED)
+            throw new BizException(ErrorCodeEnum.AuthFail)
 
           const result = await authService.validateToken(authorization)
           if (!result)
-            throw new BizException(ErrorEnum.JWTInvalid)
+            throw new BizException(ErrorCodeEnum.JWTInvalid)
 
           opts.ctx.user = result
 
@@ -77,12 +77,12 @@ export class TRPCService implements OnModuleInit {
 
             const result = ability.can(action, subject(model, item))
             if (!result)
-              throw new BizException(ErrorEnum.PERMISSION_DENIED)
+              throw new BizException(ErrorCodeEnum.ResourceNotFound)
           }
 
           const result = ability.can(action, model)
           if (!result)
-            throw new BizException(ErrorEnum.PERMISSION_DENIED)
+            throw new BizException(ErrorCodeEnum.NoPermission)
         }
 
         return opts.next()

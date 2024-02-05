@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
+import { ErrorCode, ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { AuthService } from '@server/modules/auth/auth.service'
 import { FastifyRequest } from 'fastify'
 
@@ -46,7 +47,7 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
 
       const ok = await this.tokenService.verifyToken(Authorization)
       if (!ok)
-        throw new UnauthorizedException('令牌无效')
+        throw new UnauthorizedException(ErrorCode[ErrorCodeEnum.JWTInvalid])
     }
 
     return result

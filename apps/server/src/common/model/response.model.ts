@@ -8,7 +8,7 @@ import {
 export interface IBaseResponse<T = any> {
   ok?: boolean
   code?: number
-  msg?: string
+  message?: string
   data?: T
 }
 
@@ -20,19 +20,19 @@ export class ResOp<T = any> {
   code: number
 
   @ApiProperty({ type: 'string', default: RESPONSE_SUCCESS_MSG })
-  msg: string
+  message: string
 
   @ApiProperty({ type: 'object' })
   data?: T
 
   constructor({
     code,
-    msg,
+    message,
     ok,
     data,
   }: IBaseResponse<T>) {
     this.code = code ?? RESPONSE_SUCCESS_CODE
-    this.msg = msg ?? RESPONSE_SUCCESS_MSG
+    this.message = message ?? RESPONSE_SUCCESS_MSG
     this.ok = ok ?? true
 
     if (data)

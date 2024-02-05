@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common'
 
 import { BizException } from '@server/common/exceptions/biz.exception'
-import { ErrorEnum } from '@server/constants/error-code.constant'
+import { ErrorCode, ErrorCodeEnum } from '@server/constants/error-code.constant'
 
 import { isDev } from '@server/global/env'
 import { FastifyReply, FastifyRequest } from 'fastify'
@@ -47,7 +47,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         || (exception as myError)?.statusCode
         || HttpStatus.INTERNAL_SERVER_ERROR
 
-    let msg
+    let message
       = (exception as any)?.response?.message
       || (exception as myError)?.message
       || `${exception}`
@@ -61,21 +61,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       // 生产环境下隐藏错误信息
       if (!isDev)
-        msg = ErrorEnum.SERVER_ERROR?.split(':')[1]
+        message = ErrorCode[ErrorCodeEnum.ServerError]
     }
     else {
       this.logger.warn(
-        `错误信息：(${status}) ${msg} Path: ${decodeURI(url)}`,
+        `错误信息：(${status}) ${message} Path: ${decodeURI(url)}`,
       )
     }
 
     const errorCode: number
-      = exception instanceof BizException ? exception.getErrorCode() : status
+      = exception instanceof BizException ? exception.bizCode : status
 
     // 返回基础响应结果
     const resBody = new ResOp({
       code: errorCode,
-      msg,
+      message,
       ok: false,
     })
 

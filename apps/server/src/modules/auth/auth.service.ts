@@ -2,7 +2,7 @@ import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
 
 import { BizException } from '@server/common/exceptions/biz.exception'
-import { ErrorEnum } from '@server/constants/error-code.constant'
+import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { UserService } from '@server/modules/user/user.service'
 
 import { sleep } from '@server/utils/tool.util'
@@ -29,13 +29,13 @@ export class AuthService {
         : null
 
     if (!user)
-      throw new BizException(ErrorEnum.USER_NOT_FOUND)
+      throw new BizException(ErrorCodeEnum.UserNotFound)
 
     const isSamePassword = compareSync(password, user.password)
 
     if (!isSamePassword) {
       await sleep(1500)
-      throw new BizException(ErrorEnum.INVALID_USERNAME_PASSWORD)
+      throw new BizException(ErrorCodeEnum.PasswordMismatch)
     }
 
     const { password: _p, ...result } = user

@@ -15,7 +15,7 @@ import {
 import { IdDto } from '@server/common/dto/id.dto'
 import { PagerDto } from '@server/common/dto/pager.dto'
 import { BizException } from '@server/common/exceptions/biz.exception'
-import { ErrorEnum } from '@server/constants/error-code.constant'
+import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 
 import { AllModelNames, ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
@@ -76,7 +76,7 @@ export function BaseCrudFactory<
       })
         .catch(
           resourceNotFoundWrapper(
-            new BizException(ErrorEnum.RESOURCE_NOT_FOUND),
+            new BizException(ErrorCodeEnum.ResourceNotFound),
           ),
         )
     }
