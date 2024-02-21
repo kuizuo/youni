@@ -1,6 +1,7 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-export default ({ config }: ConfigContext): ExpoConfig => ({
+export default ({ config }: ConfigContext): ExpoConfig & { hostUri?: string } => ({
+  ...config,
   name: "mobile",
   slug: "youni",
   version: "1.0.0",
@@ -17,6 +18,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "**/*"
   ],
   ios: {
+    bundleIdentifier: "youni.kuizuo.app",
     supportsTablet: true
   },
   android: {

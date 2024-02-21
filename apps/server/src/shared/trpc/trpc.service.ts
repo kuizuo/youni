@@ -44,7 +44,7 @@ export class TRPCService implements OnModuleInit {
     this.logger = new Logger('TRPCService')
 
     this._procedureAuth = trpc.procedure
-    // auth middleware
+      // auth middleware
       .use(
         trpc.middleware(async (opts) => {
           const authorization = opts.ctx.req.headers?.authorization
@@ -60,7 +60,7 @@ export class TRPCService implements OnModuleInit {
           return opts.next()
         }),
       )
-    // police middleware
+      // police middleware
       .use(trpc.middleware(async (opts) => {
         const { rawInput, ctx: { user }, meta } = opts
 

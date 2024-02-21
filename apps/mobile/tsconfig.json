@@ -4,7 +4,8 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@server/*": ["../server/src/*"]
     },
     "types": [
       "nativewind/types"

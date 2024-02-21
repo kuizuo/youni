@@ -180,12 +180,27 @@ importers:
       '@react-navigation/native':
         specifier: ^6.0.2
         version: 6.1.10(react-native@0.73.4)(react@18.2.0)
+      '@tanstack/react-query':
+        specifier: ^5.22.2
+        version: 5.22.2(react@18.2.0)
+      '@trpc/client':
+        specifier: ^10.45.1
+        version: 10.45.1(@trpc/server@10.45.1)
+      '@trpc/react-query':
+        specifier: ^10.45.1
+        version: 10.45.1(@tanstack/react-query@5.22.2)(@trpc/client@10.45.1)(@trpc/server@10.45.1)(react-dom@18.2.0)(react@18.2.0)
+      '@trpc/server':
+        specifier: ^10.45.0
+        version: 10.45.1
       '@youni/tailwind-config':
         specifier: workspace:*
         version: link:../../tooling/tailwind
       expo:
         specifier: ~50.0.7
         version: 50.0.7(@babel/core@7.23.9)(@react-native/babel-preset@0.73.21)
+      expo-constants:
+        specifier: ^15.4.5
+        version: 15.4.5(expo@50.0.7)
       expo-dev-client:
         specifier: ~3.3.8
         version: 3.3.8(expo@50.0.7)
@@ -253,6 +268,9 @@ importers:
       react-test-renderer:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
+      tailwindcss:
+        specifier: ^3.4.1
+        version: 3.4.1
       typescript:
         specifier: ^5.1.3
         version: 5.3.3
@@ -691,7 +709,6 @@ packages:
   /@alloc/quick-lru@5.2.0:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
-    dev: false
 
   /@ampproject/remapping@2.2.1:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}
@@ -7242,6 +7259,10 @@ packages:
     resolution: {integrity: sha512-DJSilV5+ytBP1FbFcEJovv4rnnm/CokuVvrBEtW/Va9DvuJ3HksbXUJEpI0aV1KtuL4ZoO9AVE6PyNLzF7tLeA==}
     dev: true
 
+  /@tanstack/query-core@5.22.2:
+    resolution: {integrity: sha512-z3PwKFUFACMUqe1eyesCIKg3Jv1mysSrYfrEW5ww5DCDUD4zlpTKBvUDaEjsfZzL3ULrFLDM9yVUxI/fega1Qg==}
+    dev: false
+
   /@tanstack/react-query-devtools@4.36.1(@tanstack/react-query@4.36.1)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-WYku83CKP3OevnYSG8Y/QO9g0rT75v1om5IvcWUwiUZJ4LanYGLVCZ8TdFG5jfsq4Ej/lu2wwDAULEUnRIMBSw==}
     peerDependencies:
@@ -7274,6 +7295,15 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: true
+
+  /@tanstack/react-query@5.22.2(react@18.2.0):
+    resolution: {integrity: sha512-TaxJDRzJ8/NWRT4lY2jguKCrNI6MRN+67dELzPjNUlvqzTxGANlMp68l7aC7hG8Bd1uHNxHl7ihv7MT50i/43A==}
+    peerDependencies:
+      react: ^18.0.0
+    dependencies:
+      '@tanstack/query-core': 5.22.2
+      react: 18.2.0
+    dev: false
 
   /@testing-library/dom@8.20.1:
     resolution: {integrity: sha512-/DiOQ5xBxgdYRC8LNk7U+RWat0S3qRLeIw3ZIkMQ9kkVlRmwD/Eg8k8CqIpD6GW7u20JIUOfMKbxtiLutpjQ4g==}
@@ -7346,6 +7376,30 @@ packages:
       ts-essentials: 9.4.1(typescript@5.3.3)
     transitivePeerDependencies:
       - typescript
+    dev: false
+
+  /@trpc/client@10.45.1(@trpc/server@10.45.1):
+    resolution: {integrity: sha512-nVbAk1xpIiI64WgzXGgfxPOGgHoYvffn1IsjV1D/Ri7DL4BKuo2qtZ7UQ+OuHkzH2M8j4ikSVBDpk545fOdvpw==}
+    peerDependencies:
+      '@trpc/server': 10.45.1
+    dependencies:
+      '@trpc/server': 10.45.1
+    dev: false
+
+  /@trpc/react-query@10.45.1(@tanstack/react-query@5.22.2)(@trpc/client@10.45.1)(@trpc/server@10.45.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-48OOMpwVjQFUQJqlp9/tW1lqESZg9YEqB5iVci7mYaDzZPEs/YUcV85XKvYzgeW+7K9oShX/JMVce8muON/6uQ==}
+    peerDependencies:
+      '@tanstack/react-query': ^4.18.0
+      '@trpc/client': 10.45.1
+      '@trpc/server': 10.45.1
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      '@tanstack/react-query': 5.22.2(react@18.2.0)
+      '@trpc/client': 10.45.1(@trpc/server@10.45.1)
+      '@trpc/server': 10.45.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     dev: false
 
   /@trpc/server@10.45.1:
@@ -11151,7 +11205,6 @@ packages:
   /camelcase-css@2.0.1:
     resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
     engines: {node: '>= 6'}
-    dev: false
 
   /camelcase-keys@6.2.2:
     resolution: {integrity: sha512-YrwaA0vEKazPBkn0ipTiMpSajYDSe+KjQfrjhcBMxJt/znbvlHd8Pw/Vamaz5EB4Wfhs3SUR3Z9mwRu/P3s3Yg==}
@@ -12705,7 +12758,6 @@ packages:
 
   /didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
-    dev: false
 
   /diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
@@ -12741,7 +12793,6 @@ packages:
 
   /dlv@1.1.3:
     resolution: {integrity: sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==}
-    dev: false
 
   /doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
@@ -18111,7 +18162,6 @@ packages:
   /jiti@1.21.0:
     resolution: {integrity: sha512-gFqAIbuKyyso/3G2qhiO2OM6shY6EPP/R0+mkDbyspxKazh8BXDC5FiFsUjlczgdNz/vfra0da2y+aHrusLG/Q==}
     hasBin: true
-    dev: false
 
   /joi@17.12.1:
     resolution: {integrity: sha512-vtxmq+Lsc5SlfqotnfVjlViWfOL9nt/avKNbKYizwf6gsCfq9NYY/ceYRMFD8XDdrjJ9abJyScWmhmIiy+XRtQ==}
@@ -18912,7 +18962,6 @@ packages:
   /lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
     engines: {node: '>=10'}
-    dev: false
 
   /lilconfig@3.0.0:
     resolution: {integrity: sha512-K2U4W2Ff5ibV7j7ydLr+zLAkIg5JJ4lPn1Ltsdt+Tz/IjQ8buJ55pZAxoP34lqIiwtF9iAvtLv3JGv7CAyAg+g==}
@@ -18922,7 +18971,6 @@ packages:
   /lilconfig@3.1.1:
     resolution: {integrity: sha512-O18pf7nyvHTckunPWCV1XUNXU1piu01y2b7ATJ0ppkUkk8ocqVWBrYjJBCwHDjD/ZWcfyrA0P4gKhzWGi5EINQ==}
     engines: {node: '>=14'}
-    dev: false
 
   /lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
@@ -20807,7 +20855,7 @@ packages:
     resolution: {integrity: sha512-/5CMN3T0R4XTj4DcGaexo+roZSdSFW/0AOOTROrjxzCG1wrWXEsGbRKevjlIL+ZDE4sZlJr5ED4YW0yqmkK+eA==}
     dependencies:
       hosted-git-info: 2.8.9
-      resolve: 1.22.1
+      resolve: 1.22.8
       semver: 5.7.2
       validate-npm-package-license: 3.0.4
     dev: true
@@ -22102,7 +22150,6 @@ packages:
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.8
-    dev: false
 
   /postcss-initial@4.0.1(postcss@8.4.35):
     resolution: {integrity: sha512-0ueD7rPqX8Pn1xJIjay0AZeIuDoF+V+VvMt/uOnn+4ezUKhZM/NokDeP6DwMNyIoYByuN/94IQnt5FEkaN59xQ==}
@@ -22120,7 +22167,6 @@ packages:
     dependencies:
       camelcase-css: 2.0.1
       postcss: 8.4.35
-    dev: false
 
   /postcss-lab-function@4.2.1(postcss@8.4.35):
     resolution: {integrity: sha512-xuXll4isR03CrQsmxyz92LJB2xX9n+pZJ5jE9JgcnmsCammLyKdlzrBin+25dy6wIjfhJpKBAN80gsTlCgRk2w==}
@@ -22162,7 +22208,6 @@ packages:
       lilconfig: 3.1.1
       postcss: 8.4.35
       yaml: 2.3.4
-    dev: false
 
   /postcss-logical@5.0.4(postcss@8.4.35):
     resolution: {integrity: sha512-RHXxplCeLh9VjinvMrZONq7im4wjWGlRJAqmAVLXyZaXwfDWP73/oq4NdIp+OZwhQUMj0zjqDfM5Fj7qby+B4g==}
@@ -22235,7 +22280,6 @@ packages:
     dependencies:
       postcss: 8.4.35
       postcss-selector-parser: 6.0.15
-    dev: false
 
   /postcss-nesting@10.2.0(postcss@8.4.35):
     resolution: {integrity: sha512-EwMkYchxiDiKUhlJGzWsD9b2zvq/r2SSubcRrgP+jujMXFzqvANLt16lJANC+5uZ6hjI7lpRmI6O8JIl+8l1KA==}
@@ -24755,7 +24799,6 @@ packages:
     resolution: {integrity: sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==}
     dependencies:
       pify: 2.3.0
-    dev: false
 
   /read-pkg-up@7.0.1:
     resolution: {integrity: sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==}
@@ -26991,7 +27034,6 @@ packages:
       mz: 2.7.0
       pirates: 4.0.6
       ts-interface-checker: 0.1.13
-    dev: false
 
   /sudo-prompt@8.2.5:
     resolution: {integrity: sha512-rlBo3HU/1zAJUrkY6jNxDOC9eVYliG6nS4JA8u8KAshITd07tafMc/Br7xQwCSseXwJ2iCcHCE8SNWX3q8Z+kw==}
@@ -27216,7 +27258,6 @@ packages:
       sucrase: 3.35.0
     transitivePeerDependencies:
       - ts-node
-    dev: false
 
   /tapable@1.1.3:
     resolution: {integrity: sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==}
