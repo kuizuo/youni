@@ -1,5 +1,6 @@
-import { INestApplication, Logger } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+import type { INestApplication } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
+import type { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 import { patchNestJsSwagger } from 'nestjs-zod'

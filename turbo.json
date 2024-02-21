@@ -13,8 +13,6 @@
     "generate": {
       "dependsOn": ["^generate"]
     },
-    "migrate:dev": {},
-    "migrate:deploy": {},
     "seed": {},
     "lint": {},
     "clean": {

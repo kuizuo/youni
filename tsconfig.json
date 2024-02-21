@@ -1,28 +1,27 @@
 {
-    "compilerOptions": {
-      "module": "CommonJS",
-      "declaration": true,
-      "strictNullChecks": true,
-      "removeComments": true,
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "target": "es2021",
-      "sourceMap": true,
-      "outDir": "./dist",
-      "baseUrl": ".",
-      "noImplicitAny": false,
-      "incremental": true,
-      "resolveJsonModule": true,
-      "skipLibCheck": true,
-      "paths": {
-        "@server/*": ["./apps/server/src/*"],
-        "@prisma/client": ["./prisma/client"]
-      },
+  "compilerOptions": {
+    "incremental": true,
+    "target": "es2021",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "module": "CommonJS",
+    "paths": {
+      "@server/*": ["./apps/server/src/*"]
     },
-    "exclude": [
-      "dist",
-      "tmp"
-    ]
-  }
+    "resolveJsonModule": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "declaration": true,
+    "outDir": "./dist",
+    "removeComments": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "dist",
+    "tmp"
+  ]
+}

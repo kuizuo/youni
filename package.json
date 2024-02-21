@@ -1,10 +1,42 @@
 {
   "name": "youni",
   "version": "0.1.0",
-  "packageManager": "pnpm@8.10.2",
+  "packageManager": "pnpm@8.15.1",
   "description": "",
   "author": "Kuizuo <hi@kuizuo.cn> (https://kuizuo.cn)",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "reinstall": "rimraf pnpm-lock.yaml && rimraf package.lock.json && rimraf node_modules && npm run bootstrap",
+    "prepare": "if [ \"$NODE_ENV\" = \"production\" ]; then echo 'skip prepare in production' ;else husky install && cp .env prisma/.env && pnpm run prisma:generate; fi",
+    "prebuild": "rimraf dist && pnpm run prisma:generate",
+    "bootstrap": "pnpm install",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "bundle": "pnpm -F server run bundle",
+    "pretest": "dotenv -e .env.test pnpm -C prisma run migrate:dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "prisma:push": "pnpm -F prisma push",
+    "prisma:studio": "pnpm -F prisma studio",
+    "prisma:generate": "pnpm -F prisma build",
+    "migrate:dev": "pnpm -F prisma migrate:dev",
+    "migrate:deploy": "pnpm -F prisma migrate:deploy"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.1.0",
+    "cross-env": "7.0.3",
+    "dotenv-cli": "^7.3.0",
+    "eslint": "^8.54.0",
+    "husky": "^7.0.4",
+    "rimraf": "^5.0.5",
+    "turbo": "^1.10.16",
+    "typescript": "^5.3.0"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -16,41 +48,10 @@
       "eslint --cache --fix"
     ]
   },
-  "scripts": {
-    "prepare": "if [ \"$NODE_ENV\" = \"production\" ]; then echo 'skip prepare in production' ;else husky install && pnpm run prisma:generate; fi",
-    "bootstrap": "pnpm install",
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "bundle": "pnpm -F server run bundle",
-    "pretest": "dotenv -e .env.test pnpm -C prisma run migrate:dev",
-    "test": "turbo run test",
-    "lint": "turbo run lint",
-    "clean": "turbo run clean",
-    "preinstall": "npx only-allow pnpm",
-    "reinstall": "rimraf pnpm-lock.yaml && rimraf package.lock.json && rimraf node_modules && npm run bootstrap",
-    "migrate:dev": "turbo run migrate:dev",
-    "migrate:deploy": "turbo run migrate:deploy",
-    "prisma:generate": "turbo run generate"
-  },
-  "devDependencies": {
-    "@antfu/eslint-config": "^2.1.0",
-    "@youni/prisma": "*",
-    "cross-env": "7.0.3",
-    "dotenv-cli": "^7.3.0",
-    "eslint": "^8.54.0",
-    "husky": "^7.0.4",
-    "prisma": "5.8.1",
-    "rimraf": "^5.0.5",
-    "turbo": "^1.10.16",
-    "typescript": "^5.3.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.1.0"
-  },
   "workspaces": [
     "apps/*",
     "packages/*",
+    "tooling",
     "prisma"
   ]
 }

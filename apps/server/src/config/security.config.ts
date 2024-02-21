@@ -1,4 +1,4 @@
-import { ConfigType, registerAs } from '@nestjs/config'
+import { type ConfigType, registerAs } from '@nestjs/config'
 
 import { env, envNumber } from '@server/global/env'
 
