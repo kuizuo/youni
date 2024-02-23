@@ -7,8 +7,10 @@ import { useEffect } from 'react';
 
 import "../global.css";
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from "nativewind";
 import { TRPCProvider } from '@/utils/api';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -48,15 +50,20 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
 
   return (
     <TRPCProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaProvider>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="search" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="note/[slug]" options={{ presentation: 'modal' }} />
+            </Stack>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
       </ThemeProvider>
     </TRPCProvider>
   );

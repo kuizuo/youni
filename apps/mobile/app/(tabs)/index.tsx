@@ -1,31 +1,22 @@
-import { StyleSheet } from 'react-native';
+import React from 'react'
 
-import EditScreenInfo from '@/components/EditScreenInfo';
+import { Button, Pressable, StyleSheet } from 'react-native';
+
 import { Text, View } from '@/components/Themed';
 
+import { Link } from 'expo-router';
+
 export default function TabOneScreen() {
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+    <View>
+      <Link href='/note/1' className='max-w-fit h-8 fp-4 flex items-center bg-red-500'>go to note</Link>
+      <Link href="/search" asChild>
+      <Pressable>
+        <Text>search</Text>
+      </Pressable>
+    </Link>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});

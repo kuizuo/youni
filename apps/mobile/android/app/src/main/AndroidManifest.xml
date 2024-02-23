@@ -26,7 +26,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
-        <data android:scheme="youni.kuizuo.app"/>
+        <data android:scheme="com.kuizuo.youni"/>
         <data android:scheme="exp+youni"/>
       </intent-filter>
     </activity>

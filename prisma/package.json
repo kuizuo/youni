@@ -11,6 +11,7 @@
   },
   "main": "./client/index.js",
   "scripts": {
+    "generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:dev:create": "prisma migrate dev --create-only",
     "migrate:deploy": "prisma migrate deploy",
@@ -19,7 +20,6 @@
     "prisma:migrate:resolve": "prisma migrate resolve --preview-feature",
     "prisma:studio": "prisma studio",
     "prisma:seed": "prisma db seed",
-    "generate": "prisma generate",
     "build": "rimraf dist && prisma generate && tsc && cp -r client dist/client"
   },
   "dependencies": {

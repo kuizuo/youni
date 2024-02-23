@@ -1,7 +1,7 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig & { hostUri?: string } => ({
-  ...config,
+  // ...config,
   name: "mobile",
   slug: "youni",
   version: "1.0.0",
@@ -18,11 +18,11 @@ export default ({ config }: ConfigContext): ExpoConfig & { hostUri?: string } =>
     "**/*"
   ],
   ios: {
-    bundleIdentifier: "youni.kuizuo.app",
+    bundleIdentifier: "com.kuizuo.youni",
     supportsTablet: true
   },
   android: {
-    package: 'youni.kuizuo.app',
+    package: 'com.kuizuo.youni',
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#ffffff"

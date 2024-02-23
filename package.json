@@ -11,7 +11,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "reinstall": "rimraf pnpm-lock.yaml && rimraf package.lock.json && rimraf node_modules && npm run bootstrap",
-    "prepare": "if [ \"$NODE_ENV\" = \"production\" ]; then echo 'skip prepare in production' ;else husky install && cp .env prisma/.env && pnpm run prisma:generate; fi",
+    "prepare": "if [ \"$NODE_ENV\" = \"production\" ]; then echo 'skip prepare in production' ;else husky install; fi",
     "prebuild": "rimraf dist && pnpm run prisma:generate",
     "bootstrap": "pnpm install",
     "build": "turbo run build",

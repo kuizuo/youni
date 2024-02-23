@@ -1,4 +1,4 @@
-package youni.kuizuo.app
+package com.kuizuo.youni
 
 import android.os.Build
 import android.os.Bundle
