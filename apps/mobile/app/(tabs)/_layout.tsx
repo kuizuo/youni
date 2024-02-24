@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Tabs, useNavigation } from 'expo-router';
+import { Link, Tabs, useNavigation, useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { Platform } from 'react-native';
@@ -21,7 +21,7 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const { colorScheme } = useColorScheme();
 
-  const navigation = useNavigation();
+  const router = useRouter();
 
   return (
     <Tabs
@@ -71,7 +71,7 @@ export default function TabLayout() {
           tabBarButton: () => {
             return <View className={`flex justify-center mb-6}`} >
               <MaterialCommunityIcons name="plus-circle" size={48} color={'skyblue'} onPress={() => {
-                // navigation.navigate('/')
+                router.push('/publish')
               }} />
             </View>
           }

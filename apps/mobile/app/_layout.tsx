@@ -11,6 +11,7 @@ import { useColorScheme } from "nativewind";
 import { TRPCProvider } from '@/utils/api';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AuthProvider } from '@/utils/ctx';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -57,11 +58,13 @@ function RootLayoutNav() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="search" options={{ presentation: 'modal' }} />
-              <Stack.Screen name="note/[slug]" options={{ presentation: 'modal' }} />
-            </Stack>
+            <AuthProvider>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="search" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="note/[slug]" options={{ presentation: 'modal' }} />
+              </Stack>
+            </AuthProvider>
           </SafeAreaProvider>
         </GestureHandlerRootView>
       </ThemeProvider>

@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --my-brand-color: red;
+}
+
+/* including dark mode! */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --my-brand-color: blue;
+  }
+}
