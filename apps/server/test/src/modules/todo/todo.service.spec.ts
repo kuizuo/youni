@@ -4,7 +4,7 @@ import { createServiceUnitTestApp } from '@test/helper/create-service-unit'
 import { prisma } from '@test/lib/prisma'
 import resetDb from '@test/lib/reset-db'
 import { mockUserData1 } from '@test/mock/data/user.data'
-import { Todo, User } from '@youni/prisma'
+import { Todo, User } from '@youni/database'
 
 describe('todoService', () => {
   const proxy = createServiceUnitTestApp(TodoService, {

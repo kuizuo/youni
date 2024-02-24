@@ -9,7 +9,7 @@ import {
 } from '@nestjs/terminus'
 
 import { InjectPrismaClient } from '@server/shared/database/prisma.extension'
-import { PrismaClient } from '@youni/prisma'
+import { PrismaClient } from '@youni/database'
 
 import { Public } from '../auth/decorators/public.decorator'
 

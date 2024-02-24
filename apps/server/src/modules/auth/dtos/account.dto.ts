@@ -1,5 +1,5 @@
 import { strongPasswordSchema } from '@server/modules/user/dto/password.dto'
-import { UserSchema } from '@youni/prisma/zod'
+import { UserSchema } from '@youni/database/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 

@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { LoginTypeEnum } from './auth.dto'
 
-export { Role } from '@youni/prisma'
+export { Role } from '@youni/database'
 
 export const PUBLIC_KEY = '__public_key__'
 

@@ -1,5 +1,5 @@
 import { basePagerSchema } from '@server/common/dto/pager.dto'
-import { TodoOptionalDefaultsSchema } from '@youni/prisma/zod'
+import { TodoOptionalDefaultsSchema } from '@youni/database/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 

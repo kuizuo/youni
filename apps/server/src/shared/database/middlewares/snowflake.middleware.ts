@@ -1,4 +1,4 @@
-import { Prisma } from '@youni/prisma'
+import { Prisma } from '@youni/database'
 
 import { snowflake } from '../snowflake.util'
 

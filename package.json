@@ -12,7 +12,6 @@
     "preinstall": "npx only-allow pnpm",
     "reinstall": "rimraf pnpm-lock.yaml && rimraf package.lock.json && rimraf node_modules && npm run bootstrap",
     "prepare": "if [ \"$NODE_ENV\" = \"production\" ]; then echo 'skip prepare in production' ;else husky install; fi",
-    "prebuild": "rimraf dist && pnpm run prisma:generate",
     "bootstrap": "pnpm install",
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -23,7 +22,6 @@
     "clean": "turbo run clean",
     "prisma:push": "pnpm -F prisma push",
     "prisma:studio": "pnpm -F prisma studio",
-    "prisma:generate": "pnpm -F prisma build",
     "migrate:dev": "pnpm -F prisma migrate:dev",
     "migrate:deploy": "pnpm -F prisma migrate:deploy"
   },
@@ -51,7 +49,6 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "tooling",
-    "prisma"
+    "tooling/*"
   ]
 }

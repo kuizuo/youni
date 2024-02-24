@@ -4,7 +4,7 @@ import { TodoModule } from '@server/modules/todo/todo.module'
 import { createE2EApp } from '@test/helper/create-e2e-app'
 import { prisma } from '@test/lib/prisma'
 import { mockUserData1 } from '@test/mock/data/user.data'
-import { Todo, User } from '@youni/prisma'
+import { Todo, User } from '@youni/database'
 
 describe('Todo', () => {
   const proxy = createE2EApp({

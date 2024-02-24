@@ -5,7 +5,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "baseUrl": ".",
-    "module": "CommonJS",
+    "module": "NodeNext",
     "paths": {
       "@server/*": ["./apps/server/src/*"]
     },

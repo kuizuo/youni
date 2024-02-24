@@ -1,8 +1,7 @@
 import { Inject } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
 import { DEFAULT_LIMIT } from '@server/common/dto/pager.dto'
 import { DatabaseConfig } from '@server/config/database.config'
-import { PrismaClient, Prisma as _Prisma } from '@youni/prisma'
+import { PrismaClient, Prisma } from '@youni/database'
 import { pagination } from 'prisma-extension-pagination'
 
 import { snowflakeGeneratorMiddleware } from './middlewares/snowflake.middleware'
@@ -69,9 +68,9 @@ export type ExtendedPrismaClient = ReturnType<typeof getExtendedPrismaClient>
 
 export const extendedPrismaClient = getExtendedPrismaClient({ url: DatabaseConfig().url })
 
-export type ModelName = _Prisma.ModelName
+export type ModelName = Prisma.ModelName
 
-export type AllModelNames = _Prisma.TypeMap['meta']['modelProps']
+export type AllModelNames = Prisma.TypeMap['meta']['modelProps']
 
 export type ModelFindInput<T extends AllModelNames> = NonNullable<
   Parameters<ExtendedPrismaClient[T]['findFirst']>[0]

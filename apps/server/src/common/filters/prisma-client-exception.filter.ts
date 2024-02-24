@@ -8,7 +8,7 @@ import {
   HttpStatus,
 } from '@nestjs/common'
 import { APP_FILTER, BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
-import { Prisma } from '@youni/prisma'
+import { Prisma } from '@youni/database'
 
 export declare type GqlContextType = 'graphql' | ContextType
 
