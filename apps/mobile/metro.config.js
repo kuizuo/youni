@@ -3,12 +3,20 @@ const path = require('node:path')
 
 const { getDefaultConfig } = require('expo/metro-config')
 const { withNativeWind } = require('nativewind/metro');
+const { withTamagui } = require('@tamagui/metro-plugin')
+
+const config = getDefaultConfig(__dirname, {
+  // [Web-only]: Enables CSS support in Metro.
+  isCSSEnabled: true,
+})
+
 
 module.exports = withMonorepoPaths(
-  withNativeWind(getDefaultConfig(__dirname), {
+  withNativeWind(
+    config, {
     input: "./global.css",
     configPath: "./tailwind.config.ts",
-  }),
+  })
 );
 
 /**

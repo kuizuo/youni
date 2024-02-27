@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --my-brand-color: red;
+  --color-primary-default: #FFD853;
 }
 
 /* including dark mode! */
