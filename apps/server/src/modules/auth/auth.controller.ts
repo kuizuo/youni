@@ -1,4 +1,4 @@
-import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Headers, Post, Res, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
 import { Ip } from '@server/common/decorators/http.decorator'
@@ -11,6 +11,7 @@ import { LoginResult } from './auth.model'
 import { AuthService } from './auth.service'
 import { Public } from './decorators/public.decorator'
 import { LocalGuard } from './guards/local.guard'
+import { FastifyReply } from 'fastify'
 
 @ApiTags('Auth - 认证模块')
 @UseGuards(LocalGuard)
@@ -24,18 +25,22 @@ export class AuthController {
 
   @Post('login')
   async login(
+    @Res() res: FastifyReply,
     @Body() dto: LoginDto,
     @Ip()
-      ip: string, @Headers('user-agent')
-      ua: string,
-  ): Promise<LoginResult> {
+    ip: string, @Headers('user-agent')
+    ua: string,
+  ) {
     const { username, password, type } = dto
     // await this.captchaService.checkImgCaptcha(captchaId, verifyCode);
 
     const user = await this.authService.validateUser(username, password, type)
 
     const jwt = await this.authService.sign(user.id, user.role, { ip, ua })
-    return { authToken: jwt }
+
+    res.setCookie('auth-token', jwt)
+    res.send({ authToken: jwt })
+    return
   }
 
   @Post('register')

@@ -2,12 +2,12 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig & { hostUri?: string } => ({
   // ...config,
-  name: "mobile",
+  name: "youni",
   slug: "youni",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
-  scheme: "myapp",
+  scheme: "youni",
   userInterfaceStyle: "automatic",
   splash: {
     image: "./assets/images/splash.png",

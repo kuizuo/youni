@@ -1,27 +1,10 @@
 {
+  "extends": "./tsconfig.base", 
   "compilerOptions": {
-    "incremental": true,
-    "target": "es2021",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "baseUrl": ".",
-    "module": "NodeNext",
     "paths": {
-      "@server/*": ["./apps/server/src/*"]
+      "app/*": ["./packages/app/*"],
+      "@ui/*": ["./packages/ui/*"],
+      "@server/*": ["./apps/server/src/*"],
     },
-    "resolveJsonModule": true,
-    "strictNullChecks": true,
-    "noImplicitAny": false,
-    "declaration": true,
-    "outDir": "./dist",
-    "removeComments": true,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  },
-  "exclude": [
-    "dist",
-    "tmp"
-  ]
+  }
 }

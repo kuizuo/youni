@@ -1,11 +1,12 @@
-import { config } from '@tamagui/config/v3'
+// don't import from here, that's handled already
+// instead this is just setting types for this folder
 
-import { createTamagui } from 'tamagui'
-export const tamaguiConfig = createTamagui(config)
-export default tamaguiConfig
-export type Conf = typeof tamaguiConfig
+import { config } from '@youni/ui'
+
+type Conf = typeof config
+
 declare module 'tamagui' {
-
-  interface TamaguiCustomConfig extends Conf { }
-
+  interface TamaguiCustomConfig extends Conf {}
 }
+
+export default config

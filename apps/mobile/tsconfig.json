@@ -1,15 +1,15 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "../../tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@server/*": ["../server/src/*"]
+      "@/*": ["./*"],
+      "@server/*": ["../server/src/*"],
+      "app/*": ["../../packages/app/*"],
+      "@youni/ui/*": ["../../packages/ui/*"]
     },
-    "types": [
-      "nativewind/types"
-    ],
-    "strict": true
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
   },
   "include": [
     "**/*.ts",
