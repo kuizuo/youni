@@ -1,14 +1,16 @@
 import { useFonts } from 'expo-font';
 import { Stack, SplashScreen } from 'expo-router';
-import { useCallback, useEffect } from 'react';
-
+import {  useEffect } from 'react';
+import {
+  SafeAreaProvider  ,
+} from 'react-native-safe-area-context'
 import { Platform } from "react-native";
 
 if (Platform.OS === "web") {
   import("../tamagui-web.css");
 }
 
-import { Provider } from 'app/provider'
+import { Provider } from '@/provider'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -37,7 +39,7 @@ export default function RootLayout() {
   return (
     <Provider>
       <Stack screenOptions={{
-        headerShown: false
+        headerShown: false,
       }}>
       </Stack>
     </Provider>

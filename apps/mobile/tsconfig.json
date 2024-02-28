@@ -5,8 +5,6 @@
     "paths": {
       "@/*": ["./*"],
       "@server/*": ["../server/src/*"],
-      "app/*": ["../../packages/app/*"],
-      "@youni/ui/*": ["../../packages/ui/*"]
     },
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,

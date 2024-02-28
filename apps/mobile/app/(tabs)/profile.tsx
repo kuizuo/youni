@@ -1,5 +1,5 @@
-import { trpc } from "app/utils/trpc";
-import { View, Text } from "tamagui";
+import { trpc } from "@/utils/trpc";
+import { View, Text } from "@/ui";
 
 export default function Screen() {
 

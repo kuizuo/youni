@@ -1,6 +1,0 @@
-export * from 'tamagui'
-export * from '@tamagui/toast'
-export * from './MyComponent'
-export * from './CustomToast'
-export * from './list'
-export { config } from './tamagui.config'

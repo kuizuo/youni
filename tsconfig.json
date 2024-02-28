@@ -2,8 +2,6 @@
   "extends": "./tsconfig.base", 
   "compilerOptions": {
     "paths": {
-      "app/*": ["./packages/app/*"],
-      "@ui/*": ["./packages/ui/*"],
       "@server/*": ["./apps/server/src/*"],
     },
   }

@@ -1,4 +1,4 @@
-import { DataFetchingScreen } from 'app/features/data-fetching/screen'
+import { DataFetchingScreen } from '@/features/data-fetching/screen'
 import { Stack } from 'expo-router'
 
 export default function Screen() {

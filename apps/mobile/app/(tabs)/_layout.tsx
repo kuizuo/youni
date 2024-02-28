@@ -1,10 +1,10 @@
 import { Tabs, useRouter } from 'expo-router';
-import { Avatar, Circle, Theme, YStack, useThemeName } from 'tamagui'
+import { Avatar, Circle, Theme, YStack, useThemeName } from '@/ui'
 import { LinearGradient } from '@tamagui/linear-gradient'
 import { Plus, Home, ShoppingCart, MessageCircleMore } from '@tamagui/lucide-icons'
 import { SolitoImage } from 'solito/image'
 
-import { useUser } from 'app/utils/auth/hooks/useUser';
+import { useUser } from '@/utils/auth/hooks/useUser';
 
 export default function TabLayout() {
   return (
@@ -64,7 +64,7 @@ export default function TabLayout() {
 
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">
-                <Avatar circular p="$1" size={size}>
+                <Avatar circular padding="$1" size={size}>
                   <SolitoImage src={avatarUrl} alt="your avatar" width={size} height={size} />
                 </Avatar>
               </YStack>
@@ -85,7 +85,7 @@ const PlusButton = ({ size }: { size: number }) => {
   return (
     <>
       <Circle
-        pos="absolute"
+        position="absolute"
         bottom={8}
         backgroundColor="$color1"
         shadowColor='black'
@@ -99,6 +99,7 @@ const PlusButton = ({ size }: { size: number }) => {
         height={size + 24}
       />
       <LinearGradient
+        position="absolute"
         onPress={() => router.push('/create')}
         colors={['$gray6', '$gray7']}
         start={[1, 1]}
@@ -106,17 +107,16 @@ const PlusButton = ({ size }: { size: number }) => {
         width={size + 24}
         height={size + 24}
         borderRadius="$10"
-        pos="absolute"
         bottom={8}
         pressStyle={{
           rotate: '20deg',
         }}
       />
       <YStack
-        pos="absolute"
+        position="absolute"
         bottom={8}
-        jc="center"
-        ai="center"
+        justifyContent="center"
+        alignContent="center"
         animation="quick"
         pointerEvents="none"
         height={size + 24}

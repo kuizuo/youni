@@ -7,29 +7,14 @@ module.exports = function (api) {
     ],
     plugins: [
       [
-        require.resolve('babel-plugin-module-resolver'),
+        "@tamagui/babel-plugin",
         {
-          root: ['../..'],
-          alias: {
-            app: '../../packages/app',
-            '@youni/ui': '../../packages/ui',
-          },
-          extensions: ['.js', '.jsx', '.tsx', '.ios.js', '.android.js'],
+          components: ["tamagui"],
+          config: "./tamagui.config.ts",
+          logTimings: true,
+          disableExtraction: process.env.NODE_ENV === 'development'
         },
       ],
-      ...(process.env.EAS_BUILD_PLATFORM === 'android'
-        ? []
-        : [
-          [
-            '@tamagui/babel-plugin',
-            {
-              components: ['@youni/ui', 'tamagui'],
-              config: './tamagui.config.ts',
-            logTimings: true,
-            disableExtraction: process.env.NODE_ENV === 'development'
-          },
-        ],
-      ]),
       "react-native-reanimated/plugin",
       'jotai/babel/plugin-react-refresh',
     ]

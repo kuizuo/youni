@@ -2,17 +2,16 @@
 const path = require('node:path')
 
 const { getDefaultConfig } = require('expo/metro-config')
-// const { withTamagui } = require('@tamagui/metro-plugin')
+const { withTamagui } = require('@tamagui/metro-plugin')
 
 const config = getDefaultConfig(__dirname, {})
 
 module.exports = withMonorepoPaths(
-  config
-  // withTamagui(config, {
-  //   components: ['tamagui'],
-  //   config: './tamagui.config.ts',
-  //   outputCSS: './tamagui-web.css',
-  // })
+  withTamagui(config, {
+    components: ['tamagui'],
+    config: './tamagui.config.ts',
+    outputCSS: './tamagui-web.css',
+  })
 );
 
 /**
@@ -27,8 +26,7 @@ function withMonorepoPaths(config) {
   const projectRoot = __dirname;
   const workspaceRoot = path.resolve(projectRoot, "../..");
 
-  // Add the additional `cjs` extension to the resolver
-  config.resolver.sourceExts.push('cjs');
+  config.resolver.sourceExts.push('mjs');
 
   // #1 - Watch all files in the monorepo
   config.watchFolders = [workspaceRoot];
