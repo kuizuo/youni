@@ -10,7 +10,6 @@ if (Platform.OS === "web") {
 
 import { Provider } from 'app/provider'
 
-
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 

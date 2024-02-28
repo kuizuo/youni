@@ -3,8 +3,8 @@ import { createMedia } from '@tamagui/react-native-media-driver'
 import { shorthands } from '@tamagui/shorthands'
 import { themes, tokens } from '@tamagui/themes'
 import { createTamagui } from 'tamagui'
-
-import { animations } from './animations'
+import { createAnimations } from '@tamagui/animations-react-native'
+import type { AnimationDriver } from '@tamagui/web'
 
 const headingFont = createInterFont({
   size: {
@@ -49,6 +49,27 @@ const bodyFont = createInterFont(
     sizeLineHeight: (size) => Math.round(size * 1.1 + (size > 20 ? 10 : 10)),
   }
 )
+
+export const animations: AnimationDriver = createAnimations({
+  bouncy: {
+    type: 'spring',
+    damping: 10,
+    mass: 0.9,
+    stiffness: 100,
+  },
+  lazy: {
+    type: 'spring',
+    damping: 20,
+    stiffness: 60,
+  },
+  quick: {
+    type: 'spring',
+    damping: 20,
+    mass: 1.2,
+    stiffness: 250,
+  },
+})
+
 
 export const config = createTamagui({
   defaultFont: 'body',

@@ -25,10 +25,12 @@ module.exports = function (api) {
             {
               components: ['@youni/ui', 'tamagui'],
               config: './tamagui.config.ts',
-              disable: true
-            },
-          ],
-        ]),
+            logTimings: true,
+            disableExtraction: process.env.NODE_ENV === 'development'
+          },
+        ],
+      ]),
+      "react-native-reanimated/plugin",
       'jotai/babel/plugin-react-refresh',
     ]
   }

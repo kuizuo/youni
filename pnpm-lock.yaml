@@ -198,6 +198,9 @@ importers:
       expo-constants:
         specifier: ^15.4.5
         version: 15.4.5(expo@50.0.7)
+      expo-crypto:
+        specifier: ^12.8.1
+        version: 12.8.1(expo@50.0.7)
       expo-dev-client:
         specifier: ~3.3.8
         version: 3.3.8(expo@50.0.7)
@@ -16733,6 +16736,15 @@ packages:
       expo: 50.0.7(@babel/core@7.23.9)(@react-native/babel-preset@0.73.21)
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /expo-crypto@12.8.1(expo@50.0.7):
+    resolution: {integrity: sha512-EJEzmfBUSkGfALTlZRKUbh1RMKF7mWI12vkhO2w6bhGO4bjgGB8XzUHgLfrvSjphDFMx/lwaR6bAQDmXKO9UkQ==}
+    peerDependencies:
+      expo: '*'
+    dependencies:
+      base64-js: 1.5.1
+      expo: 50.0.7(@babel/core@7.23.9)(@react-native/babel-preset@0.73.21)
     dev: false
 
   /expo-dev-client@3.3.8(expo@50.0.7):

@@ -26,11 +26,13 @@
     "strictNullChecks": true,
     "target": "es2020",
     "types": ["node"],
-    "lib": ["dom", "esnext"]
+    "lib": ["dom", "esnext"],
+    "composite": true,
   },
   "include": ["src"],
   "exclude": ["_"],
   "typeAcquisition": {
     "enable": true
-  }
+  },
+  "references": []
 }
