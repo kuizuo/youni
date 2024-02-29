@@ -23,7 +23,7 @@ import { useUser } from '@/utils/auth/hooks/useUser'
 
 export function HomeScreen() {
   const utils = trpc.useContext()
-  const { user } = useUser()
+  const { profile } = useUser()
   const toast = useToastController()
 
   return (
@@ -67,6 +67,8 @@ export function HomeScreen() {
               Fetching Data
             </Button>
           </Link>
+
+          <Text>{JSON.stringify(profile)}</Text>
 
           <Button
             onPress={() => {

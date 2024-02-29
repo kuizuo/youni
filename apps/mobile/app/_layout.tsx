@@ -1,12 +1,10 @@
 import { useFonts } from 'expo-font';
-import { Stack, SplashScreen } from 'expo-router';
-import {  useEffect } from 'react';
-import {
-  SafeAreaProvider  ,
-} from 'react-native-safe-area-context'
+import { Stack, SplashScreen, Redirect } from 'expo-router';
+import { useEffect } from 'react';
 import { Platform } from "react-native";
 
 if (Platform.OS === "web") {
+  // @ts-ignore
   import("../tamagui-web.css");
 }
 

@@ -5,7 +5,7 @@ import { useAuth } from '@/utils/auth/hooks/useAuth'
 import { getInitialURL } from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser'
 import { Platform } from 'react-native'
-import { useRouter } from 'solito/navigation'
+import { useRouter } from 'expo-router'
 
 export const SignUpScreen = (): React.ReactNode => {
   const { replace } = useRouter()

@@ -9,7 +9,7 @@ import { httpBatchLink } from '@trpc/client'
 import { useState } from 'react'
 import superjson from 'superjson'
 import { replaceLocalhost } from './localhost.native'
-import { getToken } from '../auth/cookies'
+import { getToken } from '../auth/util'
 
 /**
  * A set of typesafe hooks for consuming your API.

@@ -1,7 +1,7 @@
 import { YStack, useToastController } from '@/ui'
 import { PasswordResetComponent } from '@/ui/PasswordReset'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { useRouter } from 'solito/navigation'
+import { useRouter } from 'expo-router'
 
 export function UpdatePasswordScreen() {
   const { push } = useRouter()

@@ -1,22 +1,24 @@
-import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { useRouter as useNextRouter } from 'next/router'
 import { useEffect } from 'react'
-import { useRouter } from 'solito/navigation'
+import { useRouter } from 'expo-router'
+import { useAuth } from '@/utils/auth/hooks/useAuth'
+import { Platform } from 'react-native'
 
 export const useAuthRedirect = () => {
   const router = useRouter()
-  const { pathname } = useNextRouter()
+  const { token } = useAuth()
 
-  // useEffect(() => {
-  //   const signOutListener = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent) => {
-  //     if (event === 'SIGNED_OUT') {
-  //       if (pathname !== '/') {
-  //         router.replace('/')
-  //       }
-  //     }
-  //   })
-  //   return () => {
-  //     signOutListener.data.subscription.unsubscribe()
-  //   }
-  // }, [router, pathname])
+  useEffect(() => {
+    if (!token) {
+      if (Platform.OS === "web") {
+        setImmediate(() => {
+          router.replace('/sign-in')
+        });
+
+      } else {
+        setTimeout(() => {
+          router.replace('/sign-in')
+        }, 1)
+      }
+    }
+  }, [token])
 }

@@ -1,7 +1,7 @@
 import { Button, H2, Paragraph, YStack } from '@/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import { createParam } from 'solito'
-import { useLink } from 'solito/navigation'
+import { useLink } from 'expo-router'
 
 const { useParam } = createParam<{ id: string }>()
 

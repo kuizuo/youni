@@ -1,4 +1,3 @@
-import { type Provider } from '@supabase/supabase-js'
 import { Button, Input, Paragraph, Stack, XStack, YStack } from '@/ui'
 import { useState } from 'react'
 import { SolitoImage } from 'solito/image'
@@ -6,7 +5,7 @@ import { Link } from 'solito/link'
 
 interface Props {
   type: 'sign-up' | 'sign-in'
-  handleOAuthWithPress: (provider: Provider) => void
+  handleOAuthWithPress: (provider: 'wechat' | 'google' | 'apple') => void
   handleEmailWithPress: (email, password) => void
 }
 
@@ -19,9 +18,9 @@ export const SignUpSignInComponent = ({
   const [password, setPassword] = useState('')
 
   return (
-    <YStack
+    <YStack 
       borderRadius='$10'
-      space
+      gap='$4'
       paddingHorizontal='$7'
       paddingVertical='$6'
       width={350}
@@ -31,11 +30,25 @@ export const SignUpSignInComponent = ({
       backgroundColor='$background'
     >
       <Paragraph size='$5' fontWeight={'700'} opacity={0.8} marginBottom='$1'>
-        {type === 'sign-up' ? 'Create your account' : 'Sign in to your account'}
+        {type === 'sign-up' ? '创建你的账户' : '登录你的帐户'}
       </Paragraph>
       {/* all the oauth sign up options */}
-      <XStack space justifyContent={'space-evenly'} theme='light'>
-        {/* 3 buttons, for google, apple, discord */}
+      <XStack gap='$4' justifyContent={'space-evenly'} theme='light'>
+        <Button
+          size='$5'
+          onPress={() => handleOAuthWithPress('wechat')}
+          hoverStyle={{ opacity: 0.8 }}
+          focusStyle={{ scale: 0.95 }}
+          borderColor='$gray8Light'
+        >
+          <SolitoImage
+            style={{ width: 25, height: 22 }}
+            src={require('@/assets/icons/wechat-logo.png')}
+            width={20}
+            height={20}
+            alt='Wechat Logo'
+          />
+        </Button>
         <Button
           size='$5'
           onPress={() => handleOAuthWithPress('google')}
@@ -45,7 +58,7 @@ export const SignUpSignInComponent = ({
         >
           <SolitoImage
             style={{ width: 20, height: 20 }}
-            src={'/auth/google-logo.png'}
+            src={require('@/assets/icons/google-logo.png')}
             width={20}
             height={20}
             alt='Google Logo'
@@ -60,25 +73,10 @@ export const SignUpSignInComponent = ({
         >
           <SolitoImage
             style={{ width: 22, height: 22 }}
-            src={'/auth/apple-logo.png'}
+            src={require('@/assets/icons/apple-logo.png')}
             width={22}
             height={22}
             alt='Apple Logo'
-          />
-        </Button>
-        <Button
-          size='$5'
-          onPress={() => handleOAuthWithPress('discord')}
-          hoverStyle={{ opacity: 0.8 }}
-          focusStyle={{ scale: 0.95 }}
-          borderColor='$gray8Light'
-        >
-          <SolitoImage
-            style={{ width: 25, height: 22 }}
-            src={'/auth/discord-logo.png'}
-            width={20}
-            height={20}
-            alt='Discord Logo'
           />
         </Button>
       </XStack>
@@ -93,14 +91,14 @@ export const SignUpSignInComponent = ({
       {/* email sign up option */}
       <Input
         autoCapitalize='none'
-        placeholder='Email'
+        placeholder='用户名/邮箱'
         onChangeText={(text) => {
           setEmail(text)
         }}
       />
       <Input
         autoCapitalize='none'
-        placeholder='Password'
+        placeholder='密码'
         onChangeText={(text) => {
           setPassword(text)
         }}
@@ -115,17 +113,16 @@ export const SignUpSignInComponent = ({
           handleEmailWithPress(email, password)
         }}
         hoverStyle={{ opacity: 0.8 }}
-        onHoverIn={() => {}}
-        onHoverOut={() => {}}
+        onHoverIn={() => { }}
+        onHoverOut={() => { }}
         focusStyle={{ scale: 0.975 }}
       >
-        {type === 'sign-up' ? 'Sign up' : 'Sign in'}
+        {type === 'sign-up' ? '注册' : '登录'}
       </Button>
 
-      {/* or sign in, in small and less opaque font */}
       <XStack>
         <Paragraph size='$2' marginRight='$2' opacity={0.4}>
-          {type === 'sign-up' ? 'Already have an account?' : 'Don’t have an account?'}
+          {type === 'sign-up' ? '已有账户?' : '没有账户?'}
         </Paragraph>
         <Link href={type === 'sign-up' ? '/sign-in' : '/sign-up'}>
           <Paragraph
@@ -135,7 +132,7 @@ export const SignUpSignInComponent = ({
             opacity={0.5}
             hoverStyle={{ opacity: 0.4 }}
           >
-            {type === 'sign-up' ? 'Sign in' : 'Sign up'}
+            {type === 'sign-up' ? '登录' : '注册'}
           </Paragraph>
         </Link>
       </XStack>
@@ -144,7 +141,7 @@ export const SignUpSignInComponent = ({
       {type === 'sign-in' && (
         <XStack marginTop='$-2.5'>
           <Paragraph size='$2' marginRight='$2' opacity={0.4}>
-            Forgot your password?
+            忘记密码?
           </Paragraph>
           <Link href='/password-reset'>
             <Paragraph
@@ -154,7 +151,7 @@ export const SignUpSignInComponent = ({
               opacity={0.5}
               hoverStyle={{ opacity: 0.4 }}
             >
-              Reset it
+              重置密码
             </Paragraph>
           </Link>
         </XStack>

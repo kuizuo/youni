@@ -12,6 +12,7 @@ import { AuthService } from './auth.service'
 import { Public } from './decorators/public.decorator'
 import { LocalGuard } from './guards/local.guard'
 import { FastifyReply } from 'fastify'
+import { ResOp } from '@server/common/model/response.model'
 
 @ApiTags('Auth - 认证模块')
 @UseGuards(LocalGuard)
@@ -39,8 +40,11 @@ export class AuthController {
     const jwt = await this.authService.sign(user.id, user.role, { ip, ua })
 
     res.setCookie('auth-token', jwt)
-    res.send({ authToken: jwt })
-    return
+    res.send(
+      new ResOp({
+        data: { authToken: jwt },
+      })
+    )
   }
 
   @Post('register')

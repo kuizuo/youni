@@ -1,5 +1,5 @@
-import { AuthStatusChangeHandler } from '../../utils/auth/components/AuthStatusChangeHandler'
-import { AuthProvider as AuthProviderOG } from '../../utils/auth/components/AuthProvider'
+import { AuthStatusChangeHandler } from '@/utils/auth/components/AuthStatusChangeHandler'
+import { AuthProvider as AuthProviderOG } from '@/utils/auth/components/AuthProvider'
 
 export const AuthProvider = ({ children }) => {
   return (

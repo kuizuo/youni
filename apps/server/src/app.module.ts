@@ -29,7 +29,7 @@ import { SocketModule } from './socket/socket.module'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [`../../.env`, '.env'],
+      envFilePath: ['../../.env', '.env'],
       load: [...Object.values(config)],
     }),
     LoggerModule,

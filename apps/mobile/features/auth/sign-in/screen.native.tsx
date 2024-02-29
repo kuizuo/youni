@@ -5,7 +5,7 @@ import { useAuth } from '@/utils/auth/hooks/useAuth'
 import { getInitialURL } from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser'
 import { Platform } from 'react-native'
-import { useRouter } from 'solito/navigation'
+import { useRouter } from 'expo-router'
 
 export const SignInScreen = (): React.ReactNode => {
   const { replace } = useRouter()
@@ -41,46 +41,11 @@ export const SignInScreen = (): React.ReactNode => {
   //   }
   // }
 
-  const handleOAuthWithWeb = async (provider: Provider) => {
-    try {
-      const redirectUri = (await getInitialURL()) || 't4://'
-      const response = await WebBrowser.openAuthSessionAsync(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectUri}`,
-        redirectUri
-      )
-      if (response.type === 'success') {
-        const url = response.url
-        const params = new URLSearchParams(url.split('#')[1])
-        const accessToken = params.get('access_token') || ''
-        const refreshToken = params.get('refresh_token') || ''
-        await supabase.auth
-          .setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          })
-          .then(({ data: { session }, error }) => {
-            if (session) {
-              // @ts-ignore set session does not call subscribers when session is updated
-              supabase.auth._notifyAllSubscribers('SIGNED_IN', session)
-              replace('/')
-            } else {
-              toast.show(`${capitalizeWord(provider)} sign in failed`, {
-                description: error?.message || 'Something went wrong, please try again.',
-              })
-              console.log('Supabase session error:', error)
-            }
-          })
-      }
-    } catch (error) {
-      toast.show(`${capitalizeWord(provider)} sign in failed`, {
-        description: 'Something went wrong, please try again.',
-      })
-    } finally {
-      WebBrowser.maybeCompleteAuthSession()
-    }
+  const handleOAuthWithWeb = async (provider: 'wechat' | 'google' | 'apple') => {
+    
   }
 
-  const handleOAuthSignInWithPress = async (provider: Provider) => {
+  const handleOAuthSignInWithPress = async (provider: 'wechat' | 'google' | 'apple') => {
     if (provider === 'apple' && Platform.OS === 'ios') {
       // use native sign in with apple in ios
       // await signInWithApple()
@@ -92,7 +57,7 @@ export const SignInScreen = (): React.ReactNode => {
 
   const handleEmailSignInWithPress = async (email: string, password: string) => {
     const { error } = await signInWithPassword({
-      email: email,
+      username: email,
       password: password,
     })
     if (error) {
@@ -106,7 +71,7 @@ export const SignInScreen = (): React.ReactNode => {
   }
 
   return (
-    <YStack flex={1} justifyContent='center' alignItems='center' space>
+    <YStack flex={1} justifyContent='center' alignItems='center' gap='$4'>
       <SignUpSignInComponent
         type='sign-in'
         handleOAuthWithPress={handleOAuthSignInWithPress}

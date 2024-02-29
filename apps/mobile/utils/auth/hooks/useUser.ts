@@ -1,11 +1,22 @@
+import { client } from '@/utils/http/client'
+import { useQuery } from '@tanstack/react-query'
 
 export const useUser = () => {
-  // TODO: Load profile information from external sources here
-  // Ex: profile photo, display name, etc.
-  const avatarUrl = 'https://kuizuo.cn/img/logo.png'
+  // const {
+  //   data: profile,
+  //   isLoading: isLoadingProfile,
+  //   refetch,
+  // } = useQuery({
+  //   queryKey: ['profile'],
+  //   queryFn: async () => {
+  //     const { data } = await client.get('/api/account/profile')
+
+  //     return data.data
+  //   }
+  // })
 
   return {
-    user: {},
-    avatarUrl,
+    profile: { avatar: '' },
+    // updateProfile: () => refetch(),
   }
 }

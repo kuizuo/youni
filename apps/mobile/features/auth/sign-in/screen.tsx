@@ -1,16 +1,15 @@
-import type { Provider } from '@supabase/supabase-js'
 import { YStack, useToastController } from '@/ui'
 import { capitalizeWord } from '@/ui/libs/string'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { useRouter } from 'solito/navigation'
+import { useRouter } from 'expo-router'
 
 export const SignInScreen = (): React.ReactNode => {
   const { replace } = useRouter()
   const { signInWithPassword } = useAuth()
   const toast = useToastController()
 
-  const handleOAuthSignInWithPress = async (provider: Provider) => {
+  const handleOAuthSignInWithPress = async (provider: 'wechat' | 'google' | 'apple') => {
     // const { error } = await supabase.auth.signInWithOAuth({
     //   provider: provider,
     //   options: {
@@ -29,17 +28,21 @@ export const SignInScreen = (): React.ReactNode => {
     //   return
     // }
 
-    replace('/')
+    toast.show(`${capitalizeWord(provider)} 登录失败`, {
+      message: '未实现'
+    })
+    // replace('/')
   }
 
-  const handleEmailSignInWithPress = async (email: string, password: string) => {
+  const handleEmailSignInWithPress = async (username: string, password: string) => {
     const { error } = await signInWithPassword({
-      email: email,
-      password: password,
+      username,
+      password,
     })
+
     if (error) {
-      toast.show('Sign in failed', {
-        description: error.message,
+      toast.show('登录失败', {
+        message: error.message,
       })
       return
     }
@@ -48,7 +51,7 @@ export const SignInScreen = (): React.ReactNode => {
   }
 
   return (
-    <YStack flex={1} justifyContent='center' alignItems='center' space>
+    <YStack flex={1} justifyContent='center' alignItems='center' gap='$4'>
       <SignUpSignInComponent
         type='sign-in'
         handleOAuthWithPress={handleOAuthSignInWithPress}

@@ -1,34 +1,32 @@
-import type { Provider } from '@supabase/supabase-js'
 import { YStack, useToastController } from '@/ui'
-import { capitalizeWord } from '@/ui/libs/string'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { useRouter } from 'solito/navigation'
+import { useRouter } from 'expo-router'
 
 export const SignUpScreen = (): React.ReactNode => {
   const { push } = useRouter()
   const toast = useToastController()
-  const supabase = useSupabase()
+  const {} = useAuth()
 
-  const handleOAuthSignInWithPress = async (provider: Provider) => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: provider,
-      options:
-        provider === 'google'
-          ? {
-              queryParams: {
-                access_type: 'offline',
-                prompt: 'consent',
-              },
-            }
-          : {},
-    })
-    if (error) {
-      toast.show(`${capitalizeWord(provider)} sign up failed`, {
-        description: error.message,
-      })
-      return
-    }
+  const handleOAuthSignInWithPress = async (provider: 'wechat' | 'google' | 'apple') => {
+    // const { error } = await supabase.auth.signInWithOAuth({
+    //   provider: provider,
+    //   options:
+    //     provider === 'google'
+    //       ? {
+    //           queryParams: {
+    //             access_type: 'offline',
+    //             prompt: 'consent',
+    //           },
+    //         }
+    //       : {},
+    // })
+    // if (error) {
+    //   toast.show(`${capitalizeWord(provider)} sign up failed`, {
+    //     description: error.message,
+    //   })
+    //   return
+    // }
     push('/')
   }
 

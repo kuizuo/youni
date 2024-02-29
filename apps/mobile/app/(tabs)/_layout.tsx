@@ -60,12 +60,12 @@ export default function TabLayout() {
         options={{
           title: '我的',
           tabBarIcon: ({ color, size }) => {
-            const { avatarUrl } = useUser()
+            const { profile } = useUser()
 
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">
                 <Avatar circular padding="$1" size={size}>
-                  <SolitoImage src={avatarUrl} alt="your avatar" width={size} height={size} />
+                  <SolitoImage src={profile.avatar} alt="your avatar" width={size} height={size} />
                 </Avatar>
               </YStack>
             )

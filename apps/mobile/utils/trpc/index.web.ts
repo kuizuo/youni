@@ -2,7 +2,7 @@ import type { AppRouter } from '@server/shared/trpc/trpc.instance'
 import { httpBatchLink, loggerLink } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import superjson from 'superjson'
-import { getToken } from '../auth/cookies'
+import { getToken } from '../auth/util'
 
 export const trpc = createTRPCNext<AppRouter>({
   config() {

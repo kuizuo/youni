@@ -3,7 +3,7 @@ import cluster from 'node:cluster'
 import { config } from 'dotenv'
 import dotenvExpand from 'dotenv-expand'
 
-dotenvExpand.expand(config({ path: `.env.${process.env.NODE_ENV}` }))
+dotenvExpand.expand(config())
 
 export const isMainCluster
   = process.env.NODE_APP_INSTANCE && Number.parseInt(process.env.NODE_APP_INSTANCE) === 0

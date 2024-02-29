@@ -1,36 +1,38 @@
+import { router } from "expo-router";
 import { AuthContext, Credentials } from "../hooks/useAuth";
-import { useStorageState } from "../hooks/useStorageState";
+import { client } from "@/utils/http/client";
+import { getToken, removeToken, setToken } from "../util";
 
-export function AuthProvider(props: React.PropsWithChildren) {
-  const baseApiUrl = process.env.EXPO_PUBLIC_API_URL;
-  const [[isLoading, token], setToken] = useStorageState('token');
+export function AuthProvider({ children }: React.PropsWithChildren) {
+  const signInWithPassword = async (credentials: Credentials) => {
+    try {
+      const { data } = await client.post('/api/auth/login', { ...credentials, type: 'account' })
+
+      if (data?.authToken) {
+        setToken(data.authToken);
+
+        return {}
+      }
+
+      return { error: { message: data.message } }
+    } catch (error) {
+      return { error: { message: error } }
+    }
+  }
+
+  const signOut = () => {
+    removeToken()
+    router.replace("/sign-in")
+  }
 
   return (
     <AuthContext.Provider
       value={{
-        signInWithPassword: async (credentials: Credentials) => {
-          const response = await fetch(`${baseApiUrl}/auth/login`, {
-            body: JSON.stringify(credentials)
-          })
-          const json = await response.json()
-
-          console.log(json)
-
-          if (response.ok) {
-            return { error: '' }
-          }
-
-          return { error: null }
-
-        },
-        signOut: () => {
-          setToken("");
-        },
-        token,
-        isLoading,
-      }
-      }>
-      {props.children}
+        signInWithPassword,
+        signOut,
+        token: getToken(),
+      }}>
+      {children}
     </AuthContext.Provider>
   )
 }
