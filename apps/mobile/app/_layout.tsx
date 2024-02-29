@@ -1,14 +1,13 @@
 import { useFonts } from 'expo-font';
-import { Stack, SplashScreen, Redirect } from 'expo-router';
+import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from "react-native";
+import { Provider } from '@/provider'
 
 if (Platform.OS === "web") {
   // @ts-ignore
   import("../tamagui-web.css");
 }
-
-import { Provider } from '@/provider'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

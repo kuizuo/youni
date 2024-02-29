@@ -5,6 +5,7 @@ import { SolitoImageProvider } from './solito-image'
 import { TamaguiProvider } from './tamagui'
 import { TamaguiThemeProvider } from './theme'
 import { ToastViewport } from './toast-viewport'
+import { JotaiProvider } from './jotai'
 import { TRPCProvider } from './trpc'
 
 export function Provider({
@@ -18,11 +19,13 @@ export function Provider({
         <SafeAreaProvider>
           <SolitoImageProvider>
             <ToastProvider swipeDirection='horizontal' duration={5000} native={['mobile']}>
-              <AuthProvider>
-                <TRPCProvider>{children}</TRPCProvider>
-                <CustomToast />
-                <ToastViewport />
-              </AuthProvider>
+              <JotaiProvider>
+                <AuthProvider>
+                  <TRPCProvider>{children}</TRPCProvider>
+                  <CustomToast />
+                  <ToastViewport />
+                </AuthProvider>
+              </JotaiProvider>
             </ToastProvider>
           </SolitoImageProvider>
         </SafeAreaProvider>

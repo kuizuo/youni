@@ -4,7 +4,7 @@ import { LinearGradient } from '@tamagui/linear-gradient'
 import { Plus, Home, ShoppingCart, MessageCircleMore } from '@tamagui/lucide-icons'
 import { SolitoImage } from 'solito/image'
 
-import { useUser } from '@/utils/auth/hooks/useUser';
+import { useUserStore } from '@/store/user';
 
 export default function TabLayout() {
   return (
@@ -60,12 +60,12 @@ export default function TabLayout() {
         options={{
           title: '我的',
           tabBarIcon: ({ color, size }) => {
-            const { profile } = useUser()
+            const user = useUserStore()
 
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">
                 <Avatar circular padding="$1" size={size}>
-                  <SolitoImage src={profile.avatar} alt="your avatar" width={size} height={size} />
+                  <SolitoImage src={user?.avatar!} alt="your avatar" width={size} height={size} />
                 </Avatar>
               </YStack>
             )

@@ -10,10 +10,10 @@ import { useState } from 'react'
 import superjson from 'superjson'
 import { replaceLocalhost } from './localhost.native'
 import { getToken } from '../auth/util'
+import React from 'react'
 
-/**
- * A set of typesafe hooks for consuming your API.
- */
+
+
 export const trpc = createTRPCReact<AppRouter>()
 
 const getApiUrl = () => {
@@ -45,7 +45,7 @@ export const TRPCProvider: React.FC<{
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient} contextSharing={true}>{children}</QueryClientProvider>
     </trpc.Provider>
   )
 }

@@ -8,7 +8,6 @@ export default function Screen() {
         options={{
           title: '登录',
           headerTitleAlign: 'center',
-          headerShadowVisible: false,
         }}
       />
       <SignInScreen />

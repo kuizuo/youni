@@ -14,16 +14,12 @@ import {
 } from '@/ui'
 import { ThemeToggle } from '@/ui/ThemeToggle'
 import { ChevronDown } from '@tamagui/lucide-icons'
-import { trpc } from '@/utils/trpc'
 import React, { useState } from 'react'
 import { Linking } from 'react-native'
-import { Link, Stack } from 'expo-router';
+import { Link } from 'expo-router';
 import { useSheetOpen } from '../../atoms/sheet'
-import { useUser } from '@/utils/auth/hooks/useUser'
 
 export function HomeScreen() {
-  const utils = trpc.useContext()
-  const { profile } = useUser()
   const toast = useToastController()
 
   return (
@@ -38,7 +34,7 @@ export function HomeScreen() {
           The T4 Stack is made by{' '}
           <Anchor href='https://twitter.com/ogtimothymiller' target='_blank'>
             Tim Miller
-          </Anchor>
+          </Anchor>w
           , give it a star{' '}
           <Anchor href='https://github.com/timothymiller/-app' target='_blank' rel='noreferrer'>
             on Github.
@@ -67,8 +63,6 @@ export function HomeScreen() {
               Fetching Data
             </Button>
           </Link>
-
-          <Text>{JSON.stringify(profile)}</Text>
 
           <Button
             onPress={() => {
