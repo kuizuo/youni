@@ -58,11 +58,7 @@ export function HomeScreen() {
 
         <H3>🦮🐴 App Demos</H3>
         <YStack gap='$2'>
-          <Link href="/data-fetching" asChild style={{ 'textDecorationLine': 'none' }}>
-            <Button gap='$2'>
-              Fetching Data
-            </Button>
-          </Link>
+
 
           <Button
             onPress={() => {

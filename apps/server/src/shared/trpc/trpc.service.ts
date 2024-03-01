@@ -103,6 +103,10 @@ export class TRPCService implements OnModuleInit {
     return this._procedureAuth
   }
 
+  public get procedure() {
+    return trpc.procedure
+  }
+
   onModuleInit() {
     this.createAppRouter()
   }

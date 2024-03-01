@@ -26,7 +26,7 @@ export const TRPCProvider: React.FC<{
               Authorization: token ? `Bearer ${token}` : undefined,
             }
           },
-          url: `${getApiUrl()}/trpc`,
+          url: `${getApiUrl()}/api/trpc`,
         }),
       ],
     })

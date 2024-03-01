@@ -20,7 +20,7 @@ export class TodoTrpcRouter implements OnModuleInit {
   constructor(
     private readonly trpcService: TRPCService,
     private readonly todoService: TodoService,
-  ) {}
+  ) { }
 
   onModuleInit() {
     this.router = this.createRouter()
