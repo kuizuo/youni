@@ -3,9 +3,10 @@ import type { AxiosError } from 'axios'
 import { getToken, removeToken } from '../auth/util'
 import { useRouter } from 'expo-router'
 import { useToastController } from '@/ui'
+import { getApiUrl } from '../api'
 
 export const client = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL: getApiUrl(),
   timeout: 5000,
 })
 

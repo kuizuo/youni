@@ -9,7 +9,7 @@ export const userAtom = atomWithMMKV<UserProfile | null>('userProfile', null)
 
 export const useUserStore = () => {
   const [user] = useAtom(userAtom)
-  
+
   return user
 }
 
@@ -24,16 +24,9 @@ export const useUser = () => {
     queryFn: async () => {
       const { data } = await client.get('/api/account/profile')
 
-      console.log('data', isLoadingProfile)
-
       return data.data as UserProfile
     },
-    enabled: false
   })
-
-  useEffect(() => {
-    refetch()
-  }, [])
 
   return {
     profile: profile,

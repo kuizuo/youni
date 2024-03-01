@@ -1,4 +1,4 @@
-import { replaceLocalhost } from '@/utils/trpc/localhost.native'
+import { replaceLocalhost } from '@/utils/localhost.native'
 import { SolitoImageProvider as SolitoImageProviderOG } from 'solito/image'
 
 export const getImageUrl = () => {

@@ -1,25 +1,14 @@
+import React from 'react'
 import type { AppRouter } from '@server/shared/trpc/trpc.instance'
 import { createTRPCReact } from '@trpc/react-query'
-
-/**
- * A wrapper for your app that provides the TRPC context.
- */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
 import { useState } from 'react'
 import superjson from 'superjson'
-import { replaceLocalhost } from './localhost.native'
 import { getToken } from '../auth/util'
-import React from 'react'
-
-
+import { getApiUrl } from '../api'
 
 export const trpc = createTRPCReact<AppRouter>()
-
-const getApiUrl = () => {
-  const apiUrl = `${process.env.EXPO_PUBLIC_API_URL}`
-  return replaceLocalhost(apiUrl)
-}
 
 export const TRPCProvider: React.FC<{
   children: React.ReactNode
@@ -27,7 +16,7 @@ export const TRPCProvider: React.FC<{
   const [queryClient] = useState(() => new QueryClient())
   const [trpcClient] = useState(() =>
     trpc.createClient({
-      // transformer: superjson,
+      // transformer: superjson,‰
       links: [
         httpBatchLink({
           async headers() {
@@ -45,7 +34,7 @@ export const TRPCProvider: React.FC<{
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient} contextSharing={true}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </trpc.Provider>
   )
 }
