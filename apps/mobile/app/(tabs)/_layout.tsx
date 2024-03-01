@@ -3,8 +3,7 @@ import { Avatar, Circle, Theme, YStack, useThemeName } from '@/ui'
 import { LinearGradient } from '@tamagui/linear-gradient'
 import { Plus, Home, ShoppingCart, MessageCircleMore } from '@tamagui/lucide-icons'
 import { SolitoImage } from 'solito/image'
-
-import { useUser, useUserStore } from '@/store/user';
+import { useUser } from '@/utils/auth/hooks/useUser';
 
 export default function TabLayout() {
   return (
@@ -60,8 +59,7 @@ export default function TabLayout() {
         options={{
           title: '我的',
           tabBarIcon: ({ color, size }) => {
-            // const user = useUserStore()
-            const { profile} = useUser()
+            const { profile } = useUser()
 
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">

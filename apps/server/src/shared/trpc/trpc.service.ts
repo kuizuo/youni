@@ -64,6 +64,7 @@ export class TRPCService implements OnModuleInit {
       .use(trpc.middleware(async (opts) => {
         const { rawInput, ctx: { user }, meta } = opts
 
+
         if (meta) {
           const { action, model } = meta
           const ability = this.abilityService.abilityMap[model].createForUser(user)
