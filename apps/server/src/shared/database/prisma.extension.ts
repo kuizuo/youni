@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common'
 import { DEFAULT_LIMIT } from '@server/common/dto/pager.dto'
 import { DatabaseConfig } from '@server/config/database.config'
-import { PrismaClient, Prisma } from '@youni/database'
+import { Prisma, PrismaClient } from '@youni/database'
 import { pagination } from 'prisma-extension-pagination'
 
 import { snowflakeGeneratorMiddleware } from './middlewares/snowflake.middleware'
@@ -55,6 +55,14 @@ export function getExtendedPrismaClient({ url }: { url?: string }) {
   }).$extends(pagination({
     cursor: {
       limit: DEFAULT_LIMIT,
+      getCursor({ id }) {
+        return id
+      },
+      parseCursor(cursor) {
+        return {
+          id: cursor,
+        }
+      },
     },
     pages: {
       limit: DEFAULT_LIMIT,

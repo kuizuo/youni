@@ -42,22 +42,24 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default("")
-  username  String    @unique() @db.VarChar(80)
-  password  String    @db.VarChar(80)
+  id          String       @id @default("")
+  username    String       @unique() @db.VarChar(80)
+  password    String       @db.VarChar(80)
   /// @zod.string.url()
-  avatar    String?   @db.VarChar(1024)
+  avatar      String?      @db.VarChar(1024)
   /// @zod.string.email()
-  email     String?   @unique() @db.VarChar(80)
-  nickname  String?   @db.VarChar(255)
-  phone     String?   @db.VarChar(255)
-  status    Int?      @default(1) @db.SmallInt
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  role      Role      @default(User)
-  provider  Provider?
-  todos     Todo[]
-  Post      Post[]
+  email       String?      @unique() @db.VarChar(80)
+  nickname    String?      @db.VarChar(255)
+  phone       String?      @db.VarChar(255)
+  status      Int?         @default(1) @db.SmallInt
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  role        Role         @default(User)
+  provider    Provider?
+  todos       Todo[]
+  notes       Note[]
+  collections Collection[]
+  histories   History[]
 }
 
 model Todo {
@@ -66,18 +68,45 @@ model Todo {
   status    Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at")
-  userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
 }
 
-model Post {
+model Note {
+  id          String       @id @default("")
+  title       String
+  body        String
+  published   Boolean      @default(false)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  collections Collection[]
+  history     History[]
+  user        User         @relation(fields: [userId], references: [id])
+  userId      String
+
+  @@index([createdAt])
+}
+
+model Collection {
+  id          String   @id @default("")
+  name        String
+  description String?  @db.VarChar(100)
+  published   Boolean  @default(false)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  note        Note[]
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+}
+
+model History {
   id        String   @id @default("")
-  title     String
-  body      String
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at")
-  userId    String
+  visitedAt DateTime @default(now())
+  note      Note     @relation(fields: [noteId], references: [id])
+  noteId    String
   user      User     @relation(fields: [userId], references: [id])
+  userId    String
 }
 
 enum Role {

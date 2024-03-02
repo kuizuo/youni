@@ -16,6 +16,8 @@ export enum ErrorCodeEnum {
   VerificationCodeError = 3000,
   VerificationCodeSendFail = 3001,
   MaximumFiveVerificationCodesPerDay = 3002,
+
+  NoteNotFound = 4001,
 }
 
 export const ErrorCode: Record<ErrorCodeEnum, string> = {
@@ -35,4 +37,6 @@ export const ErrorCode: Record<ErrorCodeEnum, string> = {
   [ErrorCodeEnum.VerificationCodeError]: '验证码无效',
   [ErrorCodeEnum.VerificationCodeSendFail]: '验证码发送失败',
   [ErrorCodeEnum.MaximumFiveVerificationCodesPerDay]: '一天最多发送5个验证码',
+
+  [ErrorCodeEnum.NoteNotFound]: '笔记不存在',
 }

@@ -1,12 +1,13 @@
 import { omit } from 'lodash'
 
-type DefaultKeys = 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'
+type DefaultKeys = 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'userId'
 
 export const defaultProjectKeys = [
   'id',
   'createdAt',
   'updatedAt',
   'deletedAt',
+  'userId',
 ] as const
 
 type Projection<K extends string | number | symbol> = {

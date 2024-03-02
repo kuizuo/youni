@@ -27,7 +27,7 @@ export class UserService {
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
 
-  ) {}
+  ) { }
 
   async findUserById(id: string) {
     return await this.prisma.user.findUniqueOrThrow({ where: { id } })
@@ -205,7 +205,6 @@ export class UserService {
           status: 1,
           role: Role.User,
         },
-
       })
 
       return user

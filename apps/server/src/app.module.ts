@@ -14,7 +14,10 @@ import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { AuthModule } from './modules/auth/auth.module'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
 import { CaslModule } from './modules/casl/casl.module'
+import { CollectionModule } from './modules/collection/collection.module'
 import { HealthModule } from './modules/health/health.module'
+import { HistoryModule } from './modules/history/history.module'
+import { NoteModule } from './modules/note/note.module'
 import { TodoModule } from './modules/todo/todo.module'
 import { UserModule } from './modules/user/user.module'
 import { CacheModule } from './shared/cache/cache.module'
@@ -44,13 +47,12 @@ import { SocketModule } from './socket/socket.module'
     SocketModule,
 
     // biz
-    // StoreModule, // 商店
-    // CollectionModule, // 收藏
-    // ReviewModule, // 评价
+    NoteModule,
+    CollectionModule,
+    HistoryModule,
     // CommentModule, // 评论
     // NotificationModule, // 通知
     // InteractModule, // 交互
-    // HistoryModule, // 历史浏览
     // ChatModule, // 聊天
     // end biz
 
@@ -81,4 +83,4 @@ import { SocketModule } from './socket/socket.module'
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
 })
-export class AppModule {}
+export class AppModule { }

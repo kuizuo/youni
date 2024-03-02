@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 
 import { UserController } from './user.controller'
-import { UserAbility } from './user.policy'
+import { UserAbility } from './user.ability'
 import { UserService } from './user.service'
 
 @Module({

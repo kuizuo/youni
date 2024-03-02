@@ -7,7 +7,7 @@ export async function createContext({
   return {
     req,
     res,
-    user: { } as IAuthUser,
+    user: {} as IAuthUser,
   }
 }
 export type Context = Awaited<ReturnType<typeof createContext>>

@@ -64,7 +64,6 @@ export class TRPCService implements OnModuleInit {
       .use(trpc.middleware(async (opts) => {
         const { rawInput, ctx: { user }, meta } = opts
 
-
         if (meta) {
           const { action, model } = meta
           const ability = this.abilityService.abilityMap[model].createForUser(user)
@@ -107,6 +106,10 @@ export class TRPCService implements OnModuleInit {
   public get procedure() {
     return trpc.procedure
   }
+
+  // public get createCaller() {
+  //   return trpc.createCallerFactory(this.appRouter)
+  // }
 
   onModuleInit() {
     this.createAppRouter()
@@ -151,7 +154,8 @@ export class TRPCService implements OnModuleInit {
         path,
         onError: (opts) => {
           const { error, type, path, input, ctx, req } = opts
-          this.logger.error(error)
+
+          this.logger.error(`Error in tRPC handler on path '${path}: ${error.message}`, error.stack)
         },
       })
     })

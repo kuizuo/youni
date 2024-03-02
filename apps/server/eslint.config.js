@@ -33,5 +33,6 @@ module.exports = antfu({
       },
     ],
 
+    'eslint-comments/no-unlimited-disable': 'off',
   },
 })
