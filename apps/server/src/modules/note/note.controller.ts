@@ -8,7 +8,7 @@ import { Action } from '../casl/ability.class'
 import { Policy } from '../casl/policy.decortor'
 import { PolicyGuard } from '../casl/policy.guard'
 
-import { NoteDto, NotePagerDto, NoteUpdateDto } from './note.dto'
+import { NoteCursorDto, NoteDto, NoteUpdateDto } from './note.dto'
 import { NoteService } from './note.service'
 
 @ApiTags('Business - 笔记模块')
@@ -19,7 +19,7 @@ export class NoteController {
 
   @Get()
   @Policy({ model: 'Note', action: Action.Read })
-  async list(@Query() dto: NotePagerDto, @AuthUser() user: IAuthUser) {
+  async list(@Query() dto: NoteCursorDto, @AuthUser() user: IAuthUser) {
     return this.todoService.paginate(dto, user.id)
   }
 

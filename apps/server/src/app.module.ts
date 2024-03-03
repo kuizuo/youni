@@ -18,7 +18,6 @@ import { CollectionModule } from './modules/collection/collection.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { NoteModule } from './modules/note/note.module'
-import { TodoModule } from './modules/todo/todo.module'
 import { UserModule } from './modules/user/user.module'
 import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
@@ -51,12 +50,12 @@ import { SocketModule } from './socket/socket.module'
     CollectionModule,
     HistoryModule,
     // CommentModule, // 评论
-    // NotificationModule, // 通知
     // InteractModule, // 交互
+    // NotificationModule, // 通知
     // ChatModule, // 聊天
     // end biz
 
-    TodoModule,
+    // TodoModule,
 
     // wait module load
     CaslModule,

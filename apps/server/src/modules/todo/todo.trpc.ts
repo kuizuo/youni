@@ -37,7 +37,7 @@ export class TodoTrpcRouter implements OnModuleInit {
 
           return this.todoService.paginate(input, user.id)
         }),
-      id: procedureAuth
+      byId: procedureAuth
         .input(IdDto.schema)
         .meta({ model: 'Todo', action: Action.Read })
         .query(async (opt) => {

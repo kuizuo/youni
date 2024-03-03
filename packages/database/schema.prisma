@@ -74,9 +74,11 @@ model Todo {
 
 model Note {
   id          String       @id @default("")
-  title       String
-  body        String
+  title       String       @db.VarChar(100)
+  content     String
   published   Boolean      @default(false)
+  imageList   String[]
+  tags        NoteTag[]
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @map("updated_at")
   collections Collection[]
@@ -85,6 +87,13 @@ model Note {
   userId      String
 
   @@index([createdAt])
+}
+
+model NoteTag {
+  id    String @id @default("")
+  name  String
+  type  String
+  notes Note[]
 }
 
 model Collection {
@@ -109,6 +118,15 @@ model History {
   userId    String
 }
 
+model File {
+  id        String   @id @default("")
+  filename  String
+  mimetype  String
+  size      Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
 enum Role {
   Admin
   User
@@ -117,4 +135,9 @@ enum Role {
 enum Provider {
   Google
   Github
+}
+
+enum NoteType {
+  Normal
+  Video
 }

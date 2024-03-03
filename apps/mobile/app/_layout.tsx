@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { Platform } from "react-native";
 import { Provider } from '@/provider'
 
+import '@tamagui/core/reset.css'
+
 if (Platform.OS === "web") {
   // @ts-ignore
   import("../tamagui-web.css");

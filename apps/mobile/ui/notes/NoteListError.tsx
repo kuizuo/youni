@@ -1,4 +1,4 @@
-import { Paragraph, YStack } from 'tamagui'
+import { Paragraph, YStack } from '@/ui'
 
 interface Props {
   message: string | undefined

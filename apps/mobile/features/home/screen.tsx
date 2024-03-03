@@ -1,112 +1,49 @@
-import {
-  Anchor,
-  Button,
-  H1,
-  H3,
-  Paragraph,
-  ScrollView,
-  Separator,
-  Sheet,
-  XStack,
-  Text,
-  YStack,
-  useToastController,
-} from '@/ui'
-import { ThemeToggle } from '@/ui/ThemeToggle'
-import { ChevronDown } from '@tamagui/lucide-icons'
-import React, { useState } from 'react'
-import { Linking } from 'react-native'
-import { Link } from 'expo-router';
-import { useSheetOpen } from '../../atoms/sheet'
+import { CarListError } from '@/ui/notes/NoteListError'
+import { NoteListItem } from '@/ui/notes/NoteListItem'
+import { Paragraph, Spinner, YStack, Text } from '@/ui'
+import { trpc } from '@/utils/trpc'
+import { empty, error, loading, success } from '@/utils/trpc/patterns'
+import { MasonryFlashList } from '@shopify/flash-list'
+import React from 'react'
+import { RefreshControl } from 'react-native-gesture-handler'
+import { match } from 'ts-pattern'
 
-export function HomeScreen() {
-  const toast = useToastController()
+export const HomeScreen = (): React.ReactNode => {
+  const noteList = trpc.note.homeFeed.useInfiniteQuery(
+    {
+      limit: 10,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.startCursor,
+    }
+  );
 
-  return (
-    <ScrollView backgroundColor={'$background'}>
-      <YStack flex={1} justifyContent='center' alignItems='center' padding='$4' space='$4'>
-        <H1 textAlign='center'>👋 Hello, T4 App</H1>
-        <Separator />
-        <Paragraph textAlign='center' size={'$2'}>
-          Unifying React Native + Web.
-        </Paragraph>
-        <Paragraph textAlign='center' size={'$2'}>
-          The T4 Stack is made by{' '}
-          <Anchor href='https://twitter.com/ogtimothymiller' target='_blank'>
-            Tim Miller
-          </Anchor>w
-          , give it a star{' '}
-          <Anchor href='https://github.com/timothymiller/-app' target='_blank' rel='noreferrer'>
-            on Github.
-          </Anchor>
-        </Paragraph>
-        <Paragraph textAlign='center' size={'$2'}>
-          Tamagui is made by{' '}
-          <Anchor href='https://twitter.com/natebirdman' target='_blank'>
-            Nate Weinert
-          </Anchor>
-          , give it a star{' '}
-          <Anchor href='https://github.com/tamagui/tamagui' target='_blank' rel='noreferrer'>
-            on Github.
-          </Anchor>
-        </Paragraph>
-
-        <XStack gap='$5'>
-          <Button onPress={() => Linking.openURL('https://stack.com/')}>Learn More...</Button>
-          <ThemeToggle />
-        </XStack>
-
-        <H3>🦮🐴 App Demos</H3>
-        <YStack gap='$2'>
-
-
-          <Button
-            onPress={() => {
-              toast.show('Hello world!', {
-                message: 'Description here',
-              })
-            }}
-          >
-            Show Toast
-          </Button>
-          <SheetDemo />
-        </YStack>
+  const noteListLayout = match(noteList)
+    .with(error, () => <CarListError message={noteList.failureReason?.message} />)
+    .with(loading, () => (
+      <YStack fullscreen flex={1} justifyContent='center' alignItems='center'>
+        <Paragraph paddingBottom='$3'>Loading...</Paragraph>
+        <Spinner />
       </YStack>
-    </ScrollView>
-  )
-}
-
-const SheetDemo = (): React.ReactNode => {
-  const [open, setOpen] = useSheetOpen()
-  const [position, setPosition] = useState(0)
+    ))
+    .with(empty, () => <Paragraph>没有更多数据</Paragraph>)
+    .with(success, () => (
+      <MasonryFlashList
+        data={noteList.data?.pages[0]?.items as any[]}
+        refreshControl={
+          <RefreshControl refreshing={noteList.isRefetching} />
+        }
+        refreshing={noteList.isRefetching}
+        renderItem={({ item }) => <NoteListItem {...item}></NoteListItem>}
+        numColumns={2}
+        estimatedItemSize={200}
+      />
+    ))
+    .otherwise(() => <CarListError message={noteList.failureReason?.message} />)
 
   return (
-    <>
-      <Button onPress={() => setOpen((x) => !x)} gap='$2'>
-        Bottom Sheet
-      </Button>
-      <Sheet
-        modal
-        open={open}
-        onOpenChange={setOpen}
-        snapPoints={[80]}
-        position={position}
-        onPositionChange={setPosition}
-        dismissOnSnapToBottom
-      >
-        <Sheet.Overlay />
-        <Sheet.Frame alignItems='center' justifyContent='center'>
-          <Sheet.Handle />
-          <Button
-            size='$6'
-            circular
-            icon={ChevronDown}
-            onPress={() => {
-              setOpen(false)
-            }}
-          />
-        </Sheet.Frame>
-      </Sheet>
-    </>
+    <YStack flex={1}>
+      {noteListLayout}
+    </YStack>
   )
 }

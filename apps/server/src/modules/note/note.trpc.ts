@@ -11,8 +11,10 @@ import { Action } from '../casl/ability.class'
 
 import { HistoryService } from '../history/history.service'
 
-import { NoteInputSchema, NotePagerDto } from './note.dto'
+import { NoteCursorDto, NoteDto, NoteInputSchema } from './note.dto'
+import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
+import { randomValue } from '@server/utils/tool.util'
 
 @TRPCRouter()
 @Injectable()
@@ -22,6 +24,7 @@ export class NoteTrpcRouter implements OnModuleInit {
   constructor(
     private readonly trpcService: TRPCService,
     private readonly noteService: NoteService,
+    private readonly notePublicService: NotePublicService,
     private readonly historyService: HistoryService,
   ) { }
 
@@ -32,30 +35,41 @@ export class NoteTrpcRouter implements OnModuleInit {
   private createRouter() {
     const procedureAuth = this.trpcService.procedureAuth
     return defineTrpcRouter('note', {
-      list: procedureAuth
-        .input(NotePagerDto.schema)
-        .meta({ model: 'Note', action: Action.Read })
+      homeFeed: procedureAuth
+        .input(NoteCursorDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          return this.noteService.paginate(input, user.id)
+          const [items, meta] = await this.notePublicService.homeFeed(input, user.id)
+          // FIXME: interact info
+
+          return { items, meta }
         }),
-      id: procedureAuth
+      byId: procedureAuth
         .input(IdDto.schema)
         .meta({ model: 'Note', action: Action.Read })
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
           const { id } = input
 
-          const note = await this.noteService.findOne(id)
+          const note = await this.notePublicService.getNoteById(id)
 
           if (note)
             await this.historyService.create(note.id, user.id)
 
           return note
         }),
+      list: procedureAuth
+        .input(NoteCursorDto.schema)
+        .meta({ model: 'Note', action: Action.Read })
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          return this.noteService.paginate(input, user.id)
+        }),
+
       create: procedureAuth
-        .input(NoteInputSchema)
+        .input(NoteDto.schema)
         .meta({ model: 'Note', action: Action.Create })
         .mutation(async (opt) => {
           const { input, ctx: { user } } = opt

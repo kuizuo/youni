@@ -10,7 +10,7 @@ import { useRouter } from 'expo-router'
 export const SignInScreen = (): React.ReactNode => {
   const { replace } = useRouter()
   const { signInWithPassword } = useAuth()
-  
+
   const toast = useToastController()
   // const signInWithApple = async () => {
   //   try {
@@ -42,7 +42,7 @@ export const SignInScreen = (): React.ReactNode => {
   // }
 
   const handleOAuthWithWeb = async (provider: 'wechat' | 'google' | 'apple') => {
-    
+
   }
 
   const handleOAuthSignInWithPress = async (provider: 'wechat' | 'google' | 'apple') => {
@@ -62,7 +62,7 @@ export const SignInScreen = (): React.ReactNode => {
     })
     if (error) {
       toast.show('Sign in failed', {
-        description: error.message,
+        message: error.message,
       })
       return
     }

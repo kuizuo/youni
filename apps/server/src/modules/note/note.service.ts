@@ -6,22 +6,27 @@ import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 
-import { NoteDto, NotePagerDto, NoteUpdateDto } from './note.dto'
+import { NoteCursorDto, NoteDto, NoteUpdateDto } from './note.dto'
 
 @Injectable()
 export class NoteService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
 
-  async paginate({
-    page,
-    limit,
-  }: NotePagerDto, userId?: string) {
+  async paginate(dto: NoteCursorDto, userId: string) {
+    const { cursor, limit } = dto
+
     const [items, meta] = await this.prisma.note.paginate({
       where: {
-        ...(userId && { userId }),
+        userId,
       },
-    }).withPages({ page, limit, includePageCount: true })
+      orderBy: {
+        createdAt: 'desc',
+      },
+    }).withCursor({
+      limit,
+      ...(cursor && { after: cursor }),
+    })
 
     return {
       items,
@@ -34,6 +39,21 @@ export class NoteService {
       where: {
         id,
       },
+      include: {
+        tags: {
+          select: {
+            name: true,
+            type: true,
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true,
+          }
+        }
+      }
     }).catch(resourceNotFoundWrapper(
       new BizException(ErrorCodeEnum.NoteNotFound),
     ))

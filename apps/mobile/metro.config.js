@@ -4,7 +4,9 @@ const path = require('node:path')
 const { getDefaultConfig } = require('expo/metro-config')
 const { withTamagui } = require('@tamagui/metro-plugin')
 
-const config = getDefaultConfig(__dirname, {})
+const config = getDefaultConfig(__dirname, {
+  isCSSEnabled: true,
+})
 
 module.exports = withMonorepoPaths(
   withTamagui(config, {

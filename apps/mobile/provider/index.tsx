@@ -7,6 +7,7 @@ import { TamaguiThemeProvider } from './theme'
 import { ToastViewport } from './toast-viewport'
 import { JotaiProvider } from './jotai'
 import { TRPCProvider } from './trpc'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 export function Provider({
   children,
@@ -14,22 +15,25 @@ export function Provider({
   children: React.ReactNode
 }) {
   return (
-    <TamaguiThemeProvider>
-      <TamaguiProvider>
-        <SafeAreaProvider>
-          <SolitoImageProvider>
-            <ToastProvider swipeDirection='horizontal' duration={5000} native={['mobile']}>
-              <JotaiProvider>
-                <AuthProvider>
-                  <TRPCProvider>{children}</TRPCProvider>
-                  <CustomToast />
-                  <ToastViewport />
-                </AuthProvider>
-              </JotaiProvider>
-            </ToastProvider>
-          </SolitoImageProvider>
-        </SafeAreaProvider>
-      </TamaguiProvider>
-    </TamaguiThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <TamaguiThemeProvider>
+        <TamaguiProvider>
+          <SafeAreaProvider>
+            <SolitoImageProvider>
+              <ToastProvider swipeDirection='horizontal' duration={5000} native={['mobile']}>
+                <JotaiProvider>
+                  <AuthProvider>
+                    <TRPCProvider>{children}</TRPCProvider>
+                    <CustomToast />
+                    <ToastViewport />
+                  </AuthProvider>
+                </JotaiProvider>
+              </ToastProvider>
+            </SolitoImageProvider>
+          </SafeAreaProvider>
+        </TamaguiProvider>
+      </TamaguiThemeProvider>
+    </GestureHandlerRootView>
+
   )
 }

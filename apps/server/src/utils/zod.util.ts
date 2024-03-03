@@ -14,7 +14,7 @@ type Projection<K extends string | number | symbol> = {
   [P in K]: true
 }
 
-export const defaultSchemaOmit = createProjectionOmit<any, DefaultKeys>({}, [])
+export const defaultSchemaOmit = Object.fromEntries(defaultProjectKeys.map(key => [key, true])) as Projection<typeof defaultProjectKeys[number]>
 
 export function createProjectionOmit<T extends object, K extends keyof T>(
   obj: T,
