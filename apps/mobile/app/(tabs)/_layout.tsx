@@ -2,7 +2,7 @@ import { Tabs, useRouter } from 'expo-router';
 import { Avatar, Circle, Theme, YStack, useThemeName } from '@/ui'
 import { LinearGradient } from '@tamagui/linear-gradient'
 import { Plus, Home, ShoppingCart, MessageCircleMore } from '@tamagui/lucide-icons'
-import { SolitoImage } from 'solito/image'
+import { Image } from 'expo-image'
 import { useUser } from '@/utils/auth/hooks/useUser';
 
 export default function TabLayout() {
@@ -64,7 +64,11 @@ export default function TabLayout() {
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">
                 <Avatar circular padding="$1" size={size}>
-                  <SolitoImage src={profile?.avatar!} alt="your avatar" width={size} height={size} />
+                  <Image source={{
+                    uri: profile?.avatar!,
+                    width: size,
+                    height: size,
+                  }} alt="your avatar" />
                 </Avatar>
               </YStack>
             )

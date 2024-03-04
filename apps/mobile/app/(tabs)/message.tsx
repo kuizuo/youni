@@ -5,7 +5,7 @@ export default function TabOneScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator}  />
+      <View style={styles.separator} />
     </View>
   );
 }

@@ -12,13 +12,14 @@ export const NoteListItem = (item: NoteItem): React.ReactElement => {
   }
 
   return (
-    <YStack position='relative' padding={4} flex={1} flexDirection='row' gap="$2" borderRadius="$4" >
+    <YStack position='relative' padding={4} flex={1} gap="$2" borderRadius="$2">
       <Card size="$4" width={'100%'} onPress={() => goToNote()} >
         <Card.Background unstyled>
           <Image
+            borderRadius={'$2'}
             width="100%"
-            minHeight={300}
-            source={{ height: item.title.includes('标题') ? 200 : 350, uri: item.imageList[0] }}
+            minHeight={200}
+            source={{ height: item.title.includes('标题') ? 200 : 300, uri: item.imageList[0] }}
             resizeMode="cover"
             alignSelf="center"
           />
@@ -31,9 +32,16 @@ export const NoteListItem = (item: NoteItem): React.ReactElement => {
             <XStack gap='$2.5' alignItems='center'>
               <Avatar circular size="$2">
                 <Avatar.Image
-                  src={item.user.avatar!}
+                  width="100%"
+                  height="100%"
+                  // @ts-ignore
+                  source={{
+                    uri: item?.user.avatar!,
+                    width: '100%',
+                    height: '100%',
+                  }}
                 />
-                <Avatar.Fallback backgroundColor="$blue10" />
+                <Avatar.Fallback />
               </Avatar>
               <Link href={`/user/${item.user.id}`} asChild>
                 <Text fontSize={14} opacity={0.7} >

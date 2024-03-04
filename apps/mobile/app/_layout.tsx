@@ -1,18 +1,18 @@
-import { useFonts } from 'expo-font';
-import { Stack, SplashScreen } from 'expo-router';
-import { useEffect } from 'react';
-import { Platform } from "react-native";
+import { useFonts } from 'expo-font'
+import { Stack, SplashScreen } from 'expo-router'
+import { useEffect } from 'react'
+import { Platform } from "react-native"
 import { Provider } from '@/provider'
-
-import '@tamagui/core/reset.css'
 
 if (Platform.OS === "web") {
   // @ts-ignore
-  import("../tamagui-web.css");
+  import('../global.css')
+  // @ts-ignore
+  import("../tamagui-web.css")
 }
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
