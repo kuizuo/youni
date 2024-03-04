@@ -1,6 +1,5 @@
 import { Module, Provider } from '@nestjs/common'
 
-import { NoteModule } from '../note/note.module'
 import { UserModule } from '../user/user.module'
 
 import { CollectionController } from './collection.controller'
@@ -10,7 +9,7 @@ import { CollectionTrpcRouter } from './collection.trpc'
 const providers: Provider[] = [CollectionService, CollectionTrpcRouter]
 
 @Module({
-  imports: [NoteModule, UserModule],
+  imports: [UserModule],
   controllers: [CollectionController],
   providers,
   exports: [...providers],

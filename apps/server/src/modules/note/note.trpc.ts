@@ -14,7 +14,6 @@ import { HistoryService } from '../history/history.service'
 import { NoteCursorDto, NoteDto, NoteInputSchema } from './note.dto'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
-import { randomValue } from '@server/utils/tool.util'
 
 @TRPCRouter()
 @Injectable()
@@ -41,13 +40,14 @@ export class NoteTrpcRouter implements OnModuleInit {
           const { input, ctx: { user } } = opt
 
           const [items, meta] = await this.notePublicService.homeFeed(input, user.id)
-          // FIXME: interact info
 
-          return { items, meta }
+          return {
+            items: await this.notePublicService.addInteractInfoList(items, user.id),
+            meta,
+          }
         }),
       byId: procedureAuth
         .input(IdDto.schema)
-        .meta({ model: 'Note', action: Action.Read })
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
           const { id } = input
@@ -57,7 +57,17 @@ export class NoteTrpcRouter implements OnModuleInit {
           if (note)
             await this.historyService.create(note.id, user.id)
 
+          await this.notePublicService.addInteractInfo(note, user.id)
+
           return note
+        }),
+      like: procedureAuth
+        .input(IdDto.schema)
+        .mutation(async (opt) => {
+          const { input, ctx: { user } } = opt
+          const { id } = input
+
+          return this.notePublicService.likeNote(id, user.id)
         }),
       list: procedureAuth
         .input(NoteCursorDto.schema)

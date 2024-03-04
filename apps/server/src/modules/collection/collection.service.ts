@@ -5,16 +5,12 @@ import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
-import { NoteService } from '../note/note.service'
-
 import { CollectionCursorDto, CollectionDto, CollectionItemQueryDto } from './collection.dto'
 
 @Injectable()
 export class CollectionService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
-
-  constructor(private noteService: NoteService) { }
 
   async paginate(
     dto: CollectionCursorDto,
@@ -56,22 +52,23 @@ export class CollectionService {
   }
 
   async createDefaultCollection(userId: string) {
-    const exists = await this.prisma.collection.exists({
+    const exists = await this.prisma.collection.findFirst({
       where: {
         isDefault: true,
         userId,
       },
     })
 
-    if (!exists) {
-      await this.prisma.collection.create({
-        data: {
-          name: '我的收藏',
-          isDefault: true,
-          userId,
-        },
-      })
-    }
+    if (exists)
+      return exists
+
+    return await this.prisma.collection.create({
+      data: {
+        name: '我的收藏',
+        isDefault: true,
+        userId,
+      },
+    })
   }
 
   async getDefaultCollection(userId: string) {
@@ -121,7 +118,11 @@ export class CollectionService {
   }
 
   async addItem(itemId: string, collectionId: string, userId: string) {
-    const item = await this.noteService.findOne(itemId)
+    const item = await this.prisma.note
+      .findUniqueOrThrow({ where: { id: itemId } })
+      .catch(resourceNotFoundWrapper(
+        new BizException(ErrorCodeEnum.NoteNotFound),
+      ))
 
     await this.prisma.collection.update({
       where: {
@@ -147,6 +148,34 @@ export class CollectionService {
       data: {
         note: {
           disconnect: {
+            id: itemId,
+          },
+        },
+      },
+    })
+  }
+
+  async isItemInCollection(itemId: string, userId: string) {
+    // const defaultCollection = await this.getDefaultCollection(userId)
+
+    return await this.prisma.collection.exists({
+      where: {
+        // id: defaultCollection.id,
+        note: {
+          some: {
+            id: itemId,
+          },
+        },
+        userId,
+      },
+    })
+  }
+
+  async getItemCollectedCount(itemId: string) {
+    return await this.prisma.collection.count({
+      where: {
+        note: {
+          some: {
             id: itemId,
           },
         },

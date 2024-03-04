@@ -17,6 +17,7 @@ import { CaslModule } from './modules/casl/casl.module'
 import { CollectionModule } from './modules/collection/collection.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
+import { InteractModule } from './modules/interact/interact.module'
 import { NoteModule } from './modules/note/note.module'
 import { UserModule } from './modules/user/user.module'
 import { CacheModule } from './shared/cache/cache.module'
@@ -46,11 +47,11 @@ import { SocketModule } from './socket/socket.module'
     SocketModule,
 
     // biz
-    NoteModule,
-    CollectionModule,
-    HistoryModule,
+    NoteModule, // 笔记
+    CollectionModule, // 收藏
+    HistoryModule, // 浏览历史
     // CommentModule, // 评论
-    // InteractModule, // 交互
+    InteractModule, // 交互
     // NotificationModule, // 通知
     // ChatModule, // 聊天
     // end biz

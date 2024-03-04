@@ -35,7 +35,7 @@ export class NoteService {
   }
 
   async findOne(id: string) {
-    return this.prisma.note.findUniqueOrThrow({
+    const note = await this.prisma.note.findUniqueOrThrow({
       where: {
         id,
       },
@@ -44,19 +44,21 @@ export class NoteService {
           select: {
             name: true,
             type: true,
-          }
+          },
         },
         user: {
           select: {
             id: true,
             nickname: true,
             avatar: true,
-          }
-        }
-      }
+          },
+        },
+      },
     }).catch(resourceNotFoundWrapper(
       new BizException(ErrorCodeEnum.NoteNotFound),
     ))
+
+    return note
   }
 
   async create(dto: NoteDto, userId: string) {
