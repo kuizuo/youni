@@ -5,11 +5,11 @@ export class InteractInfo {
   liked?: boolean
 
   @ApiProperty({ description: '点赞数' })
-  likedCount?: number
+  likeCount?: number
 
   @ApiProperty({ description: '是否收藏' })
   collected?: boolean
-  
+
   @ApiProperty({ description: '收藏数' })
   collectedCount?: number
 

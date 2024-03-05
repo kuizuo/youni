@@ -48,7 +48,7 @@ export class LikeService {
    * @param id 目标 id (如 商品id)
    * @returns
    */
-  async getItemLikedCount(type: InteractType, itemId: string): Promise<number> {
+  async getItemlikeCount(type: InteractType, itemId: string): Promise<number> {
     const count = await this.redis.get(`${type}:${itemId}:likes`)
 
     // 不考虑使用 scard, 因为 scard 会遍历整个集合, 会影响性能

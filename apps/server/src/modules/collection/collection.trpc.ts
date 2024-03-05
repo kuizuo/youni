@@ -79,17 +79,17 @@ export class CollectionTrpcRouter implements OnModuleInit {
         .input(CollectionItemDto.schema)
         .mutation(async (opt) => {
           const { input, ctx: { user } } = opt
-          const { itemId, collectionId } = input
+          const { itemId } = input
 
-          return this.collectionService.addItem(itemId, collectionId, user.id)
+          return this.collectionService.addItem(itemId, user.id)
         }),
       deleteItem: procedureAuth
         .input(CollectionItemDto.schema)
         .mutation(async (opt) => {
           const { input, ctx: { user } } = opt
-          const { itemId, collectionId } = input
+          const { itemId } = input
 
-          return this.collectionService.deleteItem(itemId, collectionId, user.id)
+          return this.collectionService.deleteItem(itemId, user.id)
         }),
     })
   }

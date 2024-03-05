@@ -22,7 +22,7 @@ export class CollectionItemQueryDto extends createZodDto(baseCursorSchema.extend
 
 export const CollectionItemSchema = z.object({
   itemId: z.string(),
-  collectionId: z.string(),
+  // collectionId: z.string(),
 })
 
 export class CollectionItemDto extends createZodDto(CollectionItemSchema) { }

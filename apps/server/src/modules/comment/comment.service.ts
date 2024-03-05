@@ -6,7 +6,7 @@ import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/databas
 
 import { getIpLocation } from '@server/utils/ip.util'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
-import { Comment, CommentRefType } from '@youni/database'
+import { CommentRefType } from '@youni/database'
 
 import { CursorPaginationMeta } from 'prisma-extension-pagination'
 
@@ -14,6 +14,7 @@ import { InteractType } from '../interact/interact.constant'
 import { LikeService } from '../interact/services/like.service'
 import { UserService } from '../user/user.service'
 
+import { CommentModel } from './comment'
 import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
 
 @Injectable()
@@ -46,6 +47,7 @@ export class CommentService {
       where: {
         refId: ref.id,
         refType: itemType,
+        parentId: null,
       },
       include: {
         user: {
@@ -58,6 +60,9 @@ export class CommentService {
         children: {
           take: 1, // 只返回一条记录,更多则需要展开查看
           select: {
+            content: true,
+            createdAt: true,
+            location: true,
             user: {
               select: {
                 id: true,
@@ -67,6 +72,7 @@ export class CommentService {
             },
             parent: {
               select: {
+                id: true,
                 user: {
                   select: {
                     id: true,
@@ -194,23 +200,23 @@ export class CommentService {
     return this.likeService.like(InteractType.Comment, itemId, userId)
   }
 
-  async appendInteractInfo(item: Comment, userId: string) {
-    const [liked, likedCount, commentCount] = await Promise.all([
+  async appendInteractInfo(item: CommentModel, userId: string) {
+    const [liked, likeCount, commentCount] = await Promise.all([
       this.likeService.getItemLiked(InteractType.Comment, item.id, userId),
-      this.likeService.getItemLikedCount(InteractType.Comment, item.id),
+      this.likeService.getItemlikeCount(InteractType.Comment, item.id),
       this.getCommentCount(item.refId, item.refType, item.parentId!),
     ])
 
       ; (item as unknown as any).interactInfo = {
       liked,
-      likedCount,
+      likeCount,
       commentCount,
     }
 
     return item
   }
 
-  async appendInteractInfoList(items: Comment[], userId: string) {
+  async appendInteractInfoList(items: CommentModel[], userId: string) {
     return await Promise.all(items.map(item => this.appendInteractInfo(item, userId)))
   }
 }

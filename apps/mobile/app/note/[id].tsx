@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { lazy, memo } from 'react';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { trpc } from '@/utils/trpc';
-import { Avatar, Image, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator } from '@/ui';
+import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, Input } from '@/ui';
+import { formatTime } from '@/utils/date';
+import { NoteLikeButton, NoteCollectButton } from '@/ui/components/LikeButton';
+
+const Comments = lazy(() => import('@/ui/components/Comment'));
 
 export default function Screen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { data } = trpc.note.byId.useQuery({ id })
 
-  return <View>
+  if (!data) return <></>;
+
+  return <View flex={1}>
     <Stack.Screen options={{
       headerShown: true,
       headerTitle: () => <>
@@ -33,38 +39,51 @@ export default function Screen() {
       </>,
       headerShadowVisible: false,
     }} />
+    <ScrollView position='relative'>
+      <ImageCarousel data={data?.imageList!} />
 
-    <ImageCarousel data={data?.imageList!} />
+      <YStack paddingHorizontal='$3' marginTop="$3" gap='$2'>
+        <H5>{data?.title}</H5>
 
-    <YStack paddingHorizontal='$3' marginTop="$3" gap='$2' >
-      <H5>{data?.title}</H5>
+        <Paragraph size="$2">
+          {data?.content}
+        </Paragraph>
 
-      <Paragraph size="$2">
-        {data?.content}
-      </Paragraph>
+        <View flexDirection='row' gap='$2'>
+          {
+            data?.tags.map((tag) => {
+              <Link href={`/tag/${tag.id}`} asChild>
+                <Text>#{tag.name}</Text>
+              </Link>
+            })
+          }
+        </View>
 
-      <View flexDirection='row' gap='$2'>
-        {
-          data?.tags.map((tag) => {
-            <Link href={`/tag/${tag.id}`} asChild>
-              <Text>#{tag.name}</Text>
-            </Link>
-          })
-        }
-      </View>
+        <Text fontSize='$1' color={'gray'}>
+          {formatTime(data?.updatedAt)}
+        </Text>
 
-      <Text fontSize='$1' color={'gray'}>
-        // TODO: add time info and local
-      </Text>
+        <Separator marginVertical={15} />
 
-      <Separator marginVertical={15} />
+        <Text fontSize='$3' color={'gray'}>
+          共 {data.interactInfo.commentCount} 条评论
+        </Text>
 
-      <CommentList></CommentList>
-    </YStack>
-  </View>;
+        <Comments itemId={id} itemType={'Note'}></Comments>
+      </YStack>
+    </ScrollView>
+    <XStack borderTopWidth={1} borderColor={'$gray8'} padding='$2.5' gap="$2">
+      <Input flex={1} size="$2" placeholder={`说点什么`} />
+      <XStack gap='$2'>
+        <NoteLikeButton liked={data.interactInfo.liked} likeCount={data.interactInfo.likeCount} itemId={data.id} />
+        <NoteCollectButton collected={data.interactInfo.collected} collectCount={data.interactInfo.collectedCount} itemId={data.id} />
+        <CommentButton></CommentButton>
+      </XStack>
+    </XStack>
+  </View>
 }
 
-const CommentList = () => {
-  // TODO: 
-  return <></>
+const CommentButton = () => {
+  return <>
+  </>
 }

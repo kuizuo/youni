@@ -1,6 +1,7 @@
 import { Module, Provider } from '@nestjs/common'
 
 import { CollectionModule } from '../collection/collection.module'
+import { CommentModule } from '../comment/comment.module'
 import { HistoryModule } from '../history/history.module'
 
 import { InteractModule } from '../interact/interact.module'
@@ -24,6 +25,7 @@ const providers: Provider[] = [
   imports: [
     HistoryModule,
     CollectionModule,
+    CommentModule,
     InteractModule,
     UserModule,
   ],

@@ -1,8 +1,7 @@
 import type { InteractedNoteItem } from '@server/modules/note/note'
 import { Avatar, Card, Paragraph, XStack, YStack, Image, Button, Text } from '@/ui'
-import { Heart } from '@tamagui/lucide-icons'
 import { Link, useRouter } from 'expo-router'
-import { trpc } from '@/utils/trpc'
+import { NoteLikeButton } from '../components/LikeButton'
 
 export const NoteListItem = (item: InteractedNoteItem): React.ReactElement => {
 
@@ -12,14 +11,6 @@ export const NoteListItem = (item: InteractedNoteItem): React.ReactElement => {
     router.push(`/note/${item.id}`)
   }
 
-  const { mutate: likeNote, isLoading: isLiking } = trpc.note.like.useMutation({
-    // TODO: 乐观更新
-    // onMutate
-  });
-
-  const handleLike = () => {
-    likeNote({ id: item.id });
-  }
 
   return (
     <YStack position='relative' padding={4} flex={1} gap="$2" borderRadius="$2">
@@ -59,18 +50,11 @@ export const NoteListItem = (item: InteractedNoteItem): React.ReactElement => {
                 </Text>
               </Link>
               <XStack flex={1} justifyContent='flex-end' alignItems='center' gap="$1.5" opacity={0.7}>
-                <Button
-                  icon={<Heart
-                    fill={item.interactInfo.liked ? 'red' : 'transparent'}
-                    color={item.interactInfo?.liked ? 'red' : '$color'}
-                    fontSize={'$1'} />}
-                  onPress={handleLike}
-                  disabled={isLiking}
-                  unstyled>
-                </Button>
-                <Text>
-                  {item.interactInfo.likedCount}
-                </Text>
+                <NoteLikeButton
+                  liked={item.interactInfo.liked}
+                  likeCount={item.interactInfo.likeCount}
+                  itemId={item.id}
+                />
               </XStack>
             </XStack >
           </YStack>

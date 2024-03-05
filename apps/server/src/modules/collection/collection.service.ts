@@ -117,16 +117,18 @@ export class CollectionService {
     })
   }
 
-  async addItem(itemId: string, collectionId: string, userId: string) {
+  async addItem(itemId: string, userId: string) {
     const item = await this.prisma.note
       .findUniqueOrThrow({ where: { id: itemId } })
       .catch(resourceNotFoundWrapper(
         new BizException(ErrorCodeEnum.NoteNotFound),
       ))
 
+    const defaultCollection = await this.getDefaultCollection(userId)
+
     await this.prisma.collection.update({
       where: {
-        id: collectionId,
+        id: defaultCollection.id,
         userId,
       },
       data: {
@@ -139,10 +141,12 @@ export class CollectionService {
     })
   }
 
-  async deleteItem(itemId: string, collectionId: string, userId: string) {
+  async deleteItem(itemId: string, userId: string) {
+    const defaultCollection = await this.getDefaultCollection(userId)
+
     await this.prisma.collection.update({
       where: {
-        id: collectionId,
+        id: defaultCollection.id,
         userId,
       },
       data: {

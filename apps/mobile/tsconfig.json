@@ -2,17 +2,13 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "baseUrl": ".",
+    "module": "NodeNext",
     "paths": {
       "@/*": ["./*"],
-      "@server/*": ["../server/src/*"],
+      "@server/*": ["../server/src/*"]
     },
     "strictNullChecks": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

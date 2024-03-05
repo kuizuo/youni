@@ -9,9 +9,9 @@ export type NoteList = Awaited<
 export type InteractedNoteItem = NoteItem & {
   interactInfo: {
     liked: boolean
-    likedCount: number
+    likeCount: number
     collected: boolean
     collectedCount: number
-    // commentCount: number
+    commentCount: number
   }
 }

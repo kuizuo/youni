@@ -5,12 +5,14 @@ import { IdDto } from '@server/common/dto/id.dto'
 import { TRPCRouter } from '@server/shared/trpc/trpc.decorator'
 import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
 import { TRPCService } from '@server/shared/trpc/trpc.service'
+import { scheduleManager } from '@server/utils/schedule.util'
 import { z } from 'zod'
 
 import { Action } from '../casl/ability.class'
 
 import { HistoryService } from '../history/history.service'
 
+import { InteractedNoteItem } from './note'
 import { NoteCursorDto, NoteDto, NoteInputSchema } from './note.dto'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
@@ -42,7 +44,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           const [items, meta] = await this.notePublicService.homeFeed(input, user.id)
 
           return {
-            items: await this.notePublicService.appendInteractInfoList(items, user.id),
+            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNoteItem[], user.id),
             meta,
           }
         }),
@@ -54,12 +56,13 @@ export class NoteTrpcRouter implements OnModuleInit {
 
           const note = await this.notePublicService.getNoteById(id)
 
-          if (note)
-            await this.historyService.create(note.id, user.id)
+          if (note) {
+            scheduleManager.schedule(async () => {
+              await this.historyService.create(note.id, user.id)
+            })
+          }
 
-          await this.notePublicService.appendInteractInfo(note, user.id)
-
-          return note
+          return await this.notePublicService.appendInteractInfo(note as InteractedNoteItem, user.id)
         }),
       like: procedureAuth
         .input(IdDto.schema)
