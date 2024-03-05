@@ -42,7 +42,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           const [items, meta] = await this.notePublicService.homeFeed(input, user.id)
 
           return {
-            items: await this.notePublicService.addInteractInfoList(items, user.id),
+            items: await this.notePublicService.appendInteractInfoList(items, user.id),
             meta,
           }
         }),
@@ -57,7 +57,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           if (note)
             await this.historyService.create(note.id, user.id)
 
-          await this.notePublicService.addInteractInfo(note, user.id)
+          await this.notePublicService.appendInteractInfo(note, user.id)
 
           return note
         }),

@@ -15,6 +15,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
 import { CaslModule } from './modules/casl/casl.module'
 import { CollectionModule } from './modules/collection/collection.module'
+import { CommentModule } from './modules/comment/comment.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { InteractModule } from './modules/interact/interact.module'
@@ -50,7 +51,7 @@ import { SocketModule } from './socket/socket.module'
     NoteModule, // 笔记
     CollectionModule, // 收藏
     HistoryModule, // 浏览历史
-    // CommentModule, // 评论
+    CommentModule, // 评论
     InteractModule, // 交互
     // NotificationModule, // 通知
     // ChatModule, // 聊天

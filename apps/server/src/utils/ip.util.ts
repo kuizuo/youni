@@ -25,7 +25,7 @@ export function getIp(request: FastifyRequest | IncomingMessage) {
   return ip
 }
 
-export async function getIpAddress(ip: string) {
+export async function getIpLocation(ip: string) {
   const { data } = await axios.get(
     `https://api.kuizuo.cn/api/ip-location?ip=${ip}&type=json`,
   )

@@ -67,9 +67,9 @@ export class NotePublicService {
   }
 
   /**
-   * 设置交互信息
+   * 附加交互信息
    */
-  async addInteractInfo(item: Note | NoteItem, userId: string) {
+  async appendInteractInfo(item: Note | NoteItem, userId: string) {
     const [liked, likedCount, collected, collectedCount] = await Promise.all([
       this.likeService.getItemLiked(InteractType.Note, item.id, userId),
       this.likeService.getItemLikedCount(InteractType.Note, item.id),
@@ -88,7 +88,7 @@ export class NotePublicService {
     return item
   }
 
-  async addInteractInfoList(items: Note[], userId: string) {
-    return await Promise.all(items.map(item => this.addInteractInfo(item, userId)))
+  async appendInteractInfoList(items: Note[], userId: string) {
+    return await Promise.all(items.map(item => this.appendInteractInfo(item, userId)))
   }
 }

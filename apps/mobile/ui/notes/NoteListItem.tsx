@@ -12,7 +12,10 @@ export const NoteListItem = (item: InteractedNoteItem): React.ReactElement => {
     router.push(`/note/${item.id}`)
   }
 
-  const { mutate: likeNote, isLoading: isLiking } = trpc.note.like.useMutation();
+  const { mutate: likeNote, isLoading: isLiking } = trpc.note.like.useMutation({
+    // TODO: 乐观更新
+    // onMutate
+  });
 
   const handleLike = () => {
     likeNote({ id: item.id });
