@@ -85,6 +85,10 @@ export const config = createTamagui({
   },
   themes: {
     ...themes,
+    light: {
+      ...themes.light,
+      background: '#FFF'
+    }
   },
   tokens,
   media: createMedia({
