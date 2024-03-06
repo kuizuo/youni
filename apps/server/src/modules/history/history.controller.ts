@@ -14,10 +14,10 @@ import { HistoryService } from './history.service'
 export class HistoryController {
   constructor(private historyService: HistoryService) { }
 
-  @Get('query')
+  @Get('page')
   @ApiOperation({ summary: '获取浏览记录' })
-  async query(@Query() dto: HistoryCursorDto, @AuthUser() user: IAuthUser) {
-    return this.historyService.query(dto, user.id)
+  async page(@Query() dto: HistoryCursorDto, @AuthUser() user: IAuthUser) {
+    return this.historyService.paginate(dto, user.id)
   }
 
   @Delete('batchDelete')

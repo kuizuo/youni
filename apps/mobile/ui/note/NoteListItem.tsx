@@ -1,9 +1,9 @@
-import type { InteractedNoteItem } from '@server/modules/note/note'
+import type { InteractedNote } from '@server/modules/note/note'
 import { Avatar, Card, Paragraph, XStack, YStack, Image, Text } from '@/ui'
 import { Link, useRouter } from 'expo-router'
 import { NoteLikeButton } from '../components/LikeButton'
 
-export const NoteListItem = (item: InteractedNoteItem): React.ReactElement => {
+export const NoteListItem = (item: InteractedNote): React.ReactElement => {
   const router = useRouter()
 
   const goToNote = () => {
@@ -12,13 +12,15 @@ export const NoteListItem = (item: InteractedNoteItem): React.ReactElement => {
 
   return (
     <YStack position='relative' padding='$2' flex={1} gap="$2" borderRadius="$4">
-      <Card size="$4" width={'100%'} backgroundColor={'$color1'}>
+      <Card size="$4" backgroundColor={'$color2'}>
         <Card.Background unstyled onPress={() => goToNote()} >
           <Image
-            borderRadius={'$2'}
+            borderTopLeftRadius='$4'
+            borderTopRightRadius='$4'
             width="100%"
             minHeight={200}
-            source={{ height: item.title.includes('标题') ? 200 : 300, uri: item.imageList[0] }}
+            // TODO: return image object
+            source={{ height: 200, uri: item.imageList[0] }}
             resizeMode="cover"
             alignSelf="center"
           />
@@ -54,7 +56,7 @@ export const NoteListItem = (item: InteractedNoteItem): React.ReactElement => {
                   itemId={item.id}
                 />
               </XStack>
-            </XStack >
+            </XStack>
           </YStack>
         </Card.Footer>
       </Card>

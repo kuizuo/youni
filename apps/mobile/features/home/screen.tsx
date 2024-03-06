@@ -1,5 +1,5 @@
-import { CarListError } from '@/ui/notes/NoteListError'
-import { NoteListItem } from '@/ui/notes/NoteListItem'
+import { EmptyResult } from '@/ui/components/EmptyResult'
+import { NoteListItem } from '@/ui/note/NoteListItem'
 import { Paragraph, Spinner, YStack, Text, useMedia } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { empty, error, loading, success } from '@/utils/trpc/patterns'
@@ -21,7 +21,7 @@ export const HomeScreen = (): React.ReactNode => {
   const media = useMedia()
 
   const noteListLayout = match(noteList)
-    .with(error, () => <CarListError message={noteList.failureReason?.message} />)
+    .with(error, () => <EmptyResult message={noteList.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center'>
         <Paragraph paddingBottom='$3'>Loading...</Paragraph>
@@ -41,7 +41,7 @@ export const HomeScreen = (): React.ReactNode => {
         estimatedItemSize={200}
       />
     ))
-    .otherwise(() => <CarListError message={noteList.failureReason?.message} />)
+    .otherwise(() => <EmptyResult message={noteList.failureReason?.message} />)
 
   return (
     <YStack flex={1} backgroundColor={'$background'}>

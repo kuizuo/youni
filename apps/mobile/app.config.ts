@@ -6,11 +6,11 @@ export default ({ config }: ConfigContext): ExpoConfig & { hostUri?: string } =>
   slug: "youni",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/icon.png",
   scheme: "youni",
   userInterfaceStyle: "automatic",
   splash: {
-    image: "./assets/images/splash.png",
+    image: "./assets/splash.png",
     resizeMode: "contain",
     backgroundColor: "#ffffff"
   },
@@ -24,14 +24,14 @@ export default ({ config }: ConfigContext): ExpoConfig & { hostUri?: string } =>
   android: {
     package: 'com.kuizuo.youni',
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#ffffff"
     }
   },
   web: {
     bundler: "metro",
     output: "static",
-    favicon: "./assets/images/favicon.png"
+    favicon: "./assets/favicon.png"
   },
   extra: {
     eas: {

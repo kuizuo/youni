@@ -1,4 +1,4 @@
-export type CommentModel = Awaited<
+export type InteractedComment = Awaited<
   ReturnType<import('./comment.service').CommentService['paginate']>
 >['items'][0] & {
   interactInfo: {

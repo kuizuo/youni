@@ -1,7 +1,7 @@
 import { Tabs, useRouter } from 'expo-router';
 import { Avatar, Circle, Theme, YStack, useThemeName } from '@/ui'
 import { LinearGradient } from '@tamagui/linear-gradient'
-import { Plus, Home, ShoppingCart, MessageCircleMore } from '@tamagui/lucide-icons'
+import { Plus, Home, Clover, MessageCircleMore } from '@tamagui/lucide-icons'
 import { Image } from 'expo-image'
 import { useUser } from '@/utils/auth/hooks/useUser';
 
@@ -22,10 +22,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="cart"
+        name="friend"
         options={{
-          title: '购物',
-          tabBarIcon: ({ color, size }) => <ShoppingCart color={color} size={size} />,
+          title: 'Yo友',
+          tabBarIcon: ({ color, size }) => <Clover color={color} size={size} />,
         }}
       />
       <Tabs.Screen

@@ -20,8 +20,6 @@ export const TamaguiThemeProvider = ({
   const statusBarStyle = currentTheme === ThemeVariant.dark ? ThemeVariant.light : ThemeVariant.dark
   const themeValue = currentTheme === ThemeVariant.dark ? DarkTheme : DefaultTheme
 
-  const theme = useTheme()
-  const background = theme.background?.get()
 
   useEffect(() => {
     const systemThemeChangeListener = Appearance.addChangeListener(() => {
@@ -52,7 +50,7 @@ export const TamaguiThemeProvider = ({
 
   return (
     <ThemeProvider value={themeValue}>
-      <StatusBar style={statusBarStyle} backgroundColor={background} />
+      <StatusBar style={statusBarStyle} />
       {children}
     </ThemeProvider>
   )

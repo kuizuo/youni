@@ -1,4 +1,4 @@
-import React, { lazy, memo } from 'react';
+import React, { lazy } from 'react';
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { trpc } from '@/utils/trpc';
 import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, Input } from '@/ui';

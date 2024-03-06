@@ -7,7 +7,7 @@ import { TRPCService } from '@server/shared/trpc/trpc.service'
 
 import { Action } from '../casl/ability.class'
 
-import { CommentModel } from './comment'
+import { InteractedComment } from './comment'
 import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
 import { CommentService } from './comment.service'
 
@@ -35,7 +35,7 @@ export class CommentTrpcRouter implements OnModuleInit {
 
           const { items, meta } = await this.commentService.paginate(input)
 
-          return { items: await this.commentService.appendInteractInfoList(items as CommentModel[], user.id), meta }
+          return { items: await this.commentService.appendInteractInfoList(items as InteractedComment[], user.id), meta }
         }),
       subPage: procedureAuth
         .input(SubCommentCursorDto.schema)
@@ -44,7 +44,7 @@ export class CommentTrpcRouter implements OnModuleInit {
 
           const { items, meta } = await this.commentService.paginateSubComment(input)
 
-          return { items: await this.commentService.appendInteractInfoList(items as CommentModel[], user.id), meta }
+          return { items: await this.commentService.appendInteractInfoList(items as InteractedComment[], user.id), meta }
         }),
       create: procedureAuth
         .input(CreateCommentDto.schema)

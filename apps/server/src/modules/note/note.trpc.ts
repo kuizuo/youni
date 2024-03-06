@@ -12,7 +12,7 @@ import { Action } from '../casl/ability.class'
 
 import { HistoryService } from '../history/history.service'
 
-import { InteractedNoteItem } from './note'
+import { InteractedNote } from './note'
 import { NoteCursorDto, NoteDto, NoteInputSchema } from './note.dto'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
@@ -44,7 +44,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           const [items, meta] = await this.notePublicService.homeFeed(input, user.id)
 
           return {
-            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNoteItem[], user.id),
+            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
             meta,
           }
         }),
@@ -62,7 +62,7 @@ export class NoteTrpcRouter implements OnModuleInit {
             })
           }
 
-          return await this.notePublicService.appendInteractInfo(note as InteractedNoteItem, user.id)
+          return await this.notePublicService.appendInteractInfo(note as InteractedNote, user.id)
         }),
       like: procedureAuth
         .input(IdDto.schema)

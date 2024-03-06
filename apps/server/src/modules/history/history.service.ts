@@ -15,13 +15,13 @@ export class HistoryService {
     private readonly cacheService: CacheService,
   ) { }
 
-  async query(
+  async paginate(
     dto: HistoryCursorDto,
     userId: string,
   ) {
     const { cursor, limit } = dto
 
-    return await this.prisma.history.paginate({
+    const [items, meta] = await this.prisma.history.paginate({
       where: {
         userId,
       },
@@ -32,6 +32,8 @@ export class HistoryService {
       limit,
       ...(cursor && { after: cursor }),
     })
+
+    return { items, meta }
   }
 
   async create(itemId: string, userId: string) {

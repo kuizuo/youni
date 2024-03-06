@@ -50,6 +50,9 @@ export class UserService {
           avatar: true,
           email: true,
           nickname: true,
+          desc: true,
+          gender: true,
+          yoId: true,
           role: true,
         },
         where: {
@@ -196,6 +199,9 @@ export class UserService {
 
     return await this.prisma.$transaction(async (tx) => {
       const password = hashSync(data.password, 10)
+
+      // TODO: default avatar
+      // const avatar = '/'
 
       const user = await tx.user.create({
         data: {

@@ -1,4 +1,6 @@
-import { Module, Provider } from '@nestjs/common'
+import { Module, Provider, forwardRef } from '@nestjs/common'
+
+import { NoteModule } from '../note/note.module'
 
 import { HistoryController } from './history.controller'
 import { HistoryService } from './history.service'
@@ -10,7 +12,9 @@ const providers: Provider<any>[] = [
 ]
 
 @Module({
-  imports: [],
+  imports: [
+    forwardRef(() => NoteModule),
+  ],
   controllers: [HistoryController],
   providers,
   exports: [...providers],

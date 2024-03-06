@@ -5,6 +5,9 @@ import { TRPCRouter } from '@server/shared/trpc/trpc.decorator'
 import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
 import { TRPCService } from '@server/shared/trpc/trpc.service'
 
+import { InteractedNote } from '../note/note'
+import { NotePublicService } from '../note/note.public.service'
+
 import { HistoryCursorDto } from './history.dto'
 import { HistoryService } from './history.service'
 
@@ -16,6 +19,7 @@ export class HistoryTrpcRouter implements OnModuleInit {
   constructor(
     private readonly trpcService: TRPCService,
     private readonly historyService: HistoryService,
+    private readonly noteService: NotePublicService,
   ) { }
 
   onModuleInit() {
@@ -30,7 +34,16 @@ export class HistoryTrpcRouter implements OnModuleInit {
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          return this.historyService.query(input, user.id)
+          const { items, meta } = await this.historyService.paginate(input, user.id)
+
+          const noteIds = items.map(item => item.noteId)
+
+          const notes = await this.noteService.getNotesByIds(noteIds)
+
+          return {
+            items: await this.noteService.appendInteractInfoList(notes as InteractedNote[], user.id),
+            meta,
+          }
         }),
       batchDelete: procedureAuth
         .input(BatchDeleteDto.schema)

@@ -49,8 +49,13 @@ model User {
   avatar      String?      @db.VarChar(1024)
   /// @zod.string.email()
   email       String?      @unique() @db.VarChar(80)
-  nickname    String?      @db.VarChar(255)
+  nickname    String?      @db.VarChar(50)
   phone       String?      @db.VarChar(255)
+  /// @zod.string.max(100)
+  desc        String?      @db.VarChar(100)
+  gender      Int?         @default(0) @db.SmallInt
+  /// @zod.string.max(100)
+  yoId        String?      @db.VarChar(10)
   status      Int?         @default(1) @db.SmallInt
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @map("updated_at")
@@ -61,6 +66,8 @@ model User {
   collections Collection[]
   histories   History[]
   Comment     Comment[]
+
+  @@index([yoId])
 }
 
 model Todo {

@@ -6,7 +6,7 @@ export type NoteList = Awaited<
   ReturnType<import('./note.service').NoteService['paginate']>
 >
 
-export type InteractedNoteItem = NoteItem & {
+export type InteractedNote = NoteItem & {
   interactInfo: {
     liked: boolean
     likeCount: number

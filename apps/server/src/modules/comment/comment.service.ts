@@ -14,7 +14,7 @@ import { InteractType } from '../interact/interact.constant'
 import { LikeService } from '../interact/services/like.service'
 import { UserService } from '../user/user.service'
 
-import { CommentModel } from './comment'
+import { InteractedComment } from './comment'
 import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
 
 @Injectable()
@@ -200,14 +200,14 @@ export class CommentService {
     return this.likeService.like(InteractType.Comment, itemId, userId)
   }
 
-  async appendInteractInfo(item: CommentModel, userId: string) {
+  async appendInteractInfo(item: InteractedComment, userId: string) {
     const [liked, likeCount, commentCount] = await Promise.all([
       this.likeService.getItemLiked(InteractType.Comment, item.id, userId),
       this.likeService.getItemlikeCount(InteractType.Comment, item.id),
       this.getCommentCount(item.refId, item.refType, item.parentId!),
     ])
 
-      ; (item as unknown as any).interactInfo = {
+    item.interactInfo = {
       liked,
       likeCount,
       commentCount,
@@ -216,7 +216,7 @@ export class CommentService {
     return item
   }
 
-  async appendInteractInfoList(items: CommentModel[], userId: string) {
+  async appendInteractInfoList(items: InteractedComment[], userId: string) {
     return await Promise.all(items.map(item => this.appendInteractInfo(item, userId)))
   }
 }
