@@ -9,7 +9,6 @@ import { RegisterDto } from '@server/modules/auth/auth.dto'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
-import { Prisma } from '@youni/database'
 import { compareSync, hashSync } from 'bcrypt'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
@@ -19,13 +18,6 @@ import { UpdateProfileDto } from '../auth/dtos/account.dto'
 
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto } from './dto/user.dto'
-
-const UserSelect: Prisma.UserSelect = {
-  id: true,
-  nickname: true,
-  avatar: true,
-  desc: true,
-}
 
 @Injectable()
 export class UserService {
@@ -37,15 +29,15 @@ export class UserService {
 
   ) { }
 
-  async findUserById(id: string) {
+  async getUserById(id: string) {
     return await this.prisma.user.findUniqueOrThrow({ where: { id } })
   }
 
-  async findUserByUsername(username: string) {
+  async getUserByUsername(username: string) {
     return await this.prisma.user.findUniqueOrThrow({ where: { username } })
   }
 
-  async findUserByEmail(email: string) {
+  async getUserByEmail(email: string) {
     return await this.prisma.user.findUniqueOrThrow({ where: { email } })
   }
 
@@ -85,7 +77,7 @@ export class UserService {
 
   async updatePassword(userId: string, dto: PasswordUpdateDto): Promise<void> {
     const { oldPassword, newPassword } = dto
-    const user = await this.findUserById(userId)
+    const user = await this.getUserById(userId)
 
     const isSamePassword = compareSync(oldPassword, user.password)
 
@@ -102,7 +94,7 @@ export class UserService {
   }
 
   async forceUpdatePassword(userId: string, password: string): Promise<void> {
-    const user = await this.findUserById(userId)
+    const user = await this.getUserById(userId)
 
     await this.prisma.user.update({
       where: { id: userId },
@@ -207,30 +199,6 @@ export class UserService {
       })
 
       return user
-    })
-  }
-
-  async getUserById(id: string) {
-    return await this.prisma.user.findUniqueOrThrow({
-      where: {
-        id,
-      },
-      select: {
-        ...UserSelect,
-      },
-    }).catch(resourceNotFoundWrapper(
-      new BizException(ErrorCodeEnum.UserNotFound),
-    ))
-  }
-
-  async getUserByIds(ids: string[]) {
-    return await this.prisma.user.findMany({
-      where: {
-        id: { in: ids },
-      },
-      select: {
-        ...UserSelect,
-      },
     })
   }
 }

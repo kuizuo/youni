@@ -6,7 +6,7 @@ import { InteractedComment } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { MessageCircle } from "@tamagui/lucide-icons"
 
-export const Comments = ({ itemId, itemType }) => {
+export const CommentList = ({ itemId, itemType }) => {
   const { data, isLoading } = trpc.comment.page.useInfiniteQuery({
     itemId: itemId,
     itemType: itemType,
@@ -110,4 +110,4 @@ const Comment = memo(({ comment }: { comment: InteractedComment }) => {
   </XStack >
 })
 
-export default Comments;
+export default CommentList;

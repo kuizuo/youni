@@ -1,3 +1,4 @@
+import { SnowflakeIdSchema } from '@server/common/dto/id.dto'
 import { baseCursorSchema } from '@server/common/dto/pager.dto'
 import { defaultSchemaOmit } from '@server/utils/zod.util'
 import { NoteOptionalDefaultsSchema } from '@youni/database/zod'
@@ -10,4 +11,8 @@ export class NoteDto extends createZodDto(NoteInputSchema) { }
 export class NoteUpdateDto extends createZodDto(NoteInputSchema.partial()) { }
 
 export class NoteCursorDto extends createZodDto(baseCursorSchema.extend({
+})) { }
+
+export class UserNoteCursorDto extends createZodDto(baseCursorSchema.extend({
+  userId: SnowflakeIdSchema,
 })) { }

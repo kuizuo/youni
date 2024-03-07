@@ -4,13 +4,13 @@ import { useMemo } from "react"
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
 import { window } from "@/constant"
-import { InteractInfo } from "./components/InteractInfo";
-import { Navs } from "./components/Nav";
-import { UserNotes } from "./components/UserNotes";
-import { UserCollections } from "./components/UserCollection";
-import { UserLikes } from "./components/UserLikes";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/utils/trpc";
+import { InteractInfo } from "@/features/profile/components/InteractInfo";
+import { Navs } from "@/features/profile/components/Nav";
+import { UserCollections } from "@/features/profile/components/UserCollection";
+import { UserNotes } from "@/features/profile/components/UserNotes";
+
 
 export const ProfileScreen = () => {
   const theme = useTheme()
@@ -24,23 +24,21 @@ export const ProfileScreen = () => {
   const TABS = useMemo(
     () => [
       {
-        key: 'note',
-        title: '笔记',
+        key: 'following',
+        title: '关注',
         icon: <></>,
         component: () => <UserNotes userId={userId}></UserNotes>,
       },
       {
-        key: 'collection',
-        title: '收藏',
+        key: 'followers',
+        title: '粉丝',
         icon: <></>,
         component: () => <UserCollections userId={userId}></UserCollections>,
       },
-      {
-        key: 'like',
-        title: '赞过',
-        icon: <></>,
-        component: () => <UserLikes userId={userId}></UserLikes>,
-      }
+      // {
+      //   key: 'recommend',
+      //   title: '推荐',
+      // }
     ],
     [],
   )
@@ -54,12 +52,11 @@ export const ProfileScreen = () => {
   return <YStack flex={1} position="relative" backgroundColor={'$background'}>
     <TabbedHeaderPager
       rememberTabScrollPosition
-      // renderHeaderBar={() => {
-      //   return <View flexDirection='row' width='100%' justifyContent="space-between" backgroundColor={'transparent'}>
-      //     <Button>1</Button>
-      //     <Button>2</Button>
-      //   </View>
-      // }}
+      renderHeaderBar={() => {
+        return <View flexDirection='row' width='100%' justifyContent="center" backgroundColor={'transparent'}>
+          <SizableText>{'用户名'}</SizableText>
+        </View>
+      }}
       renderHeader={() => {
         return <Theme name="dark">
           <YStack position="relative">

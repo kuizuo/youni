@@ -25,7 +25,6 @@ export const ImageCarousel = ({ data, width, height }: Props): React.ReactNode =
       width={width ?? windowWidth}
       height={height ?? window.width / 2}
       style={{ width: "100%" }}
-
       loop={false}
       pagingEnabled={false}
       overscrollEnabled={false}

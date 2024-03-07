@@ -13,7 +13,7 @@ import { Action } from '../casl/ability.class'
 import { HistoryService } from '../history/history.service'
 
 import { InteractedNote } from './note'
-import { NoteCursorDto, NoteDto, NoteInputSchema } from './note.dto'
+import { NoteCursorDto, NoteDto, NoteInputSchema, UserNoteCursorDto } from './note.dto'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
 
@@ -64,6 +64,18 @@ export class NoteTrpcRouter implements OnModuleInit {
 
           return await this.notePublicService.appendInteractInfo(note as InteractedNote, user.id)
         }),
+      userNotes: procedureAuth
+        .input(UserNoteCursorDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          const { items, meta } = await this.notePublicService.getNotesByUserId(input)
+
+          return {
+            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
+            meta,
+          }
+        }),
       like: procedureAuth
         .input(IdDto.schema)
         .mutation(async (opt) => {
@@ -80,7 +92,6 @@ export class NoteTrpcRouter implements OnModuleInit {
 
           return this.noteService.paginate(input, user.id)
         }),
-
       create: procedureAuth
         .input(NoteDto.schema)
         .meta({ model: 'Note', action: Action.Create })

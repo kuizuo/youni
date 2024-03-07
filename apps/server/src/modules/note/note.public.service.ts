@@ -13,7 +13,7 @@ import { InteractType } from '../interact/interact.constant'
 import { LikeService } from '../interact/services/like.service'
 
 import { InteractedNote } from './note'
-import { NoteCursorDto } from './note.dto'
+import { NoteCursorDto, UserNoteCursorDto } from './note.dto'
 
 const NoteSelect: Prisma.NoteSelect = {
   id: true,
@@ -110,6 +110,25 @@ export class NotePublicService {
         ...NoteSelect,
       },
     })
+  }
+
+  async getNotesByUserId(dto: UserNoteCursorDto) {
+    const { cursor, limit, userId } = dto
+
+    const [items, meta] = await this.prisma.note.paginate({
+      where: {
+        userId,
+        published: true,
+      },
+      select: {
+        ...NoteSelect,
+      },
+    }).withCursor({
+      limit,
+      ...(cursor && { after: cursor }),
+    })
+
+    return { items, meta }
   }
 
   async getAllNoteIdsByUserId(userId: string) {

@@ -1,8 +1,11 @@
 import { client } from "@/utils/http/client"
 import { useQuery } from "@tanstack/react-query"
 import { UserProfile } from '@server/modules/user/user'
+import { useRouter } from "expo-router"
 
 export const useUser = () => {
+  const router = useRouter()
+
   const {
     data: profile,
     isLoading: isLoadingProfile,
@@ -15,6 +18,10 @@ export const useUser = () => {
       return data as UserProfile
     },
   })
+
+  if (!isLoadingProfile && !profile) {
+    router.replace('/sign-in')
+  }
 
   return {
     profile,

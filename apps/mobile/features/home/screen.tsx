@@ -1,15 +1,13 @@
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { NoteListItem } from '@/ui/note/NoteListItem'
-import { Paragraph, Spinner, YStack, Text, useMedia } from '@/ui'
+import { Paragraph, Spinner, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { empty, error, loading, success } from '@/utils/trpc/patterns'
-import { MasonryFlashList } from '@shopify/flash-list'
 import React from 'react'
-import { RefreshControl } from 'react-native-gesture-handler'
 import { match } from 'ts-pattern'
+import { NoteList } from '@/ui/note/NoteList'
 
 export const HomeScreen = (): React.ReactNode => {
-  const noteList = trpc.note.homeFeed.useInfiniteQuery(
+  const homeFeed = trpc.note.homeFeed.useInfiniteQuery(
     {
       limit: 10,
     },
@@ -18,10 +16,8 @@ export const HomeScreen = (): React.ReactNode => {
     }
   );
 
-  const media = useMedia()
-
-  const noteListLayout = match(noteList)
-    .with(error, () => <EmptyResult message={noteList.failureReason?.message} />)
+  const homeFeedLayout = match(homeFeed)
+    .with(error, () => <EmptyResult message={homeFeed.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center'>
         <Paragraph paddingBottom='$3'>Loading...</Paragraph>
@@ -30,22 +26,13 @@ export const HomeScreen = (): React.ReactNode => {
     ))
     .with(empty, () => <Paragraph>没有更多数据</Paragraph>)
     .with(success, () => (
-      <MasonryFlashList
-        data={noteList.data?.pages[0]?.items as any[]}
-        refreshControl={
-          <RefreshControl refreshing={noteList.isRefetching} />
-        }
-        refreshing={noteList.isRefetching}
-        renderItem={({ item }) => <NoteListItem {...item}></NoteListItem>}
-        numColumns={media.gtLg ? 4 : media.gtMd ? 3 : 2}
-        estimatedItemSize={200}
-      />
+      <NoteList data={homeFeed.data?.pages[0]?.items as any[]} isLoading={homeFeed.isFetching} />
     ))
-    .otherwise(() => <EmptyResult message={noteList.failureReason?.message} />)
+    .otherwise(() => <EmptyResult message={homeFeed.failureReason?.message} />)
 
   return (
     <YStack flex={1} backgroundColor={'$background'}>
-      {noteListLayout}
+      {homeFeedLayout}
     </YStack>
   )
 }

@@ -5,6 +5,7 @@ import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separ
 import { formatTime } from '@/utils/date';
 import { NoteLikeButton, NoteCollectButton } from '@/ui/components/Button';
 
+// @ts-ignore
 const Comments = lazy(() => import('@/ui/components/Comment'));
 
 export default function Screen() {
