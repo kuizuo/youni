@@ -9,6 +9,7 @@ import { RegisterDto } from '@server/modules/auth/auth.dto'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
+import { Prisma } from '@youni/database'
 import { compareSync, hashSync } from 'bcrypt'
 import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
@@ -18,6 +19,13 @@ import { UpdateProfileDto } from '../auth/dtos/account.dto'
 
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto } from './dto/user.dto'
+
+const UserSelect: Prisma.UserSelect = {
+  id: true,
+  nickname: true,
+  avatar: true,
+  desc: true,
+}
 
 @Injectable()
 export class UserService {
@@ -143,21 +151,6 @@ export class UserService {
     })
   }
 
-  async getUserById(id: string) {
-    const user = await this.prisma.user.findUnique({
-      select: {
-        id: true,
-        username: true,
-        status: true,
-      },
-      where: {
-        id,
-      },
-    })
-
-    return user
-  }
-
   async delete(userIds: string[]): Promise<void | never> {
     await this.prisma.user.deleteMany({
       where: {
@@ -214,6 +207,30 @@ export class UserService {
       })
 
       return user
+    })
+  }
+
+  async getUserById(id: string) {
+    return await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      select: {
+        ...UserSelect,
+      },
+    }).catch(resourceNotFoundWrapper(
+      new BizException(ErrorCodeEnum.UserNotFound),
+    ))
+  }
+
+  async getUserByIds(ids: string[]) {
+    return await this.prisma.user.findMany({
+      where: {
+        id: { in: ids },
+      },
+      select: {
+        ...UserSelect,
+      },
     })
   }
 }

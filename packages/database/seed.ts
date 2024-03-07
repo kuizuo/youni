@@ -9,7 +9,7 @@ async function main() {
   await prisma.user.upsert({
     where: { username: 'admin' },
     create: {
-      id: '1',
+      id: '23900561662304251',
       username: 'admin',
       password: hashSync('Aa123456', 10),
       nickname: 'admin',
@@ -23,7 +23,7 @@ async function main() {
   await prisma.user.upsert({
     where: { username: 'user' },
     create: {
-      id: '2',
+      id: '23900561662304252',
       username: 'user',
       password: hashSync('Aa123456', 10),
       nickname: 'user',

@@ -8,6 +8,8 @@ import { z } from 'zod'
 const UserInputSchema = UserOptionalDefaultsSchema.extend({
   phone: z.string().optional(),
   remark: z.string().optional(),
+  desc: z.string().optional(),
+
 })
 
 export class UserDto extends createZodDto(UserInputSchema) {}

@@ -3,7 +3,7 @@ import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { trpc } from '@/utils/trpc';
 import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, Input } from '@/ui';
 import { formatTime } from '@/utils/date';
-import { NoteLikeButton, NoteCollectButton } from '@/ui/components/LikeButton';
+import { NoteLikeButton, NoteCollectButton } from '@/ui/components/Button';
 
 const Comments = lazy(() => import('@/ui/components/Comment'));
 

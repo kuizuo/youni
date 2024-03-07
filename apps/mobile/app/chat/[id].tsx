@@ -4,7 +4,5 @@ import { Text } from '@/ui';
 export default function Screen() {
   const { id } = useLocalSearchParams();
 
-  return <>
-    <Text>ID: {id}</Text>
-  </>
+  return <Text>Chat : {id}</Text>;
 }

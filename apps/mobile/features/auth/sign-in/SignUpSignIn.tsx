@@ -1,6 +1,5 @@
-import { Button, Input, Paragraph, Stack, XStack, YStack } from '@/ui'
+import { Button, Input, Paragraph, Stack, XStack, YStack, Image } from '@/ui'
 import { useState } from 'react'
-import { SolitoImage } from 'solito/image'
 import { Link } from 'solito/link'
 
 interface Props {
@@ -18,7 +17,7 @@ export const SignUpSignInComponent = ({
   const [password, setPassword] = useState('')
 
   return (
-    <YStack 
+    <YStack
       borderRadius='$10'
       gap='$4'
       paddingHorizontal='$7'
@@ -41,7 +40,7 @@ export const SignUpSignInComponent = ({
           focusStyle={{ scale: 0.95 }}
           borderColor='$gray8Light'
         >
-          <SolitoImage
+          <Image
             style={{ width: 25, height: 22 }}
             src={require('@/assets/icons/wechat-logo.png')}
             width={20}
@@ -56,7 +55,7 @@ export const SignUpSignInComponent = ({
           focusStyle={{ scale: 0.95 }}
           borderColor='$gray8Light'
         >
-          <SolitoImage
+          <Image
             style={{ width: 20, height: 20 }}
             src={require('@/assets/icons/google-logo.png')}
             width={20}
@@ -71,7 +70,7 @@ export const SignUpSignInComponent = ({
           focusStyle={{ scale: 0.95 }}
           borderColor='$gray8Light'
         >
-          <SolitoImage
+          <Image
             style={{ width: 22, height: 22 }}
             src={require('@/assets/icons/apple-logo.png')}
             width={22}

@@ -1,7 +1,7 @@
 import type { InteractedNote } from '@server/modules/note/note'
 import { Avatar, Card, Paragraph, XStack, YStack, Image, Text } from '@/ui'
 import { Link, useRouter } from 'expo-router'
-import { NoteLikeButton } from '../components/LikeButton'
+import { NoteLikeButton } from '../components/Button'
 
 export const NoteListItem = (item: InteractedNote): React.ReactElement => {
   const router = useRouter()

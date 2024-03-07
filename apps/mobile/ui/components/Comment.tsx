@@ -1,8 +1,8 @@
 import { trpc } from "@/utils/trpc"
 import React, { memo } from "react"
 import { YStack, XStack, Avatar, Text, Button } from ".."
-import { CommentLikeButton } from "./LikeButton"
-import { CommentModel } from '@server/modules/comment/comment'
+import { CommentLikeButton } from "./Button"
+import { InteractedComment } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { MessageCircle } from "@tamagui/lucide-icons"
 
@@ -10,7 +10,7 @@ export const Comments = ({ itemId, itemType }) => {
   const { data, isLoading } = trpc.comment.page.useInfiniteQuery({
     itemId: itemId,
     itemType: itemType,
-  }, { getNextPageParam: (lastPage) => lastPage.meta.endCursor })
+  }, { getNextPageParam: (lastPage) => lastPage.meta.startCursor })
 
 
   if (isLoading) {
@@ -30,7 +30,7 @@ export const Comments = ({ itemId, itemType }) => {
           data.items.map((comment) => {
             return (
               <CommentListItem
-                comment={comment as unknown as CommentModel}
+                comment={comment as unknown as InteractedComment}
                 key={comment.id}
               />
             )
@@ -41,13 +41,13 @@ export const Comments = ({ itemId, itemType }) => {
   </>
 }
 
-const CommentListItem = memo(({ comment }: { comment: CommentModel }) => {
+const CommentListItem = memo(({ comment }: { comment: InteractedComment }) => {
   return <YStack>
     <Comment comment={comment} />
   </YStack>
 })
 
-const Comment = memo(({ comment }: { comment: CommentModel }) => {
+const Comment = memo(({ comment }: { comment: InteractedComment }) => {
   return <XStack gap='$2.5' alignItems='center' marginVertical="$2">
     <Avatar circular size="$2.5" alignSelf='flex-start' >
       <Avatar.Image
@@ -100,7 +100,7 @@ const Comment = memo(({ comment }: { comment: CommentModel }) => {
           <YStack marginTop='$2' gap='$2' >
             {
               comment.children.map((child) => (
-                <Comment comment={child as unknown as CommentModel} />
+                <Comment comment={child as unknown as InteractedComment} />
               ))
             }
           </YStack>

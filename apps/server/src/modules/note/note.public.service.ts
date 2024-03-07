@@ -111,4 +111,17 @@ export class NotePublicService {
       },
     })
   }
+
+  async getAllNoteIdsByUserId(userId: string) {
+    const items = await this.prisma.note.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    return items.map(item => item.id)
+  }
 }
