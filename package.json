@@ -16,14 +16,14 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "bundle": "pnpm -F server run bundle",
-    "pretest": "dotenv -e .env.test pnpm -C prisma run migrate:dev",
+    "pretest": "dotenv -e .env.test pnpm -F database run migrate:dev",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
-    "prisma:push": "pnpm -F prisma push",
-    "prisma:studio": "pnpm -F prisma studio",
-    "migrate:dev": "pnpm -F prisma migrate:dev",
-    "migrate:deploy": "pnpm -F prisma migrate:deploy"
+    "prisma:push": "pnpm -F database push",
+    "prisma:studio": "pnpm -F database studio",
+    "migrate:dev": "pnpm -F database migrate:dev",
+    "migrate:deploy": "pnpm -F database migrate:deploy"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.1.0",
