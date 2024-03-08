@@ -8,7 +8,7 @@ export enum NoteType {
   News = 'news', // 新闻
 }
 
-export const NoteSelect: Prisma.NoteSelect = {
+export const NoteSelect = {
   id: true,
   title: true,
   content: true,
@@ -16,4 +16,4 @@ export const NoteSelect: Prisma.NoteSelect = {
   tags: true,
   user: true,
   updatedAt: true,
-}
+} satisfies Prisma.NoteSelect

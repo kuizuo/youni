@@ -5,6 +5,7 @@ import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separ
 import { formatTime } from '@/utils/date';
 import { NoteCollectButton } from '@/ui/note/NoteCollectButton';
 import { NoteLikeButton } from '@/ui/note/NoteLikeButton';
+import { InteractedNote } from '@server/modules/note/note';
 
 // @ts-ignore
 const Comments = lazy(() => import('@/ui/comment/Comment'));
@@ -77,8 +78,8 @@ export default function Screen() {
     <XStack borderTopWidth={1} borderColor={'$gray8'} padding='$2.5' gap="$2">
       <Input flex={1} size="$2" placeholder={`说点什么`} />
       <XStack gap='$2'>
-        <NoteLikeButton liked={data.interactInfo.liked} likeCount={data.interactInfo.likeCount} itemId={data.id} />
-        <NoteCollectButton collected={data.interactInfo.collected} collectCount={data.interactInfo.collectedCount} itemId={data.id} />
+        <NoteLikeButton item={data as unknown as InteractedNote} />
+        <NoteCollectButton item={data as unknown as InteractedNote} />
         <CommentButton></CommentButton>
       </XStack>
     </XStack>
