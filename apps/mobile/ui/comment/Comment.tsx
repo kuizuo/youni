@@ -75,10 +75,7 @@ const Comment = memo(({ comment }: { comment: InteractedComment }) => {
 
         <XStack flex={1} justifyContent="flex-end">
           <CommentLikeButton
-            // FIXME: 
-            liked={true}
-            likeCount={120}
-            itemId={comment.id}
+            item={comment}
             size={14}
           />
         </XStack>

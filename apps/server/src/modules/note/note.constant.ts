@@ -15,5 +15,5 @@ export const NoteSelect = {
   imageList: true,
   tags: true,
   user: true,
-  updatedAt: true,
+  publishTime: true,
 } satisfies Prisma.NoteSelect

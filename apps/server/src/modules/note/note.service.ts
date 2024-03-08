@@ -68,6 +68,7 @@ export class NoteService {
       data: {
         ...data,
         userId,
+        publishTime: new Date(),
       },
     })
   }
@@ -77,6 +78,7 @@ export class NoteService {
       where: { id },
       data: {
         ...dto,
+        publishTime: new Date(),
       },
     })
   }

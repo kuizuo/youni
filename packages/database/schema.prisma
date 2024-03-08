@@ -85,6 +85,7 @@ model Note {
   title       String       @db.VarChar(100)
   content     String
   published   Boolean      @default(false)
+  publishTime DateTime?
   imageList   String[]
   tags        NoteTag[]
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)

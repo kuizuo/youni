@@ -63,7 +63,7 @@ export default function Screen() {
         </View>
 
         <Text fontSize='$1' color={'gray'}>
-          {formatTime(data?.updatedAt)}
+          {formatTime(data?.publishTime)}
         </Text>
 
         <Separator marginVertical={15} />
