@@ -74,6 +74,10 @@ export class NotePublicService {
     return this.likeService.like(InteractType.Note, itemId, userId)
   }
 
+  async dislikeNote(itemId: string, userId: string) {
+    return this.likeService.dislike(InteractType.Note, itemId, userId)
+  }
+
   /**
    * 附加交互信息
    */

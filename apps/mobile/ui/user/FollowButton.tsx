@@ -7,8 +7,8 @@ interface Props {
   isFollow: boolean
 }
 
-export const FollowButton = ({ userId, isFollow: initialIsFollow }: Props) => {
-  const [isFollow, setIsFollow] = useState(initialIsFollow);
+export const FollowButton = ({ userId, isFollow: initState }: Props) => {
+  const [isFollow, setIsFollow] = useState(initState)
   const { mutateAsync: followUser } = trpc.interact.follow.useMutation()
   const { mutateAsync: unFollowUser } = trpc.interact.unfollow.useMutation()
 

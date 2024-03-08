@@ -42,6 +42,7 @@ export class PolicyGuard implements CanActivate {
     // 获取请求资源的的 id
     const id = getRequestItemId(request)
 
+    // 如果 id 存在，则检查具体资源
     if (id) {
       const item = await this.prisma[model].findUniqueOrThrow({
         where: { id },

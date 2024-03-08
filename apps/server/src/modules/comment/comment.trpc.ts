@@ -71,6 +71,14 @@ export class CommentTrpcRouter implements OnModuleInit {
 
           return this.commentService.likeComment(id, user.id)
         }),
+      dislike: procedureAuth
+        .input(IdDto.schema)
+        .mutation(async (opt) => {
+          const { input, ctx: { user } } = opt
+          const { id } = input
+
+          return this.commentService.dislikeComment(id, user.id)
+        }),
     })
   }
 }

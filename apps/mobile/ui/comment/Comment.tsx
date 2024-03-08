@@ -1,10 +1,10 @@
 import { trpc } from "@/utils/trpc"
 import React, { memo } from "react"
 import { YStack, XStack, Avatar, Text, Button } from ".."
-import { CommentLikeButton } from "./Button"
 import { InteractedComment } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { MessageCircle } from "@tamagui/lucide-icons"
+import { CommentLikeButton } from "./CommentLikeButton"
 
 export const CommentList = ({ itemId, itemType }) => {
   const { data, isLoading } = trpc.comment.page.useInfiniteQuery({
@@ -75,6 +75,7 @@ const Comment = memo(({ comment }: { comment: InteractedComment }) => {
 
         <XStack flex={1} justifyContent="flex-end">
           <CommentLikeButton
+            // FIXME: 
             liked={true}
             likeCount={120}
             itemId={comment.id}

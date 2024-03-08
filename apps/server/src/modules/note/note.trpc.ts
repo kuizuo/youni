@@ -110,6 +110,14 @@ export class NoteTrpcRouter implements OnModuleInit {
 
           return this.notePublicService.likeNote(id, user.id)
         }),
+      dislike: procedureAuth
+        .input(IdDto.schema)
+        .mutation(async (opt) => {
+          const { input, ctx: { user } } = opt
+          const { id } = input
+
+          return this.notePublicService.dislikeNote(id, user.id)
+        }),
       list: procedureAuth
         .input(NoteCursorDto.schema)
         .meta({ model: 'Note', action: Action.Read })

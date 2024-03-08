@@ -1,7 +1,8 @@
 import type { InteractedNote } from '@server/modules/note/note'
 import { Avatar, Card, Paragraph, XStack, YStack, Image, Text } from '@/ui'
 import { Link, useRouter } from 'expo-router'
-import { NoteLikeButton } from '../components/Button'
+import { NoteLikeButton } from './NoteLikeButton'
+
 
 export const NoteListItem = (item: InteractedNote): React.ReactElement => {
   const router = useRouter()
@@ -44,17 +45,13 @@ export const NoteListItem = (item: InteractedNote): React.ReactElement => {
                 />
                 <Avatar.Fallback />
               </Avatar>
-              <Link href={`/user/${item.user.id}`} asChild>
+              <Link href={`/user/${item.user.id}/profile`} asChild>
                 <Text fontSize={14} opacity={0.7} >
                   {item.user.nickname}
                 </Text>
               </Link>
               <XStack flex={1} justifyContent='flex-end' alignItems='center' gap="$1.5" opacity={0.7}>
-                <NoteLikeButton
-                  liked={item.interactInfo.liked}
-                  likeCount={item.interactInfo.likeCount}
-                  itemId={item.id}
-                />
+                <NoteLikeButton item={item} />
               </XStack>
             </XStack>
           </YStack>

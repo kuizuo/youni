@@ -200,6 +200,10 @@ export class CommentService {
     return this.likeService.like(InteractType.Comment, itemId, userId)
   }
 
+  async dislikeComment(itemId: string, userId: string) {
+    return this.likeService.dislike(InteractType.Comment, itemId, userId)
+  }
+
   async appendInteractInfo(item: InteractedComment, userId: string) {
     const [liked, likeCount, commentCount] = await Promise.all([
       this.likeService.getItemLiked(InteractType.Comment, item.id, userId),

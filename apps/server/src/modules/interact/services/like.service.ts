@@ -23,16 +23,8 @@ export class LikeService {
   async like(type: InteractType, itemId: string, userId: string) {
     const liked = await this.redis.sismember(getRedisKey(`${type}:${itemId}:users`), userId)
 
-    if (liked) {
-      // 之前已点赞过, 则取消
-      await this.redis.multi()
-        .decr(getRedisKey(`${type}:${itemId}:likes`))
-        .srem(getRedisKey(`${type}:${itemId}:users`), userId)
-        .srem(getRedisKey(`u:${userId}:${type}:likes`), itemId)
-        .exec()
-
-      return false
-    }
+    if (liked)
+      return true
 
     await this.redis.multi()
       // 统计条目点赞总数 (用于方便获取点赞数)
@@ -42,6 +34,22 @@ export class LikeService {
       // 添加条目到用户已点赞列表 (用于获取用户已点赞条目)
       .sadd(getRedisKey(`u:${userId}:${type}:likes`), itemId)
       .exec()
+
+    return true
+  }
+
+  async dislike(type: InteractType, itemId: string, userId: string) {
+    const liked = await this.redis.sismember(getRedisKey(`${type}:${itemId}:users`), userId)
+
+    if (liked) {
+      await this.redis.multi()
+        .decr(getRedisKey(`${type}:${itemId}:likes`))
+        .srem(getRedisKey(`${type}:${itemId}:users`), userId)
+        .srem(getRedisKey(`u:${userId}:${type}:likes`), itemId)
+        .exec()
+
+      return true
+    }
 
     return true
   }

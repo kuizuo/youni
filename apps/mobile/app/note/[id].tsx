@@ -3,10 +3,11 @@ import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { trpc } from '@/utils/trpc';
 import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, Input } from '@/ui';
 import { formatTime } from '@/utils/date';
-import { NoteLikeButton, NoteCollectButton } from '@/ui/components/Button';
+import { NoteCollectButton } from '@/ui/note/NoteCollectButton';
+import { NoteLikeButton } from '@/ui/note/NoteLikeButton';
 
 // @ts-ignore
-const Comments = lazy(() => import('@/ui/components/Comment'));
+const Comments = lazy(() => import('@/ui/comment/Comment'));
 
 export default function Screen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -19,7 +20,7 @@ export default function Screen() {
     <Stack.Screen options={{
       headerShown: true,
       headerTitle: () => <>
-        <Link href={`/user/${data?.user.id}`} asChild>
+        <Link href={`/user/${data?.user.id}/profile`} asChild>
           <XStack gap='$2.5' alignItems='center' marginBottom={0}>
             <Avatar circular size="$2">
               <Avatar.Image
