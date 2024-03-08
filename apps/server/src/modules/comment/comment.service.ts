@@ -205,15 +205,15 @@ export class CommentService {
   }
 
   async appendInteractInfo(item: InteractedComment, userId: string) {
-    const [liked, likeCount, commentCount] = await Promise.all([
+    const [liked, likedCount, commentCount] = await Promise.all([
       this.likeService.getItemLiked(InteractType.Comment, item.id, userId),
-      this.likeService.getItemlikeCount(InteractType.Comment, item.id),
+      this.likeService.getItemlikedCount(InteractType.Comment, item.id),
       this.getCommentCount(item.refId, item.refType, item.parentId!),
     ])
 
     item.interactInfo = {
       liked,
-      likeCount,
+      likedCount,
       commentCount,
     }
 

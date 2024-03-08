@@ -15,7 +15,7 @@ export const CommentLikeButton = ({
   size = 16
 }: Props) => {
   const [liked, setLiked] = useState(item.interactInfo.liked)
-  const [likeCount, setLikeCount] = useState(item.interactInfo.likeCount)
+  const [likedCount, setlikedCount] = useState(item.interactInfo.likedCount)
 
   const { mutateAsync: likeComment } = trpc.comment.like.useMutation()
   const { mutateAsync: dislikeComment } = trpc.comment.dislike.useMutation()
@@ -27,7 +27,7 @@ export const CommentLikeButton = ({
       await likeComment({ id: item.id })
     }
     setLiked(!liked)
-    setLikeCount(likeCount + (liked ? -1 : 1))
+    setlikedCount(likedCount + (liked ? -1 : 1))
   }
 
   return <YStack alignItems="center" gap='$1.5'>
@@ -40,7 +40,7 @@ export const CommentLikeButton = ({
       unstyled>
     </Button>
     <Text fontSize={size} color={'gray'}>
-      {likeCount ?? ''}
+      {likedCount ?? ''}
     </Text>
   </YStack>
 }

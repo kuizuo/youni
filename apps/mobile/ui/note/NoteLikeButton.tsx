@@ -14,7 +14,7 @@ export const NoteLikeButton = ({
   size = 16
 }: Props) => {
   const [liked, setLiked] = useState(item.interactInfo.liked)
-  const [likeCount, setLikeCount] = useState(item.interactInfo.likeCount)
+  const [likedCount, setlikedCount] = useState(item.interactInfo.likedCount)
 
   const { mutateAsync: likeComment } = trpc.note.like.useMutation()
   const { mutateAsync: dislikeComment } = trpc.note.dislike.useMutation()
@@ -26,7 +26,7 @@ export const NoteLikeButton = ({
       await likeComment({ id: item.id })
     }
     setLiked(!liked)
-    setLikeCount(likeCount + (liked ? -1 : 1))
+    setlikedCount(likedCount + (liked ? -1 : 1))
   }
 
   return <XStack alignItems="center" gap='$1.5'>
@@ -39,7 +39,7 @@ export const NoteLikeButton = ({
       unstyled>
     </Button>
     <Text fontSize={size} color={'gray'}>
-      {likeCount ?? ''}
+      {likedCount ?? ''}
     </Text>
   </XStack>
 }

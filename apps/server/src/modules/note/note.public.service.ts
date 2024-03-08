@@ -82,9 +82,9 @@ export class NotePublicService {
    * 附加交互信息
    */
   async appendInteractInfo<T extends InteractedNote>(item: T, userId: string) {
-    const [liked, likeCount, collected, collectedCount, commentCount] = await Promise.all([
+    const [liked, likedCount, collected, collectedCount, commentCount] = await Promise.all([
       this.likeService.getItemLiked(InteractType.Note, item.id, userId),
-      this.likeService.getItemlikeCount(InteractType.Note, item.id),
+      this.likeService.getItemlikedCount(InteractType.Note, item.id),
       this.collectionService.isItemInCollection(item.id, userId),
       this.collectionService.getItemCollectedCount(item.id),
       this.commentService.getCommentCount(item.id, 'Note'),
@@ -92,7 +92,7 @@ export class NotePublicService {
 
     item.interactInfo = {
       liked,
-      likeCount,
+      likedCount,
       collectedCount,
       collected,
       commentCount,

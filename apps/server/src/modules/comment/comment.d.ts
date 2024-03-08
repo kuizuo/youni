@@ -3,7 +3,7 @@ export type InteractedComment = Awaited<
 >['items'][0] & {
   interactInfo: {
     liked: boolean
-    likeCount: number
+    likedCount: number
     commentCount: number
   }
 }
