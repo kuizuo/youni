@@ -102,7 +102,7 @@ export class CollectionService {
   async getItems(dto: CollectionItemQueryDto, userId: string) {
     const { collectionId, cursor, limit } = dto
 
-    return await this.prisma.note.paginate({
+    const [items, meta] = await this.prisma.note.paginate({
       where: {
         collections: {
           some: {
@@ -115,6 +115,8 @@ export class CollectionService {
       limit,
       ...(cursor && { after: cursor }),
     })
+
+    return { items, meta }
   }
 
   async addItem(itemId: string, userId: string) {

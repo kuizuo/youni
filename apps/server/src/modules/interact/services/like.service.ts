@@ -1,8 +1,11 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
 
+import { CursorDto } from '@server/common/dto/pager.dto'
 import { getRedisKey } from '@server/utils/redis.util'
 import Redis from 'ioredis'
+
+import { CursorPaginationMeta } from 'prisma-extension-pagination'
 
 import { InteractType } from '../interact.constant'
 
@@ -75,8 +78,23 @@ export class LikeService {
    * @param userId
    * @returns
    */
-  async getUserLikedIds(type: InteractType, userId: string) {
-    return this.redis.smembers(getRedisKey(`u:${userId}:${type}:likes`))
+  async getUserLikedIds(dto: CursorDto, type: InteractType, userId: string) {
+    const { cursor = '0', limit } = dto
+
+    const ids: string[] = []
+
+    const [startCursor, keys] = await this.redis.sscan(getRedisKey(`u:${userId}:${type}:likes`), cursor, 'COUNT', limit)
+    ids.push(...keys)
+
+    const meta: CursorPaginationMeta = {
+      hasNextPage: startCursor !== '0',
+      hasPreviousPage: false,
+      startCursor,
+      endCursor: startCursor,
+    }
+    return { ids, meta }
+
+    // return this.redis.smembers(getRedisKey(`u:${userId}:${type}:likes`))
   }
 
   /**

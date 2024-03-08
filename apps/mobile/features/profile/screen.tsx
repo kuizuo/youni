@@ -7,9 +7,9 @@ import { Theme, YStack, View, useTheme } from "@/ui"
 import { useMemo } from "react"
 import { InteractInfo } from "./components/InteractInfo";
 import { Navs } from "./components/Nav";
-import { UserNotes } from "./components/UserNotes";
-import { UserCollections } from "./components/UserCollection";
-import { UserLikes } from "./components/UserLikes";
+import { UserNote } from "./components/UserNote";
+import { UserCollection } from "./components/UserCollection";
+import { UserLiked } from "./components/UserLiked";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/utils/trpc";
 import { BasicInfo } from "./components/BasicInfo";
@@ -22,7 +22,7 @@ export const ProfileScreen = () => {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const userId = id ?? profile?.id!
+  const userId = id || profile?.id!
 
   const TABS = useMemo(
     () => [
@@ -30,19 +30,19 @@ export const ProfileScreen = () => {
         key: 'note',
         title: '笔记',
         icon: <></>,
-        component: () => <UserNotes userId={userId}></UserNotes>,
+        component: () => <UserNote userId={userId}></UserNote>,
       },
       {
         key: 'collection',
         title: '收藏',
         icon: <></>,
-        component: () => <UserCollections userId={userId}></UserCollections>,
+        component: () => <UserCollection userId={userId}></UserCollection>,
       },
       {
         key: 'like',
         title: '赞过',
         icon: <></>,
-        component: () => <UserLikes userId={userId}></UserLikes>,
+        component: () => <UserLiked userId={userId}></UserLiked>,
       }
     ],
     [],
@@ -73,7 +73,8 @@ export const ProfileScreen = () => {
             {/* 互动 */}
             <InteractInfo userId={userId} nickname={data.nickname}></InteractInfo>
             {/* 快捷导航 */}
-            {data.id === userId && <Navs />}
+            {userId === profile?.id && <Navs />}
+
           </Theme>
         </YStack>
       }}

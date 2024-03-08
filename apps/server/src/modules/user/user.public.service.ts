@@ -7,15 +7,9 @@ import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
-import { Prisma } from '@youni/database'
 import Redis from 'ioredis'
 
-const UserSelect: Prisma.UserSelect = {
-  id: true,
-  nickname: true,
-  avatar: true,
-  desc: true,
-}
+import { UserSelect } from './user.constant'
 
 @Injectable()
 export class UserPublicService {

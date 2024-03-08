@@ -1,7 +1,7 @@
 import { Heart, Star } from "@tamagui/lucide-icons"
 import { Button, SizeTokens, Text, XStack, YStack } from ".."
 import { trpc } from "@/utils/trpc"
-import React from "react"
+import { useState } from "react"
 
 export type LikeButtonProps = {
   liked: boolean
@@ -11,17 +11,20 @@ export type LikeButtonProps = {
 }
 
 export const CommentLikeButton = ({
-  liked,
+  liked: initState,
   likeCount,
   itemId,
   size = 16
 }: LikeButtonProps) => {
+  const [liked, setLiked] = useState(initState)
+
   const { mutate, isLoading: isLiking } = trpc.comment.like.useMutation({
     // TODO: 乐观更新
   });
 
   const handleLike = () => {
     mutate({ id: itemId });
+    setLiked(!liked)
   }
 
   return <YStack alignItems="center" gap='$1.5'>

@@ -4,8 +4,6 @@ import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
-import { Prisma } from '@youni/database'
-
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 import { CollectionService } from '../collection/collection.service'
 import { CommentService } from '../comment/comment.service'
@@ -13,17 +11,8 @@ import { InteractType } from '../interact/interact.constant'
 import { LikeService } from '../interact/services/like.service'
 
 import { InteractedNote } from './note'
+import { NoteSelect } from './note.constant'
 import { NoteCursorDto, UserNoteCursorDto } from './note.dto'
-
-const NoteSelect: Prisma.NoteSelect = {
-  id: true,
-  title: true,
-  content: true,
-  imageList: true,
-  tags: true,
-  user: true,
-  updatedAt: true,
-}
 
 @Injectable()
 export class NotePublicService {
@@ -69,6 +58,18 @@ export class NotePublicService {
     ))
   }
 
+  async getNotesByIds(ids: string[]) {
+    return this.prisma.note.findMany({
+      where: {
+        id: { in: ids },
+        published: true,
+      },
+      select: {
+        ...NoteSelect,
+      },
+    })
+  }
+
   async likeNote(itemId: string, userId: string) {
     return this.likeService.like(InteractType.Note, itemId, userId)
   }
@@ -100,18 +101,6 @@ export class NotePublicService {
     return await Promise.all(items.map(item => this.appendInteractInfo(item, userId)))
   }
 
-  async getNotesByIds(ids: string[]) {
-    return this.prisma.note.findMany({
-      where: {
-        id: { in: ids },
-        published: true,
-      },
-      select: {
-        ...NoteSelect,
-      },
-    })
-  }
-
   async getNotesByUserId(dto: UserNoteCursorDto) {
     const { cursor, limit, userId } = dto
 
@@ -127,6 +116,42 @@ export class NotePublicService {
       limit,
       ...(cursor && { after: cursor }),
     })
+
+    return { items, meta }
+  }
+
+  async getNotesByCollectionId(dto: UserNoteCursorDto) {
+    const { cursor, limit, userId } = dto
+
+    const defaultCollection = await this.collectionService.getDefaultCollection(userId)
+
+    const [items, meta] = await this.prisma.note.paginate({
+      where: {
+        collections: {
+          some: {
+            id: defaultCollection.id,
+            userId,
+          },
+        },
+        published: true,
+      },
+      select: {
+        ...NoteSelect,
+      },
+    }).withCursor({
+      limit,
+      ...(cursor && { after: cursor }),
+    })
+
+    return { items, meta }
+  }
+
+  async getUserLikedNotes(dto: UserNoteCursorDto) {
+    const { cursor, limit, userId } = dto
+
+    const { ids, meta } = await this.likeService.getUserLikedIds({ cursor, limit }, InteractType.Note, userId)
+
+    const items = await this.getNotesByIds(ids)
 
     return { items, meta }
   }

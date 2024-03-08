@@ -9,7 +9,7 @@ import { z } from 'zod'
 
 import { Action } from '../casl/ability.class'
 
-import { CollectionCursorDto, CollectionInputSchema, CollectionItemDto, CollectionItemQueryDto } from './collection.dto'
+import { CollectionCursorDto, CollectionInputSchema, CollectionItemDto } from './collection.dto'
 import { CollectionService } from './collection.service'
 
 @TRPCRouter()
@@ -67,13 +67,6 @@ export class CollectionTrpcRouter implements OnModuleInit {
           const { ctx: { user } } = opt
 
           return this.collectionService.getDefaultCollection(user.id)
-        }),
-      getItems: procedureAuth
-        .input(CollectionItemQueryDto.schema)
-        .query(async (opt) => {
-          const { input, ctx: { user } } = opt
-
-          return this.collectionService.getItems(input, user.id)
         }),
       addItem: procedureAuth
         .input(CollectionItemDto.schema)

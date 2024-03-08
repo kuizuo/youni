@@ -9,7 +9,9 @@ import { CollectionTrpcRouter } from './collection.trpc'
 const providers: Provider[] = [CollectionService, CollectionTrpcRouter]
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    UserModule,
+  ],
   controllers: [CollectionController],
   providers,
   exports: [...providers],

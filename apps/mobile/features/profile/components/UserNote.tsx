@@ -1,4 +1,3 @@
-
 import { Paragraph, Spinner, YStack } from "@/ui";
 import { EmptyResult } from "@/ui/components/EmptyResult";
 import { NoteList } from "@/ui/note/NoteList";
@@ -10,10 +9,10 @@ interface Props {
   userId: string
 }
 
-export const UserCollection = ({ userId }: Props) => {
-  const userCollection = trpc.note.userCollectNotes.useInfiniteQuery(
+export const UserNote = ({ userId }: Props) => {
+  const userNotes = trpc.note.userNotes.useInfiniteQuery(
     {
-      userId,
+      userId: userId,
       limit: 10,
     },
     {
@@ -21,8 +20,8 @@ export const UserCollection = ({ userId }: Props) => {
     }
   );
 
-  const userCollectionLayout = match(userCollection)
-    .with(error, () => <EmptyResult message={userCollection.failureReason?.message} />)
+  const userNotesLayout = match(userNotes)
+    .with(error, () => <EmptyResult message={userNotes.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center' >
         <Paragraph paddingBottom='$3' > Loading...</Paragraph>
@@ -31,13 +30,13 @@ export const UserCollection = ({ userId }: Props) => {
     ))
     .with(empty, () => <Paragraph>没有更多数据 </Paragraph>)
     .with(success, () => (
-      <NoteList data={userCollection.data?.pages[0]?.items as any[]} isLoading={userCollection.isFetching} />
+      <NoteList data={userNotes.data?.pages[0]?.items as any[]} isLoading={userNotes.isFetching} />
     ))
-    .otherwise(() => <EmptyResult message={userCollection.failureReason?.message} />)
+    .otherwise(() => <EmptyResult message={userNotes.failureReason?.message} />)
 
   return (
     <YStack flex={1} backgroundColor={'$background'} >
-      {userCollectionLayout}
+      {userNotesLayout}
     </YStack>
   )
 }

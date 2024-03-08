@@ -76,6 +76,32 @@ export class NoteTrpcRouter implements OnModuleInit {
             meta,
           }
         }),
+      userCollectNotes: procedureAuth
+        .input(UserNoteCursorDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          // TODO: setting 判断用户设置是否允许查看
+          const { items, meta } = await this.notePublicService.getNotesByCollectionId(input)
+
+          return {
+            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
+            meta,
+          }
+        }),
+      userLikedNotes: procedureAuth
+        .input(UserNoteCursorDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          // TODO: setting 判断用户设置是否允许查看
+          const { items, meta } = await this.notePublicService.getUserLikedNotes(input)
+
+          return {
+            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
+            meta,
+          }
+        }),
       like: procedureAuth
         .input(IdDto.schema)
         .mutation(async (opt) => {
