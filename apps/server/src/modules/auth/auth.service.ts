@@ -23,9 +23,9 @@ export class AuthService {
 
   async validateUser(credential: string, password: string, type: LoginType) {
     const user = type === 'account'
-      ? await this.userService.findUserByUsername(credential)
+      ? await this.userService.getUserByUsername(credential)
       : type === 'email'
-        ? await this.userService.findUserByEmail(credential)
+        ? await this.userService.getUserByEmail(credential)
         : null
 
     if (!user)

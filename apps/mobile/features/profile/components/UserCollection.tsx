@@ -1,9 +1,14 @@
-import { YStack } from "@/ui";
+import { YStack, Text } from "@/ui";
 
-export const UserCollections = ({ userId }: { userId: string }) => {
+interface Props {
+  userId: string
+}
+
+export const UserCollections = ({ userId }: Props) => {
   return (
     <YStack flex={1} backgroundColor={'$background'} >
-      TODO
+      <Text>TODO</Text>
+
     </YStack>
   )
 }

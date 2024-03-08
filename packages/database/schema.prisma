@@ -49,7 +49,7 @@ model User {
   avatar      String?      @db.VarChar(1024)
   /// @zod.string.email()
   email       String?      @unique() @db.VarChar(80)
-  nickname    String?      @db.VarChar(50)
+  nickname    String       @default("") @db.VarChar(50)
   phone       String?      @db.VarChar(255)
   /// @zod.string.max(100)
   desc        String?      @db.VarChar(100)

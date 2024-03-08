@@ -30,9 +30,7 @@ export class UserTrpcRouter implements OnModuleInit {
           const { input, ctx: { user } } = opt
           const { id } = input
 
-          const item = await this.userPublicService.getUserById(id)
-
-          return item
+          return await this.userPublicService.getUserById(id)
         }),
     })
   }

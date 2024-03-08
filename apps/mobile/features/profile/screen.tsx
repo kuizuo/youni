@@ -1,9 +1,10 @@
-import { useUser } from "@/utils/auth/hooks/useUser"
-import { Avatar, XStack, YStack, View, SizableText, Paragraph, Image, Theme, useTheme } from "@/ui"
-import { useMemo } from "react"
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
-import { window } from "@/constant"
+
+import { useUser } from "@/utils/auth/hooks/useUser"
+import { Theme, YStack, View, useTheme } from "@/ui"
+import { useMemo } from "react"
 import { InteractInfo } from "./components/InteractInfo";
 import { Navs } from "./components/Nav";
 import { UserNotes } from "./components/UserNotes";
@@ -11,6 +12,8 @@ import { UserCollections } from "./components/UserCollection";
 import { UserLikes } from "./components/UserLikes";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/utils/trpc";
+import { BasicInfo } from "./components/BasicInfo";
+import { UserInfo } from "@server/modules/user/user";
 
 export const ProfileScreen = () => {
   const theme = useTheme()
@@ -52,6 +55,7 @@ export const ProfileScreen = () => {
   }
 
   return <YStack flex={1} position="relative" backgroundColor={'$background'}>
+
     <TabbedHeaderPager
       rememberTabScrollPosition
       // renderHeaderBar={() => {
@@ -61,54 +65,17 @@ export const ProfileScreen = () => {
       //   </View>
       // }}
       renderHeader={() => {
-        return <Theme name="dark">
-          <YStack position="relative">
-            <View marginBottom={top}></View>
-
-            <Image
-              source={require('@/assets/images/profile-background.png')}
-              style={{ position: 'absolute', width: '100%', height: '100%' }}
-            />
-            <XStack gap='$4' padding='$4'>
-              <Avatar circular size="$8">
-                <Avatar.Image
-                  width="100%"
-                  height="100%"
-                  source={require('@/assets/images/avatar.png')}
-                />
-                <Avatar.Fallback />
-              </Avatar>
-              <YStack flex={1} >
-                <XStack gap="$2" alignItems='center'>
-                  <SizableText size={16}>
-                    {data.nickname}
-                  </SizableText>
-
-                  {data.gender ?
-                    <Image
-                      source={data.gender === 1 ? require('@/assets/icons/male.png') : require('@/assets/icons/female.png')}
-                      width={20}
-                      height={20}
-                    /> : <></>
-                  }
-                </XStack>
-
-                <SizableText size={'$1'} marginTop='$2'>
-                  YoId: {data.yoId}
-                </SizableText>
-              </YStack>
-            </XStack >
-
-            <XStack marginHorizontal="$4">
-              <Paragraph>{data.desc ?? '暂无简介'}</Paragraph>
-            </XStack>
-
+        return <YStack>
+          <Theme name="dark">
+            <View marginBottom={top} />
+            {/* 基本信息 */}
+            <BasicInfo data={data as unknown as UserInfo} />
             {/* 互动 */}
-            <InteractInfo userId={userId}></InteractInfo>
+            <InteractInfo userId={userId} nickname={data.nickname}></InteractInfo>
             {/* 快捷导航 */}
             {data.id === userId && <Navs />}
-          </YStack>
-        </Theme>
+          </Theme>
+        </YStack>
       }}
       showsVerticalScrollIndicator={false}
       tabs={TABS.map((tab) => ({
@@ -117,23 +84,35 @@ export const ProfileScreen = () => {
       }))}
       tabTextStyle={{
         color: theme.color?.get(),
+        padding: 0
       }}
       tabTextActiveStyle={{
         backgroundColor: 'transparent',
-        borderBottomWidth: 2,
-        borderBottomColor: 'red'
+      }}
+      tabTextContainerStyle={{
+        padding: 0
       }}
       tabTextContainerActiveStyle={{
         backgroundColor: 'transparent',
       }}
+      tabWrapperStyle={{
+        paddingVertical: 0,
+      }}
+      tabUnderlineColor={'red'}
       tabsContainerStyle={{
         backgroundColor: theme.background?.get(),
-        borderBottomWidth: 1,
-        borderBottomColor: theme.borderColor?.get(),
+        flex: 1,
+        maxWidth: Platform.select({
+          web: 200,
+        }),
+        margin: Platform.select({
+          web: 'auto',
+        }),
       }}
-      tabWrapperStyle={{
-        padding: 0,
-      }}
+      tabsContainerHorizontalPadding={Platform.select({
+        default: 100,
+        web: 0
+      })}
     >
       {TABS.map(({ key, component: Component }) => {
         return <View key={key} >

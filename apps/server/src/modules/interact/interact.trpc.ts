@@ -9,7 +9,7 @@ import { TRPCService } from '@server/shared/trpc/trpc.service'
 import { getRedisKey } from '@server/utils/redis.util'
 
 import { NotePublicService } from '../note/note.public.service'
-import { UserService } from '../user/user.service'
+import { UserPublicService } from '../user/user.public.service'
 
 import { InteractState } from './interact'
 import { InteractType } from './interact.constant'
@@ -26,7 +26,7 @@ export class InteractTrpcRouter implements OnModuleInit {
     private readonly trpcService: TRPCService,
     private readonly followSerive: FollowService,
     private readonly likeService: LikeService,
-    private readonly userService: UserService,
+    private readonly userService: UserPublicService,
     private readonly noteService: NotePublicService,
     private readonly cacheService: CacheService,
   ) { }
@@ -54,7 +54,7 @@ export class InteractTrpcRouter implements OnModuleInit {
 
           return this.followSerive.unfollow(id, user.id)
         }),
-      followings: procedureAuth
+      following: procedureAuth
         .input(InteractCursorDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt

@@ -4,26 +4,27 @@ import { MessageCircle, Settings } from "@tamagui/lucide-icons"
 import { Link } from "expo-router"
 import { XStack } from "tamagui"
 import { Text, Button } from '@/ui'
+import { FollowButton } from "@/ui/user/FollowButton"
 
+interface Props {
+  userId: string
+  nickname: string
+}
 
-export const InteractInfo = ({ userId }: { userId: string }) => {
+export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
   const { data } = trpc.interact.state.useQuery({ id: userId })
 
   const { profile } = useUser()
 
-  const { mutateAsync: followUser } = trpc.interact.follow.useMutation()
-  const { mutateAsync: unFollowUser } = trpc.interact.unfollow.useMutation()
-
-  const handleFollow = async () => {
-    if (data?.isFollow) {
-      await unFollowUser({ id: userId })
-    } else {
-      await followUser({ id: userId })
-    }
-  }
 
   return <XStack gap='$4' padding='$4' alignItems="center">
-    <Link href={'/friend'} asChild>
+    <Link
+      href={{
+        pathname: '/user/[id]/follower',
+        params: { id: userId, type: 'following', title: nickname }
+      }}
+      asChild
+    >
       <XStack gap='$2' alignItems="center">
         <Text>{data?.followingCount}</Text>
         <Text fontSize='$2'>
@@ -31,7 +32,13 @@ export const InteractInfo = ({ userId }: { userId: string }) => {
         </Text>
       </XStack>
     </Link>
-    <Link href={'/friend'} asChild>
+    <Link
+      href={{
+        pathname: '/user/[id]/follower',
+        params: { id: userId, type: 'followers', title: nickname }
+      }}
+      asChild
+    >
       <XStack gap='$2' alignItems="center">
         <Text>{data?.followerCount}</Text>
         <Text fontSize='$2'>
@@ -60,9 +67,7 @@ export const InteractInfo = ({ userId }: { userId: string }) => {
             <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'aliceblue'} borderRadius={50} icon={<Settings />} />
           </Link>
         </> : <>
-          <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'red'} borderRadius={50} onPress={handleFollow}>
-            {data?.isFollow ? '关注' : '取关'}
-          </Button>
+          <FollowButton userId={userId} isFollow={data?.isFollow!}></FollowButton>
 
           <Link href={`/chat/${userId}`} asChild>
             <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'red'} borderRadius={50} icon={<MessageCircle />} />
