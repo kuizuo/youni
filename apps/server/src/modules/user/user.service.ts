@@ -31,14 +31,15 @@ export class UserService {
 
   async getUserById(id: string) {
     return await this.prisma.user.findUniqueOrThrow({ where: { id } })
+      .catch(resourceNotFoundWrapper(new BizException(ErrorCodeEnum.UserNotFound)))
   }
 
   async getUserByUsername(username: string) {
-    return await this.prisma.user.findUniqueOrThrow({ where: { username } })
+    return await this.prisma.user.findUnique({ where: { username } })
   }
 
   async getUserByEmail(email: string) {
-    return await this.prisma.user.findUniqueOrThrow({ where: { email } })
+    return await this.prisma.user.findUnique({ where: { email } })
   }
 
   async getProfile(userId: string) {

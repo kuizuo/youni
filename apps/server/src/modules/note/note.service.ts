@@ -62,22 +62,27 @@ export class NoteService {
   }
 
   async create(dto: NoteDto, userId: string) {
-    const { ...data } = dto
+    const { images, ...data } = dto
 
     return this.prisma.note.create({
       data: {
         ...data,
         userId,
+        images,
+        cover: images![0],
         publishTime: new Date(),
       },
     })
   }
 
   async update(id: string, dto: NoteUpdateDto) {
+    const { images, ...data } = dto
     return this.prisma.note.update({
       where: { id },
       data: {
-        ...dto,
+        ...data,
+        images,
+        cover: images![0],
         publishTime: new Date(),
       },
     })

@@ -17,7 +17,7 @@ export class NoteAbility implements BaseAbility {
       can(Action.Manage, 'Note')
 
     can(Action.Create, 'Note')
-    can(Action.Read, 'Note', { published: true })
+    can(Action.Read, 'Note', { isPublished: true })
     can(Action.Update, 'Note', { userId: user.id })
     can(Action.Delete, 'Note', { userId: user.id })
 

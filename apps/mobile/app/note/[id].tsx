@@ -43,7 +43,7 @@ export default function Screen() {
       headerShadowVisible: false,
     }} />
     <ScrollView position='relative'>
-      <ImageCarousel data={data?.imageList!} />
+      <ImageCarousel data={data?.images.map((image) => image.src)} />
 
       <YStack paddingHorizontal='$3' marginTop="$3" gap='$2'>
         <H5>{data?.title}</H5>

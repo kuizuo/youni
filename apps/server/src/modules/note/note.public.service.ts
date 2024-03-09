@@ -48,7 +48,7 @@ export class NotePublicService {
     return this.prisma.note.findUniqueOrThrow({
       where: {
         id,
-        published: true,
+        isPublished: true,
       },
       select: {
         ...NoteSelect,
@@ -62,7 +62,7 @@ export class NotePublicService {
     return this.prisma.note.findMany({
       where: {
         id: { in: ids },
-        published: true,
+        isPublished: true,
       },
       select: {
         ...NoteSelect,
@@ -111,7 +111,7 @@ export class NotePublicService {
     const [items, meta] = await this.prisma.note.paginate({
       where: {
         userId,
-        published: true,
+        isPublished: true,
       },
       select: {
         ...NoteSelect,
@@ -137,7 +137,7 @@ export class NotePublicService {
             userId,
           },
         },
-        published: true,
+        isPublished: true,
       },
       select: {
         ...NoteSelect,

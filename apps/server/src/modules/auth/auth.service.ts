@@ -29,7 +29,7 @@ export class AuthService {
         : null
 
     if (!user)
-      throw new BizException(ErrorCodeEnum.UserNotFound)
+      throw new BizException(ErrorCodeEnum.PasswordMismatch)
 
     const isSamePassword = compareSync(password, user.password)
 

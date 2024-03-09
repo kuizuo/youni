@@ -15,7 +15,7 @@ export class CollectionAbility implements BaseAbility {
 
     if (user.role === Role.User) {
       can(Action.Create, 'Collection')
-      can(Action.Read, 'Collection', { published: true })
+      can(Action.Read, 'Collection', { isPublished: true })
       can(Action.Update, 'Collection', { userId: user.id })
       can(Action.Delete, 'Collection', { userId: user.id })
     }

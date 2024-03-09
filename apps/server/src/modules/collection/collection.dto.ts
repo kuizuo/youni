@@ -6,7 +6,7 @@ import { z } from 'zod'
 export const CollectionInputSchema = CollectionOptionalDefaultsSchema.pick({
   name: true,
   description: true,
-  published: true,
+  isPublished: true,
 })
 
 export class CollectionDto extends createZodDto(CollectionInputSchema) { }

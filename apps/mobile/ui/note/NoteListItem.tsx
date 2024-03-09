@@ -20,8 +20,7 @@ export const NoteListItem = (item: InteractedNote): React.ReactElement => {
             borderTopRightRadius='$4'
             width="100%"
             minHeight={200}
-            // TODO: return image object
-            source={{ height: 200, uri: item.imageList[0] }}
+            source={{ height: item.cover.height, uri: item.cover.src }}
             resizeMode="cover"
             alignSelf="center"
           />
