@@ -16,6 +16,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
 import { CaslModule } from './modules/casl/casl.module'
 import { CollectionModule } from './modules/collection/collection.module'
 import { CommentModule } from './modules/comment/comment.module'
+import { FileModule } from './modules/file/file.module'
 import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { InteractModule } from './modules/interact/interact.module'
@@ -46,6 +47,7 @@ import { SocketModule } from './socket/socket.module'
     UserModule,
     HealthModule,
     SocketModule,
+    FileModule,
 
     // biz
     NoteModule, // 笔记

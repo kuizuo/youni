@@ -1,5 +1,4 @@
 import cluster from 'node:cluster'
-import path from 'node:path'
 
 import {
   Logger,
@@ -14,6 +13,7 @@ import { fastifyApp } from './common/adapters/fastify.adapter'
 import { RedisIoAdapter } from './common/adapters/socket.adapter'
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor'
 import type { IAppConfig } from './config'
+import { DATA_DIR } from './constants/path.constant'
 import { isDev, isMainProcess } from './global/env'
 import { setupSwagger } from './setup-swagger'
 import { MyLogger } from './shared/logger/logger.service'
@@ -37,7 +37,7 @@ async function bootstrap() {
 
   app.enableCors({ origin: '*', credentials: true })
   app.setGlobalPrefix(globalPrefix)
-  app.useStaticAssets({ root: path.join(__dirname, '..', 'public') })
+  app.useStaticAssets({ root: DATA_DIR })
 
   isDev && app.useGlobalInterceptors(new LoggingInterceptor())
 

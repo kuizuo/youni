@@ -25,21 +25,21 @@ export class GoogleController {
     private readonly authService: AuthService,
     private readonly tokenService: TokenService,
     @Inject(AppConfig.KEY) private readonly appConfig: IAppConfig,
-  ) {}
+  ) { }
 
   @Get()
   @UseGuards(AuthGuard(AuthStrategy.GOOGLE))
-  async googleAuth(@Req() _req: FastifyRequest) {}
+  async googleAuth(@Req() _req: FastifyRequest) { }
 
   @Get('callback')
   @UseGuards(AuthGuard(AuthStrategy.GOOGLE))
   async googleAuthRedirect(
-    @Req() req: FastifyRequest, @Res()
-res: FastifyReply,
+    @Req() req: FastifyRequest,
+    @Res() res: FastifyReply,
   ) {
     // FIXME:
     // const user = await this.authService.loginByGoogle(
-    //   req.user as unknown as Prisma.UserCreateInput,
+    //   res.user as unknown as Prisma.UserCreateInput,
     // )
 
     // const token = await this.tokenService.generateToken(user.id)

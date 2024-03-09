@@ -8,7 +8,9 @@ const app: FastifyAdapter = new FastifyAdapter({
 })
 export { app as fastifyApp }
 
-app.register(FastifyMultipart as any, {
+// eslint-disable-next-line ts/ban-ts-comment
+// @ts-expect-error
+app.register(FastifyMultipart, {
   limits: {
     fields: 10, // Max number of non-file fields
     fileSize: 1024 * 1024 * 6, // limit size 6M
@@ -16,7 +18,9 @@ app.register(FastifyMultipart as any, {
   },
 })
 
-app.register(FastifyCookie as any, {
+// eslint-disable-next-line ts/ban-ts-comment
+// @ts-expect-error
+app.register(FastifyCookie, {
   secret: 'cookie-secret', // 这个 secret 不太重要，不存鉴权相关，无关紧要
 })
 

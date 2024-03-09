@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid'
 
-import { md5 } from './crypto.util'
+import { md5 } from './encrypt.util'
 
 export function getAvatar(mail: string | undefined) {
   if (!mail)

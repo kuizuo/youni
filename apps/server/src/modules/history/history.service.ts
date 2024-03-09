@@ -44,7 +44,7 @@ export class HistoryService {
     if (lastViewedAt)
       return
 
-    await this.cacheService.set(cacheKey, '1', 1 * 60 * 1000)
+    await this.cacheService.set(cacheKey, '1', 60_000)
 
     const history = await this.prisma.history.findFirst({
       where: {

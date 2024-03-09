@@ -18,7 +18,7 @@ export class EmailController {
 
   @Post('send')
   @Public()
-  @Throttle({ default: { limit: 2, ttl: 60 * 1000 } })
+  @Throttle({ default: { limit: 2, ttl: 60_000 } })
   async sendEmailCode(
     @Body() dto: SendEmailCodeDto,
     @Ip() ip: string,

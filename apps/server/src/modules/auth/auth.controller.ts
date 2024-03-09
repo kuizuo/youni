@@ -4,15 +4,15 @@ import { ApiTags } from '@nestjs/swagger'
 import { Ip } from '@server/common/decorators/http.decorator'
 import { ProtectKeys } from '@server/common/decorators/protect-keys.decorator'
 
+import { ResOp } from '@server/common/model/response.model'
+import { FastifyReply } from 'fastify'
+
 import { UserService } from '../user/user.service'
 
 import { LoginDto, RegisterDto } from './auth.dto'
-import { LoginResult } from './auth.model'
 import { AuthService } from './auth.service'
 import { Public } from './decorators/public.decorator'
 import { LocalGuard } from './guards/local.guard'
-import { FastifyReply } from 'fastify'
-import { ResOp } from '@server/common/model/response.model'
 
 @ApiTags('Auth - 认证模块')
 @UseGuards(LocalGuard)
@@ -26,11 +26,10 @@ export class AuthController {
 
   @Post('login')
   async login(
-    @Res() res: FastifyReply,
     @Body() dto: LoginDto,
-    @Ip()
-    ip: string, @Headers('user-agent')
-    ua: string,
+    @Res() res: FastifyReply,
+    @Ip() ip: string,
+    @Headers('user-agent') ua: string,
   ) {
     const { username, password, type } = dto
     // await this.captchaService.checkImgCaptcha(captchaId, verifyCode);
@@ -43,7 +42,7 @@ export class AuthController {
     res.send(
       new ResOp({
         data: { authToken: jwt },
-      })
+      }),
     )
   }
 
