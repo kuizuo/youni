@@ -80,6 +80,7 @@ export class FileController {
     if (!(await this.fileService.exists(type, filename)))
       await this.fileService.writeFile(type, filename, file.file)
 
+    // TODO: save record in dabase
     return {
       url: await this.fileService.resolveFileUrl(type, filename),
       name: filename,
