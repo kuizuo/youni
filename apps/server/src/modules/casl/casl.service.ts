@@ -31,7 +31,8 @@ export class AbilityService implements OnModuleInit {
         try {
           const model = this.reflector.get(ABILITY_FACTORY_KEY, provider.metatype)
 
-          abilityMap[model] = provider.instance
+          if (model)
+            abilityMap[model] = provider.instance
 
           return model
         }

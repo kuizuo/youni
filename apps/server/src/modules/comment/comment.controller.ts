@@ -20,7 +20,6 @@ import { AuthUser } from '../auth/decorators/auth-user.decorator'
 import { Action } from '../casl/ability.class'
 import { Policy } from '../casl/policy.decortor'
 
-import { InteractedComment } from './comment'
 import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
 import { CommentService } from './comment.service'
 
@@ -36,7 +35,9 @@ export class CommentController {
   async page(@Query() dto: CommentCursorDto, @AuthUser() user: IAuthUser) {
     const { items, meta } = await this.commentService.paginate(dto)
 
-    return { items: await this.commentService.appendInteractInfoList(items as InteractedComment[], user.id), meta }
+    await this.commentService.appendInteractInfo(items, user.id)
+
+    return { items, meta }
   }
 
   @Get(':id/sub/page')
@@ -44,7 +45,7 @@ export class CommentController {
   async list(@Query() dto: SubCommentCursorDto, @AuthUser() user: IAuthUser) {
     const { items, meta } = await this.commentService.paginateSubComment(dto)
 
-    await this.commentService.appendInteractInfoList(items as InteractedComment[], user.id)
+    await this.commentService.appendInteractInfo(items, user.id)
 
     return { items, meta }
   }

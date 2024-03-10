@@ -9,8 +9,8 @@ import { UserTrpcRouter } from './user.trpc'
 const providers: Provider[] = [
   UserService,
   UserPublicService,
-  UserAbility,
   UserTrpcRouter,
+  UserAbility,
 ]
 
 @Module({

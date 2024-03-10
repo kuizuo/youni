@@ -5,12 +5,21 @@ import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
+import { scheduleManager } from '@server/utils/schedule.util'
+
+import { InteractType } from '../interact/interact.constant'
+import { CountingService } from '../interact/services/counting.service'
+
 import { CollectionCursorDto, CollectionDto, CollectionItemQueryDto } from './collection.dto'
 
 @Injectable()
 export class CollectionService {
   @InjectPrismaClient()
-  private prisma: ExtendedPrismaClient
+  private readonly prisma: ExtendedPrismaClient
+
+  constructor(private readonly countingService: CountingService) {
+
+  }
 
   async paginate(
     dto: CollectionCursorDto,
@@ -141,6 +150,11 @@ export class CollectionService {
         },
       },
     })
+
+    scheduleManager.schedule(async () => {
+      const count = await this.getItemCollectedCount(itemId)
+      await this.countingService.updateCollectionCount(InteractType.Note, itemId, count)
+    })
   }
 
   async deleteItem(itemId: string, userId: string) {
@@ -158,6 +172,11 @@ export class CollectionService {
           },
         },
       },
+    })
+
+    scheduleManager.schedule(async () => {
+      const count = await this.getItemCollectedCount(itemId)
+      await this.countingService.updateCollectionCount(InteractType.Note, itemId, count)
     })
   }
 

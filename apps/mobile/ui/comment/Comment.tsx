@@ -1,7 +1,7 @@
 import { trpc } from "@/utils/trpc"
 import React, { memo } from "react"
 import { YStack, XStack, Avatar, Text, Button } from ".."
-import { InteractedComment } from '@server/modules/comment/comment'
+import { CommentItem } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { MessageCircle } from "@tamagui/lucide-icons"
 import { CommentLikeButton } from "./CommentLikeButton"
@@ -30,7 +30,7 @@ export const CommentList = ({ itemId, itemType }) => {
           data.items.map((comment) => {
             return (
               <CommentListItem
-                comment={comment as unknown as InteractedComment}
+                comment={comment as unknown as CommentItem}
                 key={comment.id}
               />
             )
@@ -41,13 +41,13 @@ export const CommentList = ({ itemId, itemType }) => {
   </>
 }
 
-const CommentListItem = memo(({ comment }: { comment: InteractedComment }) => {
+const CommentListItem = memo(({ comment }: { comment: CommentItem }) => {
   return <YStack>
     <Comment comment={comment} />
   </YStack>
 })
 
-const Comment = memo(({ comment }: { comment: InteractedComment }) => {
+const Comment = memo(({ comment }: { comment: CommentItem }) => {
   return <XStack gap='$2.5' alignItems='center' marginVertical="$2">
     <Avatar circular size="$2.5" alignSelf='flex-start' >
       <Avatar.Image
@@ -98,7 +98,7 @@ const Comment = memo(({ comment }: { comment: InteractedComment }) => {
           <YStack marginTop='$2' gap='$2' >
             {
               comment.children.map((child) => (
-                <Comment comment={child as unknown as InteractedComment} />
+                <Comment comment={child as unknown as CommentItem} />
               ))
             }
           </YStack>

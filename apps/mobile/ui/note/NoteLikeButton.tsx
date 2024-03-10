@@ -2,10 +2,10 @@ import { trpc } from "@/utils/trpc"
 import { Heart } from "@tamagui/lucide-icons"
 import { Button, SizeTokens, XStack, Text } from ".."
 import { useState } from "react"
-import { InteractedNote } from "@server/modules/note/note"
+import { NoteItem } from "@server/modules/note/note"
 
 export interface Props {
-  item: InteractedNote
+  item: NoteItem
   size?: SizeTokens
 }
 
@@ -13,8 +13,8 @@ export const NoteLikeButton = ({
   item,
   size = 16
 }: Props) => {
-  const [liked, setLiked] = useState(item.interactInfo.liked)
-  const [likedCount, setlikedCount] = useState(item.interactInfo.likedCount)
+  const [liked, setLiked] = useState(item.interact.liked)
+  const [likedCount, setlikedCount] = useState(item.interact.likedCount)
 
   const { mutateAsync: likeComment } = trpc.note.like.useMutation()
   const { mutateAsync: dislikeComment } = trpc.note.dislike.useMutation()

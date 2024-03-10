@@ -6,13 +6,13 @@ import { TRPCRouter } from '@server/shared/trpc/trpc.decorator'
 import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
 import { TRPCService } from '@server/shared/trpc/trpc.service'
 import { scheduleManager } from '@server/utils/schedule.util'
+import { Note } from '@youni/database'
 import { z } from 'zod'
 
 import { Action } from '../casl/ability.class'
 
 import { HistoryService } from '../history/history.service'
 
-import { InteractedNote } from './note'
 import { NoteCursorDto, NoteDto, NoteInputSchema, UserNoteCursorDto } from './note.dto'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
@@ -41,10 +41,12 @@ export class NoteTrpcRouter implements OnModuleInit {
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          const [items, meta] = await this.notePublicService.homeFeed(input, user.id)
+          const { items, meta } = await this.notePublicService.homeFeed(input, user.id)
+
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
 
           return {
-            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
+            items,
             meta,
           }
         }),
@@ -62,7 +64,9 @@ export class NoteTrpcRouter implements OnModuleInit {
             })
           }
 
-          return await this.notePublicService.appendInteractInfo(note as InteractedNote, user.id)
+          await this.notePublicService.appendInteractInfo(note as unknown as Note, user.id, true)
+
+          return note
         }),
       userNotes: procedureAuth
         .input(UserNoteCursorDto.schema)
@@ -71,8 +75,10 @@ export class NoteTrpcRouter implements OnModuleInit {
 
           const { items, meta } = await this.notePublicService.getNotesByUserId(input)
 
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
+
           return {
-            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
+            items,
             meta,
           }
         }),
@@ -84,8 +90,10 @@ export class NoteTrpcRouter implements OnModuleInit {
           // TODO: setting 判断用户设置是否允许查看
           const { items, meta } = await this.notePublicService.getNotesByCollectionId(input)
 
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
+
           return {
-            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
+            items,
             meta,
           }
         }),
@@ -97,8 +105,10 @@ export class NoteTrpcRouter implements OnModuleInit {
           // TODO: setting 判断用户设置是否允许查看
           const { items, meta } = await this.notePublicService.getUserLikedNotes(input)
 
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
+
           return {
-            items: await this.notePublicService.appendInteractInfoList(items as unknown as InteractedNote[], user.id),
+            items,
             meta,
           }
         }),

@@ -2,10 +2,10 @@ import { Star } from "@tamagui/lucide-icons"
 import { Button, SizeTokens, Text, XStack } from ".."
 import { trpc } from "@/utils/trpc"
 import { useState } from "react"
-import { InteractedNote } from "@server/modules/note/note"
+import { NoteItem } from "@server/modules/note/note"
 
 export type Props = {
-  item: InteractedNote
+  item: NoteItem
   size?: SizeTokens
 }
 
@@ -13,8 +13,8 @@ export const NoteCollectButton = ({
   item,
   size = 16
 }: Props) => {
-  const [collected, setCollected] = useState(item.interactInfo.collected)
-  const [collectedCount, setCollectedCount] = useState(item.interactInfo.collectedCount)
+  const [collected, setCollected] = useState(item.interact.collected)
+  const [collectedCount, setCollectedCount] = useState(item.interact.collectedCount)
 
   const { mutateAsync: collectNote } = trpc.collection.addItem.useMutation({})
   const { mutateAsync: deletacollectNote } = trpc.collection.deleteItem.useMutation({})

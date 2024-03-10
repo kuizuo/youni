@@ -6,7 +6,7 @@ import { EmptyResult } from '@/ui/components/EmptyResult';
 import { NoteListItem } from '@/ui/note/NoteListItem';
 import { MasonryFlashList } from '@shopify/flash-list';
 import { RefreshControl } from 'react-native';
-import { InteractedNote } from '@server/modules/note/note';
+import { NoteItem } from '@server/modules/note/note';
 
 export function HistoryScreen() {
   const historyList = trpc.history.list.useInfiniteQuery(
@@ -31,7 +31,7 @@ export function HistoryScreen() {
     .with(empty, () => <Paragraph>没有任何浏览记录</Paragraph>)
     .with(success, () => (
       <MasonryFlashList
-        data={historyList.data?.pages[0]?.items as unknown as InteractedNote[]}
+        data={historyList.data?.pages[0]?.items as unknown as NoteItem[]}
         refreshControl={
           <RefreshControl refreshing={historyList.isRefetching} />
         }

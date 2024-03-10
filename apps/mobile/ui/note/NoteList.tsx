@@ -1,11 +1,11 @@
-import { InteractedNote } from "@server/modules/note/note"
+import { NoteItem } from "@server/modules/note/note"
 import { MasonryFlashList } from "@shopify/flash-list"
 import { RefreshControl } from "react-native"
 import { NoteListItem } from "./NoteListItem"
 import { useMedia } from "tamagui"
 
 type Props = {
-  data: InteractedNote[]
+  data: NoteItem[]
   isLoading: boolean
 }
 

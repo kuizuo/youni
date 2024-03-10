@@ -46,14 +46,12 @@ export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
         </Text>
       </XStack>
     </Link>
-    <Link href={'/friend'} asChild>
-      <XStack gap='$2' alignItems="center">
-        <Text>{data?.likesCount}</Text>
-        <Text fontSize='$2'>
-          获赞
-        </Text>
-      </XStack>
-    </Link>
+    <XStack gap='$2' alignItems="center">
+      <Text>{data?.likesCount}</Text>
+      <Text fontSize='$2'>
+        获赞
+      </Text>
+    </XStack>
 
     <XStack flex={1} justifyContent="flex-end" gap="$3">
       {

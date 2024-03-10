@@ -90,9 +90,11 @@ model Note {
   images      Json         @default("[]")
   /// [NoteImage]
   cover       Json         @default("{}") /// @zod.custom.omit(["model", "input"])
-  tags        NoteTag[]
+  /// [Interact]
+  interact    Json         @default("{\"likedCount\": 0, \"collectCount\": 0, \"commentCount\": 0 }") /// @zod.custom.omit(["model", "input"])
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @map("updated_at")
+  tags        NoteTag[]
   collections Collection[]
   history     History[]
   user        User         @relation(fields: [userId], references: [id])
@@ -141,6 +143,8 @@ model Comment {
   children  Comment[]      @relation("ChildComments")
   ip        String?
   location  String?
+  /// [Interact]
+  interact  Json           @default("{\"likedCount\": 0, \"commentCount\": 0 }") /// @zod.custom.omit(["model", "input"])
   createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   user      User           @relation(fields: [userId], references: [id])
   userId    String

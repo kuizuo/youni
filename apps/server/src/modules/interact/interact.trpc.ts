@@ -8,14 +8,12 @@ import { TRPCService } from '@server/shared/trpc/trpc.service'
 
 import { getRedisKey } from '@server/utils/redis.util'
 
-import { NotePublicService } from '../note/note.public.service'
 import { UserPublicService } from '../user/user.public.service'
 
 import { InteractState } from './interact'
-import { InteractType } from './interact.constant'
 import { InteractCursorDto } from './interact.dto'
+import { CountingService } from './services/counting.service'
 import { FollowService } from './services/follow.service'
-import { LikeService } from './services/like.service'
 
 @TRPCRouter()
 @Injectable()
@@ -25,9 +23,8 @@ export class InteractTrpcRouter implements OnModuleInit {
   constructor(
     private readonly trpcService: TRPCService,
     private readonly followSerive: FollowService,
-    private readonly likeService: LikeService,
     private readonly userService: UserPublicService,
-    private readonly noteService: NotePublicService,
+    private readonly countingService: CountingService,
     private readonly cacheService: CacheService,
   ) { }
 
@@ -115,9 +112,7 @@ export class InteractTrpcRouter implements OnModuleInit {
           const followingCount = await this.followSerive.getFollowingCount(id)
           const followerCount = await this.followSerive.getFollowerCount(id)
 
-          const itemIds = await this.noteService.getAllNoteIdsByUserId(id)
-
-          const likesCount = await this.likeService.getUserLikesCount(InteractType.Note, itemIds, id)
+          const likesCount = await this.countingService.getUserLikedCount(id)
 
           const result: InteractState = {
             followingCount,
@@ -126,7 +121,7 @@ export class InteractTrpcRouter implements OnModuleInit {
             isFollow,
           }
 
-          await this.cacheService.set(key, result, 5 * 1000)
+          // await this.cacheService.set(key, result, 5 * 1000)
           return result
         }),
     })

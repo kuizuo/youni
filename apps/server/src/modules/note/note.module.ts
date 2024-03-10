@@ -24,8 +24,8 @@ const providers: Provider[] = [
 @Module({
   imports: [
     forwardRef(() => HistoryModule),
-    forwardRef(() => InteractModule),
     forwardRef(() => CommentModule),
+    InteractModule,
     CollectionModule,
     UserModule,
   ],

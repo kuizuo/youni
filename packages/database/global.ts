@@ -7,6 +7,14 @@ declare global {
     }
 
     type NoteImages = NoteImage[]
+
+    type Interact = {
+      liked?: boolean
+      likedCount?: number
+      collected?: boolean
+      collectedCount?: number
+      commentCount?: number
+    }
   }
 }
 

@@ -9,7 +9,7 @@ import { CommentRefType } from './comment.constant'
 export const CreateCommentInputSchema = CommentSchema.pick({
   content: true,
 }).extend({
-  parentId: SnowflakeIdSchema.optional(),
+  parentId: SnowflakeIdSchema.optional().nullable(),
   itemId: SnowflakeIdSchema,
   itemType: z.nativeEnum(CommentRefType),
 })

@@ -6,15 +6,16 @@ import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/databas
 
 import { getIpLocation } from '@server/utils/ip.util'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
-import { CommentRefType } from '@youni/database'
+import { scheduleManager } from '@server/utils/schedule.util'
+import { Comment, CommentRefType } from '@youni/database'
 
 import { CursorPaginationMeta } from 'prisma-extension-pagination'
 
 import { InteractType } from '../interact/interact.constant'
+import { CountingService } from '../interact/services/counting.service'
 import { LikeService } from '../interact/services/like.service'
 import { UserService } from '../user/user.service'
 
-import { InteractedComment } from './comment'
 import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
 
 @Injectable()
@@ -25,6 +26,7 @@ export class CommentService {
   constructor(
     private readonly userService: UserService,
     private readonly likeService: LikeService,
+    private readonly countingService: CountingService,
   ) { }
 
   async paginate(dto: CommentCursorDto) {
@@ -117,11 +119,18 @@ export class CommentService {
       },
       include: {
         children: true,
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true,
+          },
+        },
       },
     })
   }
 
-  async getCommentCount(itemId: string, itemType: CommentRefType, parentId?: string) {
+  async getCommentCount(itemType: CommentRefType, itemId: string, parentId?: string) {
     return this.prisma.comment.count({
       where: {
         refId: itemId,
@@ -139,7 +148,7 @@ export class CommentService {
     if (!ref)
       throw new BizException(ErrorCodeEnum.ResourceNotFound)
 
-    return await this.prisma.comment.create({
+    const comment = await this.prisma.comment.create({
       data: {
         refId: itemId,
         refType: itemType,
@@ -148,6 +157,13 @@ export class CommentService {
         userId,
       },
     })
+
+    scheduleManager.schedule(async () => {
+      const count = await this.getCommentCount(itemType, itemId)
+      await this.countingService.updateCollectionCount(InteractType.Note, itemId, count)
+    })
+
+    return comment
   }
 
   async getItemById(itemId: string, itemType: CommentRefType) {
@@ -197,30 +213,37 @@ export class CommentService {
   }
 
   async likeComment(itemId: string, userId: string) {
-    return this.likeService.like(InteractType.Comment, itemId, userId)
+    const ok = await this.likeService.like(InteractType.Comment, itemId, userId)
+
+    if (ok) {
+      scheduleManager.schedule(async () => {
+        await this.countingService.updateLikeCount(InteractType.Comment, itemId)
+      })
+    }
+
+    return ok
   }
 
   async dislikeComment(itemId: string, userId: string) {
-    return this.likeService.dislike(InteractType.Comment, itemId, userId)
-  }
+    const ok = await this.likeService.dislike(InteractType.Comment, itemId, userId)
 
-  async appendInteractInfo(item: InteractedComment, userId: string) {
-    const [liked, likedCount, commentCount] = await Promise.all([
-      this.likeService.getItemLiked(InteractType.Comment, item.id, userId),
-      this.likeService.getItemlikedCount(InteractType.Comment, item.id),
-      this.getCommentCount(item.refId, item.refType, item.parentId!),
-    ])
-
-    item.interactInfo = {
-      liked,
-      likedCount,
-      commentCount,
+    if (ok) {
+      scheduleManager.schedule(async () => {
+        await this.countingService.updateLikeCount(InteractType.Comment, itemId)
+      })
     }
 
-    return item
+    return ok
   }
 
-  async appendInteractInfoList(items: InteractedComment[], userId: string) {
-    return await Promise.all(items.map(item => this.appendInteractInfo(item, userId)))
+  async appendInteractInfo(items: Comment | Comment[], userId: string) {
+    if (!Array.isArray(items))
+      items = [items]
+
+    const likedList = await Promise.all(items.map(item => this.likeService.getItemLiked(InteractType.Comment, item.id, userId)))
+
+    items.forEach((item, index) => {
+      item.interact.liked = likedList[index]
+    })
   }
 }

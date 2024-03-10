@@ -4,13 +4,17 @@ import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
+import { scheduleManager } from '@server/utils/schedule.util'
+
+import { Note } from '@youni/database'
+
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 import { CollectionService } from '../collection/collection.service'
 import { CommentService } from '../comment/comment.service'
 import { InteractType } from '../interact/interact.constant'
+import { CountingService } from '../interact/services/counting.service'
 import { LikeService } from '../interact/services/like.service'
 
-import { InteractedNote } from './note'
 import { NoteSelect } from './note.constant'
 import { NoteCursorDto, UserNoteCursorDto } from './note.dto'
 
@@ -21,6 +25,7 @@ export class NotePublicService {
 
   constructor(
     private readonly likeService: LikeService,
+    private readonly countingService: CountingService,
     private readonly commentService: CommentService,
     private readonly collectionService: CollectionService,
   ) { }
@@ -29,7 +34,7 @@ export class NotePublicService {
     const { cursor, limit } = dto
     // FIXME: user analysis
 
-    return this.prisma.note.paginate({
+    const [items, meta] = await this.prisma.note.paginate({
       include: {
         user: {
           select: {
@@ -42,10 +47,15 @@ export class NotePublicService {
       limit,
       ...(cursor && { after: cursor }),
     })
+
+    return {
+      items,
+      meta,
+    }
   }
 
   async getNoteById(id: string) {
-    return this.prisma.note.findUniqueOrThrow({
+    return await this.prisma.note.findUniqueOrThrow({
       where: {
         id,
         isPublished: true,
@@ -71,38 +81,40 @@ export class NotePublicService {
   }
 
   async likeNote(itemId: string, userId: string) {
-    return this.likeService.like(InteractType.Note, itemId, userId)
+    const ok = await this.likeService.like(InteractType.Note, itemId, userId)
+
+    if (ok) {
+      scheduleManager.schedule(async () => {
+        await this.countingService.updateLikeCount(InteractType.Note, itemId)
+      })
+    }
+    return ok
   }
 
   async dislikeNote(itemId: string, userId: string) {
-    return this.likeService.dislike(InteractType.Note, itemId, userId)
-  }
+    const ok = await this.likeService.dislike(InteractType.Note, itemId, userId)
 
-  /**
-   * 附加交互信息
-   */
-  async appendInteractInfo<T extends InteractedNote>(item: T, userId: string) {
-    const [liked, likedCount, collected, collectedCount, commentCount] = await Promise.all([
-      this.likeService.getItemLiked(InteractType.Note, item.id, userId),
-      this.likeService.getItemlikedCount(InteractType.Note, item.id),
-      this.collectionService.isItemInCollection(item.id, userId),
-      this.collectionService.getItemCollectedCount(item.id),
-      this.commentService.getCommentCount(item.id, 'Note'),
-    ])
-
-    item.interactInfo = {
-      liked,
-      likedCount,
-      collectedCount,
-      collected,
-      commentCount,
+    if (ok) {
+      scheduleManager.schedule(async () => {
+        await this.countingService.updateLikeCount(InteractType.Note, itemId)
+      })
     }
 
-    return item
+    return ok
   }
 
-  async appendInteractInfoList<T extends InteractedNote>(items: T[], userId: string) {
-    return await Promise.all(items.map(item => this.appendInteractInfo(item, userId)))
+  async appendInteractInfo(items: Note | Note[], userId: string, includeCollected: boolean = false) {
+    if (!Array.isArray(items))
+      items = [items]
+
+    const likedList = await Promise.all(items.map(item => this.likeService.getItemLiked(InteractType.Note, item.id, userId)))
+    const collectedList = includeCollected ? await Promise.all(items.map(item => this.collectionService.isItemInCollection(item.id, userId))) : []
+
+    items.forEach((item, index) => {
+      item.interact.liked = likedList[index]
+      if (includeCollected)
+        item.interact.collected = collectedList[index]
+    })
   }
 
   async getNotesByUserId(dto: UserNoteCursorDto) {

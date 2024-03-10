@@ -5,7 +5,8 @@ import { TRPCRouter } from '@server/shared/trpc/trpc.decorator'
 import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
 import { TRPCService } from '@server/shared/trpc/trpc.service'
 
-import { InteractedNote } from '../note/note'
+import { Note } from '@youni/database'
+
 import { NotePublicService } from '../note/note.public.service'
 
 import { HistoryCursorDto } from './history.dto'
@@ -40,8 +41,10 @@ export class HistoryTrpcRouter implements OnModuleInit {
 
           const notes = await this.noteService.getNotesByIds(noteIds)
 
+          await this.noteService.appendInteractInfo(notes as unknown as Note[], user.id)
+
           return {
-            items: await this.noteService.appendInteractInfoList(notes as InteractedNote[], user.id),
+            items: notes,
             meta,
           }
         }),

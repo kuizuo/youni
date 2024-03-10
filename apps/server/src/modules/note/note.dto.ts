@@ -12,7 +12,7 @@ export const NoteInputSchema = NoteOptionalDefaultsSchema
     images: ImageSchema.array().min(1, { message: '至少需要一张图片' }),
     publishTime: z.coerce.date().optional().nullable(),
   })
-  .omit(defaultSchemaOmit).omit({ cover: true })
+  .omit(defaultSchemaOmit)
 
 export class NoteDto extends createZodDto(NoteInputSchema) { }
 
