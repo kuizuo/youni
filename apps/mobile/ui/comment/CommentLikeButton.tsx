@@ -1,12 +1,12 @@
 
 import { trpc } from "@/utils/trpc"
 import { Heart } from "@tamagui/lucide-icons"
-import { Button, SizeTokens, Text, YStack } from ".."
+import { Button, SizeTokens, Text, XStack, YStack } from ".."
 import { useState } from "react"
-import { Comment } from "@server/modules/comment/comment"
+import { CommentItem } from "@server/modules/comment/comment"
 
 export interface Props {
-  item: Comment
+  item: CommentItem
   size?: SizeTokens
 }
 
@@ -14,8 +14,8 @@ export const CommentLikeButton = ({
   item,
   size = 16
 }: Props) => {
-  const [liked, setLiked] = useState(item.interact.liked)
-  const [likedCount, setlikedCount] = useState(item.interact.likedCount)
+  const [liked, setLiked] = useState(item.interact?.liked)
+  const [likedCount, setlikedCount] = useState(item.interact?.likedCount)
 
   const { mutateAsync: likeComment } = trpc.comment.like.useMutation()
   const { mutateAsync: dislikeComment } = trpc.comment.dislike.useMutation()
@@ -30,7 +30,7 @@ export const CommentLikeButton = ({
     setlikedCount(likedCount + (liked ? -1 : 1))
   }
 
-  return <YStack alignItems="center" gap='$1.5'>
+  return <XStack alignItems="center" gap='$1.5'>
     <Button
       icon={<Heart
         fill={liked ? '#FF2442' : 'transparent'}
@@ -40,7 +40,7 @@ export const CommentLikeButton = ({
       unstyled>
     </Button>
     <Text fontSize={size} color={'gray'}>
-      {likedCount ?? ''}
+      {likedCount || ''}
     </Text>
-  </YStack>
+  </XStack>
 }

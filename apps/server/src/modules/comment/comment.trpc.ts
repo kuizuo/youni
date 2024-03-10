@@ -63,7 +63,7 @@ export class CommentTrpcRouter implements OnModuleInit {
           const { input } = opt
           const { id } = input
 
-          return this.commentService.delete(id)
+          return this.commentService.deleteComment(id)
         }),
       like: procedureAuth
         .input(IdDto.schema)

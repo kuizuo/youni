@@ -64,6 +64,8 @@ export class CommentService {
           select: {
             content: true,
             createdAt: true,
+            refId: true,
+            refType: true,
             location: true,
             user: {
               select: {
@@ -166,6 +168,21 @@ export class CommentService {
     return comment
   }
 
+  async deleteComment(id: string) {
+    const comment = await this.prisma.comment.delete({
+      where: {
+        id,
+      },
+    })
+
+    scheduleManager.schedule(async () => {
+      const count = await this.getCommentCount(comment.refType, comment.refId)
+      await this.countingService.updateCollectionCount(InteractType.Note, comment.refId, count)
+    })
+
+    return comment
+  }
+
   async getItemById(itemId: string, itemType: CommentRefType) {
     switch (itemType) {
       case CommentRefType.Note:
@@ -178,14 +195,6 @@ export class CommentService {
         ))
       // case CommentRefType.xxx:
     }
-  }
-
-  async delete(id: string) {
-    return this.prisma.comment.delete({
-      where: {
-        id,
-      },
-    })
   }
 
   async appendIpLocation(id: string, ip: string) {

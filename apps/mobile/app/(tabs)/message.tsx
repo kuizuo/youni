@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Text, View, YStack } from '@/ui';
+import { Button, Input, Text, View, YStack } from '@/ui';
 import { AvatarHeaderScrollView } from 'react-native-sticky-parallax-header'
 import { Stack } from 'expo-router';
 

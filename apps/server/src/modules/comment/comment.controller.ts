@@ -79,6 +79,6 @@ export class CommentController {
   @ApiOperation({ summary: '删除评论' })
   @Policy({ model: 'Comment', action: Action.Delete })
   async delete(@Param() { id }: IdDto) {
-    await this.commentService.delete(id)
+    await this.commentService.deleteComment(id)
   }
 }

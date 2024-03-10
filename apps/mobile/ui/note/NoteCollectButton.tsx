@@ -30,7 +30,7 @@ export const NoteCollectButton = ({
     setCollectedCount(collected ? collectedCount - 1 : collectedCount + 1)
   }
 
-  return <XStack alignItems="center">
+  return <XStack alignItems="center" gap='$1.5'>
     <Button
       icon={<Star
         fill={collected ? '#FDBC5F' : 'transparent'}
@@ -39,8 +39,8 @@ export const NoteCollectButton = ({
       onPressOut={handleCollect}
       unstyled>
     </Button>
-    <Text marginLeft="$1.5" fontSize={size} color={'gray'}>
-      {collectedCount}
+    <Text fontSize={size} color={'gray'}>
+      {collectedCount || '收藏'}
     </Text>
   </XStack>
 }

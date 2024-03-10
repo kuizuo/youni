@@ -51,6 +51,14 @@ export class InteractTrpcRouter implements OnModuleInit {
 
           return this.followSerive.unfollow(id, user.id)
         }),
+      isFollowing: procedureAuth
+        .input(IdDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+          const { id } = input
+
+          return await this.followSerive.isUserFollowing(id, user.id)
+        }),
       following: procedureAuth
         .input(InteractCursorDto.schema)
         .query(async (opt) => {

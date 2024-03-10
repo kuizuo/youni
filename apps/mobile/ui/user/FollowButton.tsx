@@ -4,21 +4,21 @@ import { useState } from "react"
 
 interface Props {
   userId: string
-  isFollow: boolean
+  isFollowing: boolean
 }
 
-export const FollowButton = ({ userId, isFollow: initState }: Props) => {
-  const [isFollow, setIsFollow] = useState(initState)
+export const FollowButton = ({ userId, isFollowing: initState }: Props) => {
+  const [isFollowing, setIsFollowing] = useState(initState)
   const { mutateAsync: followUser } = trpc.interact.follow.useMutation()
   const { mutateAsync: unFollowUser } = trpc.interact.unfollow.useMutation()
 
   const handleFollow = async () => {
-    if (isFollow) {
+    if (isFollowing) {
       await unFollowUser({ id: userId })
     } else {
       await followUser({ id: userId })
     }
-    setIsFollow(!isFollow)
+    setIsFollowing(!isFollowing)
   }
 
   return <Button
@@ -33,6 +33,6 @@ export const FollowButton = ({ userId, isFollow: initState }: Props) => {
     onPress={handleFollow}
     onStartShouldSetResponderCapture={() => true}
   >
-    {isFollow ? '取关' : '关注'}
+    {isFollowing ? '取关' : '关注'}
   </Button>
 }

@@ -1,4 +1,5 @@
-import React, { lazy } from 'react';
+import React, { ElementRef, lazy, useRef, useState } from 'react';
+import { TextInput } from 'react-native'
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { trpc } from '@/utils/trpc';
 import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, Input } from '@/ui';
@@ -6,6 +7,10 @@ import { formatTime } from '@/utils/date';
 import { NoteCollectButton } from '@/ui/note/NoteCollectButton';
 import { NoteLikeButton } from '@/ui/note/NoteLikeButton';
 import { NoteItem } from '@server/modules/note/note';
+import { FollowButton } from '@/ui/user/FollowButton';
+import { CommentRefType } from '@server/modules/comment/comment.constant';
+import { useUser } from '@/utils/auth/hooks/useUser';
+import { CommentSheet } from '@/ui/comment/CommentSheet';
 
 // @ts-ignore
 const Comments = lazy(() => import('@/ui/comment/Comment'));
@@ -13,7 +18,10 @@ const Comments = lazy(() => import('@/ui/comment/Comment'));
 export default function Screen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { profile } = useUser()
   const { data } = trpc.note.byId.useQuery({ id })
+
+  const { data: isFollowing, isLoading } = trpc.interact.isFollowing.useQuery({ id: data?.user.id! }, { enabled: !!data })
 
   if (!data) return <></>;
 
@@ -40,6 +48,7 @@ export default function Screen() {
           </XStack>
         </Link>
       </>,
+      headerRight: () => isLoading || profile?.id === data.user?.id ? <></> : <FollowButton userId={data?.user.id} isFollowing={isFollowing!} />,
       headerShadowVisible: false,
     }} />
     <ScrollView position='relative'>
@@ -72,21 +81,39 @@ export default function Screen() {
           共 {data.interact.commentCount} 条评论
         </Text>
 
-        <Comments itemId={id} itemType={'Note'}></Comments>
+        <Comments itemId={id} itemType={'Note'} ></Comments>
       </YStack>
     </ScrollView>
-    <XStack borderTopWidth={1} borderColor={'$gray8'} padding='$2.5' gap="$2">
-      <Input flex={1} size="$2" placeholder={`说点什么`} />
-      <XStack gap='$2'>
-        <NoteLikeButton item={data as unknown as NoteItem} />
-        <NoteCollectButton item={data as unknown as NoteItem} />
-        <CommentButton></CommentButton>
-      </XStack>
-    </XStack>
+    <NoteBottom item={data as unknown as NoteItem}></NoteBottom>
   </View>
 }
 
-const CommentButton = () => {
-  return <>
-  </>
+const NoteBottom = ({ item }: { item: NoteItem }) => {
+  const { mutateAsync: comment } = trpc.comment.create.useMutation()
+
+  const inputRef = useRef<ElementRef<typeof Input>>(null)
+  const [content, setContent] = useState('')
+  const handleComment = async () => {
+    if (!content) {
+      return
+    }
+
+    await comment({ content, itemId: item.id, itemType: CommentRefType.Note })
+    setContent('')
+    inputRef.current!.clear()
+  }
+
+  return <XStack borderTopWidth={1} borderColor={'$gray8'} padding='$2.5' gap="$2">
+    <Input ref={inputRef}
+      flex={1} size="$2"
+      placeholder={``}
+      onChangeText={newText => setContent(newText)}
+      onSubmitEditing={handleComment}
+    />
+    <XStack gap='$2'>
+      <NoteLikeButton item={item} />
+      <NoteCollectButton item={item} />
+    </XStack>
+    <CommentSheet item={item}></CommentSheet>
+  </XStack>
 }

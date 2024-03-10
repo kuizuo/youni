@@ -39,7 +39,7 @@ export const NoteLikeButton = ({
       unstyled>
     </Button>
     <Text fontSize={size} color={'gray'}>
-      {likedCount ?? ''}
+      {likedCount || ''}
     </Text>
   </XStack>
 }
