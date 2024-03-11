@@ -6,14 +6,14 @@ import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 
-import { NoteCursorDto, NoteDto, NoteUpdateDto } from './note.dto'
+import { NoteDto, NotePagerDto, NoteUpdateDto } from './note.dto'
 
 @Injectable()
 export class NoteService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
 
-  async paginate(dto: NoteCursorDto, userId: string) {
+  async paginate(dto: NotePagerDto, userId: string) {
     const { cursor, limit } = dto
 
     const [items, meta] = await this.prisma.note.paginate({
@@ -25,7 +25,7 @@ export class NoteService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
 
     return {

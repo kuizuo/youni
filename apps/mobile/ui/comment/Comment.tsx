@@ -10,7 +10,7 @@ export const CommentList = ({ itemId, itemType }) => {
   const { data, isLoading } = trpc.comment.page.useInfiniteQuery({
     itemId: itemId,
     itemType: itemType,
-  }, { getNextPageParam: (lastPage) => lastPage.meta.startCursor })
+  }, { getNextPageParam: (lastPage) => lastPage.meta.endCursor })
 
 
   if (isLoading) {
@@ -88,10 +88,10 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
 
       {
         comment?.children?.length > 0 && (
-          <YStack marginTop='$2' gap='$2' >
+          <YStack marginTop='$2' gap='$2'>
             {
               comment.children.map((child) => (
-                <Comment comment={child as unknown as CommentItem} />
+                <Comment comment={child as unknown as CommentItem} key={child.id} />
               ))
             }
           </YStack>

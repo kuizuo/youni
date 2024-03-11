@@ -14,8 +14,6 @@ export const FollowerScreen = () => {
 
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
 
-  const ref = useRef()
-
   const userId = id
 
   const { data, refetch } = trpc.user.byId.useQuery({ id: userId })
@@ -57,6 +55,7 @@ export const FollowerScreen = () => {
       rememberTabScrollPosition
       renderHeader={() => <></>}
       showsVerticalScrollIndicator={false}
+      initialPage={type === 'following' ? 0 : 1}
       tabs={TABS.map((tab) => ({
         title: tab.title,
         icon: tab.icon,

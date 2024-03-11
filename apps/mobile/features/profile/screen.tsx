@@ -3,8 +3,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
 
 import { useUser } from "@/utils/auth/hooks/useUser"
-import { Theme, YStack, View, useTheme } from "@/ui"
-import { useMemo } from "react"
+import { Theme, YStack, View, useTheme, Button } from "@/ui"
+import React, { useMemo } from "react"
 import { InteractInfo } from "./components/InteractInfo";
 import { Navs } from "./components/Nav";
 import { UserNote } from "./components/UserNote";
@@ -22,7 +22,7 @@ export const ProfileScreen = () => {
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const userId = id || profile?.id!
+  const userId = id
 
   const TABS = useMemo(
     () => [
@@ -50,7 +50,7 @@ export const ProfileScreen = () => {
 
   const { data, refetch } = trpc.user.byId.useQuery({ id: userId })
 
-  if (!data) {
+  if (!userId || !data) {
     return <></>
   }
 
@@ -59,10 +59,7 @@ export const ProfileScreen = () => {
     <TabbedHeaderPager
       rememberTabScrollPosition
       // renderHeaderBar={() => {
-      //   return <View flexDirection='row' width='100%' justifyContent="space-between" backgroundColor={'transparent'}>
-      //     <Button>1</Button>
-      //     <Button>2</Button>
-      //   </View>
+      //   return <> </>
       // }}
       renderHeader={() => {
         return <YStack>

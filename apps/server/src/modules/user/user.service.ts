@@ -189,11 +189,14 @@ export class UserService {
       // TODO: default avatar
       // const avatar = '/'
 
+      const nickname = username
+
       const user = await tx.user.create({
         data: {
           ...data,
           username,
           password,
+          nickname,
           status: 1,
           role: Role.User,
         },

@@ -4,6 +4,7 @@ import { EmptyResult } from "@/ui/components/EmptyResult";
 import { NoteList } from "@/ui/note/NoteList";
 import { trpc } from "@/utils/trpc";
 import { empty, error, loading, success } from "@/utils/trpc/patterns";
+import { NoteItem } from "@server/modules/note/note";
 import { match } from "ts-pattern";
 
 interface Props {
@@ -17,7 +18,7 @@ export const UserCollection = ({ userId }: Props) => {
       limit: 10,
     },
     {
-      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.startCursor,
+      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
     }
   );
 
@@ -31,7 +32,12 @@ export const UserCollection = ({ userId }: Props) => {
     ))
     .with(empty, () => <Paragraph>没有更多数据 </Paragraph>)
     .with(success, () => (
-      <NoteList data={userCollection.data?.pages[0]?.items as any[]} isLoading={userCollection.isFetching} />
+      <NoteList
+        data={userCollection.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
+        isRefetching={userCollection.isRefetching}
+        onRefresh={() => userCollection.refetch()}
+        onEndReached={() => userCollection.fetchNextPage()}
+      />
     ))
     .otherwise(() => <EmptyResult message={userCollection.failureReason?.message} />)
 

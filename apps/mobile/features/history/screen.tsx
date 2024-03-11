@@ -14,7 +14,7 @@ export function HistoryScreen() {
       limit: 10,
     },
     {
-      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.startCursor,
+      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
     }
   );
 

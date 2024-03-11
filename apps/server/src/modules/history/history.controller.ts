@@ -6,7 +6,7 @@ import { BatchDeleteDto } from '@server/common/dto/delete.dto'
 
 import { AuthUser } from '../auth/decorators/auth-user.decorator'
 
-import { HistoryCursorDto } from './history.dto'
+import { HistoryPagerDto } from './history.dto'
 import { HistoryService } from './history.service'
 
 @ApiTags('Business - 历史记录模块')
@@ -16,7 +16,7 @@ export class HistoryController {
 
   @Get('page')
   @ApiOperation({ summary: '获取浏览记录' })
-  async page(@Query() dto: HistoryCursorDto, @AuthUser() user: IAuthUser) {
+  async page(@Query() dto: HistoryPagerDto, @AuthUser() user: IAuthUser) {
     return this.historyService.paginate(dto, user.id)
   }
 

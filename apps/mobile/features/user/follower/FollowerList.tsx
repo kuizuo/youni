@@ -17,7 +17,7 @@ export const FollowerList = ({ userId, type }: Props) => {
       limit: 10,
     },
     {
-      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.startCursor,
+      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
     }
   );
 

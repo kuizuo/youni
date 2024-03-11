@@ -6,6 +6,8 @@ import { Image } from 'expo-image'
 import { useUser } from '@/utils/auth/hooks/useUser';
 
 export default function TabLayout() {
+  const { profile } = useUser()
+
   return (
     <Tabs
       screenOptions={{
@@ -56,10 +58,12 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="profile"
+        initialParams={{
+          id: profile?.id,
+        }}
         options={{
           title: '我的',
           tabBarIcon: ({ color, size }) => {
-            const { profile } = useUser()
 
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">

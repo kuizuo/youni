@@ -20,7 +20,7 @@ import { AuthUser } from '../auth/decorators/auth-user.decorator'
 import { Action } from '../casl/ability.class'
 import { Policy } from '../casl/policy.decortor'
 
-import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
+import { CommentPagerDto, CreateCommentDto, SubCommentPagerDto } from './comment.dto'
 import { CommentService } from './comment.service'
 
 @ApiTags('Business - 评论模块')
@@ -32,7 +32,7 @@ export class CommentController {
 
   @Get('page')
   @ApiOperation({ summary: '获取评论列表' })
-  async page(@Query() dto: CommentCursorDto, @AuthUser() user: IAuthUser) {
+  async page(@Query() dto: CommentPagerDto, @AuthUser() user: IAuthUser) {
     const { items, meta } = await this.commentService.paginate(dto)
 
     await this.commentService.appendInteractInfo(items, user.id)
@@ -42,7 +42,7 @@ export class CommentController {
 
   @Get(':id/sub/page')
   @ApiOperation({ summary: '获取子评论列表' })
-  async list(@Query() dto: SubCommentCursorDto, @AuthUser() user: IAuthUser) {
+  async list(@Query() dto: SubCommentPagerDto, @AuthUser() user: IAuthUser) {
     const { items, meta } = await this.commentService.paginateSubComment(dto)
 
     await this.commentService.appendInteractInfo(items, user.id)

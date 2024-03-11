@@ -9,7 +9,7 @@ import { Note } from '@youni/database'
 
 import { NotePublicService } from '../note/note.public.service'
 
-import { HistoryCursorDto } from './history.dto'
+import { HistoryPagerDto } from './history.dto'
 import { HistoryService } from './history.service'
 
 @TRPCRouter()
@@ -31,7 +31,7 @@ export class HistoryTrpcRouter implements OnModuleInit {
     const procedureAuth = this.trpcService.procedureAuth
     return defineTrpcRouter('history', {
       list: procedureAuth
-        .input(HistoryCursorDto.schema)
+        .input(HistoryPagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 

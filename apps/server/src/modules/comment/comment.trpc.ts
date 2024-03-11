@@ -7,7 +7,7 @@ import { TRPCService } from '@server/shared/trpc/trpc.service'
 
 import { Action } from '../casl/ability.class'
 
-import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
+import { CommentPagerDto, CreateCommentDto, SubCommentPagerDto } from './comment.dto'
 import { CommentService } from './comment.service'
 
 @TRPCRouter()
@@ -28,7 +28,7 @@ export class CommentTrpcRouter implements OnModuleInit {
     const procedureAuth = this.trpcService.procedureAuth
     return defineTrpcRouter('comment', {
       page: procedureAuth
-        .input(CommentCursorDto.schema)
+        .input(CommentPagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
@@ -38,7 +38,7 @@ export class CommentTrpcRouter implements OnModuleInit {
           return { items, meta }
         }),
       subPage: procedureAuth
-        .input(SubCommentCursorDto.schema)
+        .input(SubCommentPagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 

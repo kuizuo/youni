@@ -1,5 +1,4 @@
 import React, { ElementRef, lazy, useRef, useState } from 'react';
-import { TextInput } from 'react-native'
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { trpc } from '@/utils/trpc';
 import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, Input } from '@/ui';

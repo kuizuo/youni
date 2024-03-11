@@ -126,8 +126,8 @@ model Collection {
 model History {
   id        String   @id @default("")
   visitedAt DateTime @default(now())
-  note      Note     @relation(fields: [noteId], references: [id])
-  noteId    String
+  note      Note?    @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  noteId    String?
   user      User     @relation(fields: [userId], references: [id])
   userId    String
 }

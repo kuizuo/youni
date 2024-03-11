@@ -4,7 +4,7 @@ import { CacheService } from '@server/shared/cache/cache.service'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 import { getRedisKey } from '@server/utils/redis.util'
 
-import { HistoryCursorDto } from './history.dto'
+import { HistoryPagerDto } from './history.dto'
 
 @Injectable()
 export class HistoryService {
@@ -16,7 +16,7 @@ export class HistoryService {
   ) { }
 
   async paginate(
-    dto: HistoryCursorDto,
+    dto: HistoryPagerDto,
     userId: string,
   ) {
     const { cursor, limit } = dto
@@ -30,7 +30,7 @@ export class HistoryService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
 
     return { items, meta }

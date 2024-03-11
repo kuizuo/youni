@@ -13,7 +13,7 @@ import { Action } from '../casl/ability.class'
 
 import { HistoryService } from '../history/history.service'
 
-import { NoteCursorDto, NoteDto, NoteInputSchema, UserNoteCursorDto } from './note.dto'
+import { NoteDto, NoteInputSchema, NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
 
@@ -37,10 +37,24 @@ export class NoteTrpcRouter implements OnModuleInit {
     const procedureAuth = this.trpcService.procedureAuth
     return defineTrpcRouter('note', {
       homeFeed: procedureAuth
-        .input(NoteCursorDto.schema)
+        .input(NotePagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
+          const { items, meta } = await this.notePublicService.homeFeed(input, user.id)
+
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
+
+          return {
+            items,
+            meta,
+          }
+        }),
+      followFeed: procedureAuth
+        .input(NotePagerDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+          // TODO
           const { items, meta } = await this.notePublicService.homeFeed(input, user.id)
 
           await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
@@ -68,8 +82,23 @@ export class NoteTrpcRouter implements OnModuleInit {
 
           return note
         }),
+      search: procedureAuth
+        .input(NoteSearchDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+          const { keyword } = input
+
+          const { items, meta } = await this.notePublicService.search(input, user.id)
+
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
+
+          return {
+            items,
+            meta,
+          }
+        }),
       userNotes: procedureAuth
-        .input(UserNoteCursorDto.schema)
+        .input(UserNotePagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
@@ -83,7 +112,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           }
         }),
       userCollectNotes: procedureAuth
-        .input(UserNoteCursorDto.schema)
+        .input(UserNotePagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
@@ -98,7 +127,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           }
         }),
       userLikedNotes: procedureAuth
-        .input(UserNoteCursorDto.schema)
+        .input(UserNotePagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
@@ -129,7 +158,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           return this.notePublicService.dislikeNote(id, user.id)
         }),
       list: procedureAuth
-        .input(NoteCursorDto.schema)
+        .input(NotePagerDto.schema)
         .meta({ model: 'Note', action: Action.Read })
         .query(async (opt) => {
           const { input, ctx: { user } } = opt

@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 
 import { IdDto } from '@server/common/dto/id.dto'
+import { PagerDto } from '@server/common/dto/pager.dto'
 import { CacheService } from '@server/shared/cache/cache.service'
 import { TRPCRouter } from '@server/shared/trpc/trpc.decorator'
 import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
@@ -11,7 +12,7 @@ import { getRedisKey } from '@server/utils/redis.util'
 import { UserPublicService } from '../user/user.public.service'
 
 import { InteractState } from './interact'
-import { InteractCursorDto } from './interact.dto'
+import { InteractPagerDto } from './interact.dto'
 import { CountingService } from './services/counting.service'
 import { FollowService } from './services/follow.service'
 
@@ -60,12 +61,12 @@ export class InteractTrpcRouter implements OnModuleInit {
           return await this.followSerive.isUserFollowing(id, user.id)
         }),
       following: procedureAuth
-        .input(InteractCursorDto.schema)
+        .input(InteractPagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
           const { id, cursor, limit } = input
 
-          const { ids, meta } = await this.followSerive.getFollowingIds(id, { cursor, limit })
+          const { ids, meta } = await this.followSerive.getFollowingIds(id, { cursor, limit } as PagerDto)
           const commomIds = await this.followSerive.getCommonFollowingIds(id, user.id)
 
           const users = await this.userService.getUserByIds(ids)
@@ -83,12 +84,12 @@ export class InteractTrpcRouter implements OnModuleInit {
           }
         }),
       followers: procedureAuth
-        .input(InteractCursorDto.schema)
+        .input(InteractPagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
           const { id, cursor, limit } = input
 
-          const { ids, meta } = await this.followSerive.getFollowerIds(id, { cursor, limit })
+          const { ids, meta } = await this.followSerive.getFollowerIds(id, { cursor, limit } as PagerDto)
           const commomIds = await this.followSerive.getCommonFollowerIds(id, user.id)
 
           const users = await this.userService.getUserByIds(ids)

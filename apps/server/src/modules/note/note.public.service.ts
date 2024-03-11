@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
+import { PagerDto } from '@server/common/dto/pager.dto'
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
@@ -16,7 +17,7 @@ import { CountingService } from '../interact/services/counting.service'
 import { LikeService } from '../interact/services/like.service'
 
 import { NoteSelect } from './note.constant'
-import { NoteCursorDto, UserNoteCursorDto } from './note.dto'
+import { NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
 
 @Injectable()
 export class NotePublicService {
@@ -30,14 +31,17 @@ export class NotePublicService {
     private readonly collectionService: CollectionService,
   ) { }
 
-  async homeFeed(dto: NoteCursorDto, userId: string) {
+  async homeFeed(dto: NotePagerDto, userId: string) {
     const { cursor, limit } = dto
-    // FIXME: user analysis
 
     const [items, meta] = await this.prisma.note.paginate({
+      where: {
+        isPublished: true,
+      },
       include: {
         user: {
           select: {
+            id: true,
             nickname: true,
             avatar: true,
           },
@@ -45,7 +49,41 @@ export class NotePublicService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
+    })
+
+    return {
+      items,
+      meta,
+    }
+  }
+
+  async search(dto: NoteSearchDto, userId: string) {
+    const { keyword, cursor, limit, sortBy = 'createdAt', sortOrder = 'desc' } = dto
+
+    const [items, meta] = await this.prisma.note.paginate({
+      where: {
+        OR: [{
+          title: {
+            contains: keyword,
+          },
+        }],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+    }).withCursor({
+      limit,
+      after: cursor,
     })
 
     return {
@@ -117,7 +155,7 @@ export class NotePublicService {
     })
   }
 
-  async getNotesByUserId(dto: UserNoteCursorDto) {
+  async getNotesByUserId(dto: UserNotePagerDto) {
     const { cursor, limit, userId } = dto
 
     const [items, meta] = await this.prisma.note.paginate({
@@ -130,13 +168,13 @@ export class NotePublicService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
 
     return { items, meta }
   }
 
-  async getNotesByCollectionId(dto: UserNoteCursorDto) {
+  async getNotesByCollectionId(dto: UserNotePagerDto) {
     const { cursor, limit, userId } = dto
 
     const defaultCollection = await this.collectionService.getDefaultCollection(userId)
@@ -156,16 +194,16 @@ export class NotePublicService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
 
     return { items, meta }
   }
 
-  async getUserLikedNotes(dto: UserNoteCursorDto) {
+  async getUserLikedNotes(dto: UserNotePagerDto) {
     const { cursor, limit, userId } = dto
 
-    const { ids, meta } = await this.likeService.getUserLikedIds({ cursor, limit }, InteractType.Note, userId)
+    const { ids, meta } = await this.likeService.getUserLikedIds({ cursor, limit } as PagerDto, InteractType.Note, userId)
 
     const items = await this.getNotesByIds(ids)
 

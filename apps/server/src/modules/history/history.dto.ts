@@ -1,5 +1,5 @@
-import { baseCursorSchema } from '@server/common/dto/pager.dto'
+import { basePagerSchema } from '@server/common/dto/pager.dto'
 import { createZodDto } from 'nestjs-zod'
 
-export class HistoryCursorDto extends createZodDto(baseCursorSchema.extend({
+export class HistoryPagerDto extends createZodDto(basePagerSchema.extend({
 })) { }

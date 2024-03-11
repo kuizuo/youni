@@ -1,7 +1,7 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
 
-import { CursorDto } from '@server/common/dto/pager.dto'
+import { PagerDto } from '@server/common/dto/pager.dto'
 import { getRedisKey } from '@server/utils/redis.util'
 import Redis from 'ioredis'
 
@@ -86,7 +86,7 @@ export class LikeService {
    * @param userId
    * @returns
    */
-  async getUserLikedIds(dto: CursorDto, type: InteractType, userId: string) {
+  async getUserLikedIds(dto: PagerDto, type: InteractType, userId: string) {
     const { cursor = '0', limit } = dto
 
     const ids: string[] = []

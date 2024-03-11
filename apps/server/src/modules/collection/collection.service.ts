@@ -10,7 +10,7 @@ import { scheduleManager } from '@server/utils/schedule.util'
 import { InteractType } from '../interact/interact.constant'
 import { CountingService } from '../interact/services/counting.service'
 
-import { CollectionCursorDto, CollectionDto, CollectionItemQueryDto } from './collection.dto'
+import { CollectionDto, CollectionItemQueryDto, CollectionPagerDto } from './collection.dto'
 
 @Injectable()
 export class CollectionService {
@@ -22,7 +22,7 @@ export class CollectionService {
   }
 
   async paginate(
-    dto: CollectionCursorDto,
+    dto: CollectionPagerDto,
     userId: string,
   ) {
     const { cursor, limit } = dto
@@ -33,7 +33,7 @@ export class CollectionService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
   }
 
@@ -122,7 +122,7 @@ export class CollectionService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
 
     return { items, meta }

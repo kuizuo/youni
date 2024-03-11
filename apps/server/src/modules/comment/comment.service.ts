@@ -16,7 +16,7 @@ import { CountingService } from '../interact/services/counting.service'
 import { LikeService } from '../interact/services/like.service'
 import { UserService } from '../user/user.service'
 
-import { CommentCursorDto, CreateCommentDto, SubCommentCursorDto } from './comment.dto'
+import { CommentPagerDto, CreateCommentDto, SubCommentPagerDto } from './comment.dto'
 
 @Injectable()
 export class CommentService {
@@ -29,7 +29,7 @@ export class CommentService {
     private readonly countingService: CountingService,
   ) { }
 
-  async paginate(dto: CommentCursorDto) {
+  async paginate(dto: CommentPagerDto) {
     const { cursor, limit, itemId, itemType } = dto
     const ref = await this.getItemById(itemId, itemType)
 
@@ -91,13 +91,13 @@ export class CommentService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
 
     return { items, meta }
   }
 
-  async paginateSubComment(dto: SubCommentCursorDto) {
+  async paginateSubComment(dto: SubCommentPagerDto) {
     const { cursor, rootId, itemId, itemType, limit } = dto
 
     const [items, meta] = await this.prisma.comment.paginate({
@@ -108,7 +108,7 @@ export class CommentService {
       },
     }).withCursor({
       limit,
-      ...(cursor && { after: cursor }),
+      after: cursor,
     })
 
     return { items, meta }

@@ -1,4 +1,4 @@
-import { baseCursorSchema } from '@server/common/dto/pager.dto'
+import { basePagerSchema } from '@server/common/dto/pager.dto'
 import { CollectionOptionalDefaultsSchema } from '@youni/database/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
@@ -13,10 +13,10 @@ export class CollectionDto extends createZodDto(CollectionInputSchema) { }
 
 export class CollectionUpdateDto extends createZodDto(CollectionInputSchema.partial()) { }
 
-export class CollectionCursorDto extends createZodDto(baseCursorSchema.extend({
+export class CollectionPagerDto extends createZodDto(basePagerSchema.extend({
 })) { }
 
-export class CollectionItemQueryDto extends createZodDto(baseCursorSchema.extend({
+export class CollectionItemQueryDto extends createZodDto(basePagerSchema.extend({
   collectionId: z.string(),
 })) { }
 
