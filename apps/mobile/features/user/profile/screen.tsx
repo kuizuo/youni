@@ -1,9 +1,8 @@
 import { Platform } from "react-native";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
 
 import { useUser } from "@/utils/auth/hooks/useUser"
-import { Theme, YStack, View, Text, useTheme } from "@/ui"
+import { Theme, YStack, View, Image, useTheme } from "@/ui"
 import React, { useMemo } from "react"
 import { InteractInfo } from "./components/InteractInfo";
 import { Navs } from "./components/Nav";
@@ -13,10 +12,10 @@ import { UserLiked } from "./components/UserLiked";
 import { BasicInfo } from "./components/BasicInfo";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/utils/trpc";
+import { ProfileHeader } from "./components/ProfileHeader";
 
 export const ProfileScreen = () => {
   const theme = useTheme()
-  const { top } = useSafeAreaInsets()
   const { currentUser } = useUser()
 
   const { id: userId } = useLocalSearchParams<{ id: string }>();
@@ -56,13 +55,17 @@ export const ProfileScreen = () => {
       enableSafeAreaTopInset={false}
       showsVerticalScrollIndicator={false}
       rememberTabScrollPosition
-      // renderHeaderBar={() => {
-      //   return <></>
-      // }}
+      renderHeaderBar={() => {
+        return <></>
+      }}
       renderHeader={() => {
-        return <YStack>
+        return <YStack flex={1} gap='$2'>
+          <Image
+            source={require('@/assets/images/profile-background.png')}
+            style={{ position: 'absolute', width: '100%', height: '100%' }}
+          />
+          <ProfileHeader showGobackButton={!isMe} />
           <Theme name="dark">
-            <View marginBottom={top} />
             {/* 基本信息 */}
             <BasicInfo data={data ?? currentUser!} />
             {/* 互动 */}

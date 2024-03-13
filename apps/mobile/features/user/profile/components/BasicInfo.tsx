@@ -3,11 +3,7 @@ import { UserInfo } from "@server/modules/user/user"
 
 export const BasicInfo = ({ data }: { data: UserInfo }) => {
   return <>
-    <Image
-      source={require('@/assets/images/profile-background.png')}
-      style={{ position: 'absolute', width: '100%', height: '100%' }}
-    />
-    <XStack gap='$4' padding='$4'>
+    <XStack gap='$4' marginHorizontal='$4' >
       <Avatar circular size="$8">
         <Avatar.Image
           width="100%"

@@ -33,28 +33,28 @@ export const Navs = () => {
     }
   ]
 
-  return <XStack gap='$4' padding='$3'>
+  return <XStack gap='$2.5' marginHorizontal='$4' marginBottom='$3'>
     {
       navItems.map(({ href, icon, text, desc }) => {
-        return <Link href={href} asChild>
-          <BlurView intensity={90} style={{
-            flex: 1,
-            borderRadius: 8,
-            overflow: "hidden",
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-          }}>
+        return <BlurView intensity={60} style={{
+          flex: 1,
+          borderRadius: 8,
+          overflow: "hidden",
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+        }}>
+          <Link href={href} asChild>
             <XStack gap='$1.5' alignItems="center">
               {icon}
               <Text fontSize='$2'>
                 {text}
               </Text>
             </XStack>
-            <Text fontSize={10}>
-              {desc}
-            </Text>
-          </BlurView>
-        </Link>
+          </Link>
+          <Text fontSize={10}>
+            {desc}
+          </Text>
+        </BlurView>
       })
     }
   </XStack >

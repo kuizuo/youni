@@ -6,6 +6,7 @@ import { XStack } from "tamagui"
 import { Text, Button } from '@/ui'
 import { FollowButton } from "@/ui/user/FollowButton"
 import { UserInfo } from "@server/modules/user/user"
+import { BlurView } from "expo-blur"
 
 interface Props {
   user: UserInfo
@@ -17,26 +18,52 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
   const { currentUser } = useUser()
 
   const EditProfileButton = () => {
-    return <Link href="/profile/edit" asChild>
-      <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'aliceblue'} borderRadius={50}>
-        编辑资料
-      </Button>
-    </Link>
+    return <BlurView intensity={20} style={{
+      borderRadius: 50,
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: '#f1f5f9',
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    }}>
+      <Link href="/profile/edit" asChild>
+        <Text color="#f1f5f9" fontSize={12} unstyled>
+          编辑资料
+        </Text>
+      </Link>
+    </BlurView>
   }
 
   const SettingButton = () => {
-    return <Link href='/setting/' asChild>
-      <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'aliceblue'} borderRadius={50} icon={<Settings />} />
-    </Link>
+    return <BlurView intensity={20} style={{
+      borderRadius: 50,
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: '#f1f5f9',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+    }}>
+      <Link href='/setting/' asChild>
+        <Button icon={<Settings size="$1" />} unstyled />
+      </Link>
+    </BlurView>
   }
 
   const ChatButton = () => {
-    return <Link href={`/chat/${user.id}`} asChild>
-      <Button themeInverse size={'$2'} outlineColor={'red'} borderRadius={50} icon={<MessageCircle />} />
-    </Link>
+    return <BlurView intensity={20} style={{
+      borderRadius: 50,
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: '#f1f5f9',
+      paddingHorizontal: 6,
+    }}>
+      <Link href={`/chat/${user.id}`} asChild>
+        <MessageCircle size="$1" />
+      </Link >
+    </BlurView>
   }
 
-  return <XStack gap='$4' padding='$4' alignItems="center">
+  return <XStack gap='$4' marginHorizontal='$4' marginBottom='$3' alignItems="center">
     <Link
       href={{
         pathname: '/user/[id]/follower',

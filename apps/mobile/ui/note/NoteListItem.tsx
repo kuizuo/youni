@@ -6,16 +6,16 @@ import { NoteLikeButton } from './NoteLikeButton'
 export const NoteListItem = (item: NoteItem): React.ReactNode => {
   const router = useRouter()
 
-  const goToNote = () => {
+  const handleNavigateToNote = () => {
     router.push(`/note/${item.id}`)
   }
 
   const UserAvatar = (): React.ReactNode => {
-    const goToUser = () => {
+    const handleNavigateToUser = () => {
       router.push(`/user/${item.user.id}/profile`)
     }
 
-    return <XStack gap='$2.5' alignItems='center' onPress={() => goToUser()}>
+    return <XStack gap='$2.5' alignItems='center' onPress={handleNavigateToUser}>
       <Avatar circular size="$1">
         <Avatar.Image
           width="100%"
@@ -38,7 +38,7 @@ export const NoteListItem = (item: NoteItem): React.ReactNode => {
   return (
     <YStack position='relative' padding='$2' flex={1} gap="$2" borderRadius="$4">
       <Card size="$4" backgroundColor={'$color2'}>
-        <Card.Background unstyled onPress={() => goToNote()} >
+        <Card.Background unstyled onPress={handleNavigateToNote} >
           <Image
             borderTopLeftRadius='$4'
             borderTopRightRadius='$4'
@@ -51,7 +51,7 @@ export const NoteListItem = (item: NoteItem): React.ReactNode => {
         </Card.Background>
         <Card.Footer padding="$2.5">
           <YStack width={'100%'} gap='$2'>
-            <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail" onPress={() => goToNote()} >
+            <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail" onPress={handleNavigateToNote} >
               {item.title}
             </Paragraph>
             <XStack gap='$2.5' alignItems='center'>

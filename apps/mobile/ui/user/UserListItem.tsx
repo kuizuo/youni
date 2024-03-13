@@ -8,13 +8,13 @@ export const UserListItem = (item: UserInfoWithFollow): React.ReactElement => {
   const { currentUser } = useUser()
   const router = useRouter()
 
-  const goToUser = () => {
+  const handleNavigateToUser = () => {
     router.push(`/user/${item.id}/profile`)
   }
 
   return (
     <XStack padding='$3' gap='$3' height={'$8'} alignItems='center' >
-      <Avatar circular size="$5" onPress={goToUser}>
+      <Avatar circular size="$5" onPress={handleNavigateToUser}>
         <Avatar.Image
           width="100%"
           height="100%"
@@ -25,7 +25,7 @@ export const UserListItem = (item: UserInfoWithFollow): React.ReactElement => {
         />
         <Avatar.Fallback />
       </Avatar>
-      <YStack flex={1} onPress={goToUser}>
+      <YStack flex={1} onPress={handleNavigateToUser}>
         <XStack gap="$2" >
           <SizableText size="$4">
             {item.nickname}
@@ -37,7 +37,7 @@ export const UserListItem = (item: UserInfoWithFollow): React.ReactElement => {
           {/* 笔记 · 1 | 粉丝 · 1 */}
         </SizableText>
       </YStack>
-      {currentUser!.id !== item.id && <FollowButton isFollowing={item.isFollowing} userId={item.id} />}
+      {currentUser?.id !== item.id && <FollowButton isFollowing={item.isFollowing} userId={item.id} />}
     </XStack >
   )
 }

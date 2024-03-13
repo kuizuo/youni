@@ -46,13 +46,13 @@ export const MessageListItem = (item: MessageItem): React.ReactNode => {
     </XStack>
   }
 
-  const goToUser = (id: string) => {
-    router.push(`/user/${id}/profile`)
+  const handleNavigateToUser = () => {
+    router.push(`/user/${item.sender.id}/profile`)
   }
 
   return <>
     <XStack padding='$3' gap='$3' alignItems='center'>
-      <Avatar circular size="$5" onPress={() => goToUser(item.sender.id)}>
+      <Avatar circular size="$5" onPress={handleNavigateToUser}>
         <Avatar.Image
           width="100%"
           height="100%"

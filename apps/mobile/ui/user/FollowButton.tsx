@@ -1,5 +1,6 @@
-import { Button } from "@/ui"
+import { Text, useTheme } from "@/ui"
 import { trpc } from "@/utils/trpc"
+import { BlurView } from "expo-blur"
 import { useState } from "react"
 
 interface Props {
@@ -21,16 +22,15 @@ export const FollowButton = ({ userId, isFollowing: initState }: Props) => {
     setIsFollowing(!isFollowing)
   }
 
-  return <Button
-    themeInverse
-    paddingHorizontal="$4"
-    size={'$2'}
-    outlineColor={'$red'}
-    // backgroundColor={'$color'}
-    borderRadius={50}
-    onPress={handleFollow}
-    onStartShouldSetResponderCapture={() => true}
-  >
-    {isFollowing ? '取关' : '关注'}
-  </Button>
+  return <BlurView intensity={20} style={{
+    borderRadius: 50,
+    overflow: "hidden",
+    backgroundColor: '#FFD036',
+    paddingHorizontal: 16,
+    paddingVertical: 2,
+  }}>
+    <Text fontSize={'$2'} color={'#8C6008'} onPress={handleFollow}>
+      {isFollowing ? '取关' : '关注'}
+    </Text>
+  </BlurView>
 }
