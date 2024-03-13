@@ -3,25 +3,29 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
 
 import { useUser } from "@/utils/auth/hooks/useUser"
-import { Theme, YStack, View, useTheme, Button } from "@/ui"
+import { Theme, YStack, View, Text, useTheme } from "@/ui"
 import React, { useMemo } from "react"
-import { Stack, useLocalSearchParams } from "expo-router";
+import { InteractInfo } from "./components/InteractInfo";
+import { Navs } from "./components/Nav";
+import { UserNote } from "./components/UserNote";
+import { UserCollection } from "./components/UserCollection";
+import { UserLiked } from "./components/UserLiked";
+import { BasicInfo } from "./components/BasicInfo";
+import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/utils/trpc";
-import { UserInfo } from "@server/modules/user/user";
-import { BasicInfo } from "../profile/components/BasicInfo";
-import { InteractInfo } from "../profile/components/InteractInfo";
-import { Navs } from "../profile/components/Nav";
-import { UserCollection } from "../profile/components/UserCollection";
-import { UserLiked } from "../profile/components/UserLiked";
-import { UserNote } from "../profile/components/UserNote";
 
-export const UserProfileScreen = () => {
+export const ProfileScreen = () => {
   const theme = useTheme()
   const { top } = useSafeAreaInsets()
+  const { currentUser } = useUser()
 
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id: userId } = useLocalSearchParams<{ id: string }>();
 
-  const userId = id
+  const isMe = currentUser?.id === userId
+
+  const { data, isLoading } = trpc.user.byId.useQuery({ id: userId }, {
+    enabled: !isMe,
+  })
 
   const TABS = useMemo(
     () => [
@@ -47,30 +51,27 @@ export const UserProfileScreen = () => {
     [],
   )
 
-  const { data, refetch } = trpc.user.byId.useQuery({ id: userId })
-
-  if (!userId || !data) {
-    return <></>
-  }
-
   return <YStack flex={1} position="relative" backgroundColor={'$background'}>
     <TabbedHeaderPager
+      enableSafeAreaTopInset={false}
+      showsVerticalScrollIndicator={false}
       rememberTabScrollPosition
       // renderHeaderBar={() => {
-      //   return <> </>
+      //   return <></>
       // }}
       renderHeader={() => {
         return <YStack>
           <Theme name="dark">
             <View marginBottom={top} />
             {/* 基本信息 */}
-            <BasicInfo data={data as unknown as UserInfo} />
+            <BasicInfo data={data ?? currentUser!} />
             {/* 互动 */}
-            <InteractInfo userId={userId} nickname={data.nickname}></InteractInfo>
+            <InteractInfo user={data ?? currentUser!}></InteractInfo>
+            {/* 快捷导航 */}
+            {isMe && <Navs />}
           </Theme>
         </YStack>
       }}
-      showsVerticalScrollIndicator={false}
       tabs={TABS.map((tab) => ({
         title: tab.title,
         icon: tab.icon,
@@ -108,7 +109,7 @@ export const UserProfileScreen = () => {
       })}
     >
       {TABS.map(({ key, component: Component }) => {
-        return <View key={key} >
+        return <View key={key} flex={1}>
           <Component />
         </View>
       })}

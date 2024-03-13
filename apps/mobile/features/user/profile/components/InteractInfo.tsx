@@ -5,19 +5,16 @@ import { Link } from "expo-router"
 import { XStack } from "tamagui"
 import { Text, Button } from '@/ui'
 import { FollowButton } from "@/ui/user/FollowButton"
+import { UserInfo } from "@server/modules/user/user"
 
 interface Props {
-  userId: string
-  nickname: string
+  user: UserInfo
 }
 
+export const InteractInfo = ({ user }: Props): React.ReactNode => {
+  const { data } = trpc.interact.state.useQuery({ id: user.id })
 
-
-export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
-  const { data } = trpc.interact.state.useQuery({ id: userId })
-
-  const { profile } = useUser()
-
+  const { currentUser } = useUser()
 
   const EditProfileButton = () => {
     return <Link href="/profile/edit" asChild>
@@ -34,7 +31,7 @@ export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
   }
 
   const ChatButton = () => {
-    return <Link href={`/chat/${userId}`} asChild>
+    return <Link href={`/chat/${user.id}`} asChild>
       <Button themeInverse size={'$2'} outlineColor={'red'} borderRadius={50} icon={<MessageCircle />} />
     </Link>
   }
@@ -43,7 +40,7 @@ export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
     <Link
       href={{
         pathname: '/user/[id]/follower',
-        params: { id: userId, type: 'following', title: nickname }
+        params: { id: user.id, type: 'following', title: user.nickname }
       }}
       asChild
     >
@@ -57,7 +54,7 @@ export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
     <Link
       href={{
         pathname: '/user/[id]/follower',
-        params: { id: userId, type: 'followers', title: nickname }
+        params: { id: user.id, type: 'followers', title: user.nickname }
       }}
       asChild
     >
@@ -77,13 +74,13 @@ export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
 
     <XStack flex={1} justifyContent="flex-end" gap="$3">
       {
-        profile?.id === userId ?
+        user.id === currentUser!.id ?
           <>
             <EditProfileButton />
             <SettingButton />
           </> :
           <>
-            <FollowButton userId={userId} isFollowing={data?.isFollowing!} />
+            <FollowButton userId={user.id} isFollowing={data?.isFollowing!} />
             <ChatButton />
           </>
       }

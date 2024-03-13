@@ -31,7 +31,12 @@ export const FollowerList = ({ userId, type }: Props) => {
     ))
     .with(empty, () => <Paragraph>没有更多数据 </Paragraph>)
     .with(success, () => (
-      <UserList data={userList.data?.pages[0]?.items as any[]} isLoading={userList.isFetching} />
+      <UserList
+        data={userList.data?.pages[0]?.items as any[]}
+        isRefreshing={userList.isFetching}
+        onRefresh={() => userList.refetch()}
+        onEndReached={() => userList.fetchNextPage()}
+      />
     ))
     .otherwise(() => <EmptyResult message={userList.failureReason?.message} />)
 

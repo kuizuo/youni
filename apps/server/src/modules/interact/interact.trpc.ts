@@ -74,7 +74,7 @@ export class InteractTrpcRouter implements OnModuleInit {
           const items = users.map((user) => {
             return {
               ...user,
-              isFollow: commomIds.includes(user.id),
+              isFollowing: commomIds.includes(user.id),
             }
           })
 

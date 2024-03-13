@@ -19,6 +19,7 @@ import { UpdateProfileDto } from '../auth/dtos/account.dto'
 
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto } from './dto/user.dto'
+import { UserProfileSelect } from './user.constant'
 
 @Injectable()
 export class UserService {
@@ -47,15 +48,7 @@ export class UserService {
     return await this.prisma.user
       .findUniqueOrThrow({
         select: {
-          id: true,
-          username: true,
-          avatar: true,
-          email: true,
-          nickname: true,
-          desc: true,
-          gender: true,
-          yoId: true,
-          role: true,
+          ...UserProfileSelect,
         },
         where: {
           id: userId,

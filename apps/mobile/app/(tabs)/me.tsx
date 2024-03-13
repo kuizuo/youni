@@ -1,4 +1,4 @@
-import { ProfileScreen } from '@/features/profile/screen';
+import { ProfileScreen } from '@/features/user/profile/screen';
 import { Stack } from 'expo-router';
 
 export default function Screen() {

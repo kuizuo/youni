@@ -6,7 +6,7 @@
     "moduleResolution": "NodeNext",
     "paths": {
       "@/*": ["./*"],
-      "@server/*": ["../server/src/*"]
+      "@server/*": ["../../apps/server/src/*"]
     },
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true

@@ -19,8 +19,10 @@ export const MessageList = ({
 }: Props) => {
   return <FlashList
     data={data}
+    renderItem={({ item }) => <MessageListItem {...item}></MessageListItem>}
+    keyExtractor={(item) => item.id}
     refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
     onEndReached={onEndReached}
-    renderItem={({ item }) => <MessageListItem {...item}></MessageListItem>}
+    estimatedItemSize={200}
   />
 }

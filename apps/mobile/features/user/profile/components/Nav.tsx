@@ -33,7 +33,7 @@ export const Navs = () => {
     }
   ]
 
-  return <XStack gap='$4' padding='$4'>
+  return <XStack gap='$4' padding='$3'>
     {
       navItems.map(({ href, icon, text, desc }) => {
         return <Link href={href} asChild>

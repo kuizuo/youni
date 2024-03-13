@@ -1,22 +1,17 @@
 import { YStack, View, SizableText, useTheme } from "@/ui"
-import { useMemo, useRef } from "react"
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useMemo } from "react"
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
 import { Stack, useLocalSearchParams } from "expo-router"
 import { trpc } from "@/utils/trpc"
 import { FollowerList } from "./FollowerList"
 import { Platform } from "react-native"
 
-
 export const FollowerScreen = () => {
   const theme = useTheme()
-  const { top } = useSafeAreaInsets()
 
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
 
-  const userId = id
-
-  const { data, refetch } = trpc.user.byId.useQuery({ id: userId })
+  const { data, refetch } = trpc.user.byId.useQuery({ id })
 
   const TABS = useMemo(
     () => [
@@ -24,13 +19,13 @@ export const FollowerScreen = () => {
         key: 'following',
         title: '关注',
         icon: <></>,
-        component: () => <FollowerList userId={userId} type='following'></FollowerList>,
+        component: () => <FollowerList key={'following'} userId={id} type='following'></FollowerList>,
       },
       {
         key: 'followers',
         title: '粉丝',
         icon: <></>,
-        component: () => <FollowerList userId={userId} type='followers'></FollowerList>,
+        component: () => <FollowerList key={'followers'} userId={id} type='followers'></FollowerList>,
       },
       // {
       //   key: 'recommend',
@@ -39,9 +34,11 @@ export const FollowerScreen = () => {
     ],
     [],
   )
+
   if (!data) {
     return <></>
   }
+
 
   return <YStack flex={1} position="relative" backgroundColor={'$background'}>
     <Stack.Screen options={{
@@ -52,10 +49,9 @@ export const FollowerScreen = () => {
     }}></Stack.Screen>
     <TabbedHeaderPager
       enableSafeAreaTopInset={false}
-      rememberTabScrollPosition
-      renderHeader={() => <></>}
       showsVerticalScrollIndicator={false}
       initialPage={type === 'following' ? 0 : 1}
+      renderHeader={() => <></>}
       tabs={TABS.map((tab) => ({
         title: tab.title,
         icon: tab.icon,
@@ -93,7 +89,7 @@ export const FollowerScreen = () => {
       })}
     >
       {TABS.map(({ key, component: Component }) => {
-        return <View key={key} >
+        return <View key={key} flex={1}>
           <Component />
         </View>
       })}

@@ -7,9 +7,8 @@ export const useUser = () => {
   const router = useRouter()
 
   const {
-    data: profile,
-    isLoading: isLoadingProfile,
-    refetch,
+    data,
+    isLoading,
   } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -19,14 +18,17 @@ export const useUser = () => {
     },
   })
 
-  if (!isLoadingProfile && !profile) {
-    debugger
+  if (!isLoading && !data) {
     router.replace('/sign-in')
   }
 
+  const logOut = async () => {
+    await client.post('/api/account/logout')
+  }
+
   return {
-    profile,
-    isLoadingProfile,
-    updateProfile: () => refetch(),
+    currentUser: data,
+    isLoading,
+    logOut,
   }
 }

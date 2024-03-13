@@ -33,18 +33,12 @@ export const HomeScreen = (): React.ReactNode => {
   return (
     <YStack flex={1} backgroundColor={'$background'}>
       <TabbedHeaderPager
-        rememberTabScrollPosition
+        enableSafeAreaTopInset={false}
+        showsVerticalScrollIndicator={false}
         renderHeaderBar={() => {
           return <View marginTop={top}></View>
         }}
         renderHeader={() => <SearchBar />}
-        headerHeight={0}
-        parallaxHeight={0}
-        enableSafeAreaTopInset
-        showsVerticalScrollIndicator={false}
-        stickyTabs
-        initialPage={0}
-
         tabs={TABS.map((tab) => ({
           title: tab.title,
           icon: tab.icon,
@@ -82,7 +76,7 @@ export const HomeScreen = (): React.ReactNode => {
         })}
       >
         {TABS.map(({ key, component: Component }) => {
-          return <View key={key} >
+          return <View key={key} flex={1}>
             <Component />
           </View>
         })}

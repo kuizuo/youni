@@ -5,6 +5,11 @@ import { Plus, Home, Clover, MessageCircleMore } from '@tamagui/lucide-icons'
 import { useUser } from '@/utils/auth/hooks/useUser';
 
 export default function TabLayout() {
+  const { currentUser, isLoading } = useUser()
+
+  if (isLoading) {
+    return <></>
+  }
 
   return (
     <Tabs
@@ -55,18 +60,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="me"
         options={{
-          title: '我的',
+          href: {
+            pathname: '/me',
+            params: {
+              id: currentUser!.id
+            }
+          },
+          title: '我',
           tabBarIcon: ({ color, size }) => {
-            const { profile } = useUser()
-
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">
                 <Avatar circular padding="$1" size={size}>
                   <Image
                     source={{
-                      uri: profile?.avatar!,
+                      uri: currentUser?.avatar!,
                       width: size,
                       height: size,
                     }} alt="your avatar" />

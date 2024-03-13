@@ -4,3 +4,7 @@ export interface InteractState {
   likesCount: number
   isFollowing: boolean
 }
+
+export type UserInfoWithFollow = UserInfo & {
+  isFollowing: boolean
+}

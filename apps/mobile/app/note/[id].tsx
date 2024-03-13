@@ -17,7 +17,7 @@ const Comments = lazy(() => import('@/ui/comment/Comment'));
 export default function Screen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { profile } = useUser()
+  const { currentUser } = useUser()
   const { data } = trpc.note.byId.useQuery({ id })
 
   const { data: isFollowing, isLoading } = trpc.interact.isFollowing.useQuery({ id: data?.user.id! }, { enabled: !!data })
@@ -52,7 +52,7 @@ export default function Screen() {
           </XStack>
         </Link>
       </>,
-      headerRight: () => isLoading || profile?.id === data.user?.id ? <></> : <FollowButton userId={data?.user.id} isFollowing={isFollowing!} />,
+      headerRight: () => isLoading || currentUser?.id === data.user?.id ? <></> : <FollowButton userId={data?.user.id} isFollowing={isFollowing!} />,
       headerShadowVisible: false,
     }} />
     <ScrollView position='relative'>
