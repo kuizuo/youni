@@ -3,6 +3,7 @@ import { CommentTrpcRouter } from '@server/modules/comment/comment.trpc'
 import { HistoryTrpcRouter } from '@server/modules/history/history.trpc'
 import { InteractTrpcRouter } from '@server/modules/interact/interact.trpc'
 import { NoteTrpcRouter } from '@server/modules/note/note.trpc'
+import { NotifactionTrpcRouter } from '@server/modules/notification/notification.trpc'
 import { TodoTrpcRouter } from '@server/modules/todo/todo.trpc'
 import { UserTrpcRouter } from '@server/modules/user/user.trpc'
 
@@ -14,4 +15,5 @@ export type TRPCRouters = [
   CollectionTrpcRouter,
   CommentTrpcRouter,
   InteractTrpcRouter,
+  NotifactionTrpcRouter,
 ]

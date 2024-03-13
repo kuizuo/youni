@@ -22,13 +22,18 @@ export default function Screen() {
 
   const { data: isFollowing, isLoading } = trpc.interact.isFollowing.useQuery({ id: data?.user.id! }, { enabled: !!data })
 
-  if (!data) return <></>;
+  if (!data) return <>
+    {/* TODO: REDIRECT to empty screen */}
+    <Text>
+      笔记不见了哦
+    </Text>
+  </>;
 
   return <View flex={1}>
     <Stack.Screen options={{
       headerShown: true,
       headerTitle: () => <>
-        <Link href={`/user/${data?.user.id}/profile`} asChild>
+        <Link href={`/user/${data.user.id}/profile`} asChild>
           <XStack gap='$2.5' alignItems='center' marginBottom={0}>
             <Avatar circular size="$2">
               <Avatar.Image
@@ -80,7 +85,7 @@ export default function Screen() {
           共 {data.interact.commentCount} 条评论
         </Text>
 
-        <Comments itemId={id} itemType={'Note'} ></Comments>
+        <Comments itemId={id} itemType={'Note'} authorId={data.user.id}></Comments>
       </YStack>
     </ScrollView>
     <NoteBottom item={data as unknown as NoteItem}></NoteBottom>

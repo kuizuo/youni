@@ -32,7 +32,6 @@ export const CommentButton = ({
       {commentCount || ''}
     </Text> */}
     </XStack>
-
   </>
 }
 

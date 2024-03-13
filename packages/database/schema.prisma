@@ -42,30 +42,32 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default("")
-  username    String       @unique() @db.VarChar(80)
-  password    String       @db.VarChar(80)
+  id                     String         @id @default("")
+  username               String         @unique() @db.VarChar(80)
+  password               String         @db.VarChar(80)
   /// @zod.string.url()
-  avatar      String?      @db.VarChar(1024)
+  avatar                 String?        @db.VarChar(1024)
   /// @zod.string.email()
-  email       String?      @unique() @db.VarChar(80)
-  nickname    String       @default("") @db.VarChar(50)
-  phone       String?      @db.VarChar(255)
+  email                  String?        @unique() @db.VarChar(80)
+  nickname               String         @default("") @db.VarChar(50)
+  phone                  String?        @db.VarChar(255)
   /// @zod.string.max(100)
-  desc        String?      @db.VarChar(100)
-  gender      Int?         @default(0) @db.SmallInt
+  desc                   String?        @db.VarChar(100)
+  gender                 Int?           @default(0) @db.SmallInt
   /// @zod.string.max(100)
-  yoId        String?      @db.VarChar(10)
-  status      Int?         @default(1) @db.SmallInt
-  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  role        Role         @default(User)
-  provider    Provider?
-  todos       Todo[]
-  notes       Note[]
-  collections Collection[]
-  histories   History[]
-  Comment     Comment[]
+  yoId                   String?        @db.VarChar(10)
+  status                 Int?           @default(1) @db.SmallInt
+  createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+  role                   Role           @default(User)
+  provider               Provider?
+  todos                  Todo[]
+  notes                  Note[]
+  collections            Collection[]
+  histories              History[]
+  comment                Comment[]
+  notificationSenders    Notification[] @relation("Sender")
+  notificationRecipients Notification[] @relation("Recipient")
 
   @@index([yoId])
 }
@@ -152,6 +154,23 @@ model Comment {
   @@index([refId, refType])
 }
 
+model Notification {
+  id          String                 @id @default("")
+  content     String
+  action      NotificationAction
+  status      Int?                   @default(0) @db.SmallInt
+  sourceId    String                 @map("source_id")
+  sourceType  NotificationSourceType @map("source_type")
+  /// [NotificationSource]
+  source      Json?                  @default("{}")
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  senderId    String
+  sender      User                   @relation("Sender", fields: [senderId], references: [id])
+  recipientId String
+  recipient   User                   @relation("Recipient", fields: [recipientId], references: [id])
+  // channel
+}
+
 // model File {
 //   id         String   @id @default("")
 //   sourcename String
@@ -181,4 +200,17 @@ enum NoteType {
 
 enum CommentRefType {
   Note
+}
+
+enum NotificationAction {
+  Like
+  Follow
+  Comment
+  System
+}
+
+enum NotificationSourceType {
+  Note
+  Comment
+  User
 }

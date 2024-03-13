@@ -1,3 +1,5 @@
+import { Note, NotificationSourceType } from "./client"
+
 declare global {
   namespace PrismaJson {
     type NoteImage = {
@@ -14,6 +16,10 @@ declare global {
       collected?: boolean
       collectedCount?: number
       commentCount?: number
+    }
+
+    type NotificationSource = {
+      [key: string]: any
     }
   }
 }

@@ -28,6 +28,8 @@ export class UserPublicService {
       },
       select: {
         ...UserSelect,
+        gender: true,
+        yoId: true,
       },
     }).catch(resourceNotFoundWrapper(
       new BizException(ErrorCodeEnum.UserNotFound),

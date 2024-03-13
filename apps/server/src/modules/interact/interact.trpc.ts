@@ -97,7 +97,7 @@ export class InteractTrpcRouter implements OnModuleInit {
           const items = users.map((user) => {
             return {
               ...user,
-              isFollow: commomIds.includes(user.id),
+              isFollowing: commomIds.includes(user.id),
             }
           })
 
@@ -117,7 +117,7 @@ export class InteractTrpcRouter implements OnModuleInit {
           if (cache)
             return cache
 
-          const isFollow = await this.followSerive.isUserFollowing(id, user.id)
+          const isFollowing = await this.followSerive.isUserFollowing(id, user.id)
           const followingCount = await this.followSerive.getFollowingCount(id)
           const followerCount = await this.followSerive.getFollowerCount(id)
 
@@ -127,7 +127,7 @@ export class InteractTrpcRouter implements OnModuleInit {
             followingCount,
             followerCount,
             likesCount,
-            isFollow,
+            isFollowing,
           }
 
           // await this.cacheService.set(key, result, 5 * 1000)

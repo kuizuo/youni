@@ -1,22 +1,20 @@
 import { Injectable } from '@nestjs/common'
 
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PagerDto } from '@server/common/dto/pager.dto'
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
-import { scheduleManager } from '@server/utils/schedule.util'
-
 import { Note } from '@youni/database'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 import { CollectionService } from '../collection/collection.service'
-import { CommentService } from '../comment/comment.service'
 import { InteractType } from '../interact/interact.constant'
-import { CountingService } from '../interact/services/counting.service'
 import { LikeService } from '../interact/services/like.service'
 
-import { NoteSelect } from './note.constant'
+import { NoteLikeEvent } from './events/note-like.event'
+import { NoteEvents, NoteSelect } from './note.constant'
 import { NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
 
 @Injectable()
@@ -26,9 +24,8 @@ export class NotePublicService {
 
   constructor(
     private readonly likeService: LikeService,
-    private readonly countingService: CountingService,
-    private readonly commentService: CommentService,
     private readonly collectionService: CollectionService,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   async homeFeed(dto: NotePagerDto, userId: string) {
@@ -46,6 +43,9 @@ export class NotePublicService {
             avatar: true,
           },
         },
+      },
+      orderBy: {
+        publishTime: 'desc',
       },
     }).withCursor({
       limit,
@@ -119,26 +119,25 @@ export class NotePublicService {
   }
 
   async likeNote(itemId: string, userId: string) {
-    const ok = await this.likeService.like(InteractType.Note, itemId, userId)
+    const note = await this.getNoteById(itemId)
 
-    if (ok) {
-      scheduleManager.schedule(async () => {
-        await this.countingService.updateLikeCount(InteractType.Note, itemId)
-      })
-    }
-    return ok
+    await this.eventEmitter.emitAsync(NoteEvents.NoteLike, new NoteLikeEvent({
+      note,
+      senderId: userId,
+    }))
+
+    return true
   }
 
   async dislikeNote(itemId: string, userId: string) {
-    const ok = await this.likeService.dislike(InteractType.Note, itemId, userId)
+    const note = await this.getNoteById(itemId)
 
-    if (ok) {
-      scheduleManager.schedule(async () => {
-        await this.countingService.updateLikeCount(InteractType.Note, itemId)
-      })
-    }
+    this.eventEmitter.emit(NoteEvents.NoteDislike, new NoteLikeEvent({
+      note,
+      senderId: userId,
+    }))
 
-    return ok
+    return true
   }
 
   async appendInteractInfo(items: Note | Note[], userId: string, includeCollected: boolean = false) {

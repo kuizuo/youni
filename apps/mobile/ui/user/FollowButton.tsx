@@ -26,9 +26,7 @@ export const FollowButton = ({ userId, isFollowing: initState }: Props) => {
     paddingHorizontal="$4"
     size={'$2'}
     outlineColor={'$red'}
-    borderColor={'red'}
-    color={'red'}
-    backgroundColor={'$color'}
+    // backgroundColor={'$color'}
     borderRadius={50}
     onPress={handleFollow}
     onStartShouldSetResponderCapture={() => true}

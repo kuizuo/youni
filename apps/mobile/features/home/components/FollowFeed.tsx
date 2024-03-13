@@ -1,5 +1,5 @@
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { Paragraph, Spinner, YStack } from '@/ui'
+import { Paragraph, Spinner, View, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { empty, error, loading, success } from '@/utils/trpc/patterns'
 import React from 'react'
@@ -25,10 +25,11 @@ export const FollowFeed = (): React.ReactNode => {
         <Spinner />
       </YStack>
     ))
-    .with(empty, () => <>
+    .with(empty, () => <View flex={1} justifyContent='center'>
       <Paragraph>还没有关注的用户</Paragraph>
-      <Paragraph fontSize={10} color='$gray4'>关注后可查看他的最新动态</Paragraph>
-    </>)
+      <Paragraph fontSize={10} >关注后可查看他的最新动态</Paragraph>
+    </View>
+    )
     .with(success, () => (
       <NoteList
         data={followFeed.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
@@ -41,7 +42,10 @@ export const FollowFeed = (): React.ReactNode => {
 
   return (
     <YStack flex={1} backgroundColor={'$background'}>
-      {followFeedLayout}
+      <View flex={1} justifyContent='center' alignItems='center' marginTop="$4">
+        <Paragraph>还没有关注的用户</Paragraph>
+        <Paragraph fontSize={10}>关注后可查看他的最新动态</Paragraph>
+      </View>
     </YStack>
   )
 }

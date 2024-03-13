@@ -12,7 +12,10 @@ export const BasicInfo = ({ data }: { data: UserInfo }) => {
         <Avatar.Image
           width="100%"
           height="100%"
-          source={require('@/assets/images/avatar.png')}
+          // @ts-ignore
+          source={{
+            uri: data.avatar
+          }}
         />
         <Avatar.Fallback />
       </Avatar>
@@ -30,10 +33,6 @@ export const BasicInfo = ({ data }: { data: UserInfo }) => {
             /> : <></>
           }
         </XStack>
-
-        <SizableText size={'$1'} marginTop='$2'>
-          YoId: {data.yoId}
-        </SizableText>
       </YStack>
     </XStack >
 

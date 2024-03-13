@@ -16,13 +16,13 @@ export const CreateCommentInputSchema = CommentSchema.pick({
 
 export class CreateCommentDto extends createZodDto(CreateCommentInputSchema) { }
 
-export const CommentCursorSchema = basePagerSchema.extend({
+export const CommentPagerSchema = basePagerSchema.extend({
   itemId: SnowflakeIdSchema,
   itemType: z.nativeEnum(CommentRefType),
 })
 
-export class CommentPagerDto extends createZodDto(CommentCursorSchema) { }
+export class CommentPagerDto extends createZodDto(CommentPagerSchema) { }
 
-export class SubCommentPagerDto extends createZodDto(CommentCursorSchema.extend({
+export class SubCommentPagerDto extends createZodDto(CommentPagerSchema.extend({
   rootId: SnowflakeIdSchema,
 })) { }

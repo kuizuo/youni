@@ -11,11 +11,33 @@ interface Props {
   nickname: string
 }
 
+
+
 export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
   const { data } = trpc.interact.state.useQuery({ id: userId })
 
   const { profile } = useUser()
 
+
+  const EditProfileButton = () => {
+    return <Link href="/profile/edit" asChild>
+      <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'aliceblue'} borderRadius={50}>
+        编辑资料
+      </Button>
+    </Link>
+  }
+
+  const SettingButton = () => {
+    return <Link href='/setting/' asChild>
+      <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'aliceblue'} borderRadius={50} icon={<Settings />} />
+    </Link>
+  }
+
+  const ChatButton = () => {
+    return <Link href={`/chat/${userId}`} asChild>
+      <Button themeInverse size={'$2'} outlineColor={'red'} borderRadius={50} icon={<MessageCircle />} />
+    </Link>
+  }
 
   return <XStack gap='$4' padding='$4' alignItems="center">
     <Link
@@ -55,26 +77,16 @@ export const InteractInfo = ({ userId, nickname }: Props): React.ReactNode => {
 
     <XStack flex={1} justifyContent="flex-end" gap="$3">
       {
-        profile?.id === userId ? <>
-          <Link href="/profile/edit" asChild>
-            <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'aliceblue'} borderRadius={50}>
-              编辑资料
-            </Button>
-          </Link>
-          <Link href='/setting/' asChild>
-            <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'aliceblue'} borderRadius={50} icon={<Settings />} />
-          </Link>
-        </> : <>
-          <FollowButton userId={userId} isFollow={data?.isFollow!}></FollowButton>
-
-          <Link href={`/chat/${userId}`} asChild>
-            <Button themeInverse size={'$2'} outlineColor={'white'} backgroundColor={'red'} borderRadius={50} icon={<MessageCircle />} />
-          </Link>
-        </>
+        profile?.id === userId ?
+          <>
+            <EditProfileButton />
+            <SettingButton />
+          </> :
+          <>
+            <FollowButton userId={userId} isFollowing={data?.isFollowing!} />
+            <ChatButton />
+          </>
       }
-
     </XStack>
   </XStack >
-
-
 }

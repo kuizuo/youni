@@ -1,12 +1,10 @@
 import { Tabs, useRouter } from 'expo-router';
-import { Avatar, Circle, Theme, YStack, useThemeName } from '@/ui'
+import { Avatar, Circle, Theme, YStack, useThemeName, Image } from '@/ui'
 import { LinearGradient } from '@tamagui/linear-gradient'
 import { Plus, Home, Clover, MessageCircleMore } from '@tamagui/lucide-icons'
-import { Image } from 'expo-image'
 import { useUser } from '@/utils/auth/hooks/useUser';
 
 export default function TabLayout() {
-  const { profile } = useUser()
 
   return (
     <Tabs
@@ -24,9 +22,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="friend"
+        name="campus"
         options={{
-          title: 'Yo友',
+          title: '校园',
           tabBarIcon: ({ color, size }) => <Clover color={color} size={size} />,
         }}
       />
@@ -50,7 +48,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="message"
+        name="notification"
         options={{
           title: '消息',
           tabBarIcon: ({ color, size }) => <MessageCircleMore color={color} size={size} />,
@@ -58,21 +56,20 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="profile"
-        initialParams={{
-          id: profile?.id,
-        }}
         options={{
           title: '我的',
           tabBarIcon: ({ color, size }) => {
+            const { profile } = useUser()
 
             return (
               <YStack borderWidth="$1" borderColor={color} borderRadius="$10">
                 <Avatar circular padding="$1" size={size}>
-                  <Image source={{
-                    uri: profile?.avatar!,
-                    width: size,
-                    height: size,
-                  }} alt="your avatar" />
+                  <Image
+                    source={{
+                      uri: profile?.avatar!,
+                      width: size,
+                      height: size,
+                    }} alt="your avatar" />
                 </Avatar>
               </YStack>
             )

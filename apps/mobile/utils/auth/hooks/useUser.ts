@@ -20,6 +20,7 @@ export const useUser = () => {
   })
 
   if (!isLoadingProfile && !profile) {
+    debugger
     router.replace('/sign-in')
   }
 

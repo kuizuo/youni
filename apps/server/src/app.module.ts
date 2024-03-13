@@ -21,6 +21,7 @@ import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { InteractModule } from './modules/interact/interact.module'
 import { NoteModule } from './modules/note/note.module'
+import { NotificationModule } from './modules/notification/notification.module'
 import { UserModule } from './modules/user/user.module'
 import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
@@ -55,7 +56,7 @@ import { SocketModule } from './socket/socket.module'
     HistoryModule, // 浏览历史
     CommentModule, // 评论
     InteractModule, // 交互
-    // NotificationModule, // 通知
+    NotificationModule, // 通知
     // ChatModule, // 聊天
     // end biz
 

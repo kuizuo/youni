@@ -1,13 +1,20 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PagerDto } from '@server/common/dto/pager.dto'
 import { getRedisKey } from '@server/utils/redis.util'
 import Redis from 'ioredis'
 import { CursorPaginationMeta } from 'prisma-extension-pagination'
 
+import { UserFollowEvent } from '../events/user-follow.event'
+import { InteractEvents } from '../interact.constant'
+
 @Injectable()
 export class FollowService {
-  constructor(@InjectRedis() private redis: Redis) { }
+  constructor(
+    @InjectRedis() private redis: Redis,
+    private readonly eventEmitter: EventEmitter2,
+  ) { }
 
   async follow(targetId: string, userId: string) {
     // 用户正在关注的人 如 following:2 为 用户2 正在关注的人
@@ -16,6 +23,10 @@ export class FollowService {
     // 用户的粉丝 如 follows:1 为 用户1 的粉丝
     await this.redis.sadd(getRedisKey(`followers:${targetId}`), userId)
 
+    this.eventEmitter.emit(InteractEvents.UserFollow, new UserFollowEvent({
+      targetId,
+      userId,
+    }))
     return true
   }
 

@@ -1,7 +1,8 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 
 import { BizException } from '@server/common/exceptions/biz.exception'
+import { AppConfig, IAppConfig } from '@server/config'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 
 import { RegisterDto } from '@server/modules/auth/auth.dto'
@@ -26,7 +27,7 @@ export class UserService {
     private readonly redis: Redis,
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
-
+    @Inject(AppConfig.KEY) private readonly appConfig: IAppConfig,
   ) { }
 
   async getUserById(id: string) {
@@ -186,9 +187,7 @@ export class UserService {
     return await this.prisma.$transaction(async (tx) => {
       const password = hashSync(data.password, 10)
 
-      // TODO: default avatar
-      // const avatar = '/'
-
+      const avatar = `${this.appConfig.baseUrl}/static/avatar/default.png`
       const nickname = username
 
       const user = await tx.user.create({
@@ -197,6 +196,7 @@ export class UserService {
           username,
           password,
           nickname,
+          avatar,
           status: 1,
           role: Role.User,
         },

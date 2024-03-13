@@ -1,4 +1,4 @@
-import { History } from "@tamagui/lucide-icons"
+import { Highlighter, History, LifeBuoy } from "@tamagui/lucide-icons"
 import type { IconProps } from '@tamagui/helpers-icon'
 import { Href, Link } from "expo-router"
 import { BlurView } from 'expo-blur';
@@ -14,16 +14,18 @@ export const Navs = () => {
 
   const navItems: Item[] = [
     {
-      href: '/history/',
-      icon: <History size={16} />,
-      text: '浏览记录',
-      desc: '看过的笔记'
-    }, {
-      href: '/history/',
-      icon: <History size={16} />,
-      text: '浏览记录',
-      desc: '看过的笔记'
-    }, {
+      href: '/campus',
+      icon: <LifeBuoy size={16} />,
+      text: '我的校园',
+      desc: '校园动态'
+    },
+    {
+      href: '/create',
+      icon: <Highlighter size={16} />,
+      text: '创作中心',
+      desc: '创造属于你的世界'
+    },
+    {
       href: '/history/',
       icon: <History size={16} />,
       text: '浏览记录',

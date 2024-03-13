@@ -87,18 +87,30 @@ export class LikeService {
    * @returns
    */
   async getUserLikedIds(dto: PagerDto, type: InteractType, userId: string) {
-    const { cursor = '0', limit } = dto
+    const { cursor, limit } = dto
 
     const ids: string[] = []
 
-    const [startCursor, keys] = await this.redis.sscan(getRedisKey(`u:${userId}:${type}:likes`), cursor, 'COUNT', limit)
+    if (cursor === '') {
+      return {
+        ids: [],
+        meta: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startCursor: null,
+          endCursor: null,
+        },
+      }
+    }
+
+    const [endCursor, keys] = await this.redis.sscan(getRedisKey(`u:${userId}:${type}:likes`), cursor || '', 'COUNT', limit)
     ids.push(...keys)
 
     const meta: CursorPaginationMeta = {
-      hasNextPage: startCursor !== '0',
+      hasNextPage: endCursor !== '0',
       hasPreviousPage: false,
-      startCursor,
-      endCursor: startCursor,
+      startCursor: cursor || '',
+      endCursor,
     }
     return { ids, meta }
 

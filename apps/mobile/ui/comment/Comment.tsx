@@ -6,7 +6,7 @@ import { formatTime } from "@/utils/date"
 import { CommentLikeButton } from "./CommentLikeButton"
 import { CommentButton } from "./CommentButton"
 
-export const CommentList = ({ itemId, itemType }) => {
+export const CommentList = ({ itemId, itemType, authorId }) => {
   const { data, isLoading } = trpc.comment.page.useInfiniteQuery({
     itemId: itemId,
     itemType: itemType,
@@ -31,6 +31,7 @@ export const CommentList = ({ itemId, itemType }) => {
             return (
               <CommentListItem
                 comment={comment as unknown as CommentItem}
+                authorId={authorId}
                 key={comment.id}
               />
             )
@@ -41,13 +42,13 @@ export const CommentList = ({ itemId, itemType }) => {
   </>
 }
 
-const CommentListItem = memo(({ comment }: { comment: CommentItem }) => {
+const CommentListItem = memo(({ comment, authorId }: { comment: CommentItem, authorId: string }) => {
   return <YStack>
-    <Comment comment={comment} />
+    <Comment comment={comment} authorId={authorId} />
   </YStack>
 })
 
-const Comment = memo(({ comment }: { comment: CommentItem }) => {
+const Comment = memo(({ comment, authorId }: { comment: CommentItem, authorId: string }) => {
   return <XStack gap='$2.5' alignItems='center' marginVertical="$2">
     <Avatar circular size="$2.5" alignSelf='flex-start' >
       <Avatar.Image
@@ -65,9 +66,14 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
     <YStack flex={1}>
       <XStack alignItems="center">
         <YStack gap='$1'>
-          <Text fontSize={15} color={'gray'} marginTop='$-1' >
-            {comment.user.nickname}
-          </Text>
+          <XStack gap="$2">
+            <Text fontSize={15} color={'gray'} marginTop='$-1' >
+              {comment.user.nickname}
+            </Text>
+            {
+              comment.user.id === authorId && <Text fontSize={12} backgroundColor={'red'} borderRadius={'$2'}> 作者 </Text>
+            }
+          </XStack>
           <Text>
             {comment.content}
           </Text>
@@ -91,7 +97,7 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
           <YStack marginTop='$2' gap='$2'>
             {
               comment.children.map((child) => (
-                <Comment comment={child as unknown as CommentItem} key={child.id} />
+                <Comment comment={child as unknown as CommentItem} key={child.id} authorId={authorId} />
               ))
             }
           </YStack>

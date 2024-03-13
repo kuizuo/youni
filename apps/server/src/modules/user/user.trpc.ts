@@ -6,6 +6,7 @@ import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
 import { TRPCService } from '@server/shared/trpc/trpc.service'
 
 import { UserPublicService } from './user.public.service'
+import { UserService } from './user.service'
 
 @TRPCRouter()
 @Injectable()
@@ -14,6 +15,7 @@ export class UserTrpcRouter implements OnModuleInit {
 
   constructor(
     private readonly trpcService: TRPCService,
+    private readonly userService: UserService,
     private readonly userPublicService: UserPublicService,
   ) { }
 
@@ -32,6 +34,11 @@ export class UserTrpcRouter implements OnModuleInit {
 
           return await this.userPublicService.getUserById(id)
         }),
+      profile: procedureAuth.query(async (opt) => {
+        const { ctx: { user } } = opt
+
+        return await this.userService.getProfile(user.id)
+      }),
     })
   }
 }

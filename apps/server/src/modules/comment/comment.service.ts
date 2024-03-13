@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
@@ -14,9 +15,10 @@ import { CursorPaginationMeta } from 'prisma-extension-pagination'
 import { InteractType } from '../interact/interact.constant'
 import { CountingService } from '../interact/services/counting.service'
 import { LikeService } from '../interact/services/like.service'
-import { UserService } from '../user/user.service'
 
+import { CommentEvents } from './comment.constant'
 import { CommentPagerDto, CreateCommentDto, SubCommentPagerDto } from './comment.dto'
+import { CommentCreateEvent } from './events/comment-create.event'
 
 @Injectable()
 export class CommentService {
@@ -24,9 +26,9 @@ export class CommentService {
   private readonly prisma: ExtendedPrismaClient
 
   constructor(
-    private readonly userService: UserService,
     private readonly likeService: LikeService,
     private readonly countingService: CountingService,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   async paginate(dto: CommentPagerDto) {
@@ -150,6 +152,16 @@ export class CommentService {
     if (!ref)
       throw new BizException(ErrorCodeEnum.ResourceNotFound)
 
+    let recipientId = ref.userId
+    if (parentId) {
+      const parentComment = await this.prisma.comment.findUniqueOrThrow({
+        where: {
+          id: parentId,
+        },
+      })
+      recipientId = parentComment.userId
+    }
+
     const comment = await this.prisma.comment.create({
       data: {
         refId: itemId,
@@ -160,10 +172,12 @@ export class CommentService {
       },
     })
 
-    scheduleManager.schedule(async () => {
-      const count = await this.getCommentCount(itemType, itemId)
-      await this.countingService.updateCollectionCount(InteractType.Note, itemId, count)
-    })
+    this.eventEmitter.emit(CommentEvents.CommentCreate, new CommentCreateEvent({
+      ref,
+      comment,
+      senderId: userId,
+      recipientId,
+    }))
 
     return comment
   }

@@ -3,26 +3,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
 
 import { useUser } from "@/utils/auth/hooks/useUser"
-import { Theme, YStack, View, useTheme, Button } from "@/ui"
+import { Theme, YStack, View, useTheme } from "@/ui"
 import React, { useMemo } from "react"
 import { InteractInfo } from "./components/InteractInfo";
 import { Navs } from "./components/Nav";
 import { UserNote } from "./components/UserNote";
 import { UserCollection } from "./components/UserCollection";
 import { UserLiked } from "./components/UserLiked";
-import { useLocalSearchParams } from "expo-router";
-import { trpc } from "@/utils/trpc";
 import { BasicInfo } from "./components/BasicInfo";
 import { UserInfo } from "@server/modules/user/user";
+import { useRouter } from "expo-router";
 
 export const ProfileScreen = () => {
   const theme = useTheme()
+  const router = useRouter()
   const { top } = useSafeAreaInsets()
   const { profile } = useUser()
 
-  const { id } = useLocalSearchParams<{ id: string }>();
-
-  const userId = id
+  const userId = profile?.id!
 
   const TABS = useMemo(
     () => [
@@ -48,14 +46,7 @@ export const ProfileScreen = () => {
     [],
   )
 
-  const { data, refetch } = trpc.user.byId.useQuery({ id: userId })
-
-  if (!userId || !data) {
-    return <></>
-  }
-
   return <YStack flex={1} position="relative" backgroundColor={'$background'}>
-
     <TabbedHeaderPager
       rememberTabScrollPosition
       // renderHeaderBar={() => {
@@ -66,9 +57,9 @@ export const ProfileScreen = () => {
           <Theme name="dark">
             <View marginBottom={top} />
             {/* 基本信息 */}
-            <BasicInfo data={data as unknown as UserInfo} />
+            <BasicInfo data={profile as unknown as UserInfo} />
             {/* 互动 */}
-            <InteractInfo userId={userId} nickname={data.nickname}></InteractInfo>
+            <InteractInfo userId={userId} nickname={profile?.nickname!}></InteractInfo>
             {/* 快捷导航 */}
             {userId === profile?.id && <Navs />}
 

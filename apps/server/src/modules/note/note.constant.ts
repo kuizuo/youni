@@ -16,6 +16,20 @@ export const NoteSelect = {
   cover: true,
   tags: true,
   interact: true,
-  user: true,
+  user: {
+    select: {
+      id: true,
+      nickname: true,
+      avatar: true,
+    },
+  },
+  userId: true,
   publishTime: true,
 } satisfies Prisma.NoteSelect
+
+export enum NoteEvents {
+  NoteLike = 'note.like',
+  NoteDislike = 'note.dislike',
+  NoteCollect = 'note.collect',
+  NoteUncollect = 'note.uncollect',
+}

@@ -60,7 +60,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
 
           return {
-            items,
+            items: [],
             meta,
           }
         }),
