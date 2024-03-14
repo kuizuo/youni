@@ -1,6 +1,6 @@
 
 import { MessageCircle } from "@tamagui/lucide-icons"
-import { Button, Input, Sheet, SizeTokens, XStack } from ".."
+import { Button, Input, Sheet, SizeTokens, XStack } from "../.."
 import { CommentItem } from "@server/modules/comment/comment"
 import { useSheetOpen } from "@/atoms/sheet";
 import { NoteItem } from "@server/modules/note/note";

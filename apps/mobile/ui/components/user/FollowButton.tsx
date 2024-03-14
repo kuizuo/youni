@@ -1,7 +1,7 @@
-import { Text, useTheme } from "@/ui"
+import { SizableText, Text } from "@/ui"
 import { trpc } from "@/utils/trpc"
 import { BlurView } from "expo-blur"
-import { useState } from "react"
+import React, { useState } from "react"
 
 interface Props {
   userId: string
@@ -29,8 +29,8 @@ export const FollowButton = ({ userId, isFollowing: initState }: Props) => {
     paddingHorizontal: 16,
     paddingVertical: 2,
   }}>
-    <Text fontSize={'$2'} color={'#8C6008'} onPress={handleFollow}>
+    <SizableText theme='alt2' fontSize={'$2'} onPress={handleFollow}>
       {isFollowing ? '取关' : '关注'}
-    </Text>
+    </SizableText>
   </BlurView>
 }

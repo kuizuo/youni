@@ -1,6 +1,6 @@
 import { Paragraph, Spinner, YStack, Text } from "@/ui";
 import { EmptyResult } from "@/ui/components/EmptyResult";
-import { UserList } from "@/ui/user/UserList";
+import { UserList } from "@/ui/components/user/UserList";
 import { trpc } from "@/utils/trpc";
 import { empty, error, loading, success } from "@/utils/trpc/patterns";
 import { match } from "ts-pattern";

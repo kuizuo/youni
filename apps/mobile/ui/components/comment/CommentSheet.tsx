@@ -1,7 +1,7 @@
 
 import { trpc } from "@/utils/trpc"
 import { Keyboard } from 'react-native';
-import { Button, Input, Sheet, XStack } from ".."
+import { Button, Input, Sheet, XStack } from "../.."
 import React, { ElementRef, useEffect, useRef, useState } from "react"
 import { useSheetOpen } from "@/atoms/sheet";
 import { CommentRefType } from "@server/modules/comment/comment.constant";

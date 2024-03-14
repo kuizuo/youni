@@ -1,6 +1,6 @@
 import { trpc } from "@/utils/trpc"
 import React, { memo } from "react"
-import { YStack, XStack, Avatar, Text } from ".."
+import { YStack, XStack, Avatar, Text } from "../.."
 import { CommentItem } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { CommentLikeButton } from "./CommentLikeButton"
@@ -72,6 +72,9 @@ const Comment = memo(({ comment, authorId }: { comment: CommentItem, authorId: s
             </Text>
             {
               comment.user.id === authorId && <Text fontSize={12} backgroundColor={'red'} borderRadius={'$2'}> 作者 </Text>
+            }
+            {
+              // comment.user.id === currentId && <Text fontSize={12} backgroundColor={'red'} borderRadius={'$2'}> You </Text>
             }
           </XStack>
           <Text>

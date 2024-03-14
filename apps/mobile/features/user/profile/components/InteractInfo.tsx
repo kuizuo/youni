@@ -4,7 +4,7 @@ import { MessageCircle, Settings } from "@tamagui/lucide-icons"
 import { Link } from "expo-router"
 import { XStack } from "tamagui"
 import { Text, Button } from '@/ui'
-import { FollowButton } from "@/ui/user/FollowButton"
+import { FollowButton } from "@/ui/components/user/FollowButton"
 import { UserInfo } from "@server/modules/user/user"
 import { BlurView } from "expo-blur"
 

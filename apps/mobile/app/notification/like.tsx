@@ -6,7 +6,7 @@ import { match } from 'ts-pattern';
 import React from 'react';
 import { MessageItem } from '@server/modules/notification/notification';
 import { Stack } from 'expo-router';
-import { MessageList } from '@/ui/notification/MessageList';
+import { MessageList } from '@/ui/components/notification/MessageList';
 
 export default function Screen() {
 

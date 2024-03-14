@@ -3,16 +3,16 @@ import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import { trpc } from '@/utils/trpc';
 import { Avatar, Text, XStack, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, Input } from '@/ui';
 import { formatTime } from '@/utils/date';
-import { NoteCollectButton } from '@/ui/note/NoteCollectButton';
-import { NoteLikeButton } from '@/ui/note/NoteLikeButton';
+import { NoteCollectButton } from '@/ui/components/note/NoteCollectButton';
+import { NoteLikeButton } from '@/ui/components/note/NoteLikeButton';
 import { NoteItem } from '@server/modules/note/note';
-import { FollowButton } from '@/ui/user/FollowButton';
+import { FollowButton } from '@/ui/components/user/FollowButton';
 import { CommentRefType } from '@server/modules/comment/comment.constant';
 import { useUser } from '@/utils/auth/hooks/useUser';
-import { CommentSheet } from '@/ui/comment/CommentSheet';
+import { CommentSheet } from '@/ui/components/comment/CommentSheet';
 
 // @ts-ignore
-const Comments = lazy(() => import('@/ui/comment/Comment'));
+const Comments = lazy(() => import('@/ui/components/comment/Comment'));
 
 export default function Screen() {
   const { id } = useLocalSearchParams<{ id: string }>();

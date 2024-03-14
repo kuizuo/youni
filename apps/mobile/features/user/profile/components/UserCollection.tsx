@@ -1,7 +1,7 @@
 
 import { Paragraph, Spinner, YStack } from "@/ui";
 import { EmptyResult } from "@/ui/components/EmptyResult";
-import { NoteList } from "@/ui/note/NoteList";
+import { NoteList } from "@/ui/components/note/NoteList";
 import { trpc } from "@/utils/trpc";
 import { empty, error, loading, success } from "@/utils/trpc/patterns";
 import { NoteItem } from "@server/modules/note/note";

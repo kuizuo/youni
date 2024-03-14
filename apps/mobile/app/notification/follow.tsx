@@ -4,11 +4,11 @@ import { FlashList } from '@shopify/flash-list';
 import { EmptyResult } from '@/ui/components/EmptyResult';
 import { empty, error, loading, success } from '@/utils/trpc/patterns';
 import { match } from 'ts-pattern';
-import { MessageListItem } from '@/ui/notification/MessageListItem';
+import { MessageListItem } from '@/ui/components/notification/MessageListItem';
 import React from 'react';
 import { MessageItem } from '@server/modules/notification/notification';
 import { Stack } from 'expo-router';
-import { MessageList } from '@/ui/notification/MessageList';
+import { MessageList } from '@/ui/components/notification/MessageList';
 
 export default function Screen() {
 

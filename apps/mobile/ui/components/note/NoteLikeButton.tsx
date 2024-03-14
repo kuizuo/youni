@@ -1,24 +1,24 @@
-
 import { trpc } from "@/utils/trpc"
 import { Heart } from "@tamagui/lucide-icons"
-import { Button, SizeTokens, Text, XStack, YStack } from ".."
+import { Button, SizeTokens, XStack, Text, useTheme } from "../.."
 import { useState } from "react"
-import { CommentItem } from "@server/modules/comment/comment"
+import { NoteItem } from "@server/modules/note/note"
 
 export interface Props {
-  item: CommentItem
+  item: NoteItem
   size?: SizeTokens
 }
 
-export const CommentLikeButton = ({
+export const NoteLikeButton = ({
   item,
   size = 16
 }: Props) => {
-  const [liked, setLiked] = useState(item.interact?.liked)
-  const [likedCount, setlikedCount] = useState(item.interact?.likedCount)
+  const theme = useTheme()
+  const [liked, setLiked] = useState(item.interact.liked)
+  const [likedCount, setlikedCount] = useState(item.interact.likedCount)
 
-  const { mutateAsync: likeComment } = trpc.comment.like.useMutation()
-  const { mutateAsync: dislikeComment } = trpc.comment.dislike.useMutation()
+  const { mutateAsync: likeComment } = trpc.note.like.useMutation()
+  const { mutateAsync: dislikeComment } = trpc.note.dislike.useMutation()
 
   const handleLike = async () => {
     if (liked) {
@@ -33,8 +33,8 @@ export const CommentLikeButton = ({
   return <XStack alignItems="center" gap='$1.5'>
     <Button
       icon={<Heart
-        fill={liked ? '#FF2442' : 'transparent'}
-        color={liked ? '#FF2442' : 'gray'}
+        fill={liked ? theme.$red10?.get() : 'transparent'}
+        color={liked ? theme.$red10?.get() : 'gray'}
         size={size} />}
       onPressOut={handleLike}
       unstyled>

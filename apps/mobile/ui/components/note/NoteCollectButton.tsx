@@ -1,5 +1,5 @@
 import { Star } from "@tamagui/lucide-icons"
-import { Button, SizeTokens, Text, XStack } from ".."
+import { Button, SizeTokens, Text, XStack } from "../.."
 import { trpc } from "@/utils/trpc"
 import { useState } from "react"
 import { NoteItem } from "@server/modules/note/note"

@@ -4,7 +4,7 @@ import { match } from 'ts-pattern';
 import { empty, error, loading, success } from '@/utils/trpc/patterns'
 import { EmptyResult } from '@/ui/components/EmptyResult';
 import { NoteItem } from '@server/modules/note/note';
-import { NoteList } from '@/ui/note/NoteList';
+import { NoteList } from '@/ui/components/note/NoteList';
 
 export function HistoryScreen() {
   const historyList = trpc.history.list.useInfiniteQuery(

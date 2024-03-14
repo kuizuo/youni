@@ -3,7 +3,7 @@ import { Paragraph, Spinner, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { empty, error, loading, success } from '@/utils/trpc/patterns'
 import { match } from 'ts-pattern'
-import { NoteList } from '@/ui/note/NoteList'
+import { NoteList } from '@/ui/components/note/NoteList'
 import { NoteItem } from '@server/modules/note/note'
 
 export const HomeFeed = (): React.ReactNode => {

@@ -5,7 +5,7 @@ import { trpc } from '@/utils/trpc';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HeaderBackButton } from '@react-navigation/elements'
 import { EmptyResult } from '@/ui/components/EmptyResult';
-import { NoteList } from '@/ui/note/NoteList';
+import { NoteList } from '@/ui/components/note/NoteList';
 import { loading, error, empty, success } from '@/utils/trpc/patterns';
 import { match } from 'ts-pattern';
 import { useRouter } from 'expo-router';
