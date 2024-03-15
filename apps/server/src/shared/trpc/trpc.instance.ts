@@ -47,3 +47,5 @@ export type TRPC$Config = typeof trpc._config
 export type AppRouter = TRPCService['appRouter']
 export type RouterInputs = inferRouterInputs<AppRouter>
 export type RouterOutputs = inferRouterOutputs<AppRouter>
+
+export type Caller = TRPCService['caller']

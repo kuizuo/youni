@@ -1,12 +1,10 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
-import { Injectable } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-
-import { BizException } from '@server/common/exceptions/biz.exception'
 
 import { RedisKeys } from '@server/constants/cache.constant'
 
-import { ErrorCodeEnum } from '@server/constants/error-code.constant'
+import { ErrorCode, ErrorCodeEnum } from '@server/constants/error-code.constant'
 
 import { getRedisKey } from '@server/utils/redis.util'
 import { Redis } from 'ioredis'
@@ -63,7 +61,7 @@ export class TokenService {
     const jwt = token.replace(/[Bb]earer /, '')
 
     if (!isJWT(jwt))
-      throw new BizException(ErrorCodeEnum.JWTInvalid)
+      throw new UnauthorizedException(ErrorCode[ErrorCodeEnum.JWTInvalid])
 
     try {
       const result = this.jwtService.verify(jwt) as IAuthUser

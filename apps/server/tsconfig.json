@@ -8,7 +8,7 @@
     "module": "CommonJS",
     "paths": {
       "@test/*": ["./test/*"],
-      "@server/*": ["./src/*"]
+      "@server/*": ["../../apps/server/src/*"]
     },
     "resolveJsonModule": true,
     "types": ["vitest/globals"],

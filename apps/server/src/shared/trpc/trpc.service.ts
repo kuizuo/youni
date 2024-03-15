@@ -107,9 +107,11 @@ export class TRPCService implements OnModuleInit {
     return trpc.procedure
   }
 
-  // public get createCaller() {
-  //   return trpc.createCallerFactory(this.appRouter)
-  // }
+  public get createCaller() {
+    return trpc.createCallerFactory(this.appRouter)
+  }
+
+  caller: ReturnType<typeof this.createCaller>
 
   onModuleInit() {
     this.createAppRouter()
