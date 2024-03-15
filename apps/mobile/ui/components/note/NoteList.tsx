@@ -25,6 +25,7 @@ export const NoteList = ({
       <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
     }
     onEndReached={onEndReached}
+    keyExtractor={(item) => item.id}
     renderItem={({ item }) => <NoteListItem {...item}></NoteListItem>}
     numColumns={media.gtLg ? 4 : media.gtMd ? 3 : 2}
     estimatedItemSize={200}

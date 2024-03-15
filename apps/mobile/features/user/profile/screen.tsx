@@ -2,7 +2,7 @@ import { Platform } from "react-native";
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
 
 import { useUser } from "@/utils/auth/hooks/useUser"
-import { Theme, YStack, View, Image, useTheme } from "@/ui"
+import { Theme, YStack, View, Image, useTheme, useThemeName } from "@/ui"
 import React, { useMemo } from "react"
 import { InteractInfo } from "./components/InteractInfo";
 import { Navs } from "./components/Nav";
@@ -17,6 +17,8 @@ import { useRoute } from "@react-navigation/native";
 
 export const ProfileScreen = () => {
   const theme = useTheme()
+  const themeName = useThemeName()
+
   const route = useRoute()
   const { currentUser } = useUser()
 
@@ -78,10 +80,12 @@ export const ProfileScreen = () => {
         </YStack>
       }}
       // refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
-      tabs={TABS.map((tab) => ({
-        title: tab.title,
-        icon: tab.icon,
-      }))}
+      tabs={TABS
+        .filter((tab) => tab.key !== 'like' || isMe)
+        .map((tab) => ({
+          title: tab.title,
+          icon: tab.icon,
+        }))}
       tabTextStyle={{
         color: theme.color?.get(),
         padding: 0
@@ -100,11 +104,10 @@ export const ProfileScreen = () => {
       }}
       tabUnderlineColor={theme.$accent10?.get()}
       tabsContainerStyle={{
-        backgroundColor: theme.background?.get(),
+        backgroundColor: themeName === 'light' ? '#f3f4f6' : '#27272a',
+        borderBottomColor: theme.borderColor?.get(),
+        borderBottomWidth: 1,
         flex: 1,
-        maxWidth: Platform.select({
-          web: 200,
-        }),
         margin: Platform.select({
           web: 'auto',
         }),

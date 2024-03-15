@@ -21,25 +21,24 @@ export const NoteCollectButton = ({
 
   const handleCollect = async () => {
     if (collected) {
-      deletacollectNote({ itemId: item.id })
+      await deletacollectNote({ itemId: item.id })
     } else {
-      collectNote({ itemId: item.id })
+      await collectNote({ itemId: item.id })
     }
 
     setCollected(!collected)
-    setCollectedCount(collected ? collectedCount - 1 : collectedCount + 1)
+    setCollectedCount(prevCount => collected ? prevCount - 1 : prevCount + 1)
   }
 
-  return <XStack alignItems="center" gap='$1.5'>
+  return <XStack alignItems="center" gap='$1.5' onPressOut={handleCollect}>
     <Button
       icon={<Star
         fill={collected ? '#FDBC5F' : 'transparent'}
         color={collected ? '#FDBC5F' : 'gray'}
         size={size} />}
-      onPressOut={handleCollect}
       unstyled>
     </Button>
-    <Text fontSize={size} color={'gray'}>
+    <Text fontSize={14} color={'gray'}>
       {collectedCount || '收藏'}
     </Text>
   </XStack>

@@ -2,6 +2,7 @@
 import { Paragraph, Spinner, YStack, Image } from "@/ui";
 import { EmptyResult } from "@/ui/components/EmptyResult";
 import { NoteList } from "@/ui/components/note/NoteList";
+import { useUser } from "@/utils/auth/hooks/useUser";
 import { trpc } from "@/utils/trpc";
 import { error, infiniteEmpty, loading, success } from "@/utils/trpc/patterns";
 import { NoteItem } from "@server/modules/note/note";
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export const UserCollection = ({ userId }: Props) => {
+  const { currentUser } = useUser()
+
   const userCollection = trpc.note.userCollectNotes.useInfiniteQuery(
     {
       userId,
@@ -33,7 +36,7 @@ export const UserCollection = ({ userId }: Props) => {
     .with(infiniteEmpty, () => (
       <EmptyResult
         image={<Image width={60} height={60} tintColor={'gray'} source={require('@/assets/images/notes.png')} />}
-        message='你还没有收藏任何笔记哦'
+        message={`${currentUser?.id === userId ? '你' : '他'}还没有收藏任何笔记哦`}
       />
     ))
     .with(success, () => (

@@ -29,16 +29,15 @@ export const NoteLikeButton = ({
     setlikedCount(likedCount + (liked ? -1 : 1))
   }
 
-  return <XStack alignItems="center" gap='$1.5'>
+  return <XStack alignItems="center" gap='$1.5' onPressOut={handleLike}>
     <Button
       icon={<Heart
         fill={liked ? 'red' : 'transparent'}
         color={liked ? 'red' : 'gray'}
         size={size} />}
-      onPressOut={handleLike}
       unstyled>
     </Button>
-    <SizableText fontSize={size} color={'gray'}>
+    <SizableText fontSize={14} color={'gray'}>
       {likedCount || ''}
     </SizableText>
   </XStack>

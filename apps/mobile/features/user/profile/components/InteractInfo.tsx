@@ -19,6 +19,7 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
 
   const EditProfileButton = () => {
     return <BlurView intensity={20} style={{
+      justifyContent: 'center',
       borderRadius: 50,
       overflow: "hidden",
       borderWidth: 1,
@@ -36,12 +37,13 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
 
   const SettingButton = () => {
     return <BlurView intensity={20} style={{
+      justifyContent: 'center',
       borderRadius: 50,
       overflow: "hidden",
       borderWidth: 1,
       borderColor: '#f1f5f9',
       paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingVertical: 4,
     }}>
       <Link href='/setting/' asChild>
         <Button icon={<Settings size="$1" />} unstyled />
@@ -56,6 +58,8 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
       borderWidth: 1,
       borderColor: '#f1f5f9',
       paddingHorizontal: 6,
+      paddingVertical: 4,
+      justifyContent: 'center'
     }}>
       <Link href={`/chat/${user.id}`} asChild>
         <MessageCircle size="$1" />
