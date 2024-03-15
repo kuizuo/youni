@@ -6,7 +6,8 @@ import { trpc } from "@/utils/trpc"
 import { useUser } from "@/utils/auth/hooks/useUser"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import React from "react"
-import { ArrowUpRightFromSquare, ChevronLeft } from "@tamagui/lucide-icons"
+import { ArrowUpRightFromSquare, ChevronLeft, Menu } from "@tamagui/lucide-icons"
+import { NoteMenu } from "./NoteMenu"
 
 interface Props {
   user: Pick<UserInfo, 'id' | 'nickname' | 'avatar'>
@@ -39,7 +40,12 @@ export const NoteHeader = ({ user }: Props): React.ReactNode => {
         </Text>
       </XStack>
     </Link>
-    {isLoading || currentUser?.id === user?.id ? <></> : <FollowButton userId={user.id} isFollowing={isFollowing!} />}
-    <Button size={'$1'} icon={<ArrowUpRightFromSquare size={'$1'} />} unstyled></Button>
+    {currentUser?.id === user?.id ?
+      <NoteMenu /> :
+      <>
+        <FollowButton userId={user.id} isFollowing={isFollowing!} />
+        <Button size={'$1'} icon={<ArrowUpRightFromSquare size={'$1'} />} unstyled></Button>
+      </>
+    }
   </XStack>
 }
