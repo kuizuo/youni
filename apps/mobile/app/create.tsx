@@ -4,7 +4,7 @@ export default function PublishScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ presentation: 'card' }}>
+      <Stack.Screen options={{ headerShown: true }}>
 
       </Stack.Screen>
       {/* <Link href="/modal">Present modal</Link> */}

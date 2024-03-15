@@ -13,6 +13,10 @@ module.exports = withMonorepoPaths(
     components: ['tamagui'],
     config: './tamagui.config.ts',
     outputCSS: './tamagui-web.css',
+    themeBuilder: {
+      input: './ui/themes/theme.ts',
+      output: './ui/themes/theme-generated.ts'
+    }
   })
 );
 

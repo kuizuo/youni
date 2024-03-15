@@ -95,7 +95,7 @@ export const ProfileScreen = () => {
       tabWrapperStyle={{
         paddingVertical: 0,
       }}
-      tabUnderlineColor={'red'}
+      tabUnderlineColor={theme.$accent10?.get()}
       tabsContainerStyle={{
         backgroundColor: theme.background?.get(),
         flex: 1,

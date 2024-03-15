@@ -13,7 +13,6 @@ export const NoteLikeButton = ({
   item,
   size = 16
 }: Props) => {
-  const theme = useTheme()
   const [liked, setLiked] = useState(item.interact.liked)
   const [likedCount, setlikedCount] = useState(item.interact.likedCount)
 
@@ -33,8 +32,8 @@ export const NoteLikeButton = ({
   return <XStack alignItems="center" gap='$1.5'>
     <Button
       icon={<Heart
-        fill={liked ? theme.$red10?.get() : 'transparent'}
-        color={liked ? theme.$red10?.get() : 'gray'}
+        fill={liked ? 'red' : 'transparent'}
+        color={liked ? 'red' : 'gray'}
         size={size} />}
       onPressOut={handleLike}
       unstyled>
