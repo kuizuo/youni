@@ -5,11 +5,16 @@ import { CommentItem } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { CommentLikeButton } from "./CommentLikeButton"
 import { CommentButton } from "./CommentButton"
+import { useCurrentNote } from "@/atoms/comment"
+import { CommentRefType } from "../../../../server/src/modules/comment/comment.constant"
+import { useUser } from "@/utils/auth/hooks/useUser"
 
-export const CommentList = ({ itemId, itemType, authorId }) => {
+export const CommentList = () => {
+  const [note, _] = useCurrentNote()
+
   const { data, isLoading } = trpc.comment.page.useInfiniteQuery({
-    itemId: itemId,
-    itemType: itemType,
+    itemId: note.id,
+    itemType: CommentRefType.Note,
   }, { getNextPageParam: (lastPage) => lastPage.meta.endCursor })
 
 
@@ -31,7 +36,6 @@ export const CommentList = ({ itemId, itemType, authorId }) => {
             return (
               <CommentListItem
                 comment={comment as unknown as CommentItem}
-                authorId={authorId}
                 key={comment.id}
               />
             )
@@ -42,13 +46,15 @@ export const CommentList = ({ itemId, itemType, authorId }) => {
   </>
 }
 
-const CommentListItem = memo(({ comment, authorId }: { comment: CommentItem, authorId: string }) => {
+const CommentListItem = memo(({ comment }: { comment: CommentItem }) => {
   return <YStack>
-    <Comment comment={comment} authorId={authorId} />
+    <Comment comment={comment} />
   </YStack>
 })
 
-const Comment = memo(({ comment, authorId }: { comment: CommentItem, authorId: string }) => {
+const Comment = memo(({ comment }: { comment: CommentItem }) => {
+  const [note, _] = useCurrentNote()
+  const { currentUser } = useUser()
   const theme = useTheme()
 
   return <XStack gap='$2.5' alignItems='center' marginVertical="$2">
@@ -73,14 +79,14 @@ const Comment = memo(({ comment, authorId }: { comment: CommentItem, authorId: s
               {comment.user.nickname}
             </Text>
             {
-              comment.user.id === authorId && <View paddingHorizontal='$1.5' borderRadius={'$2'} backgroundColor={theme.$accent10?.get()}>
-                <Text fontSize={12} overflow="hidden">作者</Text>
+              comment.user.id === note.user.id && <View paddingHorizontal='$1.5' borderRadius={'$2'} backgroundColor={theme.$accent10?.get()}>
+                <Text fontSize={12} themeInverse>作者</Text>
               </View>
             }
             {
-              // comment.user.id === currentUserId && <View paddingHorizontal='$1.5' borderRadius={'$2'} backgroundColor={theme.$accent10?.get()}>
-              //   <Text fontSize={12} overflow="hidden">你</Text>
-              // </View>
+              comment.user.id === currentUser?.id && <View paddingHorizontal='$1.5' borderRadius={'$2'} backgroundColor={theme.$blue10?.get()}>
+                <Text fontSize={12} themeInverse>你</Text>
+              </View>
             }
           </XStack>
           <Text>
@@ -106,7 +112,7 @@ const Comment = memo(({ comment, authorId }: { comment: CommentItem, authorId: s
           <YStack marginTop='$2' gap='$2'>
             {
               comment.children.map((child) => (
-                <Comment comment={child as unknown as CommentItem} key={child.id} authorId={authorId} />
+                <Comment comment={child as unknown as CommentItem} key={child.id} />
               ))
             }
           </YStack>

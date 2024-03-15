@@ -1,40 +1,50 @@
 
-import { CommentRefType } from '@server/modules/comment/comment.constant'
-import { CommentSheet } from '@/ui/components/comment/CommentSheet'
+import { CommentModel } from '@/ui/components/comment/CommentModel'
 import { NoteCollectButton } from '@/ui/components/note/NoteCollectButton'
 import { NoteLikeButton } from '@/ui/components/note/NoteLikeButton'
-import { useRef, ElementRef, useState } from 'react'
-import { Input, XStack } from 'tamagui'
+import { Input, XStack, YStack, View } from '@/ui'
 import { NoteItem } from '@server/modules/note/note'
-import { trpc } from '@/utils/trpc'
+import { useCommentModalOpen, useParentComment } from '@/atoms/comment'
+import { PencilLine } from '@tamagui/lucide-icons'
 
 export const NoteFooter = ({ item }: { item: NoteItem }) => {
-  const { mutateAsync: comment } = trpc.comment.create.useMutation()
 
-  const inputRef = useRef<ElementRef<typeof Input>>(null)
-  const [content, setContent] = useState('')
-  const handleComment = async () => {
-    if (!content) {
-      return
-    }
+  const [open, setOpen] = useCommentModalOpen()
+  const [_, setParentComment] = useParentComment()
 
-    await comment({ content, itemId: item.id, itemType: CommentRefType.Note })
-    setContent('')
-    inputRef.current!.clear()
+  const handleOpenCommentModal = () => {
+    setOpen(true)
+    setParentComment({} as any)
   }
 
-  return <XStack padding='$2.5' marginHorizontal="$2" gap="$3">
-    <Input ref={inputRef}
-      flex={1} size="$3"
-      placeholder={``}
-      onChangeText={newText => setContent(newText)}
-      onSubmitEditing={handleComment}
-      borderRadius={'$10'}
-    />
-    <XStack gap='$3'>
-      <NoteLikeButton size={18} item={item} />
-      <NoteCollectButton size={18} item={item} />
-    </XStack>
-    <CommentSheet item={item}></CommentSheet>
-  </XStack>
+  return <>
+    {!open ?
+      <XStack padding='$2.5' marginHorizontal="$2" gap="$3">
+        <XStack flex={1} gap="$1" alignItems='center' backgroundColor={'$gray3'} paddingHorizontal='$2.5' paddingVertical='$1.5' borderRadius={50}>
+          <PencilLine size='$1' color={'gray'} />
+          <Input
+            flex={1} size="$2"
+            placeholder={`说点什么`}
+            onPressIn={handleOpenCommentModal}
+            unstyled
+          />
+        </XStack>
+        <XStack gap='$3'>
+          <NoteLikeButton size={18} item={item} />
+          <NoteCollectButton size={18} item={item} />
+        </XStack>
+      </XStack>
+      : <>
+        <YStack fullscreen onPress={() => setOpen(false)} >
+          <View
+            flex={1}
+            opacity={0.3}
+            pointerEvents={'none'}
+            backgroundColor={'$gray8'}
+            onPress={() => setOpen(false)}
+          />
+          <CommentModel item={item}></CommentModel>
+        </YStack>
+      </>}
+  </>
 }
