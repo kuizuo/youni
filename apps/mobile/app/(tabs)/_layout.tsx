@@ -65,7 +65,7 @@ export default function TabLayout() {
           href: {
             pathname: '/me',
             params: {
-              id: currentUser!.id
+              id: currentUser?.id
             }
           },
           title: '我',

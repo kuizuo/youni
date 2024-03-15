@@ -101,7 +101,7 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
 
     <XStack flex={1} justifyContent="flex-end" gap="$3">
       {
-        user.id === currentUser!.id ?
+        user.id === currentUser?.id ?
           <>
             <EditProfileButton />
             <SettingButton />
