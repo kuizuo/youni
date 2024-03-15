@@ -1,6 +1,6 @@
 import { trpc } from "@/utils/trpc"
 import { Heart } from "@tamagui/lucide-icons"
-import { Button, SizeTokens, XStack, Text, useTheme } from "../.."
+import { Button, SizeTokens, XStack, SizableText } from "../.."
 import { useState } from "react"
 import { NoteItem } from "@server/modules/note/note"
 
@@ -38,8 +38,8 @@ export const NoteLikeButton = ({
       onPressOut={handleLike}
       unstyled>
     </Button>
-    <Text fontSize={size} color={'gray'}>
+    <SizableText fontSize={size} color={'gray'}>
       {likedCount || ''}
-    </Text>
+    </SizableText>
   </XStack>
 }

@@ -17,6 +17,10 @@ export const empty = {
   data: P.when((data: { items: [] }) => data?.items?.length === 0 || data === null || data === undefined),
 }
 
+export const infiniteEmpty = {
+  data: P.when((data: { pages: any[] }) => data?.pages?.flatMap(page => page.items).length === 0),
+}
+
 export const success = {
   isLoading: P.when((isLoading) => isLoading === false),
   failureReason: P.when((status) => status === null),

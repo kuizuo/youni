@@ -2,12 +2,13 @@ import { Paragraph, YStack } from '@/ui'
 
 interface Props {
   message: string | undefined
+  image?: React.ReactNode
 }
 
-export const EmptyResult = ({ message }: Props): React.ReactElement => {
+export const EmptyResult = ({ message, image }: Props): React.ReactElement => {
   return (
-    <YStack fullscreen flex={1} justifyContent='center' alignContent='center' padding='$6'>
-      <Paragraph paddingBottom='$3'>Error fetching</Paragraph>
+    <YStack flex={1} justifyContent='center' alignItems='center' padding='$6' gap='$3'>
+      {image}
       <Paragraph>{message}</Paragraph>
     </YStack>
   )

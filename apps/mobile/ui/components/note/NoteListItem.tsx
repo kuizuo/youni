@@ -1,5 +1,5 @@
 import type { NoteItem } from '@server/modules/note/note'
-import { Avatar, Card, Paragraph, XStack, YStack, Image, Text } from '@/ui'
+import { Avatar, Card, Paragraph, XStack, YStack, Image, Text, SizableText } from '@/ui'
 import { useRouter } from 'expo-router'
 import { NoteLikeButton } from './NoteLikeButton'
 
@@ -29,9 +29,9 @@ export const NoteListItem = (item: NoteItem): React.ReactNode => {
         />
         <Avatar.Fallback />
       </Avatar>
-      <Text fontSize={14} opacity={0.7} >
+      <SizableText fontSize={14} opacity={0.7} >
         {item.user.nickname}
-      </Text>
+      </SizableText>
     </XStack>
   }
 

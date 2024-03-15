@@ -1,9 +1,9 @@
 
-import { Paragraph, Spinner, YStack } from "@/ui";
+import { Paragraph, Spinner, YStack, Image } from "@/ui";
 import { EmptyResult } from "@/ui/components/EmptyResult";
 import { NoteList } from "@/ui/components/note/NoteList";
 import { trpc } from "@/utils/trpc";
-import { empty, error, loading, success } from "@/utils/trpc/patterns";
+import { error, infiniteEmpty, loading, success } from "@/utils/trpc/patterns";
 import { NoteItem } from "@server/modules/note/note";
 import { match } from "ts-pattern";
 
@@ -30,7 +30,12 @@ export const UserCollection = ({ userId }: Props) => {
         < Spinner />
       </YStack>
     ))
-    .with(empty, () => <Paragraph>没有更多数据 </Paragraph>)
+    .with(infiniteEmpty, () => (
+      <EmptyResult
+        image={<Image width={60} height={60} tintColor={'gray'} source={require('@/assets/images/notes.png')} />}
+        message='你还没有收藏任何笔记哦'
+      />
+    ))
     .with(success, () => (
       <NoteList
         data={userCollection.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}

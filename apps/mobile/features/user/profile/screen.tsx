@@ -13,6 +13,7 @@ import { BasicInfo } from "./components/BasicInfo";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/utils/trpc";
 import { ProfileHeader } from "./components/ProfileHeader";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export const ProfileScreen = () => {
   const theme = useTheme()
@@ -22,7 +23,7 @@ export const ProfileScreen = () => {
 
   const isMe = currentUser?.id === userId
 
-  const { data, isLoading } = trpc.user.byId.useQuery({ id: userId }, {
+  const { data, isLoading, refetch, isRefetching } = trpc.user.byId.useQuery({ id: userId }, {
     enabled: !isMe,
   })
 
@@ -50,7 +51,7 @@ export const ProfileScreen = () => {
     [],
   )
 
-  return <YStack flex={1} position="relative" backgroundColor={'$background'}>
+  return <YStack fullscreen flex={1} position="relative" backgroundColor={'$background'}>
     <TabbedHeaderPager
       enableSafeAreaTopInset={false}
       showsVerticalScrollIndicator={false}
@@ -75,6 +76,7 @@ export const ProfileScreen = () => {
           </Theme>
         </YStack>
       }}
+      // refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
       tabs={TABS.map((tab) => ({
         title: tab.title,
         icon: tab.icon,
