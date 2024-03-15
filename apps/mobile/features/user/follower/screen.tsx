@@ -43,9 +43,9 @@ export const FollowerScreen = () => {
   return <YStack flex={1} position="relative" backgroundColor={'$background'}>
     <Stack.Screen options={{
       headerShown: true,
-      headerShadowVisible: false,
       headerTitleAlign: 'center',
       headerTitle: title,
+      headerBackTitleVisible: false,
     }}></Stack.Screen>
     <TabbedHeaderPager
       enableSafeAreaTopInset={false}
@@ -72,7 +72,7 @@ export const FollowerScreen = () => {
       tabWrapperStyle={{
         paddingVertical: 0,
       }}
-      tabUnderlineColor={'red'}
+      tabUnderlineColor={theme.$accent10?.get()}
       tabsContainerStyle={{
         backgroundColor: theme.background?.get(),
         flex: 1,

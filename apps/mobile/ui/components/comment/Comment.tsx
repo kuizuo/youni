@@ -1,6 +1,6 @@
 import { trpc } from "@/utils/trpc"
 import React, { memo } from "react"
-import { YStack, XStack, Avatar, Text } from "../.."
+import { YStack, XStack, Avatar, Text, Theme, useTheme, View } from "../.."
 import { CommentItem } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { CommentLikeButton } from "./CommentLikeButton"
@@ -49,6 +49,8 @@ const CommentListItem = memo(({ comment, authorId }: { comment: CommentItem, aut
 })
 
 const Comment = memo(({ comment, authorId }: { comment: CommentItem, authorId: string }) => {
+  const theme = useTheme()
+
   return <XStack gap='$2.5' alignItems='center' marginVertical="$2">
     <Avatar circular size="$2.5" alignSelf='flex-start' >
       <Avatar.Image
@@ -71,10 +73,14 @@ const Comment = memo(({ comment, authorId }: { comment: CommentItem, authorId: s
               {comment.user.nickname}
             </Text>
             {
-              comment.user.id === authorId && <Text fontSize={12} backgroundColor={'red'} borderRadius={'$2'}> 作者 </Text>
+              comment.user.id === authorId && <View paddingHorizontal='$1.5' borderRadius={'$2'} backgroundColor={theme.$accent10?.get()}>
+                <Text fontSize={12} overflow="hidden">作者</Text>
+              </View>
             }
             {
-              // comment.user.id === currentId && <Text fontSize={12} backgroundColor={'red'} borderRadius={'$2'}> You </Text>
+              // comment.user.id === currentUserId && <View paddingHorizontal='$1.5' borderRadius={'$2'} backgroundColor={theme.$accent10?.get()}>
+              //   <Text fontSize={12} overflow="hidden">你</Text>
+              // </View>
             }
           </XStack>
           <Text>

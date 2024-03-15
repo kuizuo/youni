@@ -19,7 +19,9 @@ export const FollowerList = ({ userId, type }: Props) => {
     {
       getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
     }
-  );
+  )
+
+  const emptyString = type === 'following' ? '你还没有关注任何人' : '你还没有粉丝'
 
   const userListLayout = match(userList)
     .with(error, () => <EmptyResult message={userList.failureReason?.message} />)
@@ -29,7 +31,9 @@ export const FollowerList = ({ userId, type }: Props) => {
         < Spinner />
       </YStack>
     ))
-    .with(empty, () => <Paragraph>没有更多数据 </Paragraph>)
+    .with(empty, () => (
+      <EmptyResult message={emptyString}></EmptyResult>
+    ))
     .with(success, () => (
       <UserList
         data={userList.data?.pages[0]?.items as any[]}
@@ -41,7 +45,7 @@ export const FollowerList = ({ userId, type }: Props) => {
     .otherwise(() => <EmptyResult message={userList.failureReason?.message} />)
 
   return (
-    <YStack flex={1} backgroundColor={'$background'} >
+    <YStack flex={1}>
       {userListLayout}
     </YStack>
   )

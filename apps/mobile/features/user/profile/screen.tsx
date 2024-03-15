@@ -10,18 +10,19 @@ import { UserNote } from "./components/UserNote";
 import { UserCollection } from "./components/UserCollection";
 import { UserLiked } from "./components/UserLiked";
 import { BasicInfo } from "./components/BasicInfo";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { trpc } from "@/utils/trpc";
 import { ProfileHeader } from "./components/ProfileHeader";
-import { RefreshControl } from "react-native-gesture-handler";
+import { useRoute } from "@react-navigation/native";
 
 export const ProfileScreen = () => {
   const theme = useTheme()
+  const route = useRoute()
   const { currentUser } = useUser()
 
   const { id: userId } = useLocalSearchParams<{ id: string }>();
 
-  const isMe = currentUser?.id === userId
+  const isMe = currentUser?.id === userId && route.name === 'me'
 
   const { data, isLoading, refetch, isRefetching } = trpc.user.byId.useQuery({ id: userId }, {
     enabled: !isMe,

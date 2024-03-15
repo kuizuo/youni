@@ -70,6 +70,7 @@ export class InteractTrpcRouter implements OnModuleInit {
           const commomIds = await this.followSerive.getCommonFollowingIds(id, user.id)
 
           const users = await this.userService.getUserByIds(ids)
+          // const usersNoteCount =
 
           const items = users.map((user) => {
             return {
