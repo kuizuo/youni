@@ -1,12 +1,12 @@
 import { trpc } from "@/utils/trpc"
 import React, { memo } from "react"
-import { YStack, XStack, Avatar, Text, Theme, useTheme, View } from "../.."
+import { YStack, XStack, Avatar, Text, useTheme, View, Separator, Spinner, SizableText } from "@/ui"
 import { CommentItem } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { CommentLikeButton } from "./CommentLikeButton"
 import { CommentButton } from "./CommentButton"
 import { useCurrentNote } from "@/atoms/comment"
-import { CommentRefType } from "../../../../server/src/modules/comment/comment.constant"
+import { CommentRefType } from "@server/modules/comment/comment.constant"
 import { useUser } from "@/utils/auth/hooks/useUser"
 
 export const CommentList = () => {
@@ -19,7 +19,7 @@ export const CommentList = () => {
 
 
   if (isLoading) {
-    return <Text> 加载中...</Text>
+    return <Spinner size="large" />
   }
 
   if (!data || !data.pages.length || !data.pages[0]?.items.length) {
@@ -43,6 +43,10 @@ export const CommentList = () => {
         )
       })
     }
+    <Separator />
+    <View marginVertical={'$2'} flex={1} justifyContent="center" alignItems="center">
+      <SizableText color={'gray'} size={'$1'}>没有更多了</SizableText>
+    </View>
   </>
 }
 
@@ -99,7 +103,7 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
         <Text color={'gray'} fontSize={12} >
           {formatTime(comment.createdAt)}
         </Text>
-        <XStack flex={1} gap="$2.5" justifyContent="flex-end" alignItems="center" >
+        <XStack flex={1} gap="$2.5" justifyContent="flex-end" alignItems="center">
           <CommentButton item={comment} />
           <CommentLikeButton
             item={comment}

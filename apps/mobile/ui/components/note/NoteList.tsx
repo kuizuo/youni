@@ -1,6 +1,6 @@
 import { NoteItem } from "@server/modules/note/note"
 import { MasonryFlashList } from "@shopify/flash-list"
-import { ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, RefreshControl } from "react-native"
+import { RefreshControl } from "react-native"
 import { NoteListItem } from "./NoteListItem"
 import { useMedia } from "tamagui"
 

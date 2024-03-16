@@ -1,18 +1,21 @@
 import type { NoteItem } from '@server/modules/note/note'
-import { Avatar, Card, Paragraph, XStack, YStack, Image, Text, SizableText } from '@/ui'
+import { Avatar, Card, Paragraph, XStack, YStack, Image, Text, SizableText, Sheet, ScrollView, Button, Separator } from '@/ui'
 import { Link, useRouter } from 'expo-router'
 import { NoteLikeButton } from './NoteLikeButton'
 import { BaseUserInfo } from '@server/modules/user/user'
+import { useSheetOpen } from '@/atoms/sheet'
+import { ChevronDown } from '@tamagui/lucide-icons'
 
 export const NoteListItem = (item: NoteItem): React.ReactNode => {
   const router = useRouter()
+  const [open, setOpen] = useSheetOpen()
 
   const handleNavigateToNote = () => {
     router.push(`/note/${item.id}`)
   }
 
   const handleLongPress = () => {
-    // TODO: 
+    setOpen(true)
   }
 
   return (
@@ -43,10 +46,50 @@ export const NoteListItem = (item: NoteItem): React.ReactNode => {
           </YStack>
         </Card.Footer>
       </Card>
+      <NoteSheet />
     </YStack>
   )
 }
 
+const NoteSheet = (): React.ReactNode => {
+  const [open, setOpen] = useSheetOpen()
+
+  return (
+    <>
+      <Sheet
+        modal
+        open={open}
+        onOpenChange={setOpen}
+        snapPoints={[30]}
+        snapPointsMode={'percent'}
+        dismissOnSnapToBottom
+        position={0}
+        zIndex={100_000}
+        animation="medium"
+      >
+        <Sheet.Overlay
+          animation="lazy"
+          enterStyle={{ opacity: 50 }}
+          exitStyle={{ opacity: 0 }}
+        />
+        <Sheet.Handle />
+        <Sheet.Frame padding="$4" justifyContent="center" alignItems="center" gap="$5">
+          <ScrollView
+            maxHeight={250}
+            backgroundColor="$background"
+            padding="$4"
+            borderRadius="$4">
+            <XStack gap="$4">
+              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
+            </XStack>
+          </ScrollView>
+          <Separator />
+
+        </Sheet.Frame>
+      </Sheet>
+    </>
+  )
+}
 
 const UserAvatar = ({ user }: { user: BaseUserInfo }): React.ReactNode => {
   return <Link href={`/user/${user.id}/profile`} asChild>

@@ -23,17 +23,15 @@ export const CommentButton = ({
     setParentComment(item)
   }
 
-  return <>
-    <XStack alignItems="center" gap='$1.5'>
-      <Button
-        icon={<MessageCircle color='gray' size={size} />}
-        onPress={handleOpenCommentModal}
-        unstyled>
-      </Button>
-      <SizableText fontSize={size} color={'gray'}>
-        {commentCount || ''}
-      </SizableText>
-    </XStack>
-  </>
+  return <XStack alignItems="center" gap='$1.5'>
+    <Button
+      icon={<MessageCircle color='gray' size={size} />}
+      onPress={handleOpenCommentModal}
+      unstyled>
+    </Button>
+    <SizableText fontSize={size} color={'gray'}>
+      {commentCount || ''}
+    </SizableText>
+  </XStack>
 }
 
