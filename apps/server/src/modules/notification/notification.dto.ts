@@ -1,5 +1,5 @@
 import { basePagerSchema } from '@server/common/dto/pager.dto'
-import { NotificationAction, NotificationSourceType } from '@youni/database'
+import { NotificationAction } from '@youni/database'
 import { NotificationSchema } from '@youni/database/zod'
 
 import { createZodDto } from 'nestjs-zod'
@@ -16,8 +16,6 @@ export const NotificationInputSchema = NotificationSchema.pick({
   recipientId: true,
 }).extend({
   content: z.string().optional().default(''),
-  sourceId: z.string().optional(),
-  sourceType: z.nativeEnum(NotificationSourceType).optional(),
 })
 
 export class CreateNotificationDto extends createZodDto(NotificationInputSchema) {

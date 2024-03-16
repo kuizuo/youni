@@ -13,6 +13,7 @@ export const HomeFeed = (): React.ReactNode => {
     },
     {
       getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+      cacheTime: 1,
     }
   )
 

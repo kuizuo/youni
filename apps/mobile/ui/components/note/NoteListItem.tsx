@@ -1,27 +1,60 @@
 import type { NoteItem } from '@server/modules/note/note'
-import { Avatar, Card, Paragraph, XStack, YStack, Image, Text, SizableText, Sheet, ScrollView, Button, Separator } from '@/ui'
+import { Avatar, Card, Paragraph, XStack, YStack, Image, SizableText, View, Checkbox, useTheme, CheckedState } from '@/ui'
 import { Link, useRouter } from 'expo-router'
 import { NoteLikeButton } from './NoteLikeButton'
 import { BaseUserInfo } from '@server/modules/user/user'
 import { useSheetOpen } from '@/atoms/sheet'
-import { ChevronDown } from '@tamagui/lucide-icons'
+import { Check } from '@tamagui/lucide-icons'
+import { useId, useState } from 'react'
+import { historyStateAtoms } from '@/atoms/history'
+import { NoteSheet } from './NoteSheet'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 
 export const NoteListItem = (item: NoteItem): React.ReactNode => {
+  const theme = useTheme()
   const router = useRouter()
-  const [open, setOpen] = useSheetOpen()
+  const [_, setSheetOpen] = useSheetOpen()
 
-  const handleNavigateToNote = () => {
-    router.push(`/note/${item.id}`)
+  const id = useId()
+
+  const isManageMode = useAtomValue(historyStateAtoms.isManageMode)
+  const [selectedItems, setSelectedItems] = useAtom(historyStateAtoms.selectedItems)
+  const items = useAtomValue(historyStateAtoms.items)
+  const setSelectAll = useSetAtom(historyStateAtoms.selectAll)
+
+  const [checked, setChecked] = useState<CheckedState>(selectedItems.includes(item.id))
+
+  const handlePressBackground = () => {
+    if (!isManageMode) {
+      router.push(`/note/${item.id}`)
+    } else {
+      setChecked(!checked)
+
+      if (checked) {
+        setSelectedItems(prevState => {
+          if (prevState.includes(item.id)) {
+            return prevState.filter(selectedItem => selectedItem !== item.id);
+          } else {
+            return [...prevState, item.id];
+          }
+        })
+      }
+
+      const allSelected = items.every(item => selectedItems.includes(item))
+      setSelectAll(allSelected)
+    }
   }
 
   const handleLongPress = () => {
-    setOpen(true)
+    if (!isManageMode) {
+      setSheetOpen(true)
+    }
   }
 
   return (
     <YStack position='relative' padding='$1.5' flex={1} gap="$2" borderRadius="$4">
       <Card size="$4" backgroundColor={'$color2'}>
-        <Card.Background unstyled onLongPress={handleLongPress} onPress={handleNavigateToNote} >
+        <Card.Background unstyled onLongPress={handleLongPress} onPress={handlePressBackground}>
           <Image
             borderTopLeftRadius='$4'
             borderTopRightRadius='$4'
@@ -31,10 +64,26 @@ export const NoteListItem = (item: NoteItem): React.ReactNode => {
             resizeMode="cover"
             alignSelf="center"
           />
+          {
+            isManageMode && <View position="absolute" top={'$2'} right={'$2'}>
+              <Checkbox
+                id={id}
+                size="$4"
+                backgroundColor={checked ? theme.$accent10?.get() : '$gray0'}
+                borderColor={'white'}
+                checked={checked}
+                onCheckedChange={(checked) => setChecked(checked)}
+              >
+                <Checkbox.Indicator>
+                  <Check color={'white'} />
+                </Checkbox.Indicator>
+              </Checkbox>
+            </View>
+          }
         </Card.Background>
         <Card.Footer padding="$2.5">
           <YStack width={'100%'} gap='$2'>
-            <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail" onPress={handleNavigateToNote} >
+            <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail" onPress={handlePressBackground} >
               {item.title}
             </Paragraph>
             <XStack gap='$2.5' alignItems='center'>
@@ -46,48 +95,8 @@ export const NoteListItem = (item: NoteItem): React.ReactNode => {
           </YStack>
         </Card.Footer>
       </Card>
-      <NoteSheet />
+      <NoteSheet item={item} />
     </YStack>
-  )
-}
-
-const NoteSheet = (): React.ReactNode => {
-  const [open, setOpen] = useSheetOpen()
-
-  return (
-    <>
-      <Sheet
-        modal
-        open={open}
-        onOpenChange={setOpen}
-        snapPoints={[30]}
-        snapPointsMode={'percent'}
-        dismissOnSnapToBottom
-        position={0}
-        zIndex={100_000}
-        animation="medium"
-      >
-        <Sheet.Overlay
-          animation="lazy"
-          enterStyle={{ opacity: 50 }}
-          exitStyle={{ opacity: 0 }}
-        />
-        <Sheet.Handle />
-        <Sheet.Frame padding="$4" justifyContent="center" alignItems="center" gap="$5">
-          <ScrollView
-            maxHeight={250}
-            backgroundColor="$background"
-            padding="$4"
-            borderRadius="$4">
-            <XStack gap="$4">
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-            </XStack>
-          </ScrollView>
-          <Separator />
-
-        </Sheet.Frame>
-      </Sheet>
-    </>
   )
 }
 

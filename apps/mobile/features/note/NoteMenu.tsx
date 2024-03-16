@@ -66,11 +66,7 @@ export const NoteMenu = () => {
             </XStack>
           </ScrollView>
         </Sheet.Frame>
-
       </Sheet>
-
     </>
-
   )
-
 }

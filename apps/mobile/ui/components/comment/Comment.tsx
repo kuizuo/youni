@@ -112,15 +112,13 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
       </XStack>
 
       {
-        comment?.children?.length > 0 && (
-          <YStack marginTop='$2' gap='$2'>
-            {
-              comment.children.map((child) => (
-                <Comment comment={child as unknown as CommentItem} key={child.id} />
-              ))
-            }
-          </YStack>
-        )
+        comment?.children?.length > 0 && <YStack marginTop='$2' gap='$2'>
+          {
+            comment.children.map((child) => (
+              <Comment key={child.id} comment={child as unknown as CommentItem} />
+            ))
+          }
+        </YStack>
       }
     </YStack>
   </XStack >

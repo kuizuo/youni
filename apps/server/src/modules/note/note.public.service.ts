@@ -107,10 +107,9 @@ export class NotePublicService {
   }
 
   async getNotesByIds(ids: string[]) {
-    return this.prisma.note.findMany({
+    return await this.prisma.note.findMany({
       where: {
         id: { in: ids },
-        isPublished: true,
       },
       select: {
         ...NoteSelect,

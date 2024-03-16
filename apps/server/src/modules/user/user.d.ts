@@ -5,3 +5,5 @@ export type UserProfile = Awaited<
 export type UserInfo = Awaited<
   ReturnType<import('./user.public.service').UserPublicService['getUserById']>
 >
+
+export type BaseUserInfo = Pick<UserInfo, 'id' | 'nickname' | 'avatar'>

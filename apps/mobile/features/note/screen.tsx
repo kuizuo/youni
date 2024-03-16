@@ -2,7 +2,7 @@
 import React, { lazy, useEffect } from 'react'
 import { Link, useLocalSearchParams } from 'expo-router'
 import { trpc } from '@/utils/trpc'
-import { Text, H5, ImageCarousel, YStack, Paragraph, View, Separator, ScrollView, XStack } from '@/ui'
+import { Text, H5, ImageCarousel, YStack, Paragraph, Separator, ScrollView, XStack } from '@/ui'
 import { formatTime } from '@/utils/date'
 
 import { NoteItem } from '@server/modules/note/note'
@@ -11,6 +11,7 @@ import { NoteHeader } from './NoteHeader'
 import { NoteFooter } from './NoteFooter'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useCurrentNote } from '@/atoms/comment'
+import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
 
 // @ts-ignore
 const Comments = lazy(() => import('@/ui/components/comment/Comment'))
@@ -19,13 +20,17 @@ export const NoteScreen = (): React.ReactNode => {
   const { id } = useLocalSearchParams<{ id: string }>()
   const [_, setNote] = useCurrentNote()
 
-  const { data, isRefetching, refetch } = trpc.note.byId.useQuery({ id })
+  const { data, isLoading, isRefetching, refetch } = trpc.note.byId.useQuery({ id })
 
   useEffect(() => {
     if (data) {
       setNote(data as NoteItem)
     }
   }, [data, setNote])
+
+  if (isLoading) {
+    return <FullscreenSpinner />
+  }
 
   if (!data) return <>
     {/* TODO: REDIRECT to empty screen */}

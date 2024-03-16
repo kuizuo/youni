@@ -6,9 +6,11 @@ import { Input, XStack, YStack, View } from '@/ui'
 import { NoteItem } from '@server/modules/note/note'
 import { useCommentModalOpen, useParentComment } from '@/atoms/comment'
 import { PencilLine } from '@tamagui/lucide-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { KeyboardAvoidingView, Platform } from 'react-native'
 
 export const NoteFooter = ({ item }: { item: NoteItem }) => {
-
+  const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useCommentModalOpen()
   const [_, setParentComment] = useParentComment()
 
@@ -19,7 +21,7 @@ export const NoteFooter = ({ item }: { item: NoteItem }) => {
 
   return <>
     {!open ?
-      <XStack padding='$2.5' marginHorizontal="$2" gap="$3">
+      <XStack paddingVertical='$2' paddingBottom={bottom || '$2'} marginHorizontal="$2" gap="$3">
         <XStack flex={1} gap="$1" alignItems='center' backgroundColor={'$gray3'} paddingHorizontal='$2.5' paddingVertical='$1.5' borderRadius={50}>
           <PencilLine size='$1' color={'gray'} />
           <Input
@@ -34,17 +36,21 @@ export const NoteFooter = ({ item }: { item: NoteItem }) => {
           <NoteCollectButton size={18} item={item} />
         </XStack>
       </XStack>
-      : <>
-        <YStack fullscreen onPress={() => setOpen(false)} >
-          <View
-            flex={1}
-            opacity={0.3}
-            pointerEvents={'none'}
-            backgroundColor={'$gray8'}
-            onPress={() => setOpen(false)}
-          />
+      :
+      <YStack fullscreen onPress={() => setOpen(false)} >
+        <View
+          flex={1}
+          opacity={0.3}
+          pointerEvents={'none'}
+          backgroundColor={'$gray8'}
+          onPress={() => setOpen(false)}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+        >
           <CommentModel item={item}></CommentModel>
-        </YStack>
-      </>}
+        </KeyboardAvoidingView>
+      </YStack>
+    }
   </>
 }
