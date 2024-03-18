@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common'
 
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
-import { scheduleManager } from '@server/utils/schedule.util'
+import { Note } from '@youni/database'
 
-import { InteractType } from '../interact/interact.constant'
-import { CountingService } from '../interact/services/counting.service'
+import { NoteCollectEvent } from '../note/events/note-collect.event'
+import { NoteEvents } from '../note/note.constant'
 
 import { CollectionDto, CollectionItemQueryDto, CollectionPagerDto } from './collection.dto'
 
@@ -17,9 +18,9 @@ export class CollectionService {
   @InjectPrismaClient()
   private readonly prisma: ExtendedPrismaClient
 
-  constructor(private readonly countingService: CountingService) {
-
-  }
+  constructor(
+    private readonly eventEmitter: EventEmitter2,
+  ) { }
 
   async paginate(
     dto: CollectionPagerDto,
@@ -151,10 +152,10 @@ export class CollectionService {
       },
     })
 
-    scheduleManager.schedule(async () => {
-      const count = await this.getItemCollectedCount(itemId)
-      await this.countingService.updateCollectionCount(InteractType.Note, itemId, count)
-    })
+    this.eventEmitter.emit(NoteEvents.NoteCollect, new NoteCollectEvent({
+      note: item,
+      senderId: userId,
+    }))
   }
 
   async deleteItem(itemId: string, userId: string) {
@@ -174,10 +175,10 @@ export class CollectionService {
       },
     })
 
-    scheduleManager.schedule(async () => {
-      const count = await this.getItemCollectedCount(itemId)
-      await this.countingService.updateCollectionCount(InteractType.Note, itemId, count)
-    })
+    this.eventEmitter.emit(NoteEvents.NoteUncollect, new NoteCollectEvent({
+      note: { id: itemId } as Note,
+      senderId: userId,
+    }))
   }
 
   async isItemInCollection(itemId: string, userId: string) {

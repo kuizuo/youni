@@ -1,7 +1,7 @@
 import { Comment, Note } from '@youni/database'
 
 export class CommentCreateEvent {
-  ref: Note
+  source: Note
   comment: Comment
   senderId: string
   recipientId: string

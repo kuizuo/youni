@@ -18,6 +18,7 @@ export enum ErrorCodeEnum {
   MaximumFiveVerificationCodesPerDay = 3002,
 
   NoteNotFound = 4001,
+  CommentNotFound = 4002,
 }
 
 export const ErrorCode: Record<ErrorCodeEnum, string> = {
@@ -39,4 +40,5 @@ export const ErrorCode: Record<ErrorCodeEnum, string> = {
   [ErrorCodeEnum.MaximumFiveVerificationCodesPerDay]: '一天最多发送5个验证码',
 
   [ErrorCodeEnum.NoteNotFound]: '笔记不存在',
+  [ErrorCodeEnum.CommentNotFound]: '评论不存在',
 }

@@ -1,6 +1,5 @@
 import { Module, Provider } from '@nestjs/common'
 
-import { InteractModule } from '../interact/interact.module'
 import { UserModule } from '../user/user.module'
 
 import { CollectionAbility } from './collection.ability'
@@ -16,7 +15,6 @@ const providers: Provider[] = [
 
 @Module({
   imports: [
-    InteractModule,
     UserModule,
   ],
   controllers: [CollectionController],

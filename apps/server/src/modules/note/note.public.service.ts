@@ -120,10 +120,14 @@ export class NotePublicService {
   async likeNote(itemId: string, userId: string) {
     const note = await this.getNoteById(itemId)
 
-    await this.eventEmitter.emitAsync(NoteEvents.NoteLike, new NoteLikeEvent({
-      note,
-      senderId: userId,
-    }))
+    const ok = await this.likeService.like(InteractType.Note, note.id, userId)
+
+    if (ok) {
+      this.eventEmitter.emit(NoteEvents.NoteLike, new NoteLikeEvent({
+        note: note as unknown as Note,
+        senderId: userId,
+      }))
+    }
 
     return true
   }
@@ -131,10 +135,14 @@ export class NotePublicService {
   async dislikeNote(itemId: string, userId: string) {
     const note = await this.getNoteById(itemId)
 
-    this.eventEmitter.emit(NoteEvents.NoteDislike, new NoteLikeEvent({
-      note,
-      senderId: userId,
-    }))
+    const ok = await this.likeService.dislike(InteractType.Note, note.id, userId)
+
+    if (ok) {
+      this.eventEmitter.emit(NoteEvents.NoteDislike, new NoteLikeEvent({
+        note: note as unknown as Note,
+        senderId: userId,
+      }))
+    }
 
     return true
   }

@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bull'
 import { Module } from '@nestjs/common'
 
 import { ConfigModule } from '@nestjs/config'
@@ -42,6 +43,7 @@ import { SocketModule } from './socket/socket.module'
     CacheModule,
     DatabaseModule,
     RedisModule,
+    BullModule,
     HelperModule,
 
     AuthModule,

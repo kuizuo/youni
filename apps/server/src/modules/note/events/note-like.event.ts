@@ -1,7 +1,7 @@
-import { NoteItem } from '../note'
+import { Note } from '@youni/database'
 
 export class NoteLikeEvent {
-  note: NoteItem
+  note: Note
   senderId: string
 
   public constructor(partial?: Partial<NoteLikeEvent>) {

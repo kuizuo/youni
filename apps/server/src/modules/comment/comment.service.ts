@@ -7,18 +7,17 @@ import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/databas
 
 import { getIpLocation } from '@server/utils/ip.util'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
-import { scheduleManager } from '@server/utils/schedule.util'
 import { Comment, CommentRefType } from '@youni/database'
 
 import { CursorPaginationMeta } from 'prisma-extension-pagination'
 
 import { InteractType } from '../interact/interact.constant'
-import { CountingService } from '../interact/services/counting.service'
 import { LikeService } from '../interact/services/like.service'
 
-import { CommentEvents } from './comment.constant'
+import { CommentEvents, CommentSelect } from './comment.constant'
 import { CommentPagerDto, CreateCommentDto, SubCommentPagerDto } from './comment.dto'
 import { CommentCreateEvent } from './events/comment-create.event'
+import { CommentLikeEvent } from './events/comment-like.event'
 
 @Injectable()
 export class CommentService {
@@ -27,7 +26,6 @@ export class CommentService {
 
   constructor(
     private readonly likeService: LikeService,
-    private readonly countingService: CountingService,
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
@@ -53,29 +51,12 @@ export class CommentService {
         refType: itemType,
         parentId: null,
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            avatar: true,
-            nickname: true,
-          },
-        },
+      select: {
+        ...CommentSelect,
         children: {
           take: 1, // 只返回一条记录,更多则需要展开查看
           select: {
-            content: true,
-            createdAt: true,
-            refId: true,
-            refType: true,
-            location: true,
-            user: {
-              select: {
-                id: true,
-                avatar: true,
-                nickname: true,
-              },
-            },
+            ...CommentSelect,
             parent: {
               select: {
                 id: true,
@@ -122,7 +103,6 @@ export class CommentService {
         id,
       },
       include: {
-        children: true,
         user: {
           select: {
             id: true,
@@ -131,11 +111,13 @@ export class CommentService {
           },
         },
       },
-    })
+    }).catch(resourceNotFoundWrapper(
+      new BizException(ErrorCodeEnum.CommentNotFound),
+    ))
   }
 
   async getCommentCount(itemType: CommentRefType, itemId: string, parentId?: string) {
-    return this.prisma.comment.count({
+    return await this.prisma.comment.count({
       where: {
         refId: itemId,
         refType: itemType,
@@ -173,7 +155,7 @@ export class CommentService {
     })
 
     this.eventEmitter.emit(CommentEvents.CommentCreate, new CommentCreateEvent({
-      ref,
+      source: { ...ref },
       comment,
       senderId: userId,
       recipientId,
@@ -187,11 +169,6 @@ export class CommentService {
       where: {
         id,
       },
-    })
-
-    scheduleManager.schedule(async () => {
-      const count = await this.getCommentCount(comment.refType, comment.refId)
-      await this.countingService.updateCollectionCount(InteractType.Note, comment.refId, count)
     })
 
     return comment
@@ -236,24 +213,32 @@ export class CommentService {
   }
 
   async likeComment(itemId: string, userId: string) {
+    const comment = await this.getCommentById(itemId)
+
     const ok = await this.likeService.like(InteractType.Comment, itemId, userId)
 
     if (ok) {
-      scheduleManager.schedule(async () => {
-        await this.countingService.updateLikeCount(InteractType.Comment, itemId)
-      })
+      this.eventEmitter.emit(CommentEvents.CommentLike, new CommentLikeEvent({
+        comment,
+        senderId: userId,
+        recipientId: comment.user.id,
+      }))
     }
 
     return ok
   }
 
   async dislikeComment(itemId: string, userId: string) {
+    const comment = await this.getCommentById(itemId)
+
     const ok = await this.likeService.dislike(InteractType.Comment, itemId, userId)
 
     if (ok) {
-      scheduleManager.schedule(async () => {
-        await this.countingService.updateLikeCount(InteractType.Comment, itemId)
-      })
+      this.eventEmitter.emit(CommentEvents.CommentDislike, new CommentLikeEvent({
+        comment,
+        senderId: userId,
+        recipientId: comment.user.id,
+      }))
     }
 
     return ok

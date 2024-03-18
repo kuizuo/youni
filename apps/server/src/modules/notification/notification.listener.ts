@@ -7,7 +7,6 @@ import { CommentEvents } from '../comment/comment.constant'
 import { CommentCreateEvent } from '../comment/events/comment-create.event'
 import { UserFollowEvent } from '../interact/events/user-follow.event'
 import { InteractEvents } from '../interact/interact.constant'
-import { NoteCollectEvent } from '../note/events/note-collect.event'
 import { NoteLikeEvent } from '../note/events/note-like.event'
 import { NoteEvents } from '../note/note.constant'
 
@@ -23,6 +22,7 @@ export class NotificationListener {
   async handleNoteLikeEvent(event: NoteLikeEvent) {
     const { note, senderId } = event
 
+    // 喜欢了你的笔记
     await this.notificationService.create({
       action: NotificationAction.Like,
       content: '',
@@ -37,42 +37,43 @@ export class NotificationListener {
     })
   }
 
-  @OnEvent(NoteEvents.NoteCollect)
-  async handleNoteCollectEvent(event: NoteCollectEvent) {
-    const { note, senderId } = event
-
-    // await this.notificationService.create({
-    //   action: NotificationAction.Collect,
-    //   content: '',
-    //   sourceId: note.id,
-    //   sourceType: NotificationSourceType.Note,
-    //   senderId,
-    //   recipientId: note.userId,
-    // })
-  }
-
-  // TODO:
-  // @OnEvent(CommentEvents.CommentLike)
-  // async handleCommentLikeEvent(event: NoteLikeEvent) {
+  // @OnEvent(NoteEvents.NoteCollect)
+  // async handleNoteCollectEvent(event: NoteCollectEvent) {
   //   const { note, senderId } = event
 
+  //   // 收藏了你的评论
   //   await this.notificationService.create({
-  //     action: NotificationAction.Like,
+  //     action: NotificationAction.Collect,
   //     content: '',
   //     sourceId: note.id,
   //     sourceType: NotificationSourceType.Note,
-  //     source: {
-  //       id: note.id,
-  //       type: NotificationSourceType.Note,
-  //     },
   //     senderId,
   //     recipientId: note.userId,
   //   })
   // }
 
+  @OnEvent(CommentEvents.CommentLike)
+  async handleCommentLikeEvent(event: NoteLikeEvent) {
+    const { note, senderId } = event
+
+    // 喜欢了你的评论
+    await this.notificationService.create({
+      action: NotificationAction.Like,
+      content: '',
+      sourceId: note.id,
+      sourceType: NotificationSourceType.Note,
+      source: {
+        id: note.id,
+        type: NotificationSourceType.Note,
+      },
+      senderId,
+      recipientId: note.userId,
+    })
+  }
+
   @OnEvent(CommentEvents.CommentCreate)
   async handleCommentCreateEvent(event: CommentCreateEvent) {
-    const { ref, comment, recipientId, senderId } = event
+    const { source, comment, recipientId, senderId } = event
 
     // 评论了评论
     if (comment.parentId) {
@@ -82,8 +83,8 @@ export class NotificationListener {
         sourceId: comment.id,
         sourceType: NotificationSourceType.Comment,
         source: {
-          title: ref.title,
-          image: ref.cover,
+          title: source.title,
+          image: source.cover,
         },
         senderId,
         recipientId,
@@ -95,11 +96,11 @@ export class NotificationListener {
     await this.notificationService.create({
       action: NotificationAction.Comment,
       content: comment.content,
-      sourceId: ref.id,
+      sourceId: source.id,
       sourceType: NotificationSourceType.Note,
       source: {
-        title: ref.title,
-        image: ref.cover,
+        title: source.title,
+        image: source.cover,
       },
       senderId,
       recipientId,
@@ -110,6 +111,7 @@ export class NotificationListener {
   async handleUserFollowEvent(event: UserFollowEvent) {
     const { targetId, userId } = event
 
+    // xx 关注了你
     await this.notificationService.create({
       action: NotificationAction.Follow,
       content: '',
