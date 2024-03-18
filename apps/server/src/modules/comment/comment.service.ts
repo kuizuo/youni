@@ -30,7 +30,7 @@ export class CommentService {
   ) { }
 
   async paginate(dto: CommentPagerDto) {
-    const { cursor, limit, itemId, itemType } = dto
+    const { cursor, limit, sortBy = 'createdAt', sortOrder = 'desc', itemId, itemType } = dto
     const ref = await this.getItemById(itemId, itemType)
 
     if (!ref) {
@@ -72,6 +72,9 @@ export class CommentService {
           },
         },
       },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
     }).withCursor({
       limit,
       after: cursor,
@@ -81,13 +84,31 @@ export class CommentService {
   }
 
   async paginateSubComment(dto: SubCommentPagerDto) {
-    const { cursor, rootId, itemId, itemType, limit } = dto
+    const { cursor, limit, sortBy = 'createdAt', sortOrder = 'desc', rootId, itemId, itemType } = dto
 
     const [items, meta] = await this.prisma.comment.paginate({
       where: {
         refId: itemId,
         refType: itemType,
         parentId: rootId,
+      },
+      select: {
+        ...CommentSelect,
+        parent: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                avatar: true,
+                nickname: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
       },
     }).withCursor({
       limit,

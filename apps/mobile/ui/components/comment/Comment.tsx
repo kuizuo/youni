@@ -1,21 +1,31 @@
 import { trpc } from "@/utils/trpc"
-import React, { memo } from "react"
+import React, { memo, useEffect } from "react"
 import { YStack, XStack, Avatar, Text, useTheme, View, Separator, Spinner, SizableText } from "@/ui"
 import { CommentItem } from '@server/modules/comment/comment'
 import { formatTime } from "@/utils/date"
 import { CommentLikeButton } from "./CommentLikeButton"
 import { CommentButton } from "./CommentButton"
-import { useCurrentNote } from "@/atoms/comment"
+import { newCommentsAtom, useCurrentNote } from "@/atoms/comment"
 import { CommentRefType } from "@server/modules/comment/comment.constant"
 import { useUser } from "@/utils/auth/hooks/useUser"
+import { useAtom, useAtomValue } from "jotai"
 
 export const CommentList = () => {
   const [note, _] = useCurrentNote()
+
+  const [newComments, setComments] = useAtom(newCommentsAtom)
 
   const { data, isLoading } = trpc.comment.page.useInfiniteQuery({
     itemId: note.id,
     itemType: CommentRefType.Note,
   }, { getNextPageParam: (lastPage) => lastPage.meta.endCursor })
+
+  useEffect(() => {
+    // 组件销毁自动清空新增评论
+    return () => {
+      setComments([])
+    }
+  }, [])
 
 
   if (isLoading) {
@@ -29,6 +39,15 @@ export const CommentList = () => {
   }
 
   return <>
+    {/* 新增评论 */}
+    {
+      newComments.filter(c => !c.parentId).map((comment) => {
+        <CommentListItem
+          comment={comment as unknown as CommentItem}
+          key={comment.id}
+        />
+      })
+    }
     {
       data?.pages.map((data, index) => {
         return (
@@ -58,8 +77,48 @@ const CommentListItem = memo(({ comment }: { comment: CommentItem }) => {
 
 const Comment = memo(({ comment }: { comment: CommentItem }) => {
   const [note, _] = useCurrentNote()
+
+  const newComments = useAtomValue(newCommentsAtom)
   const { currentUser } = useUser()
   const theme = useTheme()
+
+  const { isFetching, hasNextPage, fetchNextPage } = trpc.comment.subPage.useInfiniteQuery({
+    itemId: note.id,
+    itemType: CommentRefType.Note,
+    rootId: comment.id,
+    limit: 5,
+  }, {
+    enabled: false,
+    initialCursor: comment?.children?.[0]?.id,
+    getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+  })
+
+  async function loadMore() {
+    const { data } = await fetchNextPage()
+    // 添加最后一个 pages 数据
+    const lastPage = data?.pages[data.pages.length - 1]
+    if (lastPage) {
+      comment.children.push(...(lastPage.items as unknown as CommentItem[]))
+    }
+  }
+
+  const MoreButton = () => {
+    if (isFetching) {
+      return <Spinner />
+    }
+
+    if (comment.interact.commentCount > 1 && comment.children.length === 1) {
+      return <SizableText size={'$2'} color={'#1e40af'} onPress={loadMore}>
+        {`展开 ${comment.interact.commentCount - 1} 条评论`}
+      </SizableText>
+    }
+
+    if (hasNextPage) {
+      return <SizableText size={'$2'} color={'#1e40af'} onPress={loadMore}>
+        展开更多
+      </SizableText>
+    }
+  }
 
   return <XStack gap='$2.5' alignItems='center' marginVertical="$2">
     <Avatar circular size="$2.5" alignSelf='flex-start' >
@@ -113,11 +172,21 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
 
       {
         comment?.children?.length > 0 && <YStack marginTop='$2' gap='$2'>
+          {/* 新增评论 */}
+          {
+            newComments.filter(c => c.parentId).map((comment) => {
+              <Comment key={comment.id} comment={comment as unknown as CommentItem} />
+            })
+          }
           {
             comment.children.map((child) => (
               <Comment key={child.id} comment={child as unknown as CommentItem} />
             ))
           }
+          {/* 更多评论 */}
+          <XStack>
+            <MoreButton />
+          </XStack>
         </YStack>
       }
     </YStack>

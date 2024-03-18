@@ -37,7 +37,7 @@ export const NoteFooter = ({ item }: { item: NoteItem }) => {
         </XStack>
       </XStack>
       :
-      <YStack fullscreen onPress={() => setOpen(false)} >
+      <YStack fullscreen >
         <View
           flex={1}
           opacity={0.3}

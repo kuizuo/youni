@@ -1,11 +1,13 @@
 
 import { trpc } from "@/utils/trpc"
-import { Keyboard } from 'react-native';
+import { Keyboard } from 'react-native'
 import { Button, Input, View, XStack, useToastController } from "@/ui"
 import React, { ElementRef, useEffect, useRef, useState } from "react"
-import { CommentRefType } from "@server/modules/comment/comment.constant";
-import { NoteItem } from "@server/modules/note/note";
-import { useCommentModalOpen, useParentComment } from "@/atoms/comment";
+import { CommentRefType } from "@server/modules/comment/comment.constant"
+import { NoteItem } from "@server/modules/note/note"
+import { newCommentsAtom, useCommentModalOpen, useParentComment } from "@/atoms/comment"
+import { useSetAtom } from "jotai"
+import { CommentItem } from "@server/modules/comment/comment"
 
 interface Props {
   item: NoteItem
@@ -16,6 +18,8 @@ export const CommentModel = ({ item }: Props) => {
 
   const [open, setOpen] = useCommentModalOpen()
   const [parentComment, _] = useParentComment()
+
+  const setComments = useSetAtom(newCommentsAtom)
 
   const toast = useToastController()
   const inputRef = useRef<ElementRef<typeof Input>>(null)
@@ -34,7 +38,10 @@ export const CommentModel = ({ item }: Props) => {
       inputRef.current?.clear()
       setContent('')
       Keyboard.dismiss()
-      setOpen(true)
+      setOpen(false)
+
+      // 将评论添加到开头
+      setComments((prev) => [result as unknown as CommentItem, ...prev])
     }
   }
 
