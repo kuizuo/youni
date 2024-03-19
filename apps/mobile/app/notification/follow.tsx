@@ -1,14 +1,13 @@
-import { Paragraph, Spinner, Text, View, YStack } from '@/ui';
+import { Paragraph, SizableText, Spinner, View, YStack } from '@/ui';
 import { trpc } from '@/utils/trpc';
-import { FlashList } from '@shopify/flash-list';
 import { EmptyResult } from '@/ui/components/EmptyResult';
 import { empty, error, loading, success } from '@/utils/trpc/patterns';
 import { match } from 'ts-pattern';
-import { MessageListItem } from '@/ui/components/notification/MessageListItem';
 import React from 'react';
 import { MessageItem } from '@server/modules/notification/notification';
-import { Stack } from 'expo-router';
 import { MessageList } from '@/ui/components/notification/MessageList';
+import { MyHeader } from '@/ui/components/MyHeader';
+import { Stack } from 'expo-router';
 
 export default function Screen() {
 
@@ -38,13 +37,11 @@ export default function Screen() {
     ))
     .otherwise(() => <EmptyResult title={messageList.failureReason?.message} />)
 
-  return <YStack flex={1} backgroundColor={'$background'} >
-    <Stack.Screen options={{
-      headerShown: true,
-      headerShadowVisible: false,
-      title: '新增关注',
-      headerTitleAlign: 'center'
-    }} />
+  return <YStack flex={1} backgroundColor={'$background'}>
+
+    <MyHeader showBackButton headerRight={<View width={'$1.5'} />}>
+      <SizableText flex={1} textAlign="center">新增关注</SizableText>
+    </MyHeader>
     {messageLayout}
   </YStack>
 }

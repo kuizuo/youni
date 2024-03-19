@@ -1,4 +1,4 @@
-import { Paragraph, Spinner, YStack } from '@/ui';
+import { Paragraph, SizableText, Spinner, View, YStack } from '@/ui';
 import { trpc } from '@/utils/trpc';
 import { EmptyResult } from '@/ui/components/EmptyResult';
 import { empty, error, loading, success } from '@/utils/trpc/patterns';
@@ -7,6 +7,7 @@ import React from 'react';
 import { MessageItem } from '@server/modules/notification/notification';
 import { Stack } from 'expo-router';
 import { MessageList } from '@/ui/components/notification/MessageList';
+import { MyHeader } from '@/ui/components/MyHeader';
 
 export default function Screen() {
 
@@ -37,12 +38,9 @@ export default function Screen() {
     .otherwise(() => <EmptyResult title={messageList.failureReason?.message} />)
 
   return <YStack flex={1} backgroundColor={'$background'} >
-    <Stack.Screen options={{
-      headerShown: true,
-      headerShadowVisible: false,
-      title: '赞',
-      headerTitleAlign: 'center'
-    }} />
+    <MyHeader showBackButton headerRight={<View width={'$1.5'} />}>
+      <SizableText flex={1} textAlign="center">赞</SizableText>
+    </MyHeader>
     {messageLayout}
   </YStack>
 }

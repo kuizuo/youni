@@ -52,6 +52,4 @@ export const NotificationScreen = (): React.ReactNode => {
       </YStack>
     </YStack>
   </>
-
-
 }

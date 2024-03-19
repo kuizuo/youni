@@ -46,10 +46,11 @@ export const FollowerScreen = () => {
       enableSafeAreaTopInset={false}
       showsVerticalScrollIndicator={false}
       initialPage={type === 'following' ? 0 : 1}
-      renderHeaderBar={() => <MyHeader showBackButton >
-        <SizableText flex={1} textAlign="center">{title}</SizableText>
-        <View width={"$1.5"} />
-      </MyHeader>}
+      renderHeaderBar={() =>
+        <MyHeader showBackButton >
+          <SizableText flex={1} textAlign="center">{title}</SizableText>
+        </MyHeader>
+      }
       renderHeader={() => <></>}
       tabs={TABS.map((tab) => ({
         title: tab.title,
