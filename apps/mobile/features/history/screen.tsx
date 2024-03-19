@@ -35,7 +35,7 @@ export function HistoryScreen() {
 
 
   const noteListLayout = match(historyList)
-    .with(error, () => <EmptyResult message={historyList.failureReason?.message} />)
+    .with(error, () => <EmptyResult title={historyList.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center'>
         <Paragraph paddingBottom='$3'>Loading...</Paragraph>
@@ -46,12 +46,12 @@ export function HistoryScreen() {
     .with(success, () => (
       <NoteList
         data={historyList.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefetching={historyList.isRefetching}
+        isRefreshing={historyList.isRefetching}
         onRefresh={() => historyList.refetch()}
         onEndReached={() => historyList.fetchNextPage()}
       />
     ))
-    .otherwise(() => <EmptyResult message={historyList.failureReason?.message} />)
+    .otherwise(() => <EmptyResult title={historyList.failureReason?.message} />)
 
   return <YStack fullscreen flex={1} backgroundColor={'$background'}>
     <Stack.Screen options={{

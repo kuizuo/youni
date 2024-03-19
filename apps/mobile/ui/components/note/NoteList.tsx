@@ -6,14 +6,14 @@ import { useMedia } from "tamagui"
 
 type Props = {
   data: NoteItem[]
-  isRefetching: boolean
+  isRefreshing: boolean
   onRefresh?: () => void
   onEndReached?: () => void
 }
 
 export const NoteList = ({
   data,
-  isRefetching,
+  isRefreshing,
   onRefresh,
   onEndReached
 }: Props) => {
@@ -22,7 +22,7 @@ export const NoteList = ({
   return <MasonryFlashList
     data={data}
     refreshControl={
-      <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
+      <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
     }
     onEndReached={onEndReached}
     keyExtractor={(item) => item.id}

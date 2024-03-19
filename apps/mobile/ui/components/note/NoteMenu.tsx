@@ -1,8 +1,13 @@
 import { ChevronDown, Menu } from '@tamagui/lucide-icons'
 import { Button, SizableText, Sheet, Separator, XStack, ScrollView } from '@/ui'
 import { useSheetOpen } from '@/atoms/sheet'
+import { NoteItem } from '../../../../server/src/modules/note/note'
 
-export const NoteMenu = () => {
+interface Props {
+  item: NoteItem
+}
+
+export const NoteMenu = ({ item }: Props) => {
   const [open, setOpen] = useSheetOpen()
 
   return (

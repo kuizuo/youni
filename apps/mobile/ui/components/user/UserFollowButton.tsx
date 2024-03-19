@@ -7,7 +7,7 @@ interface Props {
   isFollowing: boolean
 }
 
-export const FollowButton = ({ userId, isFollowing: initState }: Props) => {
+export const UserFollowButton = ({ userId, isFollowing: initState }: Props) => {
   const theme = useTheme()
 
   const [isFollowing, setIsFollowing] = useState(initState)

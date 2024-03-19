@@ -18,7 +18,7 @@ export default function Screen() {
   })
 
   const messageLayout = match(messageList)
-    .with(error, () => <EmptyResult message={messageList.failureReason?.message} />)
+    .with(error, () => <EmptyResult title={messageList.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center'>
         <Paragraph paddingBottom='$3'>Loading...</Paragraph>
@@ -34,7 +34,7 @@ export default function Screen() {
         onEndReached={() => messageList.fetchNextPage()}
       />
     ))
-    .otherwise(() => <EmptyResult message={messageList.failureReason?.message} />)
+    .otherwise(() => <EmptyResult title={messageList.failureReason?.message} />)
 
   return <YStack flex={1} backgroundColor={'$background'} >
     <Stack.Screen options={{

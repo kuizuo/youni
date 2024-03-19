@@ -47,11 +47,11 @@ export const SearchScreen = () => {
   })
 
   const searchResultLayout = match(searchResult)
-    .with(error, () => <EmptyResult message={searchResult.failureReason?.message} />)
+    .with(error, () => <EmptyResult title={searchResult.failureReason?.message} />)
     .with(success, () => (
       <NoteList
         data={searchResult.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefetching={searchResult.isRefetching}
+        isRefreshing={searchResult.isRefetching}
         onRefresh={() => searchResult.refetch()}
         onEndReached={() => searchResult.fetchNextPage()}
       />

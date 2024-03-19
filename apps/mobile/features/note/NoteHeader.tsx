@@ -1,4 +1,4 @@
-import { FollowButton } from "@/ui/components/user/FollowButton"
+import { UserFollowButton } from "@/ui/components/user/UserFollowButton"
 import { UserInfo } from "@server/modules/user/user"
 import { Link } from "expo-router"
 import { XStack, Avatar, Text, Button } from "@/ui"
@@ -6,14 +6,17 @@ import { trpc } from "@/utils/trpc"
 import { useUser } from "@/utils/auth/hooks/useUser"
 import React from "react"
 import { ArrowUpRightFromSquare, Menu } from "@tamagui/lucide-icons"
-import { NoteMenu } from "./NoteMenu"
+import { NoteMenu } from "@/ui/components/note/NoteMenu"
 import { MyHeader } from "@/ui/components/MyHeader"
+import { NoteItem } from "../../../server/src/modules/note/note"
+import { NoteShareButton } from "@/ui/components/note/NoteShareButton"
 
 interface Props {
   user: Pick<UserInfo, 'id' | 'nickname' | 'avatar'>
+  item: NoteItem
 }
 
-export const NoteHeader = ({ user }: Props): React.ReactNode => {
+export const NoteHeader = ({ user, item }: Props): React.ReactNode => {
   const { currentUser } = useUser()
 
   const { data: isFollowing, isLoading } = trpc.interact.isFollowing.useQuery({ id: user.id! }, { enabled: !!user.id })
@@ -38,10 +41,10 @@ export const NoteHeader = ({ user }: Props): React.ReactNode => {
       </XStack>
     </Link>
     {currentUser?.id === user?.id ?
-      <NoteMenu /> :
+      <NoteMenu item={item} /> :
       <>
-        <FollowButton userId={user.id} isFollowing={isFollowing!} />
-        <Button size={'$1'} icon={<ArrowUpRightFromSquare size={'$1'} />} unstyled></Button>
+        <UserFollowButton userId={user.id} isFollowing={isFollowing!} />
+        <NoteShareButton item={item} />
       </>
     }
   </MyHeader>

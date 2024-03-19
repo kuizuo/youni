@@ -22,7 +22,7 @@ export const UserLiked = ({ userId }: Props) => {
   );
 
   const userLikedNoteLayout = match(userLikedNote)
-    .with(error, () => <EmptyResult message={userLikedNote.failureReason?.message} />)
+    .with(error, () => <EmptyResult title={userLikedNote.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center' >
         <Paragraph paddingBottom='$3' > Loading...</Paragraph>
@@ -32,18 +32,18 @@ export const UserLiked = ({ userId }: Props) => {
     .with(infiniteEmpty, () => (
       <EmptyResult
         image={<Image width={60} height={60} tintColor={'gray'} source={require('@/assets/images/unlike.png')} />}
-        message='还没有赞过笔记哦'
+        title='还没有赞过笔记哦'
       />
     ))
     .with(success, () => (
       <NoteList
         data={userLikedNote.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefetching={userLikedNote.isRefetching}
+        isRefreshing={userLikedNote.isRefetching}
         onRefresh={() => userLikedNote.refetch()}
         onEndReached={() => userLikedNote.fetchNextPage()}
       />
     ))
-    .otherwise(() => <EmptyResult message={userLikedNote.failureReason?.message} />)
+    .otherwise(() => <EmptyResult title={userLikedNote.failureReason?.message} />)
 
   return (
     <YStack flex={1} backgroundColor={'$background'} >

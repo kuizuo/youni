@@ -18,7 +18,7 @@ export const HomeFeed = (): React.ReactNode => {
   )
 
   const homeFeedLayout = match(homeFeed)
-    .with(error, () => <EmptyResult message={homeFeed.failureReason?.message} />)
+    .with(error, () => <EmptyResult title={homeFeed.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center'>
         <Paragraph paddingBottom='$3'>Loading...</Paragraph>
@@ -29,12 +29,12 @@ export const HomeFeed = (): React.ReactNode => {
     .with(success, () => (
       <NoteList
         data={homeFeed.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefetching={homeFeed.isRefetching}
+        isRefreshing={homeFeed.isRefetching}
         onRefresh={() => homeFeed.refetch()}
         onEndReached={() => homeFeed.fetchNextPage()}
       />
     ))
-    .otherwise(() => <EmptyResult message={homeFeed.failureReason?.message} />)
+    .otherwise(() => <EmptyResult title={homeFeed.failureReason?.message} />)
 
   return (
     <YStack flex={1} backgroundColor={'$background'}>

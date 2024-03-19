@@ -54,13 +54,13 @@ export class NoteTrpcRouter implements OnModuleInit {
         .input(NotePagerDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
-          // TODO
-          const { items, meta } = await this.notePublicService.homeFeed(input, user.id)
 
-          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
+          const { items, meta } = await this.notePublicService.followFeed(input, user.id)
+
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id, true)
 
           return {
-            items: [],
+            items,
             meta,
           }
         }),

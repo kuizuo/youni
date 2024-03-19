@@ -1,5 +1,5 @@
 import { Star } from "@tamagui/lucide-icons"
-import { Button, SizeTokens, Text, XStack } from "../.."
+import { Button, ColorTokens, SizeTokens, Text, XStack } from "../.."
 import { trpc } from "@/utils/trpc"
 import { useState } from "react"
 import { NoteItem } from "@server/modules/note/note"
@@ -7,11 +7,13 @@ import { NoteItem } from "@server/modules/note/note"
 export type Props = {
   item: NoteItem
   size?: SizeTokens
+  color?: ColorTokens
 }
 
 export const NoteCollectButton = ({
   item,
-  size = 16
+  size = 16,
+  color = 'gray'
 }: Props) => {
   const [collected, setCollected] = useState(item.interact.collected)
   const [collectedCount, setCollectedCount] = useState(item.interact.collectedCount)
@@ -34,11 +36,11 @@ export const NoteCollectButton = ({
     <Button
       icon={<Star
         fill={collected ? '#FDBC5F' : 'transparent'}
-        color={collected ? '#FDBC5F' : 'gray'}
+        color={collected ? '#FDBC5F' : color}
         size={size} />}
       unstyled>
     </Button>
-    <Text fontSize={14} color={'gray'}>
+    <Text fontSize={14} color={color}>
       {collectedCount || '收藏'}
     </Text>
   </XStack>

@@ -1,6 +1,6 @@
 import { Avatar, XStack, YStack, SizableText } from '@/ui'
 import { Link, useRouter } from 'expo-router'
-import { FollowButton } from './FollowButton'
+import { UserFollowButton } from './UserFollowButton'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { UserInfoWithFollow } from '@server/modules/interact/interact'
 
@@ -37,7 +37,7 @@ export const UserListItem = (item: UserInfoWithFollow): React.ReactElement => {
           {/* 笔记 · 1 | 粉丝 · 1 */}
         </SizableText>
       </YStack>
-      {currentUser?.id !== item.id && <FollowButton isFollowing={item.isFollowing} userId={item.id} />}
+      {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.isFollowing} userId={item.id} />}
     </XStack >
   )
 }

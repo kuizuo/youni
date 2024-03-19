@@ -2,6 +2,7 @@ import { BullModule as NestBullModule } from '@nestjs/bull'
 import { Global, Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { IRedisConfig } from '@server/config'
+import { prefix } from 'src/utils/redis.util'
 
 @Global()
 @Module({
@@ -17,6 +18,7 @@ import { IRedisConfig } from '@server/config'
             port: redisOptions.port,
             password: redisOptions.password,
           },
+          prefix,
         }
       },
       inject: [ConfigService],

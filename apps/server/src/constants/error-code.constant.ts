@@ -19,6 +19,8 @@ export enum ErrorCodeEnum {
 
   NoteNotFound = 4001,
   CommentNotFound = 4002,
+
+  NoUserFollowing = 5001,
 }
 
 export const ErrorCode: Record<ErrorCodeEnum, string> = {
@@ -41,4 +43,5 @@ export const ErrorCode: Record<ErrorCodeEnum, string> = {
 
   [ErrorCodeEnum.NoteNotFound]: '笔记不存在',
   [ErrorCodeEnum.CommentNotFound]: '评论不存在',
+  [ErrorCodeEnum.NoUserFollowing]: '您还未关注任何用户',
 }

@@ -24,7 +24,7 @@ export const FollowerList = ({ userId, type }: Props) => {
   const emptyString = type === 'following' ? '你还没有关注任何人' : '你还没有粉丝'
 
   const userListLayout = match(userList)
-    .with(error, () => <EmptyResult message={userList.failureReason?.message} />)
+    .with(error, () => <EmptyResult title={userList.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center' >
         <Paragraph paddingBottom='$3'> Loading...</Paragraph>
@@ -32,7 +32,7 @@ export const FollowerList = ({ userId, type }: Props) => {
       </YStack>
     ))
     .with(empty, () => (
-      <EmptyResult message={emptyString}></EmptyResult>
+      <EmptyResult title={emptyString}></EmptyResult>
     ))
     .with(success, () => (
       <UserList
@@ -42,7 +42,7 @@ export const FollowerList = ({ userId, type }: Props) => {
         onEndReached={() => userList.fetchNextPage()}
       />
     ))
-    .otherwise(() => <EmptyResult message={userList.failureReason?.message} />)
+    .otherwise(() => <EmptyResult title={userList.failureReason?.message} />)
 
   return (
     <YStack flex={1}>

@@ -24,7 +24,7 @@ export const UserNote = ({ userId }: Props) => {
   );
 
   const userNotesLayout = match(userNotes)
-    .with(error, () => <EmptyResult message={userNotes.failureReason?.message} />)
+    .with(error, () => <EmptyResult title={userNotes.failureReason?.message} />)
     .with(loading, () => (
       <YStack fullscreen flex={1} justifyContent='center' alignItems='center' >
         <Paragraph paddingBottom='$3' > Loading...</Paragraph>
@@ -34,17 +34,17 @@ export const UserNote = ({ userId }: Props) => {
     .with(infiniteEmpty, () => (
       <EmptyResult
         image={<Image width={60} height={60} tintColor={'gray'} source={require('@/assets/images/pic-one.png')} />}
-        message={currentUser?.id === userId ? '快去创建笔记吧' : '他还没有发布笔记哦'}
+        title={currentUser?.id === userId ? '快去创建笔记吧' : '他还没有发布笔记哦'}
       />))
     .with(success, () => (
       <NoteList
         data={userNotes.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefetching={userNotes.isRefetching}
+        isRefreshing={userNotes.isRefetching}
         onRefresh={() => userNotes.refetch()}
         onEndReached={() => userNotes.fetchNextPage()}
       />
     ))
-    .otherwise(() => <EmptyResult message={userNotes.failureReason?.message} />)
+    .otherwise(() => <EmptyResult title={userNotes.failureReason?.message} />)
 
   return (
     <YStack flex={1} backgroundColor={'$background'} >

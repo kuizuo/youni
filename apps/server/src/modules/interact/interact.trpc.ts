@@ -66,7 +66,7 @@ export class InteractTrpcRouter implements OnModuleInit {
           const { input, ctx: { user } } = opt
           const { id, cursor, limit } = input
 
-          const { ids, meta } = await this.followSerive.getFollowingIds(id, { cursor, limit } as PagerDto)
+          const { ids, meta } = await this.followSerive.getFollowingIds({ cursor, limit } as PagerDto, id)
           const commomIds = await this.followSerive.getCommonFollowingIds(id, user.id)
 
           const users = await this.userService.getUserByIds(ids)
@@ -118,11 +118,17 @@ export class InteractTrpcRouter implements OnModuleInit {
           if (cache)
             return cache
 
-          const isFollowing = await this.followSerive.isUserFollowing(id, user.id)
-          const followingCount = await this.followSerive.getFollowingCount(id)
-          const followerCount = await this.followSerive.getFollowerCount(id)
+          const isFollowingPromise = this.followSerive.isUserFollowing(id, user.id)
+          const followingCountPromise = this.followSerive.getFollowingCount(id)
+          const followerCountPromise = this.followSerive.getFollowerCount(id)
+          const likesCountPromise = this.countingService.getUserLikedCount(id)
 
-          const likesCount = await this.countingService.getUserLikedCount(id)
+          const [isFollowing, followingCount, followerCount, likesCount] = await Promise.all([
+            isFollowingPromise,
+            followingCountPromise,
+            followerCountPromise,
+            likesCountPromise,
+          ])
 
           const result: InteractState = {
             followingCount,

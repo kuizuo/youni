@@ -4,7 +4,7 @@ import { MessageCircle, Settings } from "@tamagui/lucide-icons"
 import { Link } from "expo-router"
 import { XStack } from "tamagui"
 import { Text, Button } from '@/ui'
-import { FollowButton } from "@/ui/components/user/FollowButton"
+import { UserFollowButton } from "@/ui/components/user/UserFollowButton"
 import { UserInfo } from "@server/modules/user/user"
 import { BlurView } from "expo-blur"
 
@@ -111,7 +111,7 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
             <SettingButton />
           </> :
           <>
-            <FollowButton userId={user.id} isFollowing={data?.isFollowing!} />
+            <UserFollowButton userId={user.id} isFollowing={data?.isFollowing!} />
             <ChatButton />
           </>
       }

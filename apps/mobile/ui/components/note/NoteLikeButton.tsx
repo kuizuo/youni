@@ -4,14 +4,15 @@ import Animated, { useSharedValue, withSpring, useAnimatedStyle, runOnJS } from 
 import { Like } from '@/ui/icons/like';
 import { trpc } from '@/utils/trpc';
 import { NoteItem } from '@server/modules/note/note';
-import { SizableText, XStack } from 'tamagui';
+import { ColorTokens, SizableText, XStack } from '@/ui';
 
 export interface Props {
   item: NoteItem;
   size?: number;
+  color?: ColorTokens;
 }
 
-export const NoteLikeButton = ({ item, size = 16 }: Props) => {
+export const NoteLikeButton = ({ item, size = 16, color = 'gray' }: Props) => {
   const [liked, setLiked] = useState(item.interact.liked);
   const [likedCount, setLikedCount] = useState(item.interact.likedCount);
 
@@ -48,12 +49,12 @@ export const NoteLikeButton = ({ item, size = 16 }: Props) => {
         <Animated.View style={[animatedStyle]}>
           <Like
             fill={liked ? 'red' : 'transparent'}
-            color={liked ? 'red' : 'gray'}
+            color={liked ? 'red' : color}
             size={size}
           />
         </Animated.View>
       </TouchableOpacity>
-      <SizableText fontSize={14} color={'gray'}>
+      <SizableText fontSize={14} color={color}>
         {likedCount || ' '}
       </SizableText>
     </XStack>

@@ -8,9 +8,12 @@ import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
 import { Note } from '@youni/database'
 
+import dayjs from 'dayjs'
+
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 import { CollectionService } from '../collection/collection.service'
 import { InteractType } from '../interact/interact.constant'
+import { FollowService } from '../interact/services/follow.service'
 import { LikeService } from '../interact/services/like.service'
 
 import { NoteLikeEvent } from './events/note-like.event'
@@ -25,6 +28,7 @@ export class NotePublicService {
   constructor(
     private readonly likeService: LikeService,
     private readonly collectionService: CollectionService,
+    private readonly followService: FollowService,
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
@@ -34,6 +38,46 @@ export class NotePublicService {
     const [items, meta] = await this.prisma.note.paginate({
       where: {
         isPublished: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: {
+        publishTime: 'desc',
+      },
+    }).withCursor({
+      limit,
+      after: cursor,
+    })
+
+    return {
+      items,
+      meta,
+    }
+  }
+
+  async followFeed(dto: NotePagerDto, userId: string) {
+    const { cursor, limit } = dto
+
+    // 获取当前用户所有关注
+    const followIds = await this.followService.getAllFollowingIds(userId)
+
+    // 近 3 天前动态
+    const threeDaysAgo = dayjs().subtract(7, 'day').toDate()
+
+    const [items, meta] = await this.prisma.note.paginate({
+      where: {
+        isPublished: true,
+        publishTime: {
+          gte: threeDaysAgo,
+        },
+        userId: { in: followIds },
       },
       include: {
         user: {
