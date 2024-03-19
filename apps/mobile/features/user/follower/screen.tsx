@@ -1,10 +1,11 @@
 import { YStack, View, SizableText, useTheme } from "@/ui"
 import { useMemo } from "react"
 import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
-import { Stack, useLocalSearchParams } from "expo-router"
+import { useLocalSearchParams } from "expo-router"
 import { trpc } from "@/utils/trpc"
 import { FollowerList } from "./FollowerList"
 import { Platform } from "react-native"
+import { MyHeader } from "@/ui/components/MyHeader"
 
 export const FollowerScreen = () => {
   const theme = useTheme()
@@ -41,16 +42,14 @@ export const FollowerScreen = () => {
 
 
   return <YStack flex={1} position="relative" backgroundColor={'$background'}>
-    <Stack.Screen options={{
-      headerShown: true,
-      headerTitleAlign: 'center',
-      headerTitle: title,
-      headerBackTitleVisible: false,
-    }}></Stack.Screen>
     <TabbedHeaderPager
       enableSafeAreaTopInset={false}
       showsVerticalScrollIndicator={false}
       initialPage={type === 'following' ? 0 : 1}
+      renderHeaderBar={() => <MyHeader showBackButton >
+        <SizableText flex={1} textAlign="center">{title}</SizableText>
+        <View width={"$1.5"} />
+      </MyHeader>}
       renderHeader={() => <></>}
       tabs={TABS.map((tab) => ({
         title: tab.title,

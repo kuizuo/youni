@@ -41,18 +41,26 @@ export class FollowService {
 
   /** 获取用户正在关注的用户 ID 列表。 */
   async getFollowingIds(dto: PagerDto, userId: string) {
-    const { cursor = '0', limit } = dto
+    const { cursor = '+inf', limit } = dto
 
     const ids: string[] = []
 
-    const [endCursor, keys] = await this.redis.zscan(getRedisKey(`following:${userId}`), cursor, 'COUNT', limit)
+    const startCursor = cursor !== '0' ? cursor : '+inf'
+    const keys = await this.redis.zrevrangebyscore(
+      getRedisKey(`following:${userId}`),
+      startCursor,
+      '-inf',
+      'LIMIT',
+      0,
+      limit,
+    )
     ids.push(...keys)
 
     const meta: CursorPaginationMeta = {
-      hasNextPage: endCursor !== '0',
-      hasPreviousPage: false,
-      startCursor: cursor,
-      endCursor,
+      hasNextPage: ids.length === limit,
+      hasPreviousPage: cursor !== '0',
+      startCursor: ids.length > 0 ? ids[0] : '0',
+      endCursor: ids.length > 0 ? ids[ids.length - 1] : '0',
     }
     return { ids, meta }
   }
@@ -63,18 +71,26 @@ export class FollowService {
 
   /** 获取关注用户的粉丝 ID 列表。 */
   async getFollowerIds(userId: string, dto: PagerDto) {
-    const { cursor = '0', limit } = dto
+    const { cursor = '+inf', limit } = dto
 
     const ids: string[] = []
 
-    const [startCursor, keys] = await this.redis.zscan(getRedisKey(`followers:${userId}`), cursor, 'COUNT', limit)
+    const startCursor = cursor !== '0' ? cursor : '+inf'
+    const keys = await this.redis.zrevrangebyscore(
+      getRedisKey(`followers:${userId}`),
+      startCursor,
+      '-inf',
+      'LIMIT',
+      0,
+      limit,
+    )
     ids.push(...keys)
 
     const meta: CursorPaginationMeta = {
-      hasNextPage: startCursor !== '0',
-      hasPreviousPage: false,
-      startCursor,
-      endCursor: startCursor,
+      hasNextPage: ids.length === limit,
+      hasPreviousPage: cursor !== '0',
+      startCursor: ids.length > 0 ? ids[0] : '0',
+      endCursor: ids.length > 0 ? ids[ids.length - 1] : '0',
     }
     return { ids, meta }
   }
@@ -96,11 +112,11 @@ export class FollowService {
 
   /** 获取共同关注列表 */
   async getCommonFollowingIds(targetId: string, userId: string) {
-    return this.redis.zinter(getRedisKey(`following:${targetId}`), getRedisKey(`following:${userId}`))
+    return this.redis.zinter(2, getRedisKey(`following:${targetId}`), getRedisKey(`following:${userId}`))
   }
 
   /** 获取他的粉丝共同关注列表 */
   async getCommonFollowerIds(targetId: string, userId: string) {
-    return this.redis.zinter(getRedisKey(`followers:${targetId}`), getRedisKey(`following:${userId}`))
+    return this.redis.zinter(2, getRedisKey(`followers:${targetId}`), getRedisKey(`following:${userId}`))
   }
 }
