@@ -68,7 +68,7 @@ export const ProfileScreen = () => {
             source={require('@/assets/images/profile-background.png')}
             style={{ position: 'absolute', width: '100%', height: '100%' }}
           />
-          <ProfileHeader showGobackButton={!isMe} />
+          <ProfileHeader showBackButton={!isMe} />
           <Theme name="dark">
             {/* 基本信息 */}
             <BasicInfo data={data ?? currentUser!} />
@@ -116,6 +116,9 @@ export const ProfileScreen = () => {
         default: 100,
         web: 0
       })}
+      contentContainerStyle={{
+        flex: 1
+      }}
     >
       {TABS.map(({ key, component: Component }) => {
         return <View key={key} flex={1}>

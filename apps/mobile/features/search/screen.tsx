@@ -10,6 +10,7 @@ import { loading, error, empty, success } from '@/utils/trpc/patterns';
 import { match } from 'ts-pattern';
 import { useRouter } from 'expo-router';
 import { NoteItem } from '@server/modules/note/note';
+import { MyHeader } from '@/ui/components/MyHeader';
 
 export const SearchScreen = () => {
   const router = useRouter()
@@ -63,16 +64,13 @@ export const SearchScreen = () => {
   }
 
   return <>
-    <View height={48} marginTop={top}>
-      <XStack flex={1} alignItems='center' >
-        <HeaderBackButton onPress={() => router.back()} />
-        <XStack flex={1} gap="$1" alignItems='center' backgroundColor={'$gray3'} paddingHorizontal='$2.5' paddingVertical='$1.5' borderRadius={50}>
-          <Search size='$1' />
-          <Input flex={1} color="$color" size='$1' defaultValue={keyword} onChangeText={text => setKeyword(text)} unstyled></Input>
-        </XStack>
-        <Button marginLeft="$3" marginRight='$3' unstyled onPress={handleSearch}>搜索</Button>
+    <MyHeader backgroundColor={'$background'} showBackButton>
+      <XStack flex={1} gap="$1" alignItems='center' backgroundColor={'$gray3'} paddingHorizontal='$2.5' paddingVertical='$2' borderRadius={50}>
+        <Search size='$1' />
+        <Input flex={1} color="$color" size='$1' defaultValue={keyword} onChangeText={text => setKeyword(text)} unstyled></Input>
       </XStack>
-    </View>
+      <Button color={'gray'} unstyled onPress={handleSearch}>搜索</Button>
+    </MyHeader>
 
     <YStack flex={1} backgroundColor={'$background'}>
       {searchResultLayout}

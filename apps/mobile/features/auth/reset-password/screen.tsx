@@ -1,5 +1,4 @@
 import { Link } from 'solito/link'
-import { ChevronLeft } from '@tamagui/lucide-icons'
 // import { SchemaForm, formFields } from '@/utils/SchemaForm'
 // import { useSupabase } from '@/utils/supabase/useSupabase'
 import React, { useEffect } from 'react'

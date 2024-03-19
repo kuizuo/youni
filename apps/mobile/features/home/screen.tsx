@@ -74,6 +74,9 @@ export const HomeScreen = (): React.ReactNode => {
           default: 120,
           web: 0
         })}
+        contentContainerStyle={{
+          flex: 1
+        }}
       >
         {TABS.map(({ key, component: Component }) => {
           return <View key={key} flex={1}>

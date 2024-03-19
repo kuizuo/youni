@@ -87,6 +87,9 @@ export const FollowerScreen = () => {
         default: 100,
         web: 0
       })}
+      contentContainerStyle={{
+        flex: 1
+      }}
     >
       {TABS.map(({ key, component: Component }) => {
         return <View key={key} flex={1}>

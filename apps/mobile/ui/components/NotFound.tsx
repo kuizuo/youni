@@ -1,17 +1,20 @@
-import { Link, Stack } from 'expo-router';
+import { Link } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import { Text, View } from '@/ui';
 
-export default function NotFoundScreen() {
+interface Props {
+  title: string
+}
+
+export default function NotFound({ title }: Props) {
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
       <View style={styles.container}>
-        <Text style={styles.title}>页面不存在</Text>
+        <Text style={styles.title}>{title}</Text>
 
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>返回到首页!</Text>
+          <Text style={styles.linkText}>返回到首页</Text>
         </Link>
       </View>
     </>

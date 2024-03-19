@@ -12,6 +12,7 @@ import { NoteFooter } from './NoteFooter'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useCurrentNote } from '@/atoms/comment'
 import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
+import NotFound from '@/ui/components/NotFound'
 
 // @ts-ignore
 const Comments = lazy(() => import('@/ui/components/comment/Comment'))
@@ -34,9 +35,7 @@ export const NoteScreen = (): React.ReactNode => {
 
   if (!data) return <>
     {/* TODO: REDIRECT to empty screen */}
-    <Text>
-      笔记不见了哦
-    </Text>
+    <NotFound title="笔记不见了哦" />
   </>
 
   return <>
