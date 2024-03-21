@@ -5,7 +5,7 @@ import { useAuth } from '@/utils/auth/hooks/useAuth'
 import { useRouter } from 'expo-router'
 
 export const SignInScreen = (): React.ReactNode => {
-  const { replace } = useRouter()
+  const router = useRouter()
   const { signInWithPassword } = useAuth()
   const toast = useToastController()
 
@@ -31,7 +31,7 @@ export const SignInScreen = (): React.ReactNode => {
     toast.show(`${capitalizeWord(provider)} 登录失败`, {
       message: '未实现'
     })
-    // replace('/')
+    // router.replace('/')
   }
 
   const handleEmailSignInWithPress = async (username: string, password: string) => {
@@ -46,8 +46,9 @@ export const SignInScreen = (): React.ReactNode => {
       })
       return
     }
+    debugger
 
-    replace('/')
+    router.replace('/')
   }
 
   return (

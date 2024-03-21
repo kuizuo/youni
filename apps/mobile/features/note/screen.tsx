@@ -40,7 +40,7 @@ export const NoteScreen = (): React.ReactNode => {
 
   return <>
     <YStack fullscreen backgroundColor={'$background'}>
-      <NoteHeader user={data.user} />
+      <NoteHeader item={data} user={data.user} />
       <ScrollView
         position='relative'
         showsVerticalScrollIndicator={false}

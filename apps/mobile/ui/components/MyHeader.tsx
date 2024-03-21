@@ -21,8 +21,8 @@ export const MyHeader = ({
   const router = useRouter()
   const { top } = useSafeAreaInsets()
 
-  return <XStack width={'100%'} padding='$3' paddingTop={top || '$3'} gap={'$2.5'} alignItems="center" {...props} >
-    {headerLeft ? headerLeft : showBackButton && <Button alignSelf="flex-start" icon={<ChevronLeft size={'$1.5'} />} unstyled onPress={() => router.back()} />}
+  return <XStack width={'100%'} paddingLeft='$2.5' paddingTop={top || '$2.5'} gap={'$2'} alignItems="center" {...props} >
+    {headerLeft ? headerLeft : showBackButton && <Button alignContent="flex-start" icon={<ChevronLeft size={'$1.5'} />} unstyled onPress={() => router.back()} />}
     {children}
     {headerRight}
   </XStack>

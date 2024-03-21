@@ -1,5 +1,3 @@
-import { Note, NotificationSourceType } from "./client"
-
 declare global {
   namespace PrismaJson {
     type NoteImage = {

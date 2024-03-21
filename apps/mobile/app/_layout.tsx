@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { Platform } from "react-native"
 import { Provider } from '@/provider'
 
+import 'react-native-gesture-handler'
+
 if (Platform.OS === "web") {
   // @ts-ignore
   import('../global.css')
@@ -41,6 +43,7 @@ export default function RootLayout() {
         headerShown: false,
       }}>
       </Stack>
+
     </Provider>
   )
 }

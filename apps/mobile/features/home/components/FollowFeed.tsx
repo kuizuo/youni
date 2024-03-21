@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { ScrollView, SizableText, Spinner, View, YStack } from '@/ui'
+import { ScrollView, SizableText, Spinner, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { error, infiniteEmpty, loading, success } from '@/utils/trpc/patterns'
 import { P, match } from 'ts-pattern'
@@ -11,7 +11,7 @@ import { RefreshControl } from 'react-native-gesture-handler'
 
 export const FollowFeed = (): React.ReactNode => {
   const { currentUser } = useUser()
-  const { data } = trpc.interact.state.useQuery({ id: currentUser!.id })
+  const { data } = trpc.interact.state.useQuery({ id: currentUser?.id! })
 
   const hasFollowedUsers = useMemo(() => data?.followingCount !== 0, [data?.followingCount])
 

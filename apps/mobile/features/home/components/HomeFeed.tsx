@@ -25,7 +25,7 @@ export const HomeFeed = (): React.ReactNode => {
         <Spinner />
       </YStack>
     ))
-    .with(empty, () => <Paragraph>没有更多数据</Paragraph>)
+    .with(empty, () => <EmptyResult title={'没有更多数据'} />)
     .with(success, () => (
       <NoteList
         data={homeFeed.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}

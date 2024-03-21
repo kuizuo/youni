@@ -1,5 +1,5 @@
 import { HomeScreen } from '@/features/home/screen'
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router'
 
 export default function Screen() {
   return (
@@ -7,6 +7,6 @@ export default function Screen() {
       <Stack.Screen />
       <HomeScreen />
     </>
-  );
+  )
 }
 
