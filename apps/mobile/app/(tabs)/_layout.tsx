@@ -96,7 +96,6 @@ export default function TabLayout() {
 
 const PlusButton = ({ size }: { size: number }) => {
   const router = useRouter()
-
   const bottom = 4
 
   return (

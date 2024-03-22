@@ -12,7 +12,7 @@ import { UserLiked } from "./components/UserLiked";
 import { BasicInfo } from "./components/BasicInfo";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { trpc } from "@/utils/trpc";
-import { ProfileHeader } from "./components/ProfileHeader";
+import { ProfileNavBar } from "./components/ProfileNavBar";
 import { useRoute } from "@react-navigation/native";
 
 export const ProfileScreen = () => {
@@ -68,7 +68,8 @@ export const ProfileScreen = () => {
             source={require('@/assets/images/profile-background.png')}
             style={{ position: 'absolute', width: '100%', height: '100%' }}
           />
-          <ProfileHeader showBackButton={!isMe} />
+
+          <ProfileNavBar isMe={!isMe} />
           <Theme name="dark">
             {/* 基本信息 */}
             <BasicInfo data={data ?? currentUser!} />
@@ -128,3 +129,5 @@ export const ProfileScreen = () => {
     </TabbedHeaderPager>
   </YStack>
 }
+
+

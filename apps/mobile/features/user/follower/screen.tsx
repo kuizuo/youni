@@ -1,32 +1,28 @@
 import { YStack, View, SizableText, useTheme } from "@/ui"
-import { useMemo } from "react"
-import { TabbedHeaderPager } from "react-native-sticky-parallax-header"
-import { useLocalSearchParams } from "expo-router"
-import { trpc } from "@/utils/trpc"
+import React, { memo, useEffect, useMemo, useState } from "react"
+import { router, useLocalSearchParams, useRouter } from "expo-router"
 import { FollowerList } from "./FollowerList"
-import { Platform } from "react-native"
-import { MyHeader } from "@/ui/components/MyHeader"
+import { TabBar, TabView } from "react-native-tab-view"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { BackButton } from "@/ui/components/BackButton"
 
 export const FollowerScreen = () => {
   const theme = useTheme()
 
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
 
-  const { data, refetch } = trpc.user.byId.useQuery({ id })
+  const { top } = useSafeAreaInsets()
+  const [index, setIndex] = useState(0)
 
   const TABS = useMemo(
     () => [
       {
         key: 'following',
         title: '关注',
-        icon: <></>,
-        component: () => <FollowerList key={'following'} userId={id} type='following'></FollowerList>,
       },
       {
         key: 'followers',
         title: '粉丝',
-        icon: <></>,
-        component: () => <FollowerList key={'followers'} userId={id} type='followers'></FollowerList>,
       },
       // {
       //   key: 'recommend',
@@ -36,66 +32,72 @@ export const FollowerScreen = () => {
     [],
   )
 
-  if (!data) {
-    return <></>
-  }
+  const FollowingList = memo(FollowerList)
+  const FollowersList = memo(FollowerList)
 
+  useEffect(() => {
+    if (type === 'following') {
+      setIndex(0)
+    } else {
+      setIndex(1)
+    }
 
-  return <YStack flex={1} position="relative" backgroundColor={'$background'}>
-    <TabbedHeaderPager
-      enableSafeAreaTopInset={false}
-      showsVerticalScrollIndicator={false}
-      initialPage={type === 'following' ? 0 : 1}
-      renderHeaderBar={() =>
-        <MyHeader showBackButton >
-          <SizableText flex={1} textAlign="center">{title}</SizableText>
-        </MyHeader>
+  }, [type])
+
+  return <YStack flex={1} position="relative" backgroundColor={'$background'} paddingTop={top}>
+    <TabView
+      navigationState={{ index, routes: TABS }}
+      onIndexChange={setIndex}
+      lazy
+      renderScene={({ route }) =>
+        route.key === 'following' ?
+          <FollowingList userId={id} type='following'></FollowingList>
+          :
+          <FollowersList userId={id} type='followers'></FollowersList>
       }
-      renderHeader={() => <></>}
-      tabs={TABS.map((tab) => ({
-        title: tab.title,
-        icon: tab.icon,
-      }))}
-      tabTextStyle={{
-        color: theme.color?.get(),
-        padding: 0
-      }}
-      tabTextActiveStyle={{
-        backgroundColor: 'transparent',
-      }}
-      tabTextContainerStyle={{
-        padding: 0
-      }}
-      tabTextContainerActiveStyle={{
-        backgroundColor: 'transparent',
-      }}
-      tabWrapperStyle={{
-        paddingVertical: 0,
-      }}
-      tabUnderlineColor={theme.$accent10?.get()}
-      tabsContainerStyle={{
-        backgroundColor: theme.background?.get(),
-        flex: 1,
-        maxWidth: Platform.select({
-          web: 200,
-        }),
-        margin: Platform.select({
-          web: 'auto',
-        }),
-      }}
-      tabsContainerHorizontalPadding={Platform.select({
-        default: 100,
-        web: 0
-      })}
-      contentContainerStyle={{
-        flex: 1
+      renderTabBar={(props) => {
+        return <>
+          <View position="relative" height={28} alignItems='center' paddingHorizontal={"$4"} >
+            {<BackButton position="absolute" left={0} marginLeft={'$3'} />}
+
+            <TabBar
+              {...props}
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                backgroundColor: 'transparent',
+              }}
+              tabStyle={{
+                height: 50,
+              }}
+              indicatorStyle={{
+                height: 2,
+                alignItems: 'center',
+                width: '50%',
+                backgroundColor: theme.$accent10?.get(),
+              }}
+              indicatorContainerStyle={{}}
+              scrollEnabled
+              gap={16}
+              renderTabBarItem={tabBarItemProps => {
+                const { route } = tabBarItemProps
+                const active = TABS[index]!.key === route.key
+
+                return <SizableText
+                  opacity={active ? 1 : 0.5}
+                  fontSize={16}
+                  onPress={() => {
+                    const index = TABS.findIndex(tab => tab.key === route.key)
+                    setIndex(index)
+                  }}>
+                  {route.title}
+                </SizableText>
+              }}
+            />
+          </View>
+        </>
       }}
     >
-      {TABS.map(({ key, component: Component }) => {
-        return <View key={key} flex={1}>
-          <Component />
-        </View>
-      })}
-    </TabbedHeaderPager>
+    </TabView>
   </YStack>
 }

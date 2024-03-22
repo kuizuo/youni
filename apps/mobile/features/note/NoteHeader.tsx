@@ -7,7 +7,7 @@ import { useUser } from "@/utils/auth/hooks/useUser"
 import React from "react"
 import { ArrowUpRightFromSquare, Menu } from "@tamagui/lucide-icons"
 import { NoteMenu } from "@/ui/components/note/NoteMenu"
-import { MyHeader } from "@/ui/components/MyHeader"
+import { NavBar } from "@/ui/components/NavBar"
 import { NoteItem } from "../../../server/src/modules/note/note"
 import { NoteShareButton } from "@/ui/components/note/NoteShareButton"
 
@@ -21,7 +21,7 @@ export const NoteHeader = ({ user, item }: Props): React.ReactNode => {
 
   const { data: isFollowing, isLoading } = trpc.interact.isFollowing.useQuery({ id: user.id! }, { enabled: !!user.id })
 
-  return <MyHeader showBackButton>
+  return <NavBar>
     <Link href={`/user/${user.id}/profile`} asChild>
       <XStack flex={1} gap='$2.5' alignItems='center'>
         <Avatar circular size="$2">
@@ -47,5 +47,5 @@ export const NoteHeader = ({ user, item }: Props): React.ReactNode => {
         <NoteShareButton item={item} />
       </>
     }
-  </MyHeader>
+  </NavBar>
 }

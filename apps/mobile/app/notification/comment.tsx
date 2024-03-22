@@ -6,7 +6,8 @@ import { match } from 'ts-pattern';
 import React from 'react';
 import { MessageItem } from '@server/modules/notification/notification';
 import { MessageList } from '@/ui/components/notification/MessageList';
-import { MyHeader } from '@/ui/components/MyHeader';
+import { NavBar } from '@/ui/components/NavBar';
+import { BackButton } from '@/ui/components/BackButton';
 
 export default function Screen() {
   const messageList = trpc.notification.message.useInfiniteQuery({
@@ -36,9 +37,9 @@ export default function Screen() {
     .otherwise(() => <EmptyResult title={messageList.failureReason?.message} />)
 
   return <YStack flex={1} backgroundColor={'$background'}>
-    <MyHeader showBackButton headerRight={<View width={'$1.5'} />}>
+    <NavBar left={<BackButton />} right={<></>}>
       <SizableText flex={1} textAlign="center">评论</SizableText>
-    </MyHeader>
+    </NavBar>
     {messageLayout}
   </YStack>
 }

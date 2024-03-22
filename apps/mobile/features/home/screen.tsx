@@ -1,18 +1,17 @@
-import { View, Text, YStack, useTheme, Button, XStack } from '@/ui'
+import { View, Text, YStack, useTheme } from '@/ui'
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { HomeFeed } from './components/HomeFeed'
 import { FollowFeed } from './components/FollowFeed'
-import { NavBar } from './components/NavBar'
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view'
 import React from 'react'
-import { TouchableOpacity } from 'react-native-gesture-handler'
 import { DrawerContainer } from '@/ui/components/DrawerContainer'
+import { HomeHeader } from './components/HomeHeader'
 
 export const HomeScreen = (): React.ReactNode => {
   const theme = useTheme()
 
-  const [index, setIndex] = React.useState(0);
+  const [index, setIndex] = useState(0)
 
   const TABS = useMemo(
     () => [
@@ -31,12 +30,12 @@ export const HomeScreen = (): React.ReactNode => {
   const renderScene = SceneMap({
     explore: HomeFeed,
     follow: FollowFeed,
-  });
+  })
 
   return (<>
     <YStack flex={1} backgroundColor={'$background'}>
       <DrawerContainer>
-        <NavBar> </NavBar>
+        <HomeHeader />
 
         <TabView
           navigationState={{ index, routes: TABS }}
@@ -46,7 +45,7 @@ export const HomeScreen = (): React.ReactNode => {
           renderScene={renderScene}
           renderTabBar={(props) => {
             return <>
-              <View height={24} alignItems='center' paddingHorizontal={"$4"} >
+              <View height={24} alignItems='center' paddingHorizontal={"$4"} marginBottom="$2">
                 <TabBar
                   {...props}
                   style={{
@@ -85,7 +84,6 @@ export const HomeScreen = (): React.ReactNode => {
         >
 
         </TabView>
-
       </DrawerContainer>
     </YStack>
   </>

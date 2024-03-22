@@ -7,9 +7,10 @@ import { NoteList } from '@/ui/components/note/NoteList';
 import { error, empty, success, dataNotFetched, loading } from '@/utils/trpc/patterns';
 import { match } from 'ts-pattern';
 import { NoteItem } from '@server/modules/note/note';
-import { MyHeader } from '@/ui/components/MyHeader';
+import { NavBar } from '@/ui/components/NavBar';
 import { useAtom } from 'jotai';
 import { searchHistoryAtom } from '@/atoms/searchHistroy';
+import { BackButton } from '@/ui/components/BackButton';
 
 export const SearchScreen = () => {
   const [keyword, setKeyword] = useState('')
@@ -39,8 +40,11 @@ export const SearchScreen = () => {
     }
   }
 
-  return <>
-    <MyHeader backgroundColor={'$background'} alignItems='center' showBackButton>
+  return <YStack fullscreen backgroundColor={'$background'}>
+    <NavBar
+      left={<BackButton />}
+      right={<Button color={'gray'} unstyled onPress={() => handleSearch(keyword)}>搜索</Button>}
+    >
       <XStack flex={1} gap="$1" alignItems='center' backgroundColor={'$gray3'} paddingHorizontal='$2.5' paddingVertical='$2' borderRadius={50}>
         <Search size='$1' />
         <Input flex={1} color="$color" size='$1'
@@ -52,12 +56,9 @@ export const SearchScreen = () => {
           onSubmitEditing={() => handleSearch(keyword)}
           unstyled></Input>
       </XStack>
-      <Button color={'gray'} unstyled onPress={() => handleSearch(keyword)}>
-        搜索
-      </Button>
-    </MyHeader >
+    </NavBar >
 
-    <YStack flex={1} backgroundColor={'$background'}>
+    <YStack flex={1} >
       {searchResultLayout}
 
       {result.length > 0 && <>
@@ -69,5 +70,5 @@ export const SearchScreen = () => {
         />
       </>}
     </YStack>
-  </>
+  </YStack>
 }
