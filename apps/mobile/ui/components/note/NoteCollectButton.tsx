@@ -33,7 +33,7 @@ export function NoteCollectButton({
   }
 
   return (
-    <XStack alignItems="center" gap="$1.5" onPressOut={handleCollect}>
+    <XStack ai="center" gap="$1.5" onPressOut={handleCollect}>
       <Button
         icon={(
           <Star

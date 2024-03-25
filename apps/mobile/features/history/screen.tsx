@@ -36,8 +36,8 @@ export function HistoryScreen() {
   const noteListLayout = match(historyList)
     .with(error, () => <EmptyResult title={historyList.failureReason?.message} />)
     .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent="center" alignItems="center">
-        <Paragraph paddingBottom="$3">Loading...</Paragraph>
+      <YStack fullscreen flex={1} jc="center" ai="center">
+        <Paragraph pb="$3">Loading...</Paragraph>
         <Spinner />
       </YStack>
     ))
@@ -53,7 +53,7 @@ export function HistoryScreen() {
     .otherwise(() => <EmptyResult title={historyList.failureReason?.message} />)
 
   return (
-    <YStack fullscreen flex={1} backgroundColor="$background">
+    <YStack fullscreen flex={1} bg="$background">
       <Stack.Screen options={{
         headerShown: true,
         headerShadowVisible: false,
@@ -68,7 +68,7 @@ export function HistoryScreen() {
               ? (
                 <Button
                   size="$2"
-                  borderRadius={50}
+                  br={50}
                   marginRight="$2"
                   icon={<List />}
                   onPress={() => setIsManageMode(true)}

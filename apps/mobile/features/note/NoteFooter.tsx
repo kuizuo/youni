@@ -22,8 +22,8 @@ export function NoteFooter({ item }: { item: NoteItem }) {
     <>
       {!open
         ? (
-          <XStack paddingVertical="$2" paddingBottom={bottom || '$2'} marginHorizontal="$2" gap="$3">
-            <XStack flex={1} gap="$1" alignItems="center" backgroundColor="$gray3" paddingHorizontal="$2.5" paddingVertical="$1.5" borderRadius={50}>
+          <XStack py="$2" pb={bottom || '$2'} mx="$2" gap="$3">
+            <XStack flex={1} gap="$1" ai="center" bg="$gray3" px="$2.5" py="$1.5" br={50}>
               <PencilLine size="$1" color="gray" />
               <Input
                 flex={1}
@@ -45,11 +45,11 @@ export function NoteFooter({ item }: { item: NoteItem }) {
               flex={1}
               opacity={0.3}
               pointerEvents="none"
-              backgroundColor="$gray8"
+              bg="$gray8"
               onPress={() => setOpen(false)}
             />
             <KeyboardAvoidingView
-              behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
               <CommentModel item={item}></CommentModel>
             </KeyboardAvoidingView>

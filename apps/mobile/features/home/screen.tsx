@@ -28,7 +28,7 @@ export function HomeScreen(): React.ReactNode {
 
   return (
     <>
-      <YStack flex={1} backgroundColor="$background">
+      <YStack flex={1} bg="$background">
         <DrawerContainer>
           <HomeHeader />
 
@@ -51,47 +51,47 @@ export function HomeScreen(): React.ReactNode {
             renderTabBar={(props) => {
               return (
                 <>
-                  <View height={24} alignItems="center" paddingHorizontal="$4" marginBottom="$2">
-                <TabBar
-                    {...props}
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      backgroundColor: 'transparent',
-                    }}
-                    tabStyle={{
-                      height: 50,
-                    }}
-                    indicatorStyle={{
-                      height: 2,
-                      alignItems: 'center',
-                      width: '50%',
-                      backgroundColor: theme.$accent10?.get(),
-                    }}
-                    indicatorContainerStyle={{
-                      borderBottomWidth: 0,
-                    }}
-                    scrollEnabled
-                    gap={16}
-                    renderTabBarItem={(tabBarItemProps) => {
-                      const { route } = tabBarItemProps
-                      const active = TABS[index]!.key === route.key
+                  <View height={24} ai="center" px="$4" marginBottom="$2">
+                    <TabBar
+                      {...props}
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        backgroundColor: 'transparent',
+                      }}
+                      tabStyle={{
+                        height: 50,
+                      }}
+                      indicatorStyle={{
+                        height: 2,
+                        alignItems: 'center',
+                        width: '50%',
+                        backgroundColor: theme.$accent10?.get(),
+                      }}
+                      indicatorContainerStyle={{
+                        borderBottomWidth: 0,
+                      }}
+                      scrollEnabled
+                      gap={16}
+                      renderTabBarItem={(tabBarItemProps) => {
+                        const { route } = tabBarItemProps
+                        const active = TABS[index]!.key === route.key
 
-                      return (
-                        <Text
-                          opacity={active ? 1 : 0.5}
-                          fontSize={16}
-                          onPress={() => {
-              const index = TABS.findIndex(tab => tab.key === route.key)
-              setIndex(index)
-            }}
-                        >
-                          {route.title}
-                        </Text>
-                      )
-                    }}
-                  />
-              </View>
+                        return (
+                          <Text
+                            opacity={active ? 1 : 0.5}
+                            fontSize={16}
+                            onPress={() => {
+                              const index = TABS.findIndex(tab => tab.key === route.key)
+                              setIndex(index)
+                            }}
+                          >
+                            {route.title}
+                          </Text>
+                        )
+                      }}
+                    />
+                  </View>
                 </>
               )
             }}

@@ -54,7 +54,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
 
   return (
     <>
-      <XStack padding="$3" gap="$3" alignItems="center">
+      <XStack p="$3" gap="$3" ai="center">
         <Avatar circular size="$5" onPress={handleNavigateToUser}>
           <Avatar.Image
             width="100%"
@@ -77,7 +77,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
         </YStack>
         {item.source.image && (
           <Image
-            borderRadius="$2"
+            br="$2"
             source={{
               uri: item.source.image.src,
               width: 50,

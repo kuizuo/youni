@@ -20,7 +20,7 @@ export function EmptyResult({
     <ScrollView
       refreshControl={isRefreshing ? <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} /> : <></>}
     >
-      <YStack flex={1} justifyContent="center" alignItems="center" padding="$6" gap="$3">
+      <YStack flex={1} jc="center" ai="center" p="$6" gap="$3">
         {image}
         <Paragraph fontSize={16}>{title}</Paragraph>
         {subTitle && <Paragraph fontSize={10}>{subTitle}</Paragraph>}

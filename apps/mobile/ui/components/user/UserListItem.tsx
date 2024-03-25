@@ -13,12 +13,11 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
   }
 
   return (
-    <XStack padding="$3" gap="$3" height="$8" alignItems="center">
+    <XStack p="$3" gap="$3" height="$8" ai="center">
       <Avatar circular size="$5" onPress={handleNavigateToUser}>
         <Avatar.Image
           width="100%"
           height="100%"
-          // @ts-expect-error
           source={{
             uri: item.avatar,
           }}

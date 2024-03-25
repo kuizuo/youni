@@ -18,21 +18,21 @@ export function SignUpSignInComponent({
 
   return (
     <YStack
-      borderRadius="$10"
+      br="$10"
       gap="$4"
-      paddingHorizontal="$7"
-      paddingVertical="$6"
+      px="$7"
+      py="$6"
       width={350}
       shadowColor="#00000020"
       shadowRadius={26}
       shadowOffset={{ width: 0, height: 4 }}
-      backgroundColor="$background"
+      bg="$background"
     >
       <Paragraph size="$5" fontWeight="700" opacity={0.8} marginBottom="$1">
         {type === 'sign-up' ? '创建你的账户' : '登录你的帐户'}
       </Paragraph>
       {/* all the oauth sign up options */}
-      <XStack gap="$4" justifyContent="space-evenly" theme="light">
+      <XStack gap="$4" jc="space-evenly" theme="light">
         <Button
           size="$5"
           onPress={() => handleOAuthWithPress('wechat')}
@@ -79,12 +79,12 @@ export function SignUpSignInComponent({
           />
         </Button>
       </XStack>
-      <XStack alignItems="center" width="100%" justifyContent="space-between">
-        <Stack height="$0.25" backgroundColor="black" width="$10" opacity={0.1} />
+      <XStack ai="center" width="100%" jc="space-between">
+        <Stack height="$0.25" bg="black" width="$10" opacity={0.1} />
         <Paragraph size="$3" opacity={0.5}>
           or
         </Paragraph>
-        <Stack height="$0.25" backgroundColor="black" width="$10" opacity={0.1} />
+        <Stack height="$0.25" bg="black" width="$10" opacity={0.1} />
       </XStack>
 
       {/* email sign up option */}

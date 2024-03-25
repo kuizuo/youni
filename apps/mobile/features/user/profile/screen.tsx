@@ -98,8 +98,8 @@ export function ProfileScreen() {
             anim,
           ]}
         >
-          <XStack justifyContent="center">
-            <XStack flex={1} gap="$2.5" alignItems="center" backgroundColor="transport">
+          <XStack jc="center">
+            <XStack flex={1} gap="$2.5" ai="center" bg="transport">
               <Avatar circular size="$2">
                 <Avatar.Image
                 // @ts-expect-error
@@ -143,9 +143,9 @@ export function ProfileScreen() {
 
     return (
       <>
-        <View backgroundColor={getTopBarBg()} paddingTop="$6" pointerEvents="none" />
+        <View bg={getTopBarBg()} paddingTop="$6" pointerEvents="none" />
         {/* 基本信息 */}
-        <XStack gap="$4" paddingHorizontal="$4" marginTop="$-5" marginBottom="$3">
+        <XStack gap="$4" px="$4" marginTop="$-5" marginBottom="$3">
           <Avatar circular size="$8">
             <Avatar.Image
               width="100%"
@@ -157,8 +157,8 @@ export function ProfileScreen() {
             />
             <Avatar.Fallback />
           </Avatar>
-          <YStack flex={1} justifyContent="flex-end">
-            <XStack gap="$1.5" alignItems="center" marginBottom="$2">
+          <YStack flex={1} jc="flex-end">
+            <XStack gap="$1.5" ai="center" marginBottom="$2">
               <SizableText fontSize={18}>
                 {data.nickname}
               </SizableText>
@@ -186,7 +186,7 @@ export function ProfileScreen() {
   })
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} bg="$background">
       <UserNavBar />
       {/* <Animated.Image
       source={require('@/assets/images/profile-background.png')}

@@ -20,15 +20,15 @@ export function CreateScreen() {
   return (
     <YStack>
       <Form
-        alignItems="center"
+        ai="center"
         minWidth={300}
         gap="$2"
         onSubmit={handleSubmit}
         borderWidth={1}
-        borderRadius="$4"
-        backgroundColor="$background"
+        br="$4"
+        bg="$background"
         borderColor="$borderColor"
-        padding="$8"
+        p="$8"
       >
 
         <Form.Trigger asChild disabled={status !== 'off'}>

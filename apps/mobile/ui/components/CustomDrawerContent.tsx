@@ -18,23 +18,23 @@ export default function CustomDrawerContent() {
       {/* <DrawerItemList {...props} /> */}
       {/* <DrawerItem label={"退出登录"} onPress={() => {}} /> */}
 
-      <YStack flex={1} marginHorizontal="$2">
+      <YStack flex={1} mx="$2">
         <DrawerItem
           icon={() => <History />}
           label="浏览记录"
           onPress={() => router.push('/history/')}
         />
-        <Separator marginVertical={15} />
+        <Separator my={15} />
 
         <XStack
           flex={1}
           alignContent="flex-end"
-          marginHorizontal="$4"
+          mx="$4"
           gap="$4"
         >
           <YStack
-            justifyContent="center"
-            alignItems="center"
+            jc="center"
+            ai="center"
             gap="$1"
             onPress={() => router.push('/setting/')}
           >

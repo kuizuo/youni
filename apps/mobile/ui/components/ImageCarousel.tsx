@@ -36,15 +36,15 @@ export function ImageCarousel({ data, width, height }: Props): React.ReactNode {
       />
       {!!progressValue && (
         <View
-          flexDirection="row"
-          justifyContent="center"
+          fd="row"
+          jc="center"
           paddingTop="$2"
           gap="$1.5"
         >
           {data?.map((_, index) => {
             return (
               <PaginationItem
-                backgroundColor="gray"
+                bg="gray"
                 animValue={progressValue}
                 index={index}
                 key={index}
@@ -94,10 +94,10 @@ const PaginationItem: React.FC<{
 
   return (
     <View
-      backgroundColor="$gray7"
+      bg="$gray7"
       width={width}
       height={width}
-      borderRadius={50}
+      br={50}
       overflow="hidden"
       style={{
         transform: [

@@ -10,14 +10,14 @@ export function SearchBar({
   const router = useRouter()
 
   return (
-    <View flex={1} flexDirection="row" margin="$2" paddingHorizontal="$2">
+    <View flex={1} fd="row" margin="$2" px="$2">
       <XStack
         flex={1}
-        alignItems="center"
-        backgroundColor="$gray3"
-        paddingHorizontal="$2.5"
-        paddingVertical="$1.5"
-        borderRadius={50}
+        ai="center"
+        bg="$gray3"
+        px="$2.5"
+        py="$1.5"
+        br={50}
         onPress={() => router.push('/search')}
       >
         <Search size="$1.5" />

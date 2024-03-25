@@ -21,8 +21,8 @@ function HomeFeed(): React.ReactNode {
   const homeFeedLayout = match(homeFeed)
     .with(error, () => <EmptyResult title={homeFeed.failureReason?.message} />)
     .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent="center" alignItems="center">
-        <Paragraph paddingBottom="$3">Loading...</Paragraph>
+      <YStack fullscreen flex={1} jc="center" ai="center">
+        <Paragraph pb="$3">Loading...</Paragraph>
         <Spinner />
       </YStack>
     ))
@@ -38,7 +38,7 @@ function HomeFeed(): React.ReactNode {
     .otherwise(() => <EmptyResult title={homeFeed.failureReason?.message} />)
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} bg="$background">
       {homeFeedLayout}
     </YStack>
   )

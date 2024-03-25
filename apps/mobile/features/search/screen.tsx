@@ -41,12 +41,12 @@ export function SearchScreen() {
   }
 
   return (
-    <YStack fullscreen backgroundColor="$background">
+    <YStack fullscreen bg="$background">
       <NavBar
         left={<BackButton />}
         right={<Button color="gray" unstyled onPress={() => handleSearch(keyword)}>搜索</Button>}
       >
-        <XStack flex={1} gap="$1" alignItems="center" backgroundColor="$gray3" paddingHorizontal="$2.5" paddingVertical="$2" borderRadius={50}>
+        <XStack flex={1} gap="$1" ai="center" bg="$gray3" px="$2.5" py="$2" br={50}>
           <Search size="$1" />
           <Input
             flex={1}

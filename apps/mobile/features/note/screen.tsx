@@ -40,7 +40,7 @@ export function NoteScreen(): React.ReactNode {
 
   return (
     <>
-      <YStack fullscreen backgroundColor="$background">
+      <YStack fullscreen bg="$background">
         <NoteHeader item={data} user={data.user} />
         <ScrollView
           position="relative"
@@ -49,7 +49,7 @@ export function NoteScreen(): React.ReactNode {
         >
           <ImageCarousel data={data?.images.map(image => image.src)} />
 
-          <YStack paddingHorizontal="$3" marginTop="$3" gap="$2">
+          <YStack px="$3" mt="$3" gap="$2">
             <H5>{data?.title}</H5>
 
             <Paragraph size="$2">
@@ -73,7 +73,7 @@ export function NoteScreen(): React.ReactNode {
               {formatTime(data?.publishTime)}
             </Text>
 
-            <Separator marginVertical={15} />
+            <Separator my={15} />
 
             <Text fontSize="$3" color="gray">
               共

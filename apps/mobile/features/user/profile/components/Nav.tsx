@@ -35,7 +35,7 @@ export function Navs() {
   ]
 
   return (
-    <XStack gap="$2.5" marginHorizontal="$4" marginBottom="$3">
+    <XStack gap="$2.5" mx="$4" marginBottom="$3">
       {
       navItems.map(({ href, icon, text, desc }) => {
         return (
@@ -50,7 +50,7 @@ export function Navs() {
             }}
           >
             <Link href={href} asChild>
-              <XStack gap="$1.5" alignItems="center">
+              <XStack gap="$1.5" ai="center">
                 {icon}
                 <Text fontSize="$2">
                   {text}

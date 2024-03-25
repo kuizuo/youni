@@ -37,7 +37,7 @@ const FollowFeed = memo((): React.ReactNode => {
         marginTop="$4"
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
       >
-        <YStack alignItems="center">
+        <YStack ai="center">
           <SizableText fontSize={16}>还没有关注的用户</SizableText>
           <SizableText fontSize={10}>关注后，可在这里查看对方的最新动态</SizableText>
         </YStack>
@@ -68,7 +68,7 @@ const FollowFeed = memo((): React.ReactNode => {
     .otherwise(() => <EmptyResult title={followFeed.failureReason?.message} />)
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} bg="$background">
       {!hasFollowedUsers ? <EmptyUserFollowing /> : followFeedLayout}
     </YStack>
   )

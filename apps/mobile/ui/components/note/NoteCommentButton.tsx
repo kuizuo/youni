@@ -15,7 +15,7 @@ export function NoteCommentButton({
   color = 'gray',
 }: Props) {
   return (
-    <XStack alignItems="center" gap="$1.5">
+    <XStack ai="center" gap="$1.5">
       <Button
         icon={(
           <MessageCircle

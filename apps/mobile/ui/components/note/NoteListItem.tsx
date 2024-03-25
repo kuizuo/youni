@@ -51,8 +51,8 @@ export function NoteListItem(item: NoteItem): React.ReactNode {
   }
 
   return (
-    <YStack position="relative" padding="$1.5" flex={1} gap="$2" borderRadius="$4">
-      <Card size="$4" backgroundColor="$color2">
+    <YStack position="relative" p="$1.5" flex={1} gap="$2" br="$4">
+      <Card size="$4" bg="$color2">
         <Card.Background unstyled onLongPress={handleLongPress} onPress={handlePressBackground}>
           <Image
             borderTopLeftRadius="$4"
@@ -69,7 +69,7 @@ export function NoteListItem(item: NoteItem): React.ReactNode {
                 <Checkbox
                   id={id}
                   size="$4"
-                  backgroundColor={checked ? theme.$accent10?.get() : '$gray0'}
+                  bg={checked ? theme.$accent10?.get() : '$gray0'}
                   borderColor="white"
                   checked={checked}
                   onCheckedChange={checked => setChecked(checked)}
@@ -82,14 +82,14 @@ export function NoteListItem(item: NoteItem): React.ReactNode {
             )
           }
         </Card.Background>
-        <Card.Footer padding="$2.5">
+        <Card.Footer p="$2.5">
           <YStack width="100%" gap="$2">
             <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail" onPress={handlePressBackground}>
               {item.title}
             </Paragraph>
-            <XStack gap="$2.5" alignItems="center">
+            <XStack gap="$2.5" ai="center">
               <UserAvatar user={item.user} />
-              <XStack flex={1} justifyContent="flex-end" alignItems="center" gap="$1.5" opacity={0.7}>
+              <XStack flex={1} jc="flex-end" ai="center" gap="$1.5" opacity={0.7}>
                 <NoteLikeButton item={item} />
               </XStack>
             </XStack>
@@ -104,7 +104,7 @@ export function NoteListItem(item: NoteItem): React.ReactNode {
 function UserAvatar({ user }: { user: BaseUserInfo }): React.ReactNode {
   return (
     <Link href={`/user/${user.id}/profile`} asChild>
-      <XStack gap="$2.5" alignItems="center">
+      <XStack gap="$2.5" ai="center">
         <Avatar circular size="$1">
           <Avatar.Image
             width="100%"

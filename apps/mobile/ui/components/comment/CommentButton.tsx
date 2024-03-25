@@ -24,7 +24,7 @@ export function CommentButton({
   }
 
   return (
-    <XStack alignItems="center" gap="$1.5">
+    <XStack ai="center" gap="$1.5">
       <Button
         icon={<MessageCircle color="gray" size={size} />}
         onPress={handleOpenCommentModal}

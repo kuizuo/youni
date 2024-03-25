@@ -72,8 +72,8 @@ export default function TabLayout() {
           title: '我',
           tabBarIcon: ({ color, size }) => {
             return (
-              <YStack borderWidth="$1" borderColor={color} borderRadius="$10">
-                <Avatar circular padding="$1" size={size}>
+              <YStack borderWidth="$1" borderColor={color} br="$10">
+                <Avatar circular p="$1" size={size}>
                   <Image
                     source={{
                       uri: currentUser?.avatar!,
@@ -102,8 +102,8 @@ function PlusButton({ size }: { size: number }) {
         <Square
           position="absolute"
           bottom={bottom}
-          backgroundColor="$accent10"
-          borderRadius="$5"
+          bg="$accent10"
+          br="$5"
           width={size + 24}
           height={size + 14}
           pressStyle={{
@@ -118,7 +118,7 @@ function PlusButton({ size }: { size: number }) {
           end={[0.8, 0]}
           width={size + 24}
           height={size + 14}
-          borderRadius="$5"
+          br="$5"
           bottom={bottom}
           pressStyle={{
             scale: 1.1,
@@ -127,7 +127,7 @@ function PlusButton({ size }: { size: number }) {
         <YStack
           position="absolute"
           bottom={bottom}
-          justifyContent="center"
+          jc="center"
           alignContent="center"
           animation="quick"
           pointerEvents="none"

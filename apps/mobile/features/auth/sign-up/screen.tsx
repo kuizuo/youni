@@ -50,7 +50,7 @@ export function SignUpScreen(): React.ReactNode {
   }
 
   return (
-    <YStack flex={1} justifyContent="center" alignItems="center" space>
+    <YStack flex={1} jc="center" ai="center" space>
       <SignUpSignInComponent
         type="sign-up"
         handleOAuthWithPress={handleOAuthSignInWithPress}

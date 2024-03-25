@@ -16,13 +16,13 @@ export function NotificationScreen(): React.ReactNode {
       }}
       />
 
-      <YStack flex={1} backgroundColor="$background">
-        <XStack justifyContent="space-around" padding="$4" alignItems="center" gap="$2">
+      <YStack flex={1} bg="$background">
+        <XStack jc="space-around" p="$4" ai="center" gap="$2">
           <YStack
             position="relative"
             flex={1}
-            justifyContent="center"
-            alignItems="center"
+            jc="center"
+            ai="center"
             gap="$2"
             onPress={() => router.push('/notification/like')}
           >
@@ -35,8 +35,8 @@ export function NotificationScreen(): React.ReactNode {
           <YStack
             position="relative"
             flex={1}
-            justifyContent="center"
-            alignItems="center"
+            jc="center"
+            ai="center"
             gap="$2"
             onPress={() => router.push('/notification/comment')}
           >
@@ -54,8 +54,8 @@ export function NotificationScreen(): React.ReactNode {
           <YStack
             position="relative"
             flex={1}
-            justifyContent="center"
-            alignItems="center"
+            jc="center"
+            ai="center"
             gap="$2"
             onPress={() => router.push('/notification/follow')}
           >

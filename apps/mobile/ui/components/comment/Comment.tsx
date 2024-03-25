@@ -42,29 +42,30 @@ export function CommentList() {
     <>
       {/* 新增评论 */}
       {
-      newComments.filter(c => !c.parentId).map((comment) => {
-        <CommentListItem
-          comment={comment as unknown as CommentItem}
-          key={comment.id}
-        />
-      })
-    }
-      {
-      data?.pages.map((data, index) => {
-        return (
-          data.items.map((comment) => {
-            return (
-              <CommentListItem
-                comment={comment as unknown as CommentItem}
-                key={comment.id}
-              />
-            )
-          })
+        newComments.filter(c => !c.parentId).map(comment => (
+          <CommentListItem
+            comment={comment as unknown as CommentItem}
+            key={comment.id}
+          />
+        ),
         )
-      })
-    }
+      }
+      {
+        data?.pages.map((data, index) => {
+          return (
+            data.items.map((comment) => {
+              return (
+                <CommentListItem
+                  comment={comment as unknown as CommentItem}
+                  key={comment.id}
+                />
+              )
+            })
+          )
+        })
+      }
       <Separator />
-      <View marginVertical="$2" flex={1} justifyContent="center" alignItems="center">
+      <View my="$2" flex={1} jc="center" ai="center">
         <SizableText color="gray" size="$1">没有更多了</SizableText>
       </View>
     </>
@@ -79,7 +80,7 @@ const CommentListItem = memo(({ comment }: { comment: CommentItem }) => {
   )
 })
 
-const Comment = memo(({ comment }: { comment: CommentItem }) => {
+const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
   const [note, _] = useCurrentNote()
 
   const newComments = useAtomValue(newCommentsAtom)
@@ -127,41 +128,41 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
   }
 
   return (
-    <XStack gap="$2.5" alignItems="center" marginVertical="$2">
+    <XStack gap="$2.5" ai="center" my="$2">
       <Avatar circular size="$2.5" alignSelf="flex-start">
         <Avatar.Image
-        // @ts-expect-error
+          // @ts-expect-error
           source={
-          {
-            uri: comment.user.avatar,
-            width: '100%',
-            height: '100%',
+            {
+              uri: comment.user.avatar,
+              width: '100%',
+              height: '100%',
+            }
           }
-        }
         />
         <Avatar.Fallback />
       </Avatar>
       <YStack flex={1}>
-        <XStack alignItems="center">
+        <XStack ai="center">
           <YStack gap="$1">
             <XStack gap="$2">
               <Text fontSize={15} color="gray" marginTop="$-1">
                 {comment.user.nickname}
               </Text>
               {
-              comment.user.id === note.user.id && (
-                <View paddingHorizontal="$1.5" borderRadius="$2" backgroundColor={theme.$accent10?.get()}>
-                  <Text fontSize={12} themeInverse>作者</Text>
-                </View>
-              )
-            }
+                comment.user.id === note.user.id && (
+                  <View px="$1.5" br="$2" bg={theme.$accent10?.get()}>
+                    <Text fontSize={12} themeInverse>作者</Text>
+                  </View>
+                )
+              }
               {
-              comment.user.id === currentUser?.id && (
-                <View paddingHorizontal="$1.5" borderRadius="$2" backgroundColor={theme.$blue10?.get()}>
-                  <Text fontSize={12} themeInverse>你</Text>
-                </View>
-              )
-            }
+                comment.user.id === currentUser?.id && (
+                  <View px="$1.5" br="$2" bg={theme.$blue10?.get()}>
+                    <Text fontSize={12} themeInverse>你</Text>
+                  </View>
+                )
+              }
             </XStack>
             <Text>
               {comment.content}
@@ -169,11 +170,11 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
           </YStack>
         </XStack>
 
-        <XStack alignItems="center" marginTop="$2">
+        <XStack ai="center" marginTop="$2">
           <Text color="gray" fontSize={12}>
             {formatTime(comment.createdAt)}
           </Text>
-          <XStack flex={1} gap="$2.5" justifyContent="flex-end" alignItems="center">
+          <XStack flex={1} gap="$2.5" jc="flex-end" ai="center">
             <CommentButton item={comment} />
             <CommentLikeButton
               item={comment}
@@ -182,26 +183,26 @@ const Comment = memo(({ comment }: { comment: CommentItem }) => {
         </XStack>
 
         {
-        comment?.children?.length > 0 && (
-          <YStack marginTop="$2" gap="$2">
-            {/* 新增评论 */}
-            {
-            newComments.filter(c => c.parentId).map((comment) => {
-              <Comment key={comment.id} comment={comment as unknown as CommentItem} />
-            })
-          }
-            {
-            comment.children.map(child => (
-              <Comment key={child.id} comment={child as unknown as CommentItem} />
-            ))
-          }
-            {/* 更多评论 */}
-            <XStack>
-              <MoreButton />
-            </XStack>
-          </YStack>
-        )
-      }
+          comment?.children?.length > 0 && (
+            <YStack marginTop="$2" gap="$2">
+              {/* 新增评论 */}
+              {
+                newComments.filter(c => c.parentId).map(comment =>
+                  <Comment key={comment.id} comment={comment as unknown as CommentItem} />,
+                )
+              }
+              {
+                comment.children.map(child => (
+                  <Comment key={child.id} comment={child as unknown as CommentItem} />
+                ))
+              }
+              {/* 更多评论 */}
+              <XStack>
+                <MoreButton />
+              </XStack>
+            </YStack>
+          )
+        }
       </YStack>
     </XStack>
   )

@@ -20,8 +20,8 @@ export default function Screen() {
   const messageLayout = match(messageList)
     .with(error, () => <EmptyResult title={messageList.failureReason?.message} />)
     .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent="center" alignItems="center">
-        <Paragraph paddingBottom="$3">Loading...</Paragraph>
+      <YStack fullscreen flex={1} jc="center" ai="center">
+        <Paragraph pb="$3">Loading...</Paragraph>
         <Spinner />
       </YStack>
     ))
@@ -37,7 +37,7 @@ export default function Screen() {
     .otherwise(() => <EmptyResult title={messageList.failureReason?.message} />)
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} bg="$background">
       <NavBar left={<BackButton />} right={<></>}>
         <SizableText flex={1} textAlign="center">赞</SizableText>
       </NavBar>

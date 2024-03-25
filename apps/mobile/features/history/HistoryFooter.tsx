@@ -37,12 +37,12 @@ export function HistoryFooter() {
     <>
       {isManageMode
       && (
-        <XStack paddingVertical="$2" paddingBottom={bottom || '$2'} marginHorizontal="$3" gap="$3" justifyContent="space-between" alignItems="center">
-          <XStack flex={1} alignItems="center" gap="$3">
+        <XStack py="$2" pb={bottom || '$2'} mx="$3" gap="$3" jc="space-between" ai="center">
+          <XStack flex={1} ai="center" gap="$3">
             <Checkbox
               id={id}
               size="$4"
-              backgroundColor={selectAll ? theme.$accent10?.get() : '$gray'}
+              bg={selectAll ? theme.$accent10?.get() : '$gray'}
               borderColor={selectAll ? theme.$accent10?.get() : '$gray8'}
               checked={selectAll}
               onCheckedChange={handleCheckedChange}
@@ -55,7 +55,7 @@ export function HistoryFooter() {
               全选
             </Label>
           </XStack>
-          <Button width={80} size="$3" color="white" backgroundColor={theme.$accent10?.get()} borderRadius={50} onPress={handleDelete}>删除</Button>
+          <Button width={80} size="$3" color="white" bg={theme.$accent10?.get()} br={50} onPress={handleDelete}>删除</Button>
         </XStack>
       )}
     </>

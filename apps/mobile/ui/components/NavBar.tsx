@@ -26,20 +26,20 @@ export function NavBar({
   return (
     <View
       position="relative"
-      flexDirection="row"
-      paddingHorizontal="$2.5"
+      fd="row"
+      px="$2.5"
       gap="$2"
       paddingTop={safeTop || '$2.5'}
-      alignItems="center"
+      ai="center"
       style={style}
     >
       {left && (
-        <View minWidth="$1.5" flexDirection="row" justifyContent="flex-start" alignItems="center">
+        <View minWidth="$1.5" fd="row" jc="flex-start" ai="center">
           {left}
         </View>
       )}
 
-      <View flex={1} flexDirection="row" alignItems="center">
+      <View flex={1} fd="row" ai="center">
         {typeof children === 'string'
           ? (
             <Text textAlign="center" numberOfLines={1}>
@@ -52,7 +52,7 @@ export function NavBar({
       </View>
 
       {right && (
-        <View minWidth="$1.5" flexDirection="row" justifyContent="flex-end" alignItems="center">
+        <View minWidth="$1.5" fd="row" jc="flex-end" ai="center">
           {right}
         </View>
       )}

@@ -45,7 +45,7 @@ export function NoteLikeButton({ item, size = 16, color = 'gray' }: Props) {
   })
 
   return (
-    <XStack gap="$1.5" alignItems="center">
+    <XStack gap="$1.5" ai="center">
       <TouchableOpacity onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
           <Like

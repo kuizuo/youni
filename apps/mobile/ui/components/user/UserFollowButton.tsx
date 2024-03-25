@@ -75,7 +75,7 @@ export function UserFollowButton({ userId, isFollowing: initState }: Props) {
           >
             <YStack gap="$4" minWidth="80%">
               <AlertDialog.Title size="$4">确认不再关注?</AlertDialog.Title>
-              <XStack gap="$3" justifyContent="flex-end">
+              <XStack gap="$3" jc="flex-end">
                 <AlertDialog.Cancel asChild>
                   <Button size="$2">取消</Button>
                 </AlertDialog.Cancel>

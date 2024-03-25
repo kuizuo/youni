@@ -83,7 +83,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
   }
 
   return (
-    <XStack gap="$4" marginHorizontal="$4" marginBottom="$3" alignItems="center">
+    <XStack gap="$4" mx="$4" marginBottom="$3" ai="center">
       <Link
         href={{
           pathname: '/user/[id]/follower',
@@ -91,7 +91,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         }}
         asChild
       >
-        <XStack gap="$2" alignItems="center">
+        <XStack gap="$2" ai="center">
           <Text>{data?.followingCount}</Text>
           <Text fontSize="$2">
             关注
@@ -105,21 +105,21 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         }}
         asChild
       >
-        <XStack gap="$2" alignItems="center">
+        <XStack gap="$2" ai="center">
           <Text>{data?.followerCount}</Text>
           <Text fontSize="$2">
             粉丝
           </Text>
         </XStack>
       </Link>
-      <XStack gap="$2" alignItems="center">
+      <XStack gap="$2" ai="center">
         <Text>{data?.likesCount}</Text>
         <Text fontSize="$2">
           获赞
         </Text>
       </XStack>
 
-      <XStack flex={1} justifyContent="flex-end" gap="$3">
+      <XStack flex={1} jc="flex-end" gap="$3">
         {
         user.id === currentUser?.id
           ? (

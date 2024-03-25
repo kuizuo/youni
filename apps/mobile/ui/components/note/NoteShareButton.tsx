@@ -31,13 +31,13 @@ export function NoteShareButton({ item }: Props) {
           exitStyle={{ opacity: 0 }}
         />
         <Sheet.Handle />
-        <Sheet.Frame padding="$4" justifyContent="center" alignItems="center" gap="$5">
+        <Sheet.Frame p="$4" jc="center" ai="center" gap="$5">
           <SizableText>分享至</SizableText>
           <ScrollView
             maxHeight={250}
-            backgroundColor="$background"
-            padding="$4"
-            borderRadius="$4"
+            bg="$background"
+            p="$4"
+            br="$4"
           >
             <XStack gap="$4">
               <Button size="$1" icon={<ChevronDown size="$1" />} />
@@ -51,9 +51,9 @@ export function NoteShareButton({ item }: Props) {
           <Separator />
           <ScrollView
             maxHeight={250}
-            backgroundColor="$background"
-            padding="$4"
-            borderRadius="$4"
+            bg="$background"
+            p="$4"
+            br="$4"
           >
             <XStack gap="$4">
               <Button size="$1" icon={<ChevronDown size="$1" />} />

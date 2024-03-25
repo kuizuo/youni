@@ -49,12 +49,12 @@ export function CommentModel({ item }: Props) {
   }, [parentComment])
 
   return (
-    <View height="$5" padding="$3" backgroundColor="$background">
+    <View height="$5" p="$3" bg="$background">
       <XStack flex={1} gap="$2">
         <Input
           ref={inputRef}
           flex={1}
-          borderRadius="$6"
+          br="$6"
           size="$2"
           placeholder={placeholder}
           defaultValue={content}

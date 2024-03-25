@@ -16,10 +16,10 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
   }
 
   return (
-    <YStack position="relative" margin="$2.5" padding="$1.5" gap="$2" borderRadius="$4">
+    <YStack position="relative" margin="$2.5" p="$1.5" gap="$2" br="$4">
       <Card size="$3">
         <Card.Header>
-          <XStack marginHorizontal="$1" justifyContent="space-between" alignItems="center">
+          <XStack mx="$1" jc="space-between" ai="center">
             <UserAvatar item={item} />
             <NoteShareButton item={item} />
           </XStack>
@@ -32,13 +32,13 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
             resizeMode="cover"
           />
         </Card.Background>
-        <Card.Footer padding="$2.5">
+        <Card.Footer p="$2.5">
           <YStack width="100%" gap="$2">
             <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail">
               {item.title}
             </Paragraph>
-            <XStack gap="$2.5" alignItems="center">
-              <XStack flex={1} justifyContent="flex-end" alignItems="center" gap="$2.5">
+            <XStack gap="$2.5" ai="center">
+              <XStack flex={1} jc="flex-end" ai="center" gap="$2.5">
                 <NoteLikeButton size={20} color="$gray10" item={item} />
                 <NoteCollectButton size={20} color="$gray10" item={item} />
                 <NoteCommentButton size={20} color="$gray10" item={item} />
@@ -54,7 +54,7 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
 function UserAvatar({ item }: { item: NoteItem }): React.ReactNode {
   return (
     <Link href={`/user/${item.user.id}/profile`} asChild>
-      <XStack gap="$2.5" alignItems="center">
+      <XStack gap="$2.5" ai="center">
         <Avatar circular size="$2">
           <Avatar.Image
             width="100%"

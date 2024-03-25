@@ -38,7 +38,7 @@ export function FollowerScreen() {
   const FollowersList = memo(FollowerList)
 
   return (
-    <YStack flex={1} position="relative" backgroundColor="$background" paddingTop={top}>
+    <YStack flex={1} position="relative" bg="$background" paddingTop={top}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -52,45 +52,45 @@ export function FollowerScreen() {
         renderTabBar={(props) => {
           return (
             <>
-              <View position="relative" height={28} alignItems="center" paddingHorizontal="$4">
+              <View position="relative" height={28} ai="center" px="$4">
                 <BackButton position="absolute" left={0} marginLeft="$3" />
 
                 <TabBar
                   {...props}
                   style={{
-                flex: 1,
-                justifyContent: 'center',
-                backgroundColor: 'transparent',
-              }}
+                    flex: 1,
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
+                  }}
                   tabStyle={{
-                height: 50,
-              }}
+                    height: 50,
+                  }}
                   indicatorStyle={{
-                height: 2,
-                alignItems: 'center',
-                width: '50%',
-                backgroundColor: theme.$accent10?.get(),
-              }}
+                    height: 2,
+                    alignItems: 'center',
+                    width: '50%',
+                    backgroundColor: theme.$accent10?.get(),
+                  }}
                   indicatorContainerStyle={{}}
                   scrollEnabled
                   gap={16}
                   renderTabBarItem={(tabBarItemProps) => {
-                const { route } = tabBarItemProps
-                const active = TABS[index]!.key === route.key
+                    const { route } = tabBarItemProps
+                    const active = TABS[index]!.key === route.key
 
-                return (
-                    <SizableText
-                      opacity={active ? 1 : 0.5}
-                      fontSize={16}
-                      onPress={() => {
-              const index = TABS.findIndex(tab => tab.key === route.key)
-              setIndex(index)
-            }}
-                    >
-                      {route.title}
-                    </SizableText>
-                )
-              }}
+                    return (
+                      <SizableText
+                        opacity={active ? 1 : 0.5}
+                        fontSize={16}
+                        onPress={() => {
+                          const index = TABS.findIndex(tab => tab.key === route.key)
+                          setIndex(index)
+                        }}
+                      >
+                        {route.title}
+                      </SizableText>
+                    )
+                  }}
                 />
               </View>
             </>

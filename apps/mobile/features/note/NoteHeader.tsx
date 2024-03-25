@@ -19,7 +19,7 @@ interface Props {
 export function NoteHeader({ user, item }: Props): React.ReactNode {
   const { currentUser } = useUser()
 
-  const { data: isFollowing, isLoading } = trpc.interact.isFollowing.useQuery({ id: user.id! }, { enabled: !!user.id })
+  const { data: isFollowing } = trpc.interact.isFollowing.useQuery({ id: user.id! }, { enabled: !!user.id })
 
   return (
     <NavBar
@@ -33,7 +33,7 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
       )}
     >
       <Link href={`/user/${user.id}/profile`} asChild>
-        <XStack flex={1} gap="$2.5" alignItems="center">
+        <XStack flex={1} gap="$2.5" ai="center">
           <Avatar circular size="$2">
             <Avatar.Image
             // @ts-expect-error

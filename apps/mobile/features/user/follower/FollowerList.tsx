@@ -26,8 +26,8 @@ export function FollowerList({ userId, type }: Props) {
   const userListLayout = match(userList)
     .with(error, () => <EmptyResult title={userList.failureReason?.message} />)
     .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent="center" alignItems="center">
-        <Paragraph paddingBottom="$3"> Loading...</Paragraph>
+      <YStack fullscreen flex={1} jc="center" ai="center">
+        <Paragraph pb="$3"> Loading...</Paragraph>
         <Spinner />
       </YStack>
     ))
