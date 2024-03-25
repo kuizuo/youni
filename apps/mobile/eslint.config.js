@@ -7,7 +7,7 @@ module.exports = antfu(
       'ts/ban-ts-comment': true,
     },
     ignores: [
-      'ui/themes/**/*',
+      './ui/themes/*.ts',
     ],
   },
 )

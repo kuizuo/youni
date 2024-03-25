@@ -88,9 +88,6 @@ export const config = createTamagui({
       ...themes.light,
       background: '#FFF',
     },
-    primary: {
-      ...themes.light_green,
-    },
   },
   tokens,
   media: createMedia({
@@ -110,3 +107,9 @@ export const config = createTamagui({
     pointerCoarse: { pointer: 'coarse' },
   }),
 })
+
+export type Conf = typeof config
+
+declare module 'tamagui' {
+  interface TamaguiCustomConfig extends Conf {}
+}
