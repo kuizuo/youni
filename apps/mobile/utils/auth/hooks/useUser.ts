@@ -1,9 +1,9 @@
-import { client } from "@/utils/http/client"
-import { useQuery } from "@tanstack/react-query"
-import { UserProfile } from '@server/modules/user/user'
-import { useRouter } from "expo-router"
+import { useQuery } from '@tanstack/react-query'
+import type { UserProfile } from '@server/modules/user/user'
+import { useRouter } from 'expo-router'
+import { client } from '@/utils/http/client'
 
-export const useUser = () => {
+export function useUser() {
   const router = useRouter()
 
   const {
@@ -18,9 +18,8 @@ export const useUser = () => {
     },
   })
 
-  if (!isLoading && !data) {
+  if (!isLoading && !data)
     router.replace('/sign-in')
-  }
 
   const logOut = async () => {
     await client.post('/api/account/logout')

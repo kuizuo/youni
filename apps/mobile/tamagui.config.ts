@@ -47,9 +47,9 @@ const bodyFont = createInterFont(
     },
   },
   {
-    sizeSize: (size) => Math.round(size * 1.1),
-    sizeLineHeight: (size) => Math.round(size * 1.1 + (size > 20 ? 10 : 10)),
-  }
+    sizeSize: size => Math.round(size * 1.1),
+    sizeLineHeight: size => Math.round(size * 1.1 + (size > 20 ? 10 : 10)),
+  },
 )
 
 export const animations: AnimationDriver = createAnimations({
@@ -86,11 +86,11 @@ export const config = createTamagui({
     ...themes,
     light: {
       ...themes.light,
-      background: '#FFF'
+      background: '#FFF',
     },
     primary: {
       ...themes.light_green,
-    }
+    },
   },
   tokens,
   media: createMedia({

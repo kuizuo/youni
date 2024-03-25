@@ -1,14 +1,9 @@
-import { Text, View } from '@/ui';
-import { Link, Stack } from 'expo-router';
-export default function PublishScreen() {
+import { CreateScreen } from '@/features/create/screen'
 
+export default function Screen() {
   return (
     <>
-      <Stack.Screen options={{ headerShown: true }}>
-
-      </Stack.Screen>
-      {/* <Link href="/modal">Present modal</Link> */}
-      <Text>Box</Text>
+      <CreateScreen />
     </>
-  );
+  )
 }

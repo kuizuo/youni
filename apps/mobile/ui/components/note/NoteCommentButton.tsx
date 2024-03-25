@@ -1,29 +1,34 @@
-import { MessageCircle, Star } from "@tamagui/lucide-icons"
-import { Button, ColorTokens, SizeTokens, Text, XStack } from "../.."
-import { NoteItem } from "@server/modules/note/note"
+import { MessageCircle } from '@tamagui/lucide-icons'
+import type { NoteItem } from '@server/modules/note/note'
+import type { ColorTokens, SizeTokens } from '../..'
+import { Button, Text, XStack } from '../..'
 
-export type Props = {
+export interface Props {
   item: NoteItem
   size?: SizeTokens
   color?: ColorTokens
 }
 
-export const NoteCommentButton = ({
+export function NoteCommentButton({
   item,
   size = 16,
-  color = 'gray'
-}: Props) => {
-
-
-  return <XStack alignItems="center" gap='$1.5'>
-    <Button
-      icon={<MessageCircle
-        color={color}
-        size={size} />}
-      unstyled>
-    </Button>
-    <Text fontSize={14} color={color}>
-      {'评论'}
-    </Text>
-  </XStack>
+  color = 'gray',
+}: Props) {
+  return (
+    <XStack alignItems="center" gap="$1.5">
+      <Button
+        icon={(
+          <MessageCircle
+            color={color}
+            size={size}
+          />
+        )}
+        unstyled
+      >
+      </Button>
+      <Text fontSize={14} color={color}>
+        评论
+      </Text>
+    </XStack>
+  )
 }

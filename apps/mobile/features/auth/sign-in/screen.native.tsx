@@ -1,13 +1,10 @@
-import { YStack, useToastController } from '@/ui'
-import { capitalizeWord } from '@/ui/libs/string'
-import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
-import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { getInitialURL } from 'expo-linking'
-import * as WebBrowser from 'expo-web-browser'
 import { Platform } from 'react-native'
 import { useRouter } from 'expo-router'
+import { YStack, useToastController } from '@/ui'
+import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
+import { useAuth } from '@/utils/auth/hooks/useAuth'
 
-export const SignInScreen = (): React.ReactNode => {
+export function SignInScreen(): React.ReactNode {
   const { replace } = useRouter()
   const { signInWithPassword } = useAuth()
 
@@ -49,7 +46,8 @@ export const SignInScreen = (): React.ReactNode => {
     if (provider === 'apple' && Platform.OS === 'ios') {
       // use native sign in with apple in ios
       // await signInWithApple()
-    } else {
+    }
+    else {
       // use web sign in with other providers
       await handleOAuthWithWeb(provider)
     }
@@ -58,7 +56,7 @@ export const SignInScreen = (): React.ReactNode => {
   const handleEmailSignInWithPress = async (email: string, password: string) => {
     const { error } = await signInWithPassword({
       username: email,
-      password: password,
+      password,
     })
     if (error) {
       toast.show('Sign in failed', {
@@ -71,9 +69,9 @@ export const SignInScreen = (): React.ReactNode => {
   }
 
   return (
-    <YStack flex={1} justifyContent='center' alignItems='center' gap='$4'>
+    <YStack flex={1} justifyContent="center" alignItems="center" gap="$4">
       <SignUpSignInComponent
-        type='sign-in'
+        type="sign-in"
         handleOAuthWithPress={handleOAuthSignInWithPress}
         handleEmailWithPress={handleEmailSignInWithPress}
       />

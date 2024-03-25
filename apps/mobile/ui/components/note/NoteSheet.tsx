@@ -1,13 +1,13 @@
-import { useSheetOpen } from "@/atoms/sheet"
-import { ChevronDown } from "@tamagui/lucide-icons"
-import { Sheet, XStack, Separator, ScrollView, Button } from "@/ui"
-import { NoteItem } from "@server/modules/note/note"
+import { ChevronDown } from '@tamagui/lucide-icons'
+import type { NoteItem } from '@server/modules/note/note'
+import { useSheetOpen } from '@/atoms/sheet'
+import { Button, ScrollView, Separator, Sheet, XStack } from '@/ui'
 
 interface Props {
   item: NoteItem
 }
 
-export const NoteSheet = ({ item }: Props): React.ReactNode => {
+export function NoteSheet({ item }: Props): React.ReactNode {
   const [open, setOpen] = useSheetOpen()
 
   return (
@@ -17,7 +17,7 @@ export const NoteSheet = ({ item }: Props): React.ReactNode => {
         open={open}
         onOpenChange={setOpen}
         snapPoints={[30]}
-        snapPointsMode={'percent'}
+        snapPointsMode="percent"
         dismissOnSnapToBottom
         position={0}
         zIndex={100_000}
@@ -34,9 +34,10 @@ export const NoteSheet = ({ item }: Props): React.ReactNode => {
             maxHeight={250}
             backgroundColor="$background"
             padding="$4"
-            borderRadius="$4">
+            borderRadius="$4"
+          >
             <XStack gap="$4">
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
             </XStack>
           </ScrollView>
           <Separator />

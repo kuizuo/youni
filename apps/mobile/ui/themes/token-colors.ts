@@ -1,5 +1,7 @@
-import { Variable } from '@tamagui/web'
+import type { Variable } from '@tamagui/web'
 import {
+  accent,
+  accentDark,
   blue,
   blueDark,
   gray,
@@ -16,8 +18,6 @@ import {
   redDark,
   yellow,
   yellowDark,
-  accent,
-  accentDark,
 } from './colors'
 
 export {
@@ -31,15 +31,15 @@ export {
 
 export const colorTokens = {
   light: {
-    blue: blue,
-    gray: gray,
-    green: green,
-    orange: orange,
-    pink: pink,
-    purple: purple,
-    red: red,
-    yellow: yellow,
-    accent: accent,
+    blue,
+    gray,
+    green,
+    orange,
+    pink,
+    purple,
+    red,
+    yellow,
+    accent,
   },
   dark: {
     blue: blueDark,
@@ -86,7 +86,7 @@ export const color = {
 
 function postfixObjKeys<A extends { [key: string]: Variable<string> | string }, B extends string>(
   obj: A,
-  postfix: B
+  postfix: B,
 ): {
     [Key in `${keyof A extends string ? keyof A : never}${B}`]: Variable<string> | string
   } {

@@ -1,6 +1,5 @@
-import { Text } from '@/ui';
+import { Text } from '@/ui'
 
 export default function Screen() {
-
-  return <Text>Setting</Text>;
+  return <Text>Setting</Text>
 }

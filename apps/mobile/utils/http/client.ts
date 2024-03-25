@@ -1,9 +1,9 @@
 import axios from 'axios'
 import type { AxiosError } from 'axios'
-import { getToken, removeToken } from '../auth/util'
 import { useRouter } from 'expo-router'
-import { useToastController } from '@/ui'
+import { getToken, removeToken } from '../auth/util'
 import { getApiUrl } from '../api'
+import { useToastController } from '@/ui'
 
 export const client = axios.create({
   baseURL: getApiUrl(),
@@ -15,9 +15,8 @@ client.interceptors.request.use((config) => {
   config.params._t = Date.now()
 
   const token = getToken()
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`
-  }
+  if (token)
+    config.headers.Authorization = `Bearer ${token}`
 
   return config
 })
@@ -28,9 +27,9 @@ client.interceptors.response.use(
     return response.data
   },
   (error: AxiosError) => {
-    if (!error.response) {
+    if (!error.response)
       return Promise.reject(error)
-    }
+
     const res = error.response
 
     if (res?.status === 401) {
@@ -52,17 +51,18 @@ client.interceptors.response.use(
   },
 )
 
-
 declare module 'axios' {
   interface InternalAxiosRequestConfig {
-    /** if true, will not throw BizError
+    /**
+     * if true, will not throw BizError
      * @default false
      */
     ignoreBizError?: boolean
   }
 
   interface AxiosRequestConfig {
-    /** if true, will not throw BizError
+    /**
+     * if true, will not throw BizError
      * @default false
      */
     ignoreBizError?: boolean

@@ -1,13 +1,13 @@
-import { YStack, useToastController } from '@/ui'
-import { capitalizeWord } from '@/ui/libs/string'
-import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
-import { useAuth } from '@/utils/auth/hooks/useAuth'
 import { getInitialURL } from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser'
 import { Platform } from 'react-native'
 import { useRouter } from 'expo-router'
+import { YStack, useToastController } from '@/ui'
+import { capitalizeWord } from '@/ui/libs/string'
+import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
+import { useAuth } from '@/utils/auth/hooks/useAuth'
 
-export const SignUpScreen = (): React.ReactNode => {
+export function SignUpScreen(): React.ReactNode {
   const { replace } = useRouter()
   const toast = useToastController()
   const supabase = useAuth()
@@ -17,7 +17,7 @@ export const SignUpScreen = (): React.ReactNode => {
       const redirectUri = (await getInitialURL()) || 't4://'
       const response = await WebBrowser.openAuthSessionAsync(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectUri}`,
-        redirectUri
+        redirectUri,
       )
       if (response.type === 'success') {
         const url = response.url
@@ -31,10 +31,11 @@ export const SignUpScreen = (): React.ReactNode => {
           })
           .then(({ data: { session }, error }) => {
             if (session) {
-              // @ts-ignore set session does not call subscribers when session is updated
+              // @ts-expect-error set session does not call subscribers when session is updated
               supabase.auth._notifyAllSubscribers('SIGNED_IN', session)
               replace('/')
-            } else {
+            }
+            else {
               toast.show(`${capitalizeWord(provider)} sign in failed`, {
                 description: error?.message || 'Something went wrong, please try again.',
               })
@@ -42,11 +43,13 @@ export const SignUpScreen = (): React.ReactNode => {
             }
           })
       }
-    } catch (error) {
+    }
+    catch (error) {
       toast.show(`${capitalizeWord(provider)} sign in failed`, {
         description: 'Something went wrong, please try again.',
       })
-    } finally {
+    }
+    finally {
       WebBrowser.maybeCompleteAuthSession()
     }
   }
@@ -55,7 +58,8 @@ export const SignUpScreen = (): React.ReactNode => {
     if (provider === 'apple' && Platform.OS === 'ios') {
       // use native sign in with apple in ios
       // await signInWithApple()
-    } else {
+    }
+    else {
       // use web sign in with other providers
       await handleOAuthWithWeb(provider)
     }
@@ -71,7 +75,8 @@ export const SignUpScreen = (): React.ReactNode => {
       toast.show('Sign up failed', {
         message: error.message,
       })
-    } else if (data?.user) {
+    }
+    else if (data?.user) {
       toast.show('Email Confirmation', {
         message: 'Check your email ',
       })
@@ -80,9 +85,9 @@ export const SignUpScreen = (): React.ReactNode => {
   }
 
   return (
-    <YStack flex={1} justifyContent='center' alignItems='center' space>
+    <YStack flex={1} justifyContent="center" alignItems="center" space>
       <SignUpSignInComponent
-        type='sign-up'
+        type="sign-up"
         handleOAuthWithPress={handleOAuthSignInWithPress}
         handleEmailWithPress={handleEmailSignUpWithPress}
       />

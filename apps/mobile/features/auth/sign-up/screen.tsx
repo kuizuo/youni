@@ -1,9 +1,9 @@
+import { useRouter } from 'expo-router'
 import { YStack, useToastController } from '@/ui'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { useRouter } from 'expo-router'
 
-export const SignUpScreen = (): React.ReactNode => {
+export function SignUpScreen(): React.ReactNode {
   const { push } = useRouter()
   const toast = useToastController()
   const {} = useAuth()
@@ -40,7 +40,8 @@ export const SignUpScreen = (): React.ReactNode => {
       toast.show('Sign up failed', {
         message: error.message,
       })
-    } else if (data?.user) {
+    }
+    else if (data?.user) {
       toast.show('Email Confirmation', {
         message: 'Check your email ',
       })
@@ -49,9 +50,9 @@ export const SignUpScreen = (): React.ReactNode => {
   }
 
   return (
-    <YStack flex={1} justifyContent='center' alignItems='center' space>
+    <YStack flex={1} justifyContent="center" alignItems="center" space>
       <SignUpSignInComponent
-        type='sign-up'
+        type="sign-up"
         handleOAuthWithPress={handleOAuthSignInWithPress}
         handleEmailWithPress={handleEmailSignUpWithPress}
       />

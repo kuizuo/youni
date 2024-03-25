@@ -1,23 +1,21 @@
-import { memo, useState } from "react"
-import { Platform } from "react-native"
-import { useUser } from "@/utils/auth/hooks/useUser"
-import { YStack, View, Image, SizableText, useWindowDimensions, XStack, Avatar, Paragraph, useThemeName } from "@/ui"
-import { InteractInfo } from "./components/InteractInfo"
-import { Navs } from "./components/Nav"
-import { UserNote } from "./components/UserNote"
-import { UserCollection } from "./components/UserCollection"
-import { UserLiked } from "./components/UserLiked"
-import { useLocalSearchParams } from "expo-router"
-import { trpc } from "@/utils/trpc"
-import { useRoute } from "@react-navigation/native"
-import { TabView, TabBar } from "react-native-tab-view"
-import { NavBar, useNavBarHeight } from "@/ui/components/NavBar"
-import { BackButton } from "@/ui/components/BackButton"
-import { ArrowUpRightFromSquare, Menu } from "@tamagui/lucide-icons"
-import { UserFollowButton } from "@/ui/components/user/UserFollowButton"
-import Animated, { useSharedValue, interpolate, useAnimatedStyle, useAnimatedReaction } from "react-native-reanimated"
+import React, { memo, useState } from 'react'
+import { Platform } from 'react-native'
+import { useLocalSearchParams } from 'expo-router'
+import { useRoute } from '@react-navigation/native'
+import { ArrowUpRightFromSquare, Menu } from '@tamagui/lucide-icons'
+import Animated, { interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
-import React from "react"
+import { InteractInfo } from './components/InteractInfo'
+import { Navs } from './components/Nav'
+import { UserNote } from './components/UserNote'
+import { UserCollection } from './components/UserCollection'
+import { UserLiked } from './components/UserLiked'
+import { Avatar, Image, Paragraph, SizableText, View, XStack, YStack, useThemeName, useWindowDimensions } from '@/ui'
+import { useUser } from '@/utils/auth/hooks/useUser'
+import { trpc } from '@/utils/trpc'
+import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
+import { BackButton } from '@/ui/components/BackButton'
+import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 
 const TAB_BAR_HEIGHT = 32
 const TAB_VIEW_MARGIN_TOP = -1
@@ -27,13 +25,12 @@ function getTopBarBg() {
   return themeName === 'light' ? '#334155' : '#333345'
 }
 
-export const ProfileScreen = () => {
+export function ProfileScreen() {
   const { id: userId } = useLocalSearchParams<{ id: string }>()
 
   const window = useWindowDimensions()
   const route = useRoute()
   const isMe = route.name === 'me'
-
 
   const [headerHeight, setHeaderHeight] = useState(0)
 
@@ -42,10 +39,10 @@ export const ProfileScreen = () => {
   const navBarHeight = useNavBarHeight()
 
   const contentContainerStyle = {
-    minHeight: window.height -
-      navBarHeight +
-      headerHeight +
-      (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
+    minHeight: window.height
+    - navBarHeight
+    + headerHeight
+    + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
     // paddingTop: headerHeight ? headerHeight + TAB_BAR_HEIGHT : 0,
   }
 
@@ -66,7 +63,7 @@ export const ProfileScreen = () => {
       key: 'like',
       title: '赞过',
       component: <UserLiked userId={userId} contentContainerStyle={contentContainerStyle} />,
-    }
+    },
   ]
 
   const UserNavBar = () => {
@@ -81,47 +78,48 @@ export const ProfileScreen = () => {
       }
     })
 
-    return <NavBar
-      left={!isMe
-        ? <BackButton />
-        : <Menu color={'white'} size={'$1'} />
-      }
-      right={<ArrowUpRightFromSquare size={'$1'} color={'white'} />}
-      style={{
-        backgroundColor: getTopBarBg(),
-        paddingBottom: 12,
-        zIndex: 100
-      }}
-    >
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-          },
-          anim
-        ]}
+    return (
+      <NavBar
+        left={!isMe
+          ? <BackButton />
+          : <Menu color="white" size="$1" />}
+        right={<ArrowUpRightFromSquare size="$1" color="white" />}
+        style={{
+          backgroundColor: getTopBarBg(),
+          paddingBottom: 12,
+          zIndex: 100,
+        }}
       >
-        <XStack justifyContent="center">
-          <XStack flex={1} gap='$2.5' alignItems='center' backgroundColor={'transport'}>
-            <Avatar circular size="$2">
-              <Avatar.Image
-                // @ts-ignore
-                source={{
-                  uri: data?.avatar!,
-                  width: '100%',
-                  height: '100%',
-                }}
-              />
-              <Avatar.Fallback />
-            </Avatar>
-            <SizableText themeInverse fontSize={14} opacity={0.7} >
-              {data?.nickname}
-            </SizableText>
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+            },
+            anim,
+          ]}
+        >
+          <XStack justifyContent="center">
+            <XStack flex={1} gap="$2.5" alignItems="center" backgroundColor="transport">
+              <Avatar circular size="$2">
+                <Avatar.Image
+                // @ts-expect-error
+                  source={{
+                    uri: data?.avatar!,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+                <Avatar.Fallback />
+              </Avatar>
+              <SizableText themeInverse fontSize={14} opacity={0.7}>
+                {data?.nickname}
+              </SizableText>
+            </XStack>
+            {!isMe && <UserFollowButton userId={userId} isFollowing={false} />}
           </XStack>
-          {!isMe && <UserFollowButton userId={userId} isFollowing={false} />}
-        </XStack>
-      </Animated.View>
-    </NavBar>
+        </Animated.View>
+      </NavBar>
+    )
   }
 
   const UserHeader = memo(() => {
@@ -136,57 +134,61 @@ export const ProfileScreen = () => {
       (newValue) => {
         scrollY.value = newValue
       },
-      [Y]
+      [Y],
     )
 
     const { id: userId } = useLocalSearchParams<{ id: string }>()
 
     const [data, { isLoading, refetch, isRefetching }] = trpc.user.byId.useSuspenseQuery({ id: userId }, {})
 
-    return <>
-      <View backgroundColor={getTopBarBg()} paddingTop="$6" pointerEvents="none" />
-      {/* 基本信息 */}
-      <XStack gap='$4' paddingHorizontal='$4' marginTop={'$-5'} marginBottom='$3'>
-        <Avatar circular size="$8">
-          <Avatar.Image
-            width="100%"
-            height="100%"
-            // @ts-ignore
-            source={{
-              uri: data.avatar
-            }}
-          />
-          <Avatar.Fallback />
-        </Avatar>
-        <YStack flex={1} justifyContent="flex-end">
-          <XStack gap="$1.5" alignItems='center' marginBottom={'$2'}>
-            <SizableText fontSize={18}>
-              {data.nickname}
-            </SizableText>
+    return (
+      <>
+        <View backgroundColor={getTopBarBg()} paddingTop="$6" pointerEvents="none" />
+        {/* 基本信息 */}
+        <XStack gap="$4" paddingHorizontal="$4" marginTop="$-5" marginBottom="$3">
+          <Avatar circular size="$8">
+            <Avatar.Image
+              width="100%"
+              height="100%"
+            // @ts-expect-error
+              source={{
+                uri: data.avatar,
+              }}
+            />
+            <Avatar.Fallback />
+          </Avatar>
+          <YStack flex={1} justifyContent="flex-end">
+            <XStack gap="$1.5" alignItems="center" marginBottom="$2">
+              <SizableText fontSize={18}>
+                {data.nickname}
+              </SizableText>
 
-            {data.gender ?
-              <Image
-                source={data.gender === 1 ? require('@/assets/icons/male.png') : require('@/assets/icons/female.png')}
-                width={20}
-                height={20}
-              /> : <></>
-            }
-          </XStack>
-          <Paragraph alignContent="flex-end">{data.desc ?? '暂无简介'}</Paragraph>
-        </YStack>
-      </XStack >
+              {data.gender
+                ? (
+                  <Image
+                    source={data.gender === 1 ? require('@/assets/icons/male.png') : require('@/assets/icons/female.png')}
+                    width={20}
+                    height={20}
+                  />
+                  )
+                : <></>}
+            </XStack>
+            <Paragraph alignContent="flex-end">{data.desc ?? '暂无简介'}</Paragraph>
+          </YStack>
+        </XStack>
 
-      {/* 互动 */}
-      <InteractInfo user={data ?? currentUser!}></InteractInfo>
-      {/* 快捷导航 */}
-      {isMe && <Navs />}
-    </>
+        {/* 互动 */}
+        <InteractInfo user={data ?? currentUser!}></InteractInfo>
+        {/* 快捷导航 */}
+        {isMe && <Navs />}
+      </>
+    )
   })
 
-
-  return <YStack flex={1} backgroundColor={'$background'}>
-    <UserNavBar />
-    {/* <Animated.Image
+  return (
+    <YStack flex={1} backgroundColor="$background">
+      <UserNavBar />
+      {/* <Animated.Image
       source={require('@/assets/images/profile-background.png')}
       style={[anim, {
         position: 'absolute',
@@ -196,28 +198,31 @@ export const ProfileScreen = () => {
         zIndex: -1,
       }]}
     /> */}
-    <Tabs.Container
-      allowHeaderOverscroll
-      headerHeight={headerHeight}
-      revealHeaderOnScroll={false}
-      lazy
-      snapThreshold={0.5}
-      renderHeader={(props) => {
-        return <View
-          onLayout={ev => setHeaderHeight(ev.nativeEvent.layout.height)}
-          pointerEvents="box-none"
-        >
-          <UserHeader />
-        </View>
-      }}
-    >
-      {TABS.map(({ component, key, title }) => {
-        return (
-          <Tabs.Tab name={title} key={key}>
-            {component}
-          </Tabs.Tab>
-        )
-      })}
-    </Tabs.Container>
-  </YStack >
+      <Tabs.Container
+        allowHeaderOverscroll
+        headerHeight={headerHeight}
+        revealHeaderOnScroll={false}
+        lazy
+        snapThreshold={0.5}
+        renderHeader={(props) => {
+          return (
+            <View
+              onLayout={ev => setHeaderHeight(ev.nativeEvent.layout.height)}
+              pointerEvents="box-none"
+            >
+              <UserHeader />
+            </View>
+          )
+        }}
+      >
+        {TABS.map(({ component, key, title }) => {
+          return (
+            <Tabs.Tab name={title} key={key}>
+              {component}
+            </Tabs.Tab>
+          )
+        })}
+      </Tabs.Container>
+    </YStack>
+  )
 }

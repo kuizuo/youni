@@ -15,10 +15,10 @@ module.exports = withMonorepoPaths(
     outputCSS: './tamagui-web.css',
     themeBuilder: {
       input: './ui/themes/theme.ts',
-      output: './ui/themes/theme-generated.ts'
-    }
-  })
-);
+      output: './ui/themes/theme-generated.ts',
+    },
+  }),
+)
 
 /**
  * Add the monorepo paths to the Metro config.
@@ -29,19 +29,19 @@ module.exports = withMonorepoPaths(
  * @returns {import('expo/metro-config').MetroConfig}
  */
 function withMonorepoPaths(config) {
-  const projectRoot = __dirname;
-  const workspaceRoot = path.resolve(projectRoot, "../..");
+  const projectRoot = __dirname
+  const workspaceRoot = path.resolve(projectRoot, '../..')
 
-  config.resolver.sourceExts.push('mjs');
+  config.resolver.sourceExts.push('mjs')
 
   // #1 - Watch all files in the monorepo
-  config.watchFolders = [workspaceRoot];
+  config.watchFolders = [workspaceRoot]
 
   // #2 - Resolve modules within the project's `node_modules` first, then all monorepo modules
   config.resolver.nodeModulesPaths = [
-    path.resolve(projectRoot, "node_modules"),
-    path.resolve(workspaceRoot, "node_modules"),
-  ];
+    path.resolve(projectRoot, 'node_modules'),
+    path.resolve(workspaceRoot, 'node_modules'),
+  ]
 
   // 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
   config.resolver.disableHierarchicalLookup = false
@@ -49,5 +49,5 @@ function withMonorepoPaths(config) {
   config.transformer = { ...config.transformer, unstable_allowRequireContext: true }
   config.transformer.minifierPath = require.resolve('metro-minify-terser')
 
-  return config;
+  return config
 }

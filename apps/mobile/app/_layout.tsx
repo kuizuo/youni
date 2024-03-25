@@ -1,16 +1,16 @@
 import { useFonts } from 'expo-font'
-import { Stack, SplashScreen } from 'expo-router'
+import { SplashScreen, Stack } from 'expo-router'
 import { useEffect } from 'react'
-import { Platform } from "react-native"
+import { Platform } from 'react-native'
 import { Provider } from '@/provider'
 
 import 'react-native-gesture-handler'
 
-if (Platform.OS === "web") {
-  // @ts-ignore
+if (Platform.OS === 'web') {
+  // @ts-expect-error
   import('../global.css')
-  // @ts-ignore
-  import("../tamagui-web.css")
+  // @ts-expect-error
+  import('../tamagui-web.css')
 }
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -24,24 +24,24 @@ export default function RootLayout() {
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
-    if (error) throw error
+    if (error)
+      throw error
   }, [error])
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded)
       SplashScreen.hideAsync()
-    }
   }, [loaded])
 
-  if (!loaded) {
+  if (!loaded)
     return null
-  }
 
   return (
     <Provider>
       <Stack screenOptions={{
         headerShown: false,
-      }}>
+      }}
+      >
       </Stack>
 
     </Provider>

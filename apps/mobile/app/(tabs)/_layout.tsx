@@ -1,17 +1,15 @@
-import { Tabs, useRouter } from 'expo-router';
-import { Avatar, Theme, YStack, Image, Square, useTheme } from '@/ui'
+import { Tabs, useRouter } from 'expo-router'
 import { LinearGradient } from '@tamagui/linear-gradient'
-import { Plus, Home, Clover, MessageCircleMore } from '@tamagui/lucide-icons'
-import { useUser } from '@/utils/auth/hooks/useUser';
+import { Clover, Home, MessageCircleMore, Plus } from '@tamagui/lucide-icons'
+import { Avatar, Image, Square, Theme, YStack, useTheme } from '@/ui'
+import { useUser } from '@/utils/auth/hooks/useUser'
 
 export default function TabLayout() {
   const theme = useTheme()
   const { currentUser, isLoading } = useUser()
 
-
-  if (isLoading) {
+  if (isLoading)
     return <></>
-  }
 
   return (
     <Tabs
@@ -22,7 +20,8 @@ export default function TabLayout() {
           borderWidth: 0,
         },
         tabBarActiveTintColor: theme.$accent10?.get(),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -67,8 +66,8 @@ export default function TabLayout() {
           href: {
             pathname: '/me',
             params: {
-              id: currentUser?.id
-            }
+              id: currentUser?.id,
+            },
           },
           title: '我',
           tabBarIcon: ({ color, size }) => {
@@ -90,17 +89,16 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-  );
+  )
 }
 
-
-const PlusButton = ({ size }: { size: number }) => {
+function PlusButton({ size }: { size: number }) {
   const router = useRouter()
   const bottom = 4
 
   return (
     <>
-      <Theme name={'dark'}>
+      <Theme name="dark">
         <Square
           position="absolute"
           bottom={bottom}

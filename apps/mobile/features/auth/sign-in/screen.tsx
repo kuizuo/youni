@@ -1,10 +1,10 @@
+import { useRouter } from 'expo-router'
 import { YStack, useToastController } from '@/ui'
 import { capitalizeWord } from '@/ui/libs/string'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { useRouter } from 'expo-router'
 
-export const SignInScreen = (): React.ReactNode => {
+export function SignInScreen(): React.ReactNode {
   const router = useRouter()
   const { signInWithPassword } = useAuth()
   const toast = useToastController()
@@ -29,7 +29,7 @@ export const SignInScreen = (): React.ReactNode => {
     // }
 
     toast.show(`${capitalizeWord(provider)} 登录失败`, {
-      message: '未实现'
+      message: '未实现',
     })
     // router.replace('/')
   }
@@ -51,9 +51,9 @@ export const SignInScreen = (): React.ReactNode => {
   }
 
   return (
-    <YStack flex={1} justifyContent='center' alignItems='center' gap='$4'>
+    <YStack flex={1} justifyContent="center" alignItems="center" gap="$4">
       <SignUpSignInComponent
-        type='sign-in'
+        type="sign-in"
         handleOAuthWithPress={handleOAuthSignInWithPress}
         handleEmailWithPress={handleEmailSignInWithPress}
       />

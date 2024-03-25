@@ -1,25 +1,25 @@
 import { ChevronDown, Menu } from '@tamagui/lucide-icons'
-import { Button, SizableText, Sheet, Separator, XStack, ScrollView } from '@/ui'
+import type { NoteItem } from '../../../../server/src/modules/note/note'
+import { Button, ScrollView, Separator, Sheet, SizableText, XStack } from '@/ui'
 import { useSheetOpen } from '@/atoms/sheet'
-import { NoteItem } from '../../../../server/src/modules/note/note'
 
 interface Props {
   item: NoteItem
 }
 
-export const NoteMenu = ({ item }: Props) => {
+export function NoteMenu({ item }: Props) {
   const [open, setOpen] = useSheetOpen()
 
   return (
     <>
-      <Button size={'$1'} icon={<Menu size={'$1'} />} unstyled onPress={() => setOpen(true)} />
+      <Button size="$1" icon={<Menu size="$1" />} unstyled onPress={() => setOpen(true)} />
       <Sheet
         forceRemoveScrollEnabled={open}
         modal
         open={open}
         onOpenChange={setOpen}
         snapPoints={[30]}
-        snapPointsMode={'percent'}
+        snapPointsMode="percent"
         dismissOnSnapToBottom
         position={0}
         zIndex={100_000}
@@ -37,18 +37,19 @@ export const NoteMenu = ({ item }: Props) => {
             maxHeight={250}
             backgroundColor="$background"
             padding="$4"
-            borderRadius="$4">
+            borderRadius="$4"
+          >
             <XStack gap="$4">
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
             </XStack>
           </ScrollView>
           <Separator />
@@ -56,18 +57,19 @@ export const NoteMenu = ({ item }: Props) => {
             maxHeight={250}
             backgroundColor="$background"
             padding="$4"
-            borderRadius="$4">
+            borderRadius="$4"
+          >
             <XStack gap="$4">
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
-              <Button size={'$1'} icon={<ChevronDown size={'$1'} />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <Button size="$1" icon={<ChevronDown size="$1" />} />
             </XStack>
           </ScrollView>
         </Sheet.Frame>

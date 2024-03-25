@@ -1,5 +1,5 @@
 import { NativeToast as Toast } from './NativeToast'
 
-export const CustomToast = (): React.ReactNode => {
+export function CustomToast(): React.ReactNode {
   return <Toast />
 }

@@ -10,9 +10,8 @@ const formatter = new Intl.NumberFormat('en-US', {
 })
 
 export function formatPrice(number) {
-  if (typeof number !== 'number' || Number.isNaN(number) || !Number.isFinite(number)) {
+  if (typeof number !== 'number' || Number.isNaN(number) || !Number.isFinite(number))
     throw new Error('Invalid number value')
-  }
 
   return formatter.format(number)
 }

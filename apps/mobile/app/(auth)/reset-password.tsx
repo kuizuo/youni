@@ -1,5 +1,5 @@
-import { ResetPasswordScreen } from '@/features/auth/reset-password/screen'
 import { Stack } from 'expo-router'
+import { ResetPasswordScreen } from '@/features/auth/reset-password/screen'
 
 export default function Screen() {
   return (

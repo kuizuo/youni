@@ -1,10 +1,10 @@
-import { Avatar, XStack, YStack, SizableText } from '@/ui'
-import { Link, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
+import type { UserInfoWithFollow } from '@server/modules/interact/interact'
 import { UserFollowButton } from './UserFollowButton'
+import { Avatar, SizableText, XStack, YStack } from '@/ui'
 import { useUser } from '@/utils/auth/hooks/useUser'
-import { UserInfoWithFollow } from '@server/modules/interact/interact'
 
-export const UserListItem = (item: UserInfoWithFollow): React.ReactElement => {
+export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
   const { currentUser } = useUser()
   const router = useRouter()
 
@@ -13,31 +13,31 @@ export const UserListItem = (item: UserInfoWithFollow): React.ReactElement => {
   }
 
   return (
-    <XStack padding='$3' gap='$3' height={'$8'} alignItems='center' >
+    <XStack padding="$3" gap="$3" height="$8" alignItems="center">
       <Avatar circular size="$5" onPress={handleNavigateToUser}>
         <Avatar.Image
           width="100%"
           height="100%"
-          // @ts-ignore
+          // @ts-expect-error
           source={{
-            uri: item.avatar
+            uri: item.avatar,
           }}
         />
         <Avatar.Fallback />
       </Avatar>
       <YStack flex={1} onPress={handleNavigateToUser}>
-        <XStack gap="$2" >
+        <XStack gap="$2">
           <SizableText size="$4">
             {item.nickname}
           </SizableText>
         </XStack>
 
-        <SizableText size='$1' color={'gray'}>
+        <SizableText size="$1" color="gray">
           {item.desc}
           {/* 笔记 · 1 | 粉丝 · 1 */}
         </SizableText>
       </YStack>
       {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.isFollowing} userId={item.id} />}
-    </XStack >
+    </XStack>
   )
 }

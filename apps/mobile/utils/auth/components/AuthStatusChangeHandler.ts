@@ -1,6 +1,6 @@
 import { useAuthRedirect } from '@/utils/auth/hooks/useAuthRedirect'
 
-export const AuthStatusChangeHandler = () => {
+export function AuthStatusChangeHandler() {
   useAuthRedirect()
   return null
 }

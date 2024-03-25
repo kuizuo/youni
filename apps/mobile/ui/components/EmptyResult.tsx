@@ -1,5 +1,5 @@
-import { Paragraph, ScrollView, YStack } from '@/ui'
 import { RefreshControl } from 'react-native-gesture-handler'
+import { Paragraph, ScrollView, YStack } from '@/ui'
 
 interface Props {
   title: string | undefined
@@ -9,18 +9,18 @@ interface Props {
   onRefresh?: () => void
 }
 
-export const EmptyResult = ({
+export function EmptyResult({
   title,
   subTitle,
   image,
   isRefreshing,
-  onRefresh
-}: Props): React.ReactElement => {
+  onRefresh,
+}: Props): React.ReactElement {
   return (
     <ScrollView
       refreshControl={isRefreshing ? <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} /> : <></>}
     >
-      <YStack flex={1} justifyContent='center' alignItems='center' padding='$6' gap='$3'>
+      <YStack flex={1} justifyContent="center" alignItems="center" padding="$6" gap="$3">
         {image}
         <Paragraph fontSize={16}>{title}</Paragraph>
         {subTitle && <Paragraph fontSize={10}>{subTitle}</Paragraph>}

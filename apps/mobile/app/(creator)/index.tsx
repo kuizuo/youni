@@ -1,10 +1,9 @@
-import { Text, View } from '@/ui';
+import { Text } from '@/ui'
 
 export default function CreatorScreen() {
-
   return (
     <>
       <Text>Box</Text>
     </>
-  );
+  )
 }

@@ -1,20 +1,20 @@
 import { useEffect } from 'react'
 import { useRouter } from 'expo-router'
-import { useAuth } from './useAuth'
 import { Platform } from 'react-native'
+import { useAuth } from './useAuth'
 
-export const useAuthRedirect = () => {
+export function useAuthRedirect() {
   const router = useRouter()
   const { token } = useAuth()
 
   useEffect(() => {
     if (!token) {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         setImmediate(() => {
           router.replace('/sign-in')
-        });
-
-      } else {
+        })
+      }
+      else {
         setTimeout(() => {
           router.replace('/sign-in')
         }, 1)

@@ -1,11 +1,12 @@
-import { ColorScheme, NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
+import type { ColorScheme } from '@tamagui/next-theme'
+import { NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
 
-export const TamaguiThemeProvider = ({
+export function TamaguiThemeProvider({
   children,
 }: {
   children: React.ReactNode
-}): React.ReactNode => {
+}): React.ReactNode {
   const [theme, setTheme] = useRootTheme()
 
   return (

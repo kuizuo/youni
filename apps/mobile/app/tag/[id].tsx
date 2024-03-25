@@ -1,8 +1,13 @@
-import { useLocalSearchParams } from 'expo-router';
-import { Text } from '@/ui';
+import { useLocalSearchParams } from 'expo-router'
+import { Text } from '@/ui'
 
 export default function Screen() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams()
 
-  return <Text>Tag : {id}</Text>;
+  return (
+    <Text>
+      Tag :
+      {id}
+    </Text>
+  )
 }

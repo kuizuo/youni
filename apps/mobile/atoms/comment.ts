@@ -21,4 +21,3 @@ export function useCurrentNote() {
 }
 
 export const newCommentsAtom = atom<CommentItem[]>([] as CommentItem[])
-

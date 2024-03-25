@@ -10,10 +10,10 @@ const icons = {
   light: Sun,
   dark: Moon,
 }
-export const ThemeToggle = (props: ButtonProps) => {
+export function ThemeToggle(props: ButtonProps) {
   const themeSetting = useThemeSetting()
   const [clientTheme, setClientTheme] = useState('system')
-  const colorScheme = useColorScheme() 
+  const colorScheme = useColorScheme()
 
   useIsomorphicLayoutEffect(() => {
     setClientTheme(themeSetting.current || 'system')
@@ -22,9 +22,9 @@ export const ThemeToggle = (props: ButtonProps) => {
 
   return (
     <Button
-      size='$4'
+      size="$4"
       onPress={themeSetting.toggle}
-      aria-label='Toggle color scheme'
+      aria-label="Toggle color scheme"
       icon={icons[clientTheme]}
       {...props}
     />

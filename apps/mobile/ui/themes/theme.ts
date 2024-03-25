@@ -7,18 +7,20 @@ import { shadows } from './shadows'
 import { maskOptions, templates } from './templates'
 import { darkColors, lightColors } from './token-colors'
 
-const colorThemeDefinition = (colorName: string) => [
-  {
-    parent: 'light',
-    palette: colorName,
-    template: 'colorLight',
-  },
-  {
-    parent: 'dark',
-    palette: colorName,
-    template: 'base',
-  },
-]
+function colorThemeDefinition(colorName: string) {
+  return [
+    {
+      parent: 'light',
+      palette: colorName,
+      template: 'colorLight',
+    },
+    {
+      parent: 'dark',
+      palette: colorName,
+      template: 'base',
+    },
+  ]
+}
 
 const themesBuilder = createThemeBuilder()
   .addPalettes(palettes)

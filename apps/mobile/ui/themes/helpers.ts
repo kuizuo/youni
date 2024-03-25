@@ -9,7 +9,7 @@ type ObjectEntries<OBJ_T> = // From https://stackoverflow.com/a/60142095
 export const objectKeys = <O extends Object>(obj: O) => Object.keys(obj) as Array<keyof O>
 
 export function objectEntries<OBJ_T extends ObjectType>(
-  obj: OBJ_T
+  obj: OBJ_T,
 ): ObjectEntries<OBJ_T> {
   return Object.entries(obj) as ObjectEntries<OBJ_T>
 }
@@ -38,7 +38,7 @@ type EntriesToObject<ARR_T extends EntriesType> = MergeIntersectingObjects<
 >
 
 export function objectFromEntries<ARR_T extends EntriesType>(
-  arr: ARR_T
+  arr: ARR_T,
 ): EntriesToObject<ARR_T> {
   return Object.fromEntries(arr) as EntriesToObject<ARR_T>
 }

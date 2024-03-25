@@ -1,7 +1,7 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { Link } from 'expo-router'
+import { StyleSheet } from 'react-native'
 
-import { Text, View } from '@/ui';
+import { Text, View } from '@/ui'
 
 interface Props {
   title: string
@@ -18,7 +18,7 @@ export default function NotFound({ title }: Props) {
         </Link>
       </View>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -40,4 +40,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2e78b7',
   },
-});
+})

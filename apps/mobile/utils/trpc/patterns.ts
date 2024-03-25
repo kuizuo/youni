@@ -10,15 +10,15 @@ export const error = {
 }
 
 export const loading = {
-  isLoading: P.when((isLoading) => isLoading === true),
+  isLoading: P.when(isLoading => isLoading === true),
 }
 
 export const fetchingLoading = {
-  isInitialLoading: P.when((isInitialLoading) => isInitialLoading === true),
+  isInitialLoading: P.when(isInitialLoading => isInitialLoading === true),
 }
 
 export const dataNotFetched = {
-  isFetched: P.when((isFetched) => isFetched === false),
+  isFetched: P.when(isFetched => isFetched === false),
 }
 
 export const empty = {
@@ -30,6 +30,6 @@ export const infiniteEmpty = {
 }
 
 export const success = {
-  isLoading: P.when((isLoading) => isLoading === false),
-  failureReason: P.when((status) => status === null),
+  isLoading: P.when(isLoading => isLoading === false),
+  failureReason: P.when(status => status === null),
 }

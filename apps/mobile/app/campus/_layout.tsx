@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { Text, View } from 'react-native'
 
 export default function Screen() {
   return (
@@ -7,5 +7,5 @@ export default function Screen() {
         校园广场 实现中
       </Text>
     </View>
-  );
+  )
 };

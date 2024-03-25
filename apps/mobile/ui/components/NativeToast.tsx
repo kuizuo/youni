@@ -1,12 +1,11 @@
 import { Toast, useToastState } from '@tamagui/toast'
 import { YStack } from 'tamagui'
 
-export const NativeToast = (): React.ReactNode => {
+export function NativeToast(): React.ReactNode {
   const currentToast = useToastState()
 
-  if (!currentToast || currentToast.isHandledNatively) {
+  if (!currentToast || currentToast.isHandledNatively)
     return null
-  }
 
   return (
     <Toast
@@ -18,7 +17,7 @@ export const NativeToast = (): React.ReactNode => {
       y={0}
       opacity={1}
       scale={1}
-      animation='quick'
+      animation="quick"
     >
       <YStack>
         <Toast.Title>{currentToast.title}</Toast.Title>

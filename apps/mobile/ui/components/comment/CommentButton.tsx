@@ -1,19 +1,19 @@
-
-import { MessageCircle } from "@tamagui/lucide-icons"
-import { Button, Input, Sheet, SizableText, SizeTokens, XStack } from "@/ui"
-import { CommentItem } from "@server/modules/comment/comment"
-import { useState } from "react";
-import { useCommentModalOpen, useParentComment } from "@/atoms/comment";
+import { MessageCircle } from '@tamagui/lucide-icons'
+import type { CommentItem } from '@server/modules/comment/comment'
+import { useState } from 'react'
+import type { SizeTokens } from '@/ui'
+import { Button, SizableText, XStack } from '@/ui'
+import { useCommentModalOpen, useParentComment } from '@/atoms/comment'
 
 export interface Props {
   item: CommentItem
   size?: SizeTokens
 }
 
-export const CommentButton = ({
+export function CommentButton({
   item,
   size = 16,
-}: Props) => {
+}: Props) {
   const [commentCount, setCommentCount] = useState(item.interact?.commentCount || 0)
 
   const [open, setOpen] = useCommentModalOpen()
@@ -23,15 +23,17 @@ export const CommentButton = ({
     setParentComment(item)
   }
 
-  return <XStack alignItems="center" gap='$1.5'>
-    <Button
-      icon={<MessageCircle color='gray' size={size} />}
-      onPress={handleOpenCommentModal}
-      unstyled>
-    </Button>
-    <SizableText fontSize={size} color={'gray'}>
-      {commentCount || ''}
-    </SizableText>
-  </XStack>
+  return (
+    <XStack alignItems="center" gap="$1.5">
+      <Button
+        icon={<MessageCircle color="gray" size={size} />}
+        onPress={handleOpenCommentModal}
+        unstyled
+      >
+      </Button>
+      <SizableText fontSize={size} color="gray">
+        {commentCount || ''}
+      </SizableText>
+    </XStack>
+  )
 }
-

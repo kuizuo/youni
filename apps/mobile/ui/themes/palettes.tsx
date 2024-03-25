@@ -67,15 +67,15 @@ export const palettes = (() => {
 
   const lightPalettes = objectFromEntries(
     objectKeys(colorTokens.light).map(
-      (key) =>
-        [`light_${key}`, getColorPalette(colorTokens.light[key], lightColor)] as const
-    )
+      key =>
+        [`light_${key}`, getColorPalette(colorTokens.light[key], lightColor)] as const,
+    ),
   )
 
   const darkPalettes = objectFromEntries(
     objectKeys(colorTokens.dark).map(
-      (key) => [`dark_${key}`, getColorPalette(colorTokens.dark[key], darkColor)] as const
-    )
+      key => [`dark_${key}`, getColorPalette(colorTokens.dark[key], darkColor)] as const,
+    ),
   )
 
   const colorPalettes = {

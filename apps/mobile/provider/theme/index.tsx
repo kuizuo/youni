@@ -1,17 +1,17 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
-import { useForceUpdate, useTheme } from '@/ui'
-import { appThemeKey, useAppTheme, useCurrentTheme } from '@/atoms/theme'
-import { ThemeVariant } from '@/utils/theme'
 import { StatusBar } from 'expo-status-bar'
 import React, { useEffect, useLayoutEffect } from 'react'
 import { Appearance } from 'react-native'
 import { storage } from '../kv'
+import { ThemeVariant } from '@/utils/theme'
+import { appThemeKey, useAppTheme, useCurrentTheme } from '@/atoms/theme'
+import { useForceUpdate } from '@/ui'
 
-export const TamaguiThemeProvider = ({
+export function TamaguiThemeProvider({
   children,
 }: {
   children: React.ReactNode
-}): React.ReactNode => {
+}): React.ReactNode {
   const [appTheme, setAppTheme] = useAppTheme()
   const [currentTheme] = useCurrentTheme()
   const forceUpdate = useForceUpdate()
@@ -19,7 +19,6 @@ export const TamaguiThemeProvider = ({
   const defaultTheme = 'system'
   const statusBarStyle = currentTheme === ThemeVariant.dark ? ThemeVariant.light : ThemeVariant.dark
   const themeValue = currentTheme === ThemeVariant.dark ? DarkTheme : DefaultTheme
-
 
   useEffect(() => {
     const systemThemeChangeListener = Appearance.addChangeListener(() => {
@@ -33,20 +32,19 @@ export const TamaguiThemeProvider = ({
 
   useLayoutEffect(() => {
     const savedAppTheme = storage.getString(appThemeKey)
-    if (savedAppTheme !== undefined) {
+    if (savedAppTheme !== undefined)
       setAppTheme(savedAppTheme as ThemeVariant)
-    }
   }, [setAppTheme])
 
   useEffect(() => {
     if (appTheme === undefined) {
       storage.set(appThemeKey, defaultTheme)
       setAppTheme(defaultTheme)
-    } else {
+    }
+    else {
       storage.set(appThemeKey, appTheme)
     }
   }, [appTheme, setAppTheme])
-
 
   return (
     <ThemeProvider value={themeValue}>
@@ -56,7 +54,7 @@ export const TamaguiThemeProvider = ({
   )
 }
 
-export const useRootTheme = () => {
+export function useRootTheme() {
   const [currentTheme] = useCurrentTheme()
   return [currentTheme]
 }

@@ -1,14 +1,13 @@
 import React, { memo, useMemo } from 'react'
+import { match } from 'ts-pattern'
+import type { NoteItem } from '@server/modules/note/note'
+import { RefreshControl } from 'react-native-gesture-handler'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { ScrollView, SizableText, Spinner, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { error, infiniteEmpty, loading, success } from '@/utils/trpc/patterns'
-import { P, match } from 'ts-pattern'
-import { NoteItem } from '@server/modules/note/note'
 import { UserNoteList } from '@/ui/components/user/UserNoteList'
 import { useUser } from '@/utils/auth/hooks/useUser'
-import { RefreshControl } from 'react-native-gesture-handler'
-
 
 const FollowFeed = memo((): React.ReactNode => {
   const { currentUser } = useUser()
@@ -21,9 +20,9 @@ const FollowFeed = memo((): React.ReactNode => {
       limit: 10,
     },
     {
-      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+      getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
       enabled: hasFollowedUsers,
-    }
+    },
   )
 
   const isRefetching = useMemo(() => followFeed.isRefetching, [followFeed.isRefetching])
@@ -33,29 +32,31 @@ const FollowFeed = memo((): React.ReactNode => {
   }
 
   const EmptyUserFollowing = () => {
-    return <ScrollView
-      marginTop="$4"
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
-    >
-      <YStack alignItems='center'>
-        <SizableText fontSize={16}>还没有关注的用户</SizableText>
-        <SizableText fontSize={10} >关注后，可在这里查看对方的最新动态</SizableText>
-      </YStack>
-      {/* 你可能认识的人 */}
-    </ScrollView>
+    return (
+      <ScrollView
+        marginTop="$4"
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
+      >
+        <YStack alignItems="center">
+          <SizableText fontSize={16}>还没有关注的用户</SizableText>
+          <SizableText fontSize={10}>关注后，可在这里查看对方的最新动态</SizableText>
+        </YStack>
+        {/* 你可能认识的人 */}
+      </ScrollView>
+    )
   }
 
   const followFeedLayout = match(followFeed)
     .with(error, () => <EmptyResult title={followFeed.failureReason?.message} />)
     .with(loading, () => <Spinner />)
-    .with(infiniteEmpty, () =>
+    .with(infiniteEmpty, () => (
       <EmptyResult
-        title={'关注的人近期未发布笔记'}
-        subTitle={'去发现更多有趣的人吧'}
+        title="关注的人近期未发布笔记"
+        subTitle="去发现更多有趣的人吧"
         isRefreshing={isRefetching}
         onRefresh={handleRefresh}
       />
-    )
+    ))
     .with(success, () => (
       <UserNoteList
         data={followFeed.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
@@ -67,7 +68,7 @@ const FollowFeed = memo((): React.ReactNode => {
     .otherwise(() => <EmptyResult title={followFeed.failureReason?.message} />)
 
   return (
-    <YStack flex={1} backgroundColor={'$background'}>
+    <YStack flex={1} backgroundColor="$background">
       {!hasFollowedUsers ? <EmptyUserFollowing /> : followFeedLayout}
     </YStack>
   )

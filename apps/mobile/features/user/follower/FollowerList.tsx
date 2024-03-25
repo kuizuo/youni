@@ -1,24 +1,24 @@
-import { Paragraph, Spinner, YStack, Text } from "@/ui";
-import { EmptyResult } from "@/ui/components/EmptyResult";
-import { UserList } from "@/ui/components/user/UserList";
-import { trpc } from "@/utils/trpc";
-import { empty, error, infiniteEmpty, loading, success } from "@/utils/trpc/patterns";
-import { match } from "ts-pattern";
+import { match } from 'ts-pattern'
+import { Paragraph, Spinner, YStack } from '@/ui'
+import { EmptyResult } from '@/ui/components/EmptyResult'
+import { UserList } from '@/ui/components/user/UserList'
+import { trpc } from '@/utils/trpc'
+import { error, infiniteEmpty, loading, success } from '@/utils/trpc/patterns'
 
 interface Props {
   userId: string
   type: 'following' | 'followers'
 }
 
-export const FollowerList = ({ userId, type }: Props) => {
+export function FollowerList({ userId, type }: Props) {
   const userList = trpc.interact[type].useInfiniteQuery(
     {
       id: userId,
       limit: 10,
     },
     {
-      getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
-    }
+      getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+    },
   )
 
   const emptyString = type === 'following' ? '你还没有关注任何人' : '你还没有粉丝'
@@ -26,9 +26,9 @@ export const FollowerList = ({ userId, type }: Props) => {
   const userListLayout = match(userList)
     .with(error, () => <EmptyResult title={userList.failureReason?.message} />)
     .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent='center' alignItems='center' >
-        <Paragraph paddingBottom='$3'> Loading...</Paragraph>
-        < Spinner />
+      <YStack fullscreen flex={1} justifyContent="center" alignItems="center">
+        <Paragraph paddingBottom="$3"> Loading...</Paragraph>
+        <Spinner />
       </YStack>
     ))
     .with(infiniteEmpty, () => (
@@ -45,9 +45,8 @@ export const FollowerList = ({ userId, type }: Props) => {
         isRefreshing={userList.isFetching}
         onRefresh={() => userList.refetch()}
         onEndReached={() => {
-          if (userList.hasNextPage) {
+          if (userList.hasNextPage)
             userList.fetchNextPage()
-          }
         }}
       />
     ))

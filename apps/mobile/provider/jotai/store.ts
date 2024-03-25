@@ -4,8 +4,8 @@ import { clearAll, getItem, removeItem, setItem } from '../kv'
 
 export const jotaiStore = createStore()
 
-export const atomWithMMKV = <T>(key: string, initialValue: T) =>
-  atomWithStorage<T>(
+export function atomWithMMKV<T>(key: string, initialValue: T) {
+  return atomWithStorage<T>(
     key,
     initialValue,
     createJSONStorage<T>(() => ({
@@ -14,4 +14,5 @@ export const atomWithMMKV = <T>(key: string, initialValue: T) =>
       removeItem,
       clearAll,
     })),
-  );
+  )
+}

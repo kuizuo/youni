@@ -1,8 +1,9 @@
-import { router } from "expo-router"
-import { AuthContext, Credentials } from "../hooks/useAuth"
-import { client } from "@/utils/http/client"
-import { getToken, removeToken, setToken } from "../util"
+import { router } from 'expo-router'
 import { LoginResult } from '@server/modules/auth/auth.model'
+import type { Credentials } from '../hooks/useAuth'
+import { AuthContext } from '../hooks/useAuth'
+import { getToken, removeToken, setToken } from '../util'
+import { client } from '@/utils/http/client'
 
 export function AuthProvider({ children }: React.PropsWithChildren) {
   const signInWithPassword = async (credentials: Credentials) => {
@@ -16,14 +17,15 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
       }
 
       return { error: { message: (loginResult as any)?.message } }
-    } catch (error) {
+    }
+    catch (error) {
       return { error: { message: error } }
     }
   }
 
   const signOut = () => {
     removeToken()
-    router.replace("/sign-in")
+    router.replace('/sign-in')
   }
 
   return (
@@ -32,7 +34,8 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         signInWithPassword,
         signOut,
         token: getToken(),
-      }}>
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

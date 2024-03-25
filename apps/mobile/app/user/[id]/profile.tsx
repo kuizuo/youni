@@ -1,5 +1,5 @@
-import { ProfileScreen } from '@/features/user/profile/screen';
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router'
+import { ProfileScreen } from '@/features/user/profile/screen'
 
 export default function Screen() {
   return (
@@ -7,5 +7,5 @@ export default function Screen() {
       <Stack.Screen />
       <ProfileScreen />
     </>
-  );
+  )
 }

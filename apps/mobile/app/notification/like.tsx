@@ -1,27 +1,27 @@
-import { Paragraph, SizableText, Spinner, View, YStack } from '@/ui';
-import { trpc } from '@/utils/trpc';
-import { EmptyResult } from '@/ui/components/EmptyResult';
-import { empty, error, loading, success } from '@/utils/trpc/patterns';
-import { match } from 'ts-pattern';
-import React from 'react';
-import { MessageItem } from '@server/modules/notification/notification';
-import { MessageList } from '@/ui/components/notification/MessageList';
-import { NavBar } from '@/ui/components/NavBar';
-import { BackButton } from '@/ui/components/BackButton';
+import { match } from 'ts-pattern'
+import React from 'react'
+import type { MessageItem } from '@server/modules/notification/notification'
+import { Paragraph, SizableText, Spinner, YStack } from '@/ui'
+import { trpc } from '@/utils/trpc'
+import { EmptyResult } from '@/ui/components/EmptyResult'
+import { empty, error, loading, success } from '@/utils/trpc/patterns'
+import { MessageList } from '@/ui/components/notification/MessageList'
+import { NavBar } from '@/ui/components/NavBar'
+import { BackButton } from '@/ui/components/BackButton'
 
 export default function Screen() {
   const messageList = trpc.notification.message.useInfiniteQuery({
     action: 'Like',
     limit: 10,
   }, {
-    getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+    getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
   })
 
   const messageLayout = match(messageList)
     .with(error, () => <EmptyResult title={messageList.failureReason?.message} />)
     .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent='center' alignItems='center'>
-        <Paragraph paddingBottom='$3'>Loading...</Paragraph>
+      <YStack fullscreen flex={1} justifyContent="center" alignItems="center">
+        <Paragraph paddingBottom="$3">Loading...</Paragraph>
         <Spinner />
       </YStack>
     ))
@@ -36,10 +36,12 @@ export default function Screen() {
     ))
     .otherwise(() => <EmptyResult title={messageList.failureReason?.message} />)
 
-  return <YStack flex={1} backgroundColor={'$background'} >
-    <NavBar left={<BackButton />} right={<></>}>
-      <SizableText flex={1} textAlign="center">赞</SizableText>
-    </NavBar>
-    {messageLayout}
-  </YStack>
+  return (
+    <YStack flex={1} backgroundColor="$background">
+      <NavBar left={<BackButton />} right={<></>}>
+        <SizableText flex={1} textAlign="center">赞</SizableText>
+      </NavBar>
+      {messageLayout}
+    </YStack>
+  )
 }

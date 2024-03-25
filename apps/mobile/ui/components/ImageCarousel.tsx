@@ -1,13 +1,7 @@
-import Carousel from "react-native-reanimated-carousel"
+import Carousel from 'react-native-reanimated-carousel'
+import Animated, { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { Image, View, useWindowDimensions } from '@/ui'
 import { window } from '@/constant'
-
-import Animated, {
-  Extrapolate,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-} from "react-native-reanimated"
 
 interface Props {
   data: string[]
@@ -15,53 +9,54 @@ interface Props {
   height?: number
 }
 
-export const ImageCarousel = ({ data, width, height }: Props): React.ReactNode => {
+export function ImageCarousel({ data, width, height }: Props): React.ReactNode {
   const progressValue = useSharedValue<number>(0)
   const { width: windowWidth } = useWindowDimensions()
 
-  return <>
-    <Carousel
-      width={width ?? windowWidth}
-      height={height ?? window.width / 2}
-      style={{ width: "100%" }}
-      loop={false}
-      pagingEnabled={false}
-      overscrollEnabled={false}
-      autoPlay={false}
-      onProgressChange={(_, absoluteProgress) =>
-        (progressValue.value = absoluteProgress)
-      }
-      data={data}
-      renderItem={({ item }) => (
-        <Image
-          // @ts-ignore
-          source={{ uri: item, width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
+  return (
+    <>
+      <Carousel
+        width={width ?? windowWidth}
+        height={height ?? window.width / 2}
+        style={{ width: '100%' }}
+        loop={false}
+        pagingEnabled={false}
+        overscrollEnabled={false}
+        autoPlay={false}
+        onProgressChange={(_, absoluteProgress) =>
+          (progressValue.value = absoluteProgress)}
+        data={data}
+        renderItem={({ item }) => (
+          <Image
+          // @ts-expect-error
+            source={{ uri: item, width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        )}
+      />
+      {!!progressValue && (
+        <View
+          flexDirection="row"
+          justifyContent="center"
+          paddingTop="$2"
+          gap="$1.5"
+        >
+          {data?.map((_, index) => {
+            return (
+              <PaginationItem
+                backgroundColor="gray"
+                animValue={progressValue}
+                index={index}
+                key={index}
+                isRotate={false}
+                length={data.length}
+              />
+            )
+          })}
+        </View>
       )}
-    />
-    {!!progressValue && (
-      <View
-        flexDirection='row'
-        justifyContent='center'
-        paddingTop="$2"
-        gap="$1.5"
-      >
-        {data?.map((_, index) => {
-          return (
-            <PaginationItem
-              backgroundColor={'gray'}
-              animValue={progressValue}
-              index={index}
-              key={index}
-              isRotate={false}
-              length={data.length}
-            />
-          )
-        })}
-      </View>
-    )}
-  </>
+    </>
+  )
 }
 
 const PaginationItem: React.FC<{
@@ -99,15 +94,15 @@ const PaginationItem: React.FC<{
 
   return (
     <View
-      backgroundColor={'$gray7'}
+      backgroundColor="$gray7"
       width={width}
       height={width}
       borderRadius={50}
-      overflow='hidden'
+      overflow="hidden"
       style={{
         transform: [
           {
-            rotateZ: isRotate ? "90deg" : "0deg",
+            rotateZ: isRotate ? '90deg' : '0deg',
           },
         ],
       }}

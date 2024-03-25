@@ -1,10 +1,8 @@
-import React from 'react'
-import type { AppRouter } from '@server/shared/trpc/trpc.instance'
+import React, { useState } from 'react'
+import { AppRouter } from '@server/shared/trpc/trpc.instance'
 import { createTRPCReact } from '@trpc/react-query'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
-import { useState } from 'react'
-import superjson from 'superjson'
 import { getToken } from '../auth/util'
 import { getApiUrl } from '../api'
 
@@ -29,7 +27,7 @@ export const TRPCProvider: React.FC<{
           url: `${getApiUrl()}/api/trpc`,
         }),
       ],
-    })
+    }),
   )
 
   return (
