@@ -20,7 +20,7 @@ export const Navs = () => {
       desc: '校园动态'
     },
     {
-      href: '/create',
+      href: '/(creator)',
       icon: <Highlighter size={16} />,
       text: '创作中心',
       desc: '创造属于你的世界'

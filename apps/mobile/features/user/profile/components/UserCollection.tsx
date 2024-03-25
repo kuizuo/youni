@@ -1,21 +1,31 @@
+import { useMedia } from "@/ui"
+import { EmptyResult } from "@/ui/components/EmptyResult"
+import { NoteListItem } from "@/ui/components/note/NoteListItem"
+import { useUser } from "@/utils/auth/hooks/useUser"
+import { trpc } from "@/utils/trpc"
+import { NoteItem } from "@server/modules/note/note"
+import { MasonryListRenderItem } from "@shopify/flash-list"
+import { memo, useCallback, useMemo } from "react"
+import { ActivityIndicator, ViewStyle } from "react-native"
+import { uniqBy } from 'lodash-es'
+import { RefreshControl } from "react-native-gesture-handler"
+import { SafeAreaView } from "react-native-safe-area-context"
+import Animated from "react-native-reanimated"
+import { Tabs } from "react-native-collapsible-tab-view"
 
-import { Paragraph, Spinner, YStack, Image } from "@/ui";
-import { EmptyResult } from "@/ui/components/EmptyResult";
-import { NoteList } from "@/ui/components/note/NoteList";
-import { useUser } from "@/utils/auth/hooks/useUser";
-import { trpc } from "@/utils/trpc";
-import { error, infiniteEmpty, loading, success } from "@/utils/trpc/patterns";
-import { NoteItem } from "@server/modules/note/note";
-import { match } from "ts-pattern";
+const AnimatedMasonryFlashList = Animated.createAnimatedComponent(Tabs.MasonryFlashList)
 
 interface Props {
+  contentContainerStyle: ViewStyle
   userId: string
 }
 
-export const UserCollection = ({ userId }: Props) => {
+export const NoteList = ({ userId, contentContainerStyle }: Props) => {
+  const media = useMedia()
+
   const { currentUser } = useUser()
 
-  const userCollection = trpc.note.userCollectNotes.useInfiniteQuery(
+  const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.userCollectNotes.useSuspenseInfiniteQuery(
     {
       userId,
       limit: 10,
@@ -23,35 +33,50 @@ export const UserCollection = ({ userId }: Props) => {
     {
       getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
     }
-  );
+  )
 
-  const userCollectionLayout = match(userCollection)
-    .with(error, () => <EmptyResult title={userCollection.failureReason?.message} />)
-    .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent='center' alignItems='center' >
-        <Paragraph paddingBottom='$3' > Loading...</Paragraph>
-        < Spinner />
-      </YStack>
-    ))
-    .with(infiniteEmpty, () => (
+  const renderItem: MasonryListRenderItem<NoteItem> = useCallback(
+    ({ item }) => <NoteListItem {...item}></NoteListItem>,
+    []
+  )
+
+  const flatedData = useMemo(
+    () => uniqBy(data.pages.map(page => page.items).flat(), 'id'),
+    [data.pages]
+  )
+
+  return <AnimatedMasonryFlashList
+    data={flatedData}
+    contentContainerStyle={contentContainerStyle}
+    showsVerticalScrollIndicator={false}
+    refreshControl={
+      <RefreshControl
+        refreshing={isRefetching}
+        onRefresh={() => refetch()}
+        progressViewOffset={contentContainerStyle.paddingTop as number}
+      />
+    }
+    onEndReached={() => {
+      if (hasNextPage) {
+        fetchNextPage()
+      }
+    }}
+    renderItem={renderItem}
+    numColumns={media.gtLg ? 4 : media.gtMd ? 3 : 2}
+    estimatedItemSize={200}
+    ListFooterComponent={
+      <SafeAreaView edges={['bottom']}>
+        {isFetchingNextPage ? (
+          <ActivityIndicator />
+        ) : null}
+      </SafeAreaView>
+    }
+    ListEmptyComponent={
       <EmptyResult
-        image={<Image width={60} height={60} tintColor={'gray'} source={require('@/assets/images/notes.png')} />}
         title={`${currentUser?.id === userId ? '你' : '他'}还没有收藏任何笔记哦`}
       />
-    ))
-    .with(success, () => (
-      <NoteList
-        data={userCollection.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefreshing={userCollection.isRefetching}
-        onRefresh={() => userCollection.refetch()}
-        onEndReached={() => userCollection.fetchNextPage()}
-      />
-    ))
-    .otherwise(() => <EmptyResult title={userCollection.failureReason?.message} />)
-
-  return (
-    <YStack flex={1} backgroundColor={'$background'} >
-      {userCollectionLayout}
-    </YStack>
-  )
+    }
+  />
 }
+
+export const UserCollection = memo(NoteList)

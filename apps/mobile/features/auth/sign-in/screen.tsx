@@ -46,7 +46,6 @@ export const SignInScreen = (): React.ReactNode => {
       })
       return
     }
-    debugger
 
     router.replace('/')
   }

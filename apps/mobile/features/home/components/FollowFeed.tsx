@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { memo, useMemo } from 'react'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { ScrollView, SizableText, Spinner, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
@@ -9,7 +9,8 @@ import { UserNoteList } from '@/ui/components/user/UserNoteList'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { RefreshControl } from 'react-native-gesture-handler'
 
-export const FollowFeed = (): React.ReactNode => {
+
+const FollowFeed = memo((): React.ReactNode => {
   const { currentUser } = useUser()
   const { data } = trpc.interact.state.useQuery({ id: currentUser?.id! })
 
@@ -70,4 +71,6 @@ export const FollowFeed = (): React.ReactNode => {
       {!hasFollowedUsers ? <EmptyUserFollowing /> : followFeedLayout}
     </YStack>
   )
-}
+})
+
+export default memo(FollowFeed)

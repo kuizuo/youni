@@ -1,6 +1,5 @@
-import { useWindowDimensions } from "react-native";
-import Carousel from "react-native-reanimated-carousel";
-import { Image, View } from '@/ui';
+import Carousel from "react-native-reanimated-carousel"
+import { Image, View, useWindowDimensions } from '@/ui'
 import { window } from '@/constant'
 
 import Animated, {
@@ -8,7 +7,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-} from "react-native-reanimated";
+} from "react-native-reanimated"
 
 interface Props {
   data: string[]
@@ -17,8 +16,8 @@ interface Props {
 }
 
 export const ImageCarousel = ({ data, width, height }: Props): React.ReactNode => {
-  const progressValue = useSharedValue<number>(0);
-  const { width: windowWidth } = useWindowDimensions();
+  const progressValue = useSharedValue<number>(0)
+  const { width: windowWidth } = useWindowDimensions()
 
   return <>
     <Carousel
@@ -58,7 +57,7 @@ export const ImageCarousel = ({ data, width, height }: Props): React.ReactNode =
               isRotate={false}
               length={data.length}
             />
-          );
+          )
         })}
       </View>
     )}
@@ -72,16 +71,16 @@ const PaginationItem: React.FC<{
   animValue: Animated.SharedValue<number>
   isRotate?: boolean
 }> = (props) => {
-  const { animValue, index, length, backgroundColor, isRotate } = props;
-  const width = 8;
+  const { animValue, index, length, backgroundColor, isRotate } = props
+  const width = 8
 
   const animStyle = useAnimatedStyle(() => {
-    let inputRange = [index - 1, index, index + 1];
-    let outputRange = [-width, 0, width];
+    let inputRange = [index - 1, index, index + 1]
+    let outputRange = [-width, 0, width]
 
     if (index === 0 && animValue?.value > length - 1) {
-      inputRange = [length - 1, length, length + 1];
-      outputRange = [-width, 0, width];
+      inputRange = [length - 1, length, length + 1]
+      outputRange = [-width, 0, width]
     }
 
     return {
@@ -95,8 +94,8 @@ const PaginationItem: React.FC<{
           ),
         },
       ],
-    };
-  }, [animValue, index, length]);
+    }
+  }, [animValue, index, length])
 
   return (
     <View
@@ -124,5 +123,5 @@ const PaginationItem: React.FC<{
         ]}
       />
     </View>
-  );
-};
+  )
+}

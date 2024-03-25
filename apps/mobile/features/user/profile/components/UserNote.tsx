@@ -1,54 +1,81 @@
-import { Paragraph, Spinner, YStack, Image } from "@/ui";
-import { EmptyResult } from "@/ui/components/EmptyResult";
-import { NoteList } from "@/ui/components/note/NoteList";
-import { useUser } from "@/utils/auth/hooks/useUser";
-import { trpc } from "@/utils/trpc";
-import { error, infiniteEmpty, loading, success } from "@/utils/trpc/patterns";
-import { NoteItem } from "@server/modules/note/note";
-import { match } from "ts-pattern";
+import { useMedia } from "@/ui"
+import { EmptyResult } from "@/ui/components/EmptyResult"
+import { NoteListItem } from "@/ui/components/note/NoteListItem"
+import { useUser } from "@/utils/auth/hooks/useUser"
+import { trpc } from "@/utils/trpc"
+import { NoteItem } from "@server/modules/note/note"
+import { MasonryListRenderItem } from "@shopify/flash-list"
+import { memo, useCallback, useMemo } from "react"
+import { ActivityIndicator, ViewStyle } from "react-native"
+import { uniqBy } from 'lodash-es'
+import { RefreshControl } from "react-native-gesture-handler"
+import { SafeAreaView } from "react-native-safe-area-context"
+import Animated from "react-native-reanimated"
+import { Tabs } from "react-native-collapsible-tab-view"
+
+const AnimatedMasonryFlashList = Animated.createAnimatedComponent(Tabs.MasonryFlashList)
 
 interface Props {
+  contentContainerStyle: ViewStyle
   userId: string
 }
 
-export const UserNote = ({ userId }: Props) => {
+export const NoteList = ({ userId, contentContainerStyle }: Props) => {
+  const media = useMedia()
+
   const { currentUser } = useUser()
-  const userNotes = trpc.note.userNotes.useInfiniteQuery(
+
+  const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.userNotes.useSuspenseInfiniteQuery(
     {
       userId,
-      limit: 10,
+      limit: 5,
     },
     {
       getNextPageParam: (lastPage) => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
     }
-  );
-
-  const userNotesLayout = match(userNotes)
-    .with(error, () => <EmptyResult title={userNotes.failureReason?.message} />)
-    .with(loading, () => (
-      <YStack fullscreen flex={1} justifyContent='center' alignItems='center' >
-        <Paragraph paddingBottom='$3' > Loading...</Paragraph>
-        < Spinner />
-      </YStack>
-    ))
-    .with(infiniteEmpty, () => (
-      <EmptyResult
-        image={<Image width={60} height={60} tintColor={'gray'} source={require('@/assets/images/pic-one.png')} />}
-        title={currentUser?.id === userId ? '快去创建笔记吧' : '他还没有发布笔记哦'}
-      />))
-    .with(success, () => (
-      <NoteList
-        data={userNotes.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefreshing={userNotes.isRefetching}
-        onRefresh={() => userNotes.refetch()}
-        onEndReached={() => userNotes.fetchNextPage()}
-      />
-    ))
-    .otherwise(() => <EmptyResult title={userNotes.failureReason?.message} />)
-
-  return (
-    <YStack flex={1} backgroundColor={'$background'} >
-      {userNotesLayout}
-    </YStack>
   )
+
+  const renderItem: MasonryListRenderItem<NoteItem> = useCallback(
+    ({ item }) => <NoteListItem {...item}></NoteListItem>,
+    []
+  )
+
+  const flatedData = useMemo(
+    () => uniqBy(data.pages.map(page => page.items).flat(), 'id'),
+    [data.pages]
+  )
+
+  return <AnimatedMasonryFlashList
+    data={flatedData}
+    contentContainerStyle={contentContainerStyle}
+    showsVerticalScrollIndicator={false}
+    refreshControl={
+      <RefreshControl
+        refreshing={isRefetching}
+        onRefresh={() => refetch()}
+      />
+    }
+    onEndReached={() => {
+      if (hasNextPage) {
+        fetchNextPage()
+      }
+    }}
+    renderItem={renderItem}
+    numColumns={media.gtLg ? 4 : media.gtMd ? 3 : 2}
+    estimatedItemSize={200}
+    ListFooterComponent={
+      <SafeAreaView edges={['bottom']}>
+        {isFetchingNextPage ? (
+          <ActivityIndicator />
+        ) : null}
+      </SafeAreaView>
+    }
+    ListEmptyComponent={
+      <EmptyResult
+        title={currentUser?.id === userId ? '快去创建笔记吧' : '他还没有发布笔记哦'}
+      />
+    }
+  />
 }
+
+export const UserNote = memo(NoteList)

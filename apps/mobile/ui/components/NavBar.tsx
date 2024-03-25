@@ -1,8 +1,7 @@
 import { View, Text } from "@/ui"
-import { isArray } from 'lodash-es'
-import { ReactNode, isValidElement } from "react"
+import { ReactNode } from "react"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { Platform } from "react-native"
+import { Platform, ViewStyle } from "react-native"
 
 export const NAV_BAR_HEIGHT = 48
 
@@ -11,6 +10,7 @@ interface Props {
   left?: ReactNode
   right?: ReactNode
   hideSafeTop?: boolean
+  style?: ViewStyle
 }
 
 export function NavBar({
@@ -18,10 +18,19 @@ export function NavBar({
   hideSafeTop,
   left,
   right,
+  style,
 }: Props) {
   const safeTop = useNavBarSafeTop(hideSafeTop)
 
-  return <View flexDirection="row" position="relative" paddingHorizontal='$2.5' gap={'$1.5'} alignItems="center" paddingTop={safeTop} >
+  return <View
+    position="relative"
+    flexDirection="row"
+    paddingHorizontal='$2.5'
+    gap={'$2'}
+    paddingTop={safeTop || '$2.5'}
+    alignItems="center"
+    style={style}
+  >
     {left && (
       <View minWidth={'$1.5'} flexDirection="row" justifyContent="flex-start" alignItems="center">
         {left}

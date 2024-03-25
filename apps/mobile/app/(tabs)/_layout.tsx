@@ -100,14 +100,17 @@ const PlusButton = ({ size }: { size: number }) => {
 
   return (
     <>
-      <Theme inverse>
+      <Theme name={'dark'}>
         <Square
           position="absolute"
           bottom={bottom}
-          backgroundColor="$color1"
+          backgroundColor="$accent10"
           borderRadius="$5"
           width={size + 24}
           height={size + 14}
+          pressStyle={{
+            scale: 1.1,
+          }}
         />
         <LinearGradient
           position="absolute"
@@ -120,7 +123,7 @@ const PlusButton = ({ size }: { size: number }) => {
           borderRadius="$5"
           bottom={bottom}
           pressStyle={{
-            rotate: '20deg',
+            scale: 1.1,
           }}
         />
         <YStack

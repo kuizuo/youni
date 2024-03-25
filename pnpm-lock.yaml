@@ -300,6 +300,9 @@ importers:
       react-native:
         specifier: 0.73.5
         version: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
+      react-native-collapsible-tab-view:
+        specifier: ^6.2.1
+        version: 6.2.1(@shopify/flash-list@1.6.3)(react-native-pager-view@6.2.3)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0)
       react-native-drawer-layout:
         specifier: ^3.2.2
         version: 3.2.2(react-native-gesture-handler@2.14.1)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0)
@@ -327,9 +330,6 @@ importers:
       react-native-screens:
         specifier: ~3.29.0
         version: 3.29.0(react-native@0.73.5)(react@18.2.0)
-      react-native-sticky-parallax-header:
-        specifier: ^1.1.1
-        version: 1.1.1(react-native-reanimated@3.6.3)(react-native-safe-area-context@4.8.2)(react-native@0.73.5)(react@18.2.0)
       react-native-svg:
         specifier: ^15.0.0
         version: 15.0.0(react-native@0.73.5)(react@18.2.0)
@@ -3240,7 +3240,7 @@ packages:
       object-assign: 4.1.1
       open: 8.4.0
       proxy-middleware: 0.15.0
-      send: 0.18.0
+      send: 1.0.0-beta.2
       serve-index: 1.9.1
     transitivePeerDependencies:
       - supports-color
@@ -14048,6 +14048,17 @@ packages:
     dependencies:
       ms: 2.0.0
 
+  /debug@3.1.0:
+    resolution: {integrity: sha512-OX8XqP7/1a9cqkxYw2yXss15f26NKWBpDXQd0/uK/KPqdQhxbPa994hnzjcE2VqQpDslf55723cKPUOGSmMY3g==}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+    dependencies:
+      ms: 2.0.0
+    dev: true
+
   /debug@3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
     peerDependencies:
@@ -14277,6 +14288,11 @@ packages:
       '@react-native/normalize-colors': 0.73.2
       invariant: 2.2.4
       prop-types: 15.8.1
+
+  /dequal@2.0.3:
+    resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
+    engines: {node: '>=6'}
+    dev: false
 
   /des.js@1.1.0:
     resolution: {integrity: sha512-r17GxjhUCjSRy8aiJpr8/UadFIzMzJGexI3Nmz4ADi9LYSFx4gTBp80+NaX/YsXWWLhpZ7v/v/ubEc/bCNfKwg==}
@@ -26139,6 +26155,26 @@ packages:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}
     dev: true
 
+  /react-native-collapsible-tab-view@6.2.1(@shopify/flash-list@1.6.3)(react-native-pager-view@6.2.3)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0):
+    resolution: {integrity: sha512-pgmpZYSg6TPYmhv3Dw/czFJHk4AzcYN2df3EMlKwFqbu1ifmlA866hBUVDX3mlbRaros75U5S1wpGCwlqqXLTQ==}
+    peerDependencies:
+      '@shopify/flash-list': '>=1.0.0'
+      react: '*'
+      react-native: '*'
+      react-native-pager-view: '*'
+      react-native-reanimated: '>=2.15.0'
+    peerDependenciesMeta:
+      '@shopify/flash-list':
+        optional: true
+    dependencies:
+      '@shopify/flash-list': 1.6.3(@babel/runtime@7.24.0)(react-native@0.73.5)(react@18.2.0)
+      react: 18.2.0
+      react-native: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
+      react-native-pager-view: 6.2.3(react-native@0.73.5)(react@18.2.0)
+      react-native-reanimated: 3.6.3(@babel/core@7.24.0)(@babel/plugin-proposal-nullish-coalescing-operator@7.18.6)(@babel/plugin-proposal-optional-chaining@7.21.0)(@babel/plugin-transform-arrow-functions@7.23.3)(@babel/plugin-transform-shorthand-properties@7.23.3)(@babel/plugin-transform-template-literals@7.23.3)(react-native@0.73.5)(react@18.2.0)
+      use-deep-compare: 1.2.1(react@18.2.0)
+    dev: false
+
   /react-native-css-interop@0.0.34(@babel/core@7.24.0)(react-native-reanimated@3.6.3)(react-native-safe-area-context@4.8.2)(react-native-svg@15.0.0)(react-native@0.73.5)(react@18.2.0)(tailwindcss@3.4.1):
     resolution: {integrity: sha512-gz9b0RAyqy5Q/ogPQie8zkWHI+UFhn8JOPELUAV4k2XNkuXzfPRWDMSjQww51ozh7qx7oBKSYDnaCB/D6XgJ1Q==}
     engines: {node: '>=18'}
@@ -26300,20 +26336,6 @@ packages:
       react-freeze: 1.0.4(react@18.2.0)
       react-native: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
       warn-once: 0.1.1
-    dev: false
-
-  /react-native-sticky-parallax-header@1.1.1(react-native-reanimated@3.6.3)(react-native-safe-area-context@4.8.2)(react-native@0.73.5)(react@18.2.0):
-    resolution: {integrity: sha512-vP2tCqsWECNy1H5dNbLnMTpgSkswIpRTFO1itkQZX23JERxCUe7EfSQ9gDw0KwYgQm94ix2vWAo2mn/MeVLI0Q==}
-    peerDependencies:
-      react: '>=17.0.0'
-      react-native: '>=0.64.0'
-      react-native-reanimated: '>=2.0.0'
-      react-native-safe-area-context: '>=3.0.0'
-    dependencies:
-      react: 18.2.0
-      react-native: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
-      react-native-reanimated: 3.6.3(@babel/core@7.24.0)(@babel/plugin-proposal-nullish-coalescing-operator@7.18.6)(@babel/plugin-proposal-optional-chaining@7.21.0)(@babel/plugin-transform-arrow-functions@7.23.3)(@babel/plugin-transform-shorthand-properties@7.23.3)(@babel/plugin-transform-template-literals@7.23.3)(react-native@0.73.5)(react@18.2.0)
-      react-native-safe-area-context: 4.8.2(react-native@0.73.5)(react@18.2.0)
     dev: false
 
   /react-native-svg@15.0.0(react-native@0.73.5)(react@18.2.0):
@@ -27766,6 +27788,26 @@ packages:
       statuses: 2.0.1
     transitivePeerDependencies:
       - supports-color
+
+  /send@1.0.0-beta.2:
+    resolution: {integrity: sha512-k1yHu/FNK745PULKdsGpQ+bVSXYNwSk+bWnYzbxGZbt5obZc0JKDVANsCRuJD1X/EG15JtP9eZpwxkhUxIYEcg==}
+    engines: {node: '>= 0.10'}
+    dependencies:
+      debug: 3.1.0
+      destroy: 1.2.0
+      encodeurl: 1.0.2
+      escape-html: 1.0.3
+      etag: 1.8.1
+      fresh: 0.5.2
+      http-errors: 2.0.0
+      mime-types: 2.1.35
+      ms: 2.1.3
+      on-finished: 2.4.1
+      range-parser: 1.2.1
+      statuses: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
 
   /serialize-error@2.1.0:
     resolution: {integrity: sha512-ghgmKt5o4Tly5yEG/UJp8qTd0AN7Xalw4XBtDEKP655B699qMEtra1WlXeE6WIvdEG481JvRxULKsInq/iNysw==}
@@ -30589,6 +30631,15 @@ packages:
     dependencies:
       react: 18.2.0
       tslib: 2.6.2
+    dev: false
+
+  /use-deep-compare@1.2.1(react@18.2.0):
+    resolution: {integrity: sha512-JTnOZAr0fq1ix6CQ4XANoWIh03xAiMFlP/lVAYDdAOZwur6nqBSdATn1/Q9PLIGIW+C7xmFZBCcaA4KLDcQJtg==}
+    peerDependencies:
+      react: '>=16.8.0'
+    dependencies:
+      dequal: 2.0.3
+      react: 18.2.0
     dev: false
 
   /use-isomorphic-layout-effect@1.1.2(@types/react@18.2.61)(react@18.1.0):

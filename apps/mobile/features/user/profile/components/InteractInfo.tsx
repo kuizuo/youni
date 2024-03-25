@@ -28,7 +28,7 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
       paddingVertical: 2,
     }}>
       <Link href="/profile/edit" asChild>
-        <Text color="#f1f5f9" fontSize={12} unstyled>
+        <Text color="gray" fontSize={12} unstyled>
           编辑资料
         </Text>
       </Link>
@@ -46,7 +46,7 @@ export const InteractInfo = ({ user }: Props): React.ReactNode => {
       paddingVertical: 4,
     }}>
       <Link href='/setting/' asChild>
-        <Button icon={<Settings size="$1" />} unstyled />
+        <Button color="gray" icon={<Settings size="$1" />} unstyled />
       </Link>
     </BlurView>
   }

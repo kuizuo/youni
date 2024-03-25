@@ -1,6 +1,7 @@
-import { AlertDialog, Button, Theme, View, XStack, YStack, useTheme } from "@/ui"
+import { AlertDialog, Button, SizableText, Theme, View, XStack, YStack, useTheme } from "@/ui"
 import { trpc } from "@/utils/trpc"
 import React, { useState } from "react"
+import { Touchable, TouchableOpacity } from "react-native"
 
 interface Props {
   userId: string
@@ -35,14 +36,13 @@ export const UserFollowButton = ({ userId, isFollowing: initState }: Props) => {
           borderRadius: 50,
           overflow: "hidden",
           backgroundColor: theme.$accent10?.get(),
-          paddingHorizontal: 16,
-          paddingVertical: 2,
+          paddingHorizontal: 12,
         }}
         >
           <Theme name='dark'>
-            <Button fontSize={'$2'} unstyled onPress={isFollowing ? null : handleFollow}>
+            <SizableText fontSize={14} onPress={() => isFollowing ? null : handleFollow()}>
               {isFollowing ? '取关' : '关注'}
-            </Button>
+            </SizableText>
           </Theme>
         </View>
       </AlertDialog.Trigger>

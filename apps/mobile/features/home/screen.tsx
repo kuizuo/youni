@@ -1,9 +1,9 @@
-import { View, Text, YStack, useTheme } from '@/ui'
+import { View, Text, YStack, useTheme, useWindowDimensions } from '@/ui'
 
 import { useMemo, useState } from "react"
-import { HomeFeed } from './components/HomeFeed'
-import { FollowFeed } from './components/FollowFeed'
-import { SceneMap, TabBar, TabView } from 'react-native-tab-view'
+import HomeFeed from './components/HomeFeed'
+import FollowFeed from './components/FollowFeed'
+import { TabBar, TabView } from 'react-native-tab-view'
 import React from 'react'
 import { DrawerContainer } from '@/ui/components/DrawerContainer'
 import { HomeHeader } from './components/HomeHeader'
@@ -12,6 +12,7 @@ export const HomeScreen = (): React.ReactNode => {
   const theme = useTheme()
 
   const [index, setIndex] = useState(0)
+  const { width: windowWidth } = useWindowDimensions()
 
   const TABS = useMemo(
     () => [
@@ -27,11 +28,6 @@ export const HomeScreen = (): React.ReactNode => {
     [],
   )
 
-  const renderScene = SceneMap({
-    explore: HomeFeed,
-    follow: FollowFeed,
-  })
-
   return (<>
     <YStack flex={1} backgroundColor={'$background'}>
       <DrawerContainer>
@@ -42,7 +38,17 @@ export const HomeScreen = (): React.ReactNode => {
           onIndexChange={setIndex}
           lazy
           lazyPreloadDistance={1}
-          renderScene={renderScene}
+          initialLayout={{ width: windowWidth }}
+          renderScene={({ route }) => {
+            switch (route.key) {
+              case 'explore':
+                return <HomeFeed />
+              case 'follow':
+                return <FollowFeed />
+              default:
+                return null;
+            }
+          }}
           renderTabBar={(props) => {
             return <>
               <View height={24} alignItems='center' paddingHorizontal={"$4"} marginBottom="$2">
@@ -55,7 +61,6 @@ export const HomeScreen = (): React.ReactNode => {
                   }}
                   tabStyle={{
                     height: 50,
-
                   }}
                   indicatorStyle={{
                     height: 2,
@@ -63,7 +68,9 @@ export const HomeScreen = (): React.ReactNode => {
                     width: '50%',
                     backgroundColor: theme.$accent10?.get(),
                   }}
-                  indicatorContainerStyle={{}}
+                  indicatorContainerStyle={{
+                    borderBottomWidth: 0,
+                  }}
                   scrollEnabled
                   gap={16}
                   renderTabBarItem={tabBarItemProps => {

@@ -1,4 +1,4 @@
-import { YStack, View, SizableText, useTheme } from "@/ui"
+import { YStack, View, SizableText, useTheme, useWindowDimensions } from "@/ui"
 import React, { memo, useEffect, useMemo, useState } from "react"
 import { router, useLocalSearchParams, useRouter } from "expo-router"
 import { FollowerList } from "./FollowerList"
@@ -12,7 +12,9 @@ export const FollowerScreen = () => {
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
 
   const { top } = useSafeAreaInsets()
-  const [index, setIndex] = useState(0)
+  const [index, setIndex] = useState(type === 'following' ? 0 : 1)
+
+  const { width: windowWidth } = useWindowDimensions()
 
   const TABS = useMemo(
     () => [
@@ -35,20 +37,13 @@ export const FollowerScreen = () => {
   const FollowingList = memo(FollowerList)
   const FollowersList = memo(FollowerList)
 
-  useEffect(() => {
-    if (type === 'following') {
-      setIndex(0)
-    } else {
-      setIndex(1)
-    }
-
-  }, [type])
-
   return <YStack flex={1} position="relative" backgroundColor={'$background'} paddingTop={top}>
     <TabView
       navigationState={{ index, routes: TABS }}
       onIndexChange={setIndex}
       lazy
+      lazyPreloadDistance={1}
+      initialLayout={{ width: windowWidth }}
       renderScene={({ route }) =>
         route.key === 'following' ?
           <FollowingList userId={id} type='following'></FollowingList>
