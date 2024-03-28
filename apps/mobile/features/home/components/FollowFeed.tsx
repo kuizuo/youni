@@ -1,34 +1,35 @@
 import React, { memo, useMemo } from 'react'
-import { match } from 'ts-pattern'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { ScrollView, SizableText, Spinner, YStack } from '@/ui'
+import { ScrollView, SizableText, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
-import { error, infiniteEmpty, loading, success } from '@/utils/trpc/patterns'
 import { UserNoteList } from '@/ui/components/user/UserNoteList'
 import { useUser } from '@/utils/auth/hooks/useUser'
 
 const FollowFeed = memo((): React.ReactNode => {
   const { currentUser } = useUser()
-  const { data } = trpc.interact.state.useQuery({ id: currentUser?.id! })
+
+  const { data } = trpc.interact.state.useQuery({ id: currentUser!.id })
 
   const hasFollowedUsers = useMemo(() => data?.followingCount !== 0, [data?.followingCount])
 
-  const followFeed = trpc.note.followFeed.useInfiniteQuery(
+  const [followFeedData, { refetch, isRefetching, hasNextPage, fetchNextPage }] = trpc.note.followFeed.useSuspenseInfiniteQuery(
     {
       limit: 10,
     },
     {
       getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
-      enabled: hasFollowedUsers,
     },
   )
 
-  const isRefetching = useMemo(() => followFeed.isRefetching, [followFeed.isRefetching])
+  const flatedData = useMemo(
+    () => followFeedData.pages.map(page => page.items).flat() as unknown as NoteItem[],
+    [followFeedData.pages],
+  )
 
   const handleRefresh = () => {
-    followFeed.refetch()
+    refetch()
   }
 
   const EmptyUserFollowing = () => {
@@ -46,30 +47,29 @@ const FollowFeed = memo((): React.ReactNode => {
     )
   }
 
-  const followFeedLayout = match(followFeed)
-    .with(error, () => <EmptyResult title={followFeed.failureReason?.message} />)
-    .with(loading, () => <Spinner />)
-    .with(infiniteEmpty, () => (
-      <EmptyResult
-        title="关注的人近期未发布笔记"
-        subTitle="去发现更多有趣的人吧"
-        isRefreshing={isRefetching}
-        onRefresh={handleRefresh}
-      />
-    ))
-    .with(success, () => (
-      <UserNoteList
-        data={followFeed.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefreshing={isRefetching}
-        onRefresh={handleRefresh}
-        onEndReached={() => followFeed.fetchNextPage()}
-      />
-    ))
-    .otherwise(() => <EmptyResult title={followFeed.failureReason?.message} />)
-
   return (
     <YStack flex={1} bg="$background">
-      {!hasFollowedUsers ? <EmptyUserFollowing /> : followFeedLayout}
+      {!hasFollowedUsers
+        ? <EmptyUserFollowing />
+        : (
+          <>
+            <UserNoteList
+              data={flatedData}
+              isRefreshing={isRefetching}
+              onRefresh={handleRefresh}
+              onEndReached={() => {
+                if (hasNextPage)
+                  fetchNextPage()
+              }}
+              ListEmptyComponent={(
+                <EmptyResult
+                  title="关注的人近期未发布笔记"
+                  subTitle="去发现更多有趣的人吧"
+                />
+              )}
+            />
+          </>
+          )}
     </YStack>
   )
 })

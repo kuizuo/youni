@@ -5,10 +5,9 @@ import { NoteCollectButton } from '../note/NoteCollectButton'
 import { NoteShareButton } from '../note/NoteShareButton'
 import { NoteCommentButton } from '../note/NoteCommentButton'
 import { formatTime } from '@/utils/date'
-import { Avatar, Card, Image, Paragraph, SizableText, XStack, YStack, useTheme } from '@/ui'
+import { Avatar, Card, Image, Paragraph, SizableText, XStack, YStack } from '@/ui'
 
 export function UserNoteListItem(item: NoteItem): React.ReactNode {
-  const theme = useTheme()
   const router = useRouter()
 
   const handlePressBackground = () => {

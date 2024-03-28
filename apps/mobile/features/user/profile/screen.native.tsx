@@ -80,7 +80,7 @@ export function ProfileScreen() {
     return (
       <NavBar
         left={!isMe
-          ? <BackButton />
+          ? <BackButton color="white" />
           : <Menu color="white" size="$1" />}
         right={<ArrowUpRightFromSquare size="$1" color="white" />}
         style={{
@@ -91,13 +91,15 @@ export function ProfileScreen() {
         <Animated.View
           style={[
             {
+              flex: 1,
+              width: '100%',
               position: 'absolute',
             },
             anim,
           ]}
         >
-          <XStack jc="center">
-            <XStack flex={1} gap="$2.5" ai="center" bg="transport">
+          <XStack flex={1} jc="space-between">
+            <View fd="row" gap="$2.5" ai="center" bg="transport">
               <Avatar circular size="$2">
                 <Avatar.Image
                 // @ts-expect-error
@@ -112,8 +114,10 @@ export function ProfileScreen() {
               <SizableText themeInverse fontSize={14} opacity={0.7}>
                 {data?.nickname}
               </SizableText>
-            </XStack>
-            {!isMe && <UserFollowButton userId={userId} isFollowing={false} />}
+            </View>
+            <View justifyContent="flex-end">
+              {!isMe && <UserFollowButton userId={userId} isFollowing={false} />}
+            </View>
           </XStack>
         </Animated.View>
       </NavBar>

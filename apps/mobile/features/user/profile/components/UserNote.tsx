@@ -29,7 +29,7 @@ export function NoteList({ userId, contentContainerStyle }: Props) {
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.userNotes.useSuspenseInfiniteQuery(
     {
       userId,
-      limit: 5,
+      limit: 10,
     },
     {
       getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,

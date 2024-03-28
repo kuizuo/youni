@@ -1,9 +1,14 @@
-import { match } from 'ts-pattern'
-import { Paragraph, Spinner, YStack } from '@/ui'
+import { useCallback, useMemo } from 'react'
+import type { ListRenderItem } from '@shopify/flash-list'
+import { FlashList } from '@shopify/flash-list'
+import type { UserInfoWithFollow } from '@server/modules/interact/interact'
+import { RefreshControl } from 'react-native-gesture-handler'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { ActivityIndicator } from 'react-native'
+import { FollowerListItem } from './FollowerItem'
+import { YStack } from '@/ui'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { UserList } from '@/ui/components/user/UserList'
 import { trpc } from '@/utils/trpc'
-import { error, infiniteEmpty, loading, success } from '@/utils/trpc/patterns'
 
 interface Props {
   userId: string
@@ -11,7 +16,7 @@ interface Props {
 }
 
 export function FollowerList({ userId, type }: Props) {
-  const userList = trpc.interact[type].useInfiniteQuery(
+  const [data, { isRefetching, isFetchingNextPage, refetch, hasNextPage, fetchNextPage }] = trpc.interact[type].useSuspenseInfiniteQuery(
     {
       id: userId,
       limit: 10,
@@ -21,40 +26,41 @@ export function FollowerList({ userId, type }: Props) {
     },
   )
 
-  const emptyString = type === 'following' ? '你还没有关注任何人' : '你还没有粉丝'
+  const flatedData = useMemo(
+    () => data.pages.map(page => page.items).flat(),
+    [data.pages],
+  )
 
-  const userListLayout = match(userList)
-    .with(error, () => <EmptyResult title={userList.failureReason?.message} />)
-    .with(loading, () => (
-      <YStack fullscreen flex={1} jc="center" ai="center">
-        <Paragraph pb="$3"> Loading...</Paragraph>
-        <Spinner />
-      </YStack>
-    ))
-    .with(infiniteEmpty, () => (
-      <EmptyResult
-        title={emptyString}
-        isRefreshing={userList.isFetching}
-        onRefresh={() => userList.refetch()}
-      >
-      </EmptyResult>
-    ))
-    .with(success, () => (
-      <UserList
-        data={userList.data?.pages[0]?.items as any[]}
-        isRefreshing={userList.isFetching}
-        onRefresh={() => userList.refetch()}
-        onEndReached={() => {
-          if (userList.hasNextPage)
-            userList.fetchNextPage()
-        }}
-      />
-    ))
-    .otherwise(() => <EmptyResult title={userList.failureReason?.message} />)
+  const renderItem: ListRenderItem<UserInfoWithFollow> = useCallback(
+    ({ item }) => <FollowerListItem {...item}></FollowerListItem>,
+    [],
+  )
 
   return (
     <YStack flex={1}>
-      {userListLayout}
+      <FlashList
+        data={flatedData}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
+        onEndReached={() => {
+          if (hasNextPage)
+            fetchNextPage()
+        }}
+        estimatedItemSize={200}
+        ListFooterComponent={(
+          <SafeAreaView edges={['bottom']}>
+            {isFetchingNextPage
+              ? (
+                <ActivityIndicator />
+                )
+              : null}
+          </SafeAreaView>
+        )}
+        ListEmptyComponent={
+          <EmptyResult title={type === 'following' ? '你还没有关注任何人' : '你还没有粉丝'} />
+        }
+      />
     </YStack>
   )
 }

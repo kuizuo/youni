@@ -1,4 +1,5 @@
 import { Stack, useRouter } from 'expo-router'
+import { NotificationItem } from './components/NotificationItem'
 import { Image, Text, XStack, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 
@@ -42,7 +43,7 @@ export function NotificationScreen(): React.ReactNode {
           >
             <Image width={60} height={60} source={require('@/assets/images/message.png')}></Image>
             {
-            data?.count.comment! > 0 && (
+            data?.count.comment > 0 && (
               <Text position="absolute" top={0} right={20}>
                 {data?.count.comment}
                 {' '}
@@ -61,7 +62,7 @@ export function NotificationScreen(): React.ReactNode {
           >
             <Image width={60} height={60} source={require('@/assets/images/follow.png')}></Image>
             {
-            data?.count.follow! > 0 && (
+            data?.count?.follow! > 0 && (
               <Text position="absolute" top={0} right={20}>
                 {data?.count.follow}
                 {' '}
@@ -72,7 +73,11 @@ export function NotificationScreen(): React.ReactNode {
           </YStack>
         </XStack>
         <YStack>
-
+          <NotificationItem
+            title="消息通知"
+            image=""
+            onPress={() => {}}
+          />
         </YStack>
       </YStack>
     </>

@@ -1,3 +1,4 @@
+import type { FlashListProps } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
 import { RefreshControl } from 'react-native-gesture-handler'
 import type { NoteItem } from '../../../../server/src/modules/note/note'
@@ -8,9 +9,10 @@ interface Props {
   isRefreshing: boolean
   onRefresh: () => void
   onEndReached: () => void
+  ListEmptyComponent?: FlashListProps<NoteItem>['ListEmptyComponent']
 }
 
-export function UserNoteList({ data, isRefreshing, onRefresh, onEndReached }: Props) {
+export function UserNoteList({ data, isRefreshing, onRefresh, onEndReached, ListEmptyComponent }: Props) {
   return (
     <FlashList
       data={data}
@@ -19,6 +21,7 @@ export function UserNoteList({ data, isRefreshing, onRefresh, onEndReached }: Pr
       refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
       onEndReached={onEndReached}
       estimatedItemSize={200}
+      ListEmptyComponent={ListEmptyComponent}
     />
   )
 }

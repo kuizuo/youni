@@ -33,6 +33,7 @@ export function UserFollowButton({ userId, isFollowing: initState }: Props) {
     <>
       <CustomDialog title="确认不再关注?" onOk={handleUnFollow}>
         <View style={{
+          flexDirection: 'row',
           borderRadius: 50,
           overflow: 'hidden',
           backgroundColor: theme.$accent10?.get(),

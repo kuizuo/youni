@@ -7,4 +7,6 @@ export interface InteractState {
 
 export type UserInfoWithFollow = UserInfo & {
   isFollowing: boolean
+  noteCount: number
+  followersCount: number
 }

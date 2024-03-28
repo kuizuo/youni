@@ -2,7 +2,7 @@ import { SolitoImageProvider as SolitoImageProviderOG } from 'solito/image'
 import { replaceLocalhost } from '@/utils/localhost.native'
 
 export function getImageUrl() {
-  const imageUrl = `${process.env.EXPO_PUBLIC_APP_URL}`
+  const imageUrl = `${process.env.EXPO_PUBLIC_API_URL}`
   return replaceLocalhost(imageUrl)
 }
 

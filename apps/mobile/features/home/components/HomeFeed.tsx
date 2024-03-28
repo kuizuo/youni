@@ -1,14 +1,12 @@
-import { match } from 'ts-pattern'
 import type { NoteItem } from '@server/modules/note/note'
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { Paragraph, Spinner, YStack } from '@/ui'
+import { YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
-import { empty, error, loading, success } from '@/utils/trpc/patterns'
 import { NoteList } from '@/ui/components/note/NoteList'
 
 function HomeFeed(): React.ReactNode {
-  const homeFeed = trpc.note.homeFeed.useInfiniteQuery(
+  const [data, { isRefetching, refetch, hasNextPage, fetchNextPage }] = trpc.note.homeFeed.useSuspenseInfiniteQuery(
     {
       limit: 10,
     },
@@ -18,28 +16,25 @@ function HomeFeed(): React.ReactNode {
     },
   )
 
-  const homeFeedLayout = match(homeFeed)
-    .with(error, () => <EmptyResult title={homeFeed.failureReason?.message} />)
-    .with(loading, () => (
-      <YStack fullscreen flex={1} jc="center" ai="center">
-        <Paragraph pb="$3">Loading...</Paragraph>
-        <Spinner />
-      </YStack>
-    ))
-    .with(empty, () => <EmptyResult title="没有更多数据" />)
-    .with(success, () => (
-      <NoteList
-        data={homeFeed.data?.pages.flatMap(page => page.items) as unknown as NoteItem[]}
-        isRefreshing={homeFeed.isRefetching}
-        onRefresh={() => homeFeed.refetch()}
-        onEndReached={() => homeFeed.fetchNextPage()}
-      />
-    ))
-    .otherwise(() => <EmptyResult title={homeFeed.failureReason?.message} />)
+  const flatedData = useMemo(
+    () => data.pages.map(page => page.items).flat() as unknown as NoteItem[],
+    [data.pages],
+  )
 
   return (
     <YStack flex={1} bg="$background">
-      {homeFeedLayout}
+      <NoteList
+        data={flatedData}
+        isRefreshing={isRefetching}
+        onRefresh={() => refetch()}
+        onEndReached={() => {
+          if (hasNextPage)
+            fetchNextPage()
+        }}
+        ListEmptyComponent={
+          <EmptyResult title="没有更多了" />
+        }
+      />
     </YStack>
   )
 }

@@ -20,7 +20,7 @@ export function SearchBar({
         br={50}
         onPress={() => router.push('/search')}
       >
-        <Search size="$1.5" />
+        <Search size="$1" />
         <Input placeholder={palceholder} textAlignVertical="center" unstyled></Input>
       </XStack>
     </View>

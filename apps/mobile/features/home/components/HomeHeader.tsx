@@ -8,7 +8,7 @@ export function HomeHeader() {
 
   return (
     <>
-      <NavBar left={<Menu size="$1.5" onPress={() => setOpen(true)} />}>
+      <NavBar left={<Menu size="$1" onPress={() => setOpen(true)} />}>
         <SearchBar></SearchBar>
       </NavBar>
     </>
