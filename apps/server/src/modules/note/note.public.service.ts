@@ -6,7 +6,7 @@ import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
-import { Note } from '@youni/database'
+import { Note, Prisma } from '@youni/database'
 
 import dayjs from 'dayjs'
 
@@ -18,7 +18,7 @@ import { LikeService } from '../interact/services/like.service'
 
 import { NoteLikeEvent } from './events/note-like.event'
 import { NoteEvents, NoteSelect } from './note.constant'
-import { NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
+import { NoteByTagDto, NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
 
 @Injectable()
 export class NotePublicService {
@@ -159,6 +159,37 @@ export class NotePublicService {
         ...NoteSelect,
       },
     })
+  }
+
+  async getNotesByTag(dto: NoteByTagDto) {
+    const { tag, cursor, limit, sortBy, sortOrder = 'desc' } = dto
+
+    const where: Prisma.NoteWhereInput = {
+      isPublished: true,
+      tags: {
+        some: {
+          name: tag,
+        },
+      },
+    }
+
+    const [items, meta] = await this.prisma.note.paginate({
+      where,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      select: {
+        ...NoteSelect,
+      },
+    }).withCursor({
+      limit,
+      after: cursor,
+    })
+
+    return {
+      items,
+      meta,
+    }
   }
 
   async likeNote(itemId: string, userId: string) {

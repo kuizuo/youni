@@ -41,7 +41,7 @@ export function NoteScreen(): React.ReactNode {
   return (
     <>
       <YStack fullscreen bg="$background">
-        <NoteHeader item={data} user={data.user} />
+        <NoteHeader item={data as NoteItem} user={data.user} />
         <ScrollView
           position="relative"
           showsVerticalScrollIndicator={false}
@@ -56,17 +56,15 @@ export function NoteScreen(): React.ReactNode {
               {data?.content}
             </Paragraph>
 
-            <XStack gap="$2">
-              {
-              data?.tags.map((tag) => {
-                <Link href={`/tag/${tag.id}`} asChild>
-                  <Text>
-                    #
-                    {tag.name}
+            <XStack rowGap="$1" columnGap="$2" flexWrap="wrap" mb="$4">
+              {data?.tags.map(tag => (
+                <Link key={tag.name} href={`/tag/${tag.name}`} asChild>
+                  <Text color="$blue8">
+                    {`# ${tag.name}`}
                   </Text>
                 </Link>
-              })
-            }
+              ),
+              )}
             </XStack>
 
             <Text fontSize="$1" color="gray">

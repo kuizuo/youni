@@ -1,0 +1,1123 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>server documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
+            <a href="../" class="navbar-brand">server documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content miscellaneous-typealiases">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Miscellaneous</li>
+  <li class="breadcrumb-item">Type aliases</li>
+</ol>
+
+<section data-compodoc="block-index">
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <ul class="index-list">
+                        <li>
+                            <a href="#AllModelNames" title="src/shared/database/prisma.extension.ts" ><b>AllModelNames</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#AppAbility" title="src/modules/casl/ability.class.ts" ><b>AppAbility</b>&nbsp;&nbsp;&nbsp;(src/.../ability.class.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#AppRouter" title="src/shared/trpc/trpc.instance.ts" ><b>AppRouter</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#BaseType" title="src/global/env.ts" ><b>BaseType</b>&nbsp;&nbsp;&nbsp;(src/.../env.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#BatchNotifyFunction" title="src/utils/schedule.util.ts" ><b>BatchNotifyFunction</b>&nbsp;&nbsp;&nbsp;(src/.../schedule.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Caller" title="src/shared/trpc/trpc.instance.ts" ><b>Caller</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ClassType" title="test/helper/create-service-unit.ts" ><b>ClassType</b>&nbsp;&nbsp;&nbsp;(test/.../create-service-unit.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Context" title="src/shared/trpc/trpc.context.ts" ><b>Context</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.context.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DefaultKeys" title="src/utils/zod.util.ts" ><b>DefaultKeys</b>&nbsp;&nbsp;&nbsp;(src/.../zod.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ExtendedPrismaClient" title="src/shared/database/prisma.extension.ts" ><b>ExtendedPrismaClient</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ExtractRouterType" title="src/shared/trpc/trpc.service.ts" ><b>ExtractRouterType</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.service.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#FileType" title="src/modules/file/file.constant.ts" ><b>FileType</b>&nbsp;&nbsp;&nbsp;(src/.../file.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#GqlContextType" title="src/common/filters/prisma-client-exception.filter.ts" ><b>GqlContextType</b>&nbsp;&nbsp;&nbsp;(src/.../prisma-client-exception.filter.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#IAppConfig" title="src/config/app.config.ts" ><b>IAppConfig</b>&nbsp;&nbsp;&nbsp;(src/.../app.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#IDatabaseConfig" title="src/config/database.config.ts" ><b>IDatabaseConfig</b>&nbsp;&nbsp;&nbsp;(src/.../database.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#IGoogleConfig" title="src/config/google.config.ts" ><b>IGoogleConfig</b>&nbsp;&nbsp;&nbsp;(src/.../google.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Image" title="src/common/dto/image.dto.ts" ><b>Image</b>&nbsp;&nbsp;&nbsp;(src/.../image.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#IMailerConfig" title="src/config/mailer.config.ts" ><b>IMailerConfig</b>&nbsp;&nbsp;&nbsp;(src/.../mailer.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#IRedisConfig" title="src/config/redis.config.ts" ><b>IRedisConfig</b>&nbsp;&nbsp;&nbsp;(src/.../redis.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ISecurityConfig" title="src/config/security.config.ts" ><b>ISecurityConfig</b>&nbsp;&nbsp;&nbsp;(src/.../security.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ISmsConfig" title="src/config/sms.config.ts" ><b>ISmsConfig</b>&nbsp;&nbsp;&nbsp;(src/.../sms.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#LoginType" title="src/modules/auth/auth.constant.ts" ><b>LoginType</b>&nbsp;&nbsp;&nbsp;(src/.../auth.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#MapToRouterType" title="src/shared/trpc/trpc.service.ts" ><b>MapToRouterType</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.service.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Meta" title="src/shared/trpc/trpc.meta.ts" ><b>Meta</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.meta.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ModelCreateInput" title="src/shared/database/prisma.extension.ts" ><b>ModelCreateInput</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ModelFindInput" title="src/shared/database/prisma.extension.ts" ><b>ModelFindInput</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ModelInputData" title="src/shared/database/prisma.extension.ts" ><b>ModelInputData</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ModelInputWhere" title="src/shared/database/prisma.extension.ts" ><b>ModelInputWhere</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ModelName" title="src/shared/database/prisma.extension.ts" ><b>ModelName</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NotifyCallback" title="src/utils/schedule.util.ts" ><b>NotifyCallback</b>&nbsp;&nbsp;&nbsp;(src/.../schedule.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NotifyFunction" title="src/utils/schedule.util.ts" ><b>NotifyFunction</b>&nbsp;&nbsp;&nbsp;(src/.../schedule.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ObjWithKey" title="src/shared/trpc/trpc.helper.ts" ><b>ObjWithKey</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.helper.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Payload" title="src/modules/auth/decorators/auth-user.decorator.ts" ><b>Payload</b>&nbsp;&nbsp;&nbsp;(src/.../auth-user.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#PolicyObject" title="src/modules/casl/policy.decortor.ts" ><b>PolicyObject</b>&nbsp;&nbsp;&nbsp;(src/.../policy.decortor.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Prefix" title="src/utils/redis.util.ts" ><b>Prefix</b>&nbsp;&nbsp;&nbsp;(src/.../redis.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#PrismaSubjects" title="src/modules/casl/ability.class.ts" ><b>PrismaSubjects</b>&nbsp;&nbsp;&nbsp;(src/.../ability.class.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Projection" title="src/utils/zod.util.ts" ><b>Projection</b>&nbsp;&nbsp;&nbsp;(src/.../zod.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#RouterInputs" title="src/shared/trpc/trpc.instance.ts" ><b>RouterInputs</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#RouterOutputs" title="src/shared/trpc/trpc.instance.ts" ><b>RouterOutputs</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Routers" title="src/shared/trpc/trpc.service.ts" ><b>Routers</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.service.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TCacheKey" title="src/shared/cache/cache.service.ts" ><b>TCacheKey</b>&nbsp;&nbsp;&nbsp;(src/.../cache.service.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TCacheResult" title="src/shared/cache/cache.service.ts" ><b>TCacheResult</b>&nbsp;&nbsp;&nbsp;(src/.../cache.service.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TRPC$Config" title="src/shared/trpc/trpc.instance.ts" ><b>TRPC$Config</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TRPCProcedure" title="src/shared/trpc/trpc.instance.ts" ><b>TRPCProcedure</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TRPCRouters" title="src/shared/trpc/trpc.routes.ts" ><b>TRPCRouters</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.routes.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TRPCRouterType" title="src/shared/trpc/trpc.instance.ts" ><b>TRPCRouterType</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+    <h3>src/shared/database/prisma.extension.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AllModelNames"></a>
+                    <span class="name "><b>AllModelNames</b><a href="#AllModelNames"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ExtendedPrismaClient"></a>
+                    <span class="name "><b>ExtendedPrismaClient</b><a href="#ExtendedPrismaClient"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ReturnType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ModelCreateInput"></a>
+                    <span class="name "><b>ModelCreateInput</b><a href="#ModelCreateInput"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>NonNullable&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ModelFindInput"></a>
+                    <span class="name "><b>ModelFindInput</b><a href="#ModelFindInput"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>NonNullable&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ModelInputData"></a>
+                    <span class="name "><b>ModelInputData</b><a href="#ModelInputData"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ModelInputWhere"></a>
+                    <span class="name "><b>ModelInputWhere</b><a href="#ModelInputWhere"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ModelName"></a>
+                    <span class="name "><b>ModelName</b><a href="#ModelName"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="../miscellaneous/typealiases.html#ModelName" target="_self" >Prisma.ModelName</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/modules/casl/ability.class.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AppAbility"></a>
+                    <span class="name "><b>AppAbility</b><a href="#AppAbility"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>PureAbility&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="PrismaSubjects"></a>
+                    <span class="name "><b>PrismaSubjects</b><a href="#PrismaSubjects"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/shared/trpc/trpc.instance.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AppRouter"></a>
+                    <span class="name "><b>AppRouter</b><a href="#AppRouter"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Caller"></a>
+                    <span class="name "><b>Caller</b><a href="#Caller"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="RouterInputs"></a>
+                    <span class="name "><b>RouterInputs</b><a href="#RouterInputs"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>inferRouterInputs&lt;AppRouter&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="RouterOutputs"></a>
+                    <span class="name "><b>RouterOutputs</b><a href="#RouterOutputs"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>inferRouterOutputs&lt;AppRouter&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TRPC$Config"></a>
+                    <span class="name "><b>TRPC$Config</b><a href="#TRPC$Config"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TRPCProcedure"></a>
+                    <span class="name "><b>TRPCProcedure</b><a href="#TRPCProcedure"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TRPCRouterType"></a>
+                    <span class="name "><b>TRPCRouterType</b><a href="#TRPCRouterType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/global/env.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="BaseType"></a>
+                    <span class="name "><b>BaseType</b><a href="#BaseType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>基础类型接口</p>
+</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>boolean | number | string | undefined | null</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/utils/schedule.util.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="BatchNotifyFunction"></a>
+                    <span class="name "><b>BatchNotifyFunction</b><a href="#BatchNotifyFunction"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NotifyCallback"></a>
+                    <span class="name "><b>NotifyCallback</b><a href="#NotifyCallback"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NotifyFunction"></a>
+                    <span class="name "><b>NotifyFunction</b><a href="#NotifyFunction"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>test/helper/create-service-unit.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ClassType"></a>
+                    <span class="name "><b>ClassType</b><a href="#ClassType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/shared/trpc/trpc.context.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Context"></a>
+                    <span class="name "><b>Context</b><a href="#Context"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>Awaited&lt;ReturnType&lt;&gt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/utils/zod.util.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DefaultKeys"></a>
+                    <span class="name "><b>DefaultKeys</b><a href="#DefaultKeys"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>&quot;id&quot; | &quot;createdAt&quot; | &quot;updatedAt&quot; | &quot;deletedAt&quot; | &quot;userId&quot;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Projection"></a>
+                    <span class="name "><b>Projection</b><a href="#Projection"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/shared/trpc/trpc.service.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ExtractRouterType"></a>
+                    <span class="name "><b>ExtractRouterType</b><a href="#ExtractRouterType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="MapToRouterType"></a>
+                    <span class="name "><b>MapToRouterType</b><a href="#MapToRouterType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Routers"></a>
+                    <span class="name "><b>Routers</b><a href="#Routers"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="../miscellaneous/functions.html#TRPCRouter" target="_self" >MapToRouterType&lt;TRPCRouters&gt;</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/modules/file/file.constant.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="FileType"></a>
+                    <span class="name "><b>FileType</b><a href="#FileType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/common/filters/prisma-client-exception.filter.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="GqlContextType"></a>
+                    <span class="name "><b>GqlContextType</b><a href="#GqlContextType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="../miscellaneous/typealiases.html#Context" target="_self" >&quot;graphql&quot; | ContextType</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/config/app.config.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="IAppConfig"></a>
+                    <span class="name "><b>IAppConfig</b><a href="#IAppConfig"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ConfigType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/config/database.config.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="IDatabaseConfig"></a>
+                    <span class="name "><b>IDatabaseConfig</b><a href="#IDatabaseConfig"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ConfigType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/config/google.config.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="IGoogleConfig"></a>
+                    <span class="name "><b>IGoogleConfig</b><a href="#IGoogleConfig"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ConfigType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/common/dto/image.dto.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Image"></a>
+                    <span class="name "><b>Image</b><a href="#Image"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>z.infer&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/config/mailer.config.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="IMailerConfig"></a>
+                    <span class="name "><b>IMailerConfig</b><a href="#IMailerConfig"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ConfigType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/config/redis.config.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="IRedisConfig"></a>
+                    <span class="name "><b>IRedisConfig</b><a href="#IRedisConfig"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ConfigType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/config/security.config.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ISecurityConfig"></a>
+                    <span class="name "><b>ISecurityConfig</b><a href="#ISecurityConfig"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ConfigType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/config/sms.config.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ISmsConfig"></a>
+                    <span class="name "><b>ISmsConfig</b><a href="#ISmsConfig"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>ConfigType&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/modules/auth/auth.constant.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="LoginType"></a>
+                    <span class="name "><b>LoginType</b><a href="#LoginType"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>z.infer&lt;&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/shared/trpc/trpc.meta.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Meta"></a>
+                    <span class="name "><b>Meta</b><a href="#Meta"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="../miscellaneous/typealiases.html#PolicyObject" target="_self" >PolicyObject</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/shared/trpc/trpc.helper.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ObjWithKey"></a>
+                    <span class="name "><b>ObjWithKey</b><a href="#ObjWithKey"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/modules/auth/decorators/auth-user.decorator.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Payload"></a>
+                    <span class="name "><b>Payload</b><a href="#Payload"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/modules/casl/policy.decortor.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="PolicyObject"></a>
+                    <span class="name "><b>PolicyObject</b><a href="#PolicyObject"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>literal type</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/utils/redis.util.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Prefix"></a>
+                    <span class="name "><b>Prefix</b><a href="#Prefix"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/shared/cache/cache.service.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TCacheKey"></a>
+                    <span class="name "><b>TCacheKey</b><a href="#TCacheKey"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TCacheResult"></a>
+                    <span class="name "><b>TCacheResult</b><a href="#TCacheResult"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>Promise&lt;T | undefined&gt;</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/shared/trpc/trpc.routes.ts</h3>
+    <section data-compodoc="block-typealias">
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TRPCRouters"></a>
+                    <span class="name "><b>TRPCRouters</b><a href="#TRPCRouters"><span class="icon ion-ios-link"></span></a></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                    <code>    <code>[UserTrpcRouter, TodoTrpcRouter, NoteTrpcRouter, HistoryTrpcRouter, CollectionTrpcRouter, CommentTrpcRouter, InteractTrpcRouter, NotifactionTrpcRouter]</code>
+</code>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'miscellaneous-typealiases';
+            var COMPODOC_CURRENT_PAGE_URL = 'typealiases.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

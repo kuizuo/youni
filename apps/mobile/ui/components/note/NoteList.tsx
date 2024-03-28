@@ -1,12 +1,18 @@
 import type { NoteItem } from '@server/modules/note/note'
+import type { MasonryListRenderItem } from '@shopify/flash-list'
 import { MasonryFlashList } from '@shopify/flash-list'
-import { RefreshControl } from 'react-native'
 import { useMedia } from 'tamagui'
+import { useCallback } from 'react'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { RefreshControl } from 'react-native-gesture-handler'
+import { ActivityIndicator } from 'react-native'
+import { EmptyResult } from '../EmptyResult'
 import { NoteListItem } from './NoteListItem'
 
 interface Props {
   data: NoteItem[]
   isRefreshing: boolean
+  isFetchingNextPage?: boolean
   onRefresh?: () => void
   onEndReached?: () => void
 }
@@ -14,22 +20,46 @@ interface Props {
 export function NoteList({
   data,
   isRefreshing,
+  isFetchingNextPage,
   onRefresh,
   onEndReached,
 }: Props) {
   const media = useMedia()
 
+  const renderItem: MasonryListRenderItem<NoteItem> = useCallback(
+    ({ item }) => <NoteListItem {...item}></NoteListItem>,
+    [],
+  )
+
   return (
     <MasonryFlashList
       data={data}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-    }
+      showsVerticalScrollIndicator={false}
+      refreshControl={(
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+        />
+      )}
       onEndReached={onEndReached}
       keyExtractor={item => item.id}
-      renderItem={({ item }) => <NoteListItem {...item}></NoteListItem>}
+      renderItem={renderItem}
       numColumns={media.gtLg ? 4 : media.gtMd ? 3 : 2}
       estimatedItemSize={200}
+      ListFooterComponent={(
+        <SafeAreaView edges={['bottom']}>
+          {isFetchingNextPage
+            ? (
+              <ActivityIndicator />
+              )
+            : null}
+        </SafeAreaView>
+      )}
+      ListEmptyComponent={(
+        <EmptyResult
+          title="没有更多笔记了"
+        />
+      )}
     />
   )
 }

@@ -1,0 +1,3982 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>server documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avaoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+
+               if ($darkModeToggles.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-block d-sm-none">
+            <a href="../" class="navbar-brand">server documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content miscellaneous-variables">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Miscellaneous</li>
+  <li class="breadcrumb-item">Variables</li>
+</ol>
+
+<section data-compodoc="block-index">
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <ul class="index-list">
+                        <li>
+                            <a href="#ABILITY_FACTORY_KEY" title="src/modules/casl/ability.decorator.ts" ><b>ABILITY_FACTORY_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../ability.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#alphabet" title="src/constants/other.constant.ts" ><b>alphabet</b>&nbsp;&nbsp;&nbsp;(src/.../other.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#API_CACHE_PREFIX" title="src/constants/cache.constant.ts" ><b>API_CACHE_PREFIX</b>&nbsp;&nbsp;&nbsp;(src/.../cache.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#API_SECURITY_AUTH" title="src/common/decorators/swagger.decorator.ts" ><b>API_SECURITY_AUTH</b>&nbsp;&nbsp;&nbsp;(src/.../swagger.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#app" title="src/common/adapters/fastify.adapter.ts" ><b>app</b>&nbsp;&nbsp;&nbsp;(src/.../fastify.adapter.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#AppConfig" title="src/config/app.config.ts" ><b>AppConfig</b>&nbsp;&nbsp;&nbsp;(src/.../app.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#AuthGateway" title="src/socket/events/admin.gateway.ts" ><b>AuthGateway</b>&nbsp;&nbsp;&nbsp;(src/.../admin.gateway.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#AuthGateway" title="src/socket/events/web.gateway.ts" ><b>AuthGateway</b>&nbsp;&nbsp;&nbsp;(src/.../web.gateway.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#AuthStrategy" title="src/modules/auth/auth.constant.ts" ><b>AuthStrategy</b>&nbsp;&nbsp;&nbsp;(src/.../auth.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#AuthUser" title="src/modules/auth/decorators/auth-user.decorator.ts" ><b>AuthUser</b>&nbsp;&nbsp;&nbsp;(src/.../auth-user.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#BACKUP_DIR" title="src/constants/path.constant.ts" ><b>BACKUP_DIR</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#basePagerSchema" title="src/common/dto/pager.dto.ts" ><b>basePagerSchema</b>&nbsp;&nbsp;&nbsp;(src/.../pager.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#BatchDeleteSchema" title="src/common/dto/delete.dto.ts" ><b>BatchDeleteSchema</b>&nbsp;&nbsp;&nbsp;(src/.../delete.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#BYPASS_KEY" title="src/common/decorators/bypass.decorator.ts" ><b>BYPASS_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../bypass.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CHECK_POLICY_KEY" title="src/modules/casl/policy.decortor.ts" ><b>CHECK_POLICY_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../policy.decortor.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CollectionInputSchema" title="src/modules/collection/collection.dto.ts" ><b>CollectionInputSchema</b>&nbsp;&nbsp;&nbsp;(src/.../collection.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CollectionItemSchema" title="src/modules/collection/collection.dto.ts" ><b>CollectionItemSchema</b>&nbsp;&nbsp;&nbsp;(src/.../collection.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CommentPagerSchema" title="src/modules/comment/comment.dto.ts" ><b>CommentPagerSchema</b>&nbsp;&nbsp;&nbsp;(src/.../comment.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CommentSelect" title="src/modules/comment/comment.constant.ts" ><b>CommentSelect</b>&nbsp;&nbsp;&nbsp;(src/.../comment.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#controllers" title="src/modules/auth/auth.module.ts" ><b>controllers</b>&nbsp;&nbsp;&nbsp;(src/.../auth.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Cookies" title="src/common/decorators/http.decorator.ts" ><b>Cookies</b>&nbsp;&nbsp;&nbsp;(src/.../http.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CreateCommentInputSchema" title="src/modules/comment/comment.dto.ts" ><b>CreateCommentInputSchema</b>&nbsp;&nbsp;&nbsp;(src/.../comment.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CredentialsSchema" title="src/modules/auth/auth.dto.ts" ><b>CredentialsSchema</b>&nbsp;&nbsp;&nbsp;(src/.../auth.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#CronOnce" title="src/common/decorators/cron-once.decorator.ts" ><b>CronOnce</b>&nbsp;&nbsp;&nbsp;(src/.../cron-once.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#cwd" title="src/global/env.ts" ><b>cwd</b>&nbsp;&nbsp;&nbsp;(src/.../env.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DATA_DIR" title="src/constants/path.constant.ts" ><b>DATA_DIR</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DATABASE" title="src/config/database.config.ts" ><b>DATABASE</b>&nbsp;&nbsp;&nbsp;(src/.../database.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DatabaseConfig" title="src/config/database.config.ts" ><b>DatabaseConfig</b>&nbsp;&nbsp;&nbsp;(src/.../database.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#datacenterId" title="src/shared/database/snowflake.util.ts" ><b>datacenterId</b>&nbsp;&nbsp;&nbsp;(src/.../snowflake.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DATE_FORMAT" title="src/utils/date.util.ts" ><b>DATE_FORMAT</b>&nbsp;&nbsp;&nbsp;(src/.../date.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DATE_TIME_FORMAT" title="src/utils/date.util.ts" ><b>DATE_TIME_FORMAT</b>&nbsp;&nbsp;&nbsp;(src/.../date.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DEFAULT_LIMIT" title="src/common/dto/pager.dto.ts" ><b>DEFAULT_LIMIT</b>&nbsp;&nbsp;&nbsp;(src/.../pager.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#defaultProjectKeys" title="src/utils/zod.util.ts" ><b>defaultProjectKeys</b>&nbsp;&nbsp;&nbsp;(src/.../zod.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#defaultSchemaOmit" title="src/utils/zod.util.ts" ><b>defaultSchemaOmit</b>&nbsp;&nbsp;&nbsp;(src/.../zod.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#DELAY" title="src/modules/interact/interact.listener.ts" ><b>DELAY</b>&nbsp;&nbsp;&nbsp;(src/.../interact.listener.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ErrorCode" title="src/constants/error-code.constant.ts" ><b>ErrorCode</b>&nbsp;&nbsp;&nbsp;(src/.../error-code.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#extendedPrismaClient" title="src/shared/database/prisma.extension.ts" ><b>extendedPrismaClient</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#FileQuerySchema" title="src/modules/file/file.dto.ts" ><b>FileQuerySchema</b>&nbsp;&nbsp;&nbsp;(src/.../file.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#FileUploadSchema" title="src/modules/file/file.dto.ts" ><b>FileUploadSchema</b>&nbsp;&nbsp;&nbsp;(src/.../file.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#GoogleConfig" title="src/config/google.config.ts" ><b>GoogleConfig</b>&nbsp;&nbsp;&nbsp;(src/.../google.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#hashString" title="src/utils/tool.util.ts" ><b>hashString</b>&nbsp;&nbsp;&nbsp;(src/.../tool.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#HOME" title="src/constants/path.constant.ts" ><b>HOME</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#HTTP_IDEMPOTENCE_KEY" title="src/common/decorators/idempotence.decorator.ts" ><b>HTTP_IDEMPOTENCE_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../idempotence.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#HTTP_IDEMPOTENCE_OPTIONS" title="src/common/decorators/idempotence.decorator.ts" ><b>HTTP_IDEMPOTENCE_OPTIONS</b>&nbsp;&nbsp;&nbsp;(src/.../idempotence.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#IdempotenceHeaderKey" title="src/common/interceptors/idempotence.interceptor.ts" ><b>IdempotenceHeaderKey</b>&nbsp;&nbsp;&nbsp;(src/.../idempotence.interceptor.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ImageSchema" title="src/common/dto/image.dto.ts" ><b>ImageSchema</b>&nbsp;&nbsp;&nbsp;(src/.../image.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ImagesSchema" title="src/common/dto/image.dto.ts" ><b>ImagesSchema</b>&nbsp;&nbsp;&nbsp;(src/.../image.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#INTERACT_QUEUE" title="src/modules/interact/interact.constant.ts" ><b>INTERACT_QUEUE</b>&nbsp;&nbsp;&nbsp;(src/.../interact.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Ip" title="src/common/decorators/http.decorator.ts" ><b>Ip</b>&nbsp;&nbsp;&nbsp;(src/.../http.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#isDev" title="src/global/env.ts" ><b>isDev</b>&nbsp;&nbsp;&nbsp;(src/.../env.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#isMainCluster" title="src/global/env.ts" ><b>isMainCluster</b>&nbsp;&nbsp;&nbsp;(src/.../env.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#isMainProcess" title="src/global/env.ts" ><b>isMainProcess</b>&nbsp;&nbsp;&nbsp;(src/.../env.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#isTest" title="src/global/env.ts" ><b>isTest</b>&nbsp;&nbsp;&nbsp;(src/.../env.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#iv" title="src/utils/encrypt.util.ts" ><b>iv</b>&nbsp;&nbsp;&nbsp;(src/.../encrypt.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#key" title="src/utils/encrypt.util.ts" ><b>key</b>&nbsp;&nbsp;&nbsp;(src/.../encrypt.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#LOCAL_ADMIN_ASSET_PATH" title="src/constants/path.constant.ts" ><b>LOCAL_ADMIN_ASSET_PATH</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#LOG_DIR" title="src/constants/path.constant.ts" ><b>LOG_DIR</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#LoginTypeEnum" title="src/modules/auth/auth.dto.ts" ><b>LoginTypeEnum</b>&nbsp;&nbsp;&nbsp;(src/.../auth.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#MailerConfig" title="src/config/mailer.config.ts" ><b>MailerConfig</b>&nbsp;&nbsp;&nbsp;(src/.../mailer.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#mockUserData1" title="test/mock/data/user.data.ts" ><b>mockUserData1</b>&nbsp;&nbsp;&nbsp;(test/.../user.data.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#module" title="src/main.ts" ><b>module</b>&nbsp;&nbsp;&nbsp;(src/.../main.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NODE_REQUIRE_PATH" title="src/constants/path.constant.ts" ><b>NODE_REQUIRE_PATH</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NoteInputSchema" title="src/modules/note/note.dto.ts" ><b>NoteInputSchema</b>&nbsp;&nbsp;&nbsp;(src/.../note.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NoteSelect" title="src/modules/note/note.constant.ts" ><b>NoteSelect</b>&nbsp;&nbsp;&nbsp;(src/.../note.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NoteTagInputSchema" title="src/modules/note-tag/note-tag.dto.ts" ><b>NoteTagInputSchema</b>&nbsp;&nbsp;&nbsp;(src/.../note-tag.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NotFoundMessage" title="src/common/exceptions/not-found.exception.ts" ><b>NotFoundMessage</b>&nbsp;&nbsp;&nbsp;(src/.../not-found.exception.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NotificationInputSchema" title="src/modules/notification/notification.dto.ts" ><b>NotificationInputSchema</b>&nbsp;&nbsp;&nbsp;(src/.../notification.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#NotificationPagerSchema" title="src/modules/notification/notification.dto.ts" ><b>NotificationPagerSchema</b>&nbsp;&nbsp;&nbsp;(src/.../notification.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#OMIT_RESPONSE_PROTECT_KEY" title="src/common/decorators/protect-keys.decorator.ts" ><b>OMIT_RESPONSE_PROTECT_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../protect-keys.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#PERMISSION_KEY" title="src/modules/auth/auth.constant.ts" ><b>PERMISSION_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../auth.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#prefix" title="src/utils/redis.util.ts" ><b>prefix</b>&nbsp;&nbsp;&nbsp;(src/.../redis.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#prisma" title="test/lib/prisma.ts" ><b>prisma</b>&nbsp;&nbsp;&nbsp;(test/.../prisma.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#PRISMA_CLIENT" title="src/shared/database/prisma.extension.ts" ><b>PRISMA_CLIENT</b>&nbsp;&nbsp;&nbsp;(src/.../prisma.extension.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/socket/socket.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../socket.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/auth/auth.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../auth.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/collection/collection.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../collection.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/comment/comment.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../comment.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/file/file.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../file.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/history/history.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../history.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/interact/interact.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../interact.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/note-tag/note-tag.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../note-tag.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/note/note.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../note.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/notification/notification.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../notification.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/todo/todo.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../todo.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/user/user.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../user.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/shared/database/database.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../database.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/shared/helper/helper.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../helper.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/shared/redis/redis.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../redis.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/modules/auth/captcha/captcha.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../captcha.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#providers" title="src/shared/helper/mailer/mailer.module.ts" ><b>providers</b>&nbsp;&nbsp;&nbsp;(src/.../mailer.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Public" title="src/modules/auth/decorators/public.decorator.ts" ><b>Public</b>&nbsp;&nbsp;&nbsp;(src/.../public.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#PUBLIC_KEY" title="src/modules/auth/auth.constant.ts" ><b>PUBLIC_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../auth.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#pump" title="src/modules/file/file.service.ts" ><b>pump</b>&nbsp;&nbsp;&nbsp;(src/.../file.service.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#REDIS_PUBSUB" title="src/shared/redis/redis.constant.ts" ><b>REDIS_PUBSUB</b>&nbsp;&nbsp;&nbsp;(src/.../redis.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#RedisConfig" title="src/config/redis.config.ts" ><b>RedisConfig</b>&nbsp;&nbsp;&nbsp;(src/.../redis.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#RedisIoAdapterKey" title="src/common/adapters/socket.adapter.ts" ><b>RedisIoAdapterKey</b>&nbsp;&nbsp;&nbsp;(src/.../socket.adapter.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#RESOURCE_KEY" title="src/modules/auth/auth.constant.ts" ><b>RESOURCE_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../auth.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#RESPONSE_SUCCESS_CODE" title="src/constants/response.constant.ts" ><b>RESPONSE_SUCCESS_CODE</b>&nbsp;&nbsp;&nbsp;(src/.../response.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#RESPONSE_SUCCESS_MSG" title="src/constants/response.constant.ts" ><b>RESPONSE_SUCCESS_MSG</b>&nbsp;&nbsp;&nbsp;(src/.../response.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ROLES_KEY" title="src/modules/auth/auth.constant.ts" ><b>ROLES_KEY</b>&nbsp;&nbsp;&nbsp;(src/.../auth.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#scheduleManager" title="src/utils/schedule.util.ts" ><b>scheduleManager</b>&nbsp;&nbsp;&nbsp;(src/.../schedule.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#SecurityConfig" title="src/config/security.config.ts" ><b>SecurityConfig</b>&nbsp;&nbsp;&nbsp;(src/.../security.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#sleep" title="src/utils/schedule.util.ts" ><b>sleep</b>&nbsp;&nbsp;&nbsp;(src/.../schedule.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#SmsConfig" title="src/config/sms.config.ts" ><b>SmsConfig</b>&nbsp;&nbsp;&nbsp;(src/.../sms.config.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#snowflake" title="src/shared/database/snowflake.util.ts" ><b>snowflake</b>&nbsp;&nbsp;&nbsp;(src/.../snowflake.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#snowflakeGeneratorMiddleware" title="src/shared/database/middlewares/snowflake.middleware.ts" ><b>snowflakeGeneratorMiddleware</b>&nbsp;&nbsp;&nbsp;(src/.../snowflake.middleware.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#SnowflakeIdSchema" title="src/common/dto/id.dto.ts" ><b>SnowflakeIdSchema</b>&nbsp;&nbsp;&nbsp;(src/.../id.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#STATIC_FILE_DIR" title="src/constants/path.constant.ts" ><b>STATIC_FILE_DIR</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#strategies" title="src/modules/auth/auth.module.ts" ><b>strategies</b>&nbsp;&nbsp;&nbsp;(src/.../auth.module.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#strongPasswordSchema" title="src/modules/user/dto/password.dto.ts" ><b>strongPasswordSchema</b>&nbsp;&nbsp;&nbsp;(src/.../password.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#SYS_API_TOKEN" title="src/constants/system.constant.ts" ><b>SYS_API_TOKEN</b>&nbsp;&nbsp;&nbsp;(src/.../system.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#SYS_USER_INITPASSWORD" title="src/constants/system.constant.ts" ><b>SYS_USER_INITPASSWORD</b>&nbsp;&nbsp;&nbsp;(src/.../system.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TEMP_DIR" title="src/constants/path.constant.ts" ><b>TEMP_DIR</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TodoInputSchema" title="src/modules/todo/todo.dto.ts" ><b>TodoInputSchema</b>&nbsp;&nbsp;&nbsp;(src/.../todo.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#trpc" title="src/shared/trpc/trpc.instance.ts" ><b>trpc</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.instance.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#TRPC_ROUTER" title="src/shared/trpc/trpc.constant.ts" ><b>TRPC_ROUTER</b>&nbsp;&nbsp;&nbsp;(src/.../trpc.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#Uri" title="src/common/decorators/http.decorator.ts" ><b>Uri</b>&nbsp;&nbsp;&nbsp;(src/.../http.decorator.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#USER_ASSET_DIR" title="src/constants/path.constant.ts" ><b>USER_ASSET_DIR</b>&nbsp;&nbsp;&nbsp;(src/.../path.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#UserInputSchema" title="src/modules/user/dto/user.dto.ts" ><b>UserInputSchema</b>&nbsp;&nbsp;&nbsp;(src/.../user.dto.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#UserProfileSelect" title="src/modules/user/user.constant.ts" ><b>UserProfileSelect</b>&nbsp;&nbsp;&nbsp;(src/.../user.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#UserSelect" title="src/modules/user/user.constant.ts" ><b>UserSelect</b>&nbsp;&nbsp;&nbsp;(src/.../user.constant.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#workerId" title="src/shared/database/snowflake.util.ts" ><b>workerId</b>&nbsp;&nbsp;&nbsp;(src/.../snowflake.util.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#ZodValidationPipe" title="src/common/pipes/zod-validation.pipe.ts" ><b>ZodValidationPipe</b>&nbsp;&nbsp;&nbsp;(src/.../zod-validation.pipe.ts)</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+    <h3>src/modules/casl/ability.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ABILITY_FACTORY_KEY"></a>
+                    <span class="name">
+                        <span ><b>ABILITY_FACTORY_KEY</b></span>
+                        <a href="#ABILITY_FACTORY_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__ABILITY_FACTORY_KEY__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/constants/other.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="alphabet"></a>
+                    <span class="name">
+                        <span ><b>alphabet</b></span>
+                        <a href="#alphabet"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x60;1234567890abcdefghijklmnopqrstuvwxyz&#x60;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/constants/cache.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="API_CACHE_PREFIX"></a>
+                    <span class="name">
+                        <span ><b>API_CACHE_PREFIX</b></span>
+                        <a href="#API_CACHE_PREFIX"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;api-cache:&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/decorators/swagger.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="API_SECURITY_AUTH"></a>
+                    <span class="name">
+                        <span ><b>API_SECURITY_AUTH</b></span>
+                        <a href="#API_SECURITY_AUTH"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;auth&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/adapters/fastify.adapter.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="app"></a>
+                    <span class="name">
+                        <span ><b>app</b></span>
+                        <a href="#app"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>FastifyAdapter</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>new FastifyAdapter({
+  trustProxy: true,
+  logger: false,
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/config/app.config.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AppConfig"></a>
+                    <span class="name">
+                        <span ><b>AppConfig</b></span>
+                        <a href="#AppConfig"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>registerAs(&#x27;app&#x27;, () &#x3D;&gt; ({
+  name: env(&#x27;APP_NAME&#x27;),
+  port: envNumber(&#x27;APP_PORT&#x27;, 3000),
+  baseUrl: env(&#x27;APP_BASE_URL&#x27;),
+  globalPrefix: env(&#x27;GLOBAL_PREFIX&#x27;, &#x27;api&#x27;),
+  locale: env(&#x27;APP_LOCALE&#x27;, &#x27;zh-CN&#x27;),
+
+  logger: {
+    level: env(&#x27;LOGGER_LEVEL&#x27;),
+    maxFiles: envNumber(&#x27;LOGGER_MAX_FILES&#x27;),
+  },
+}))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/socket/events/admin.gateway.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AuthGateway"></a>
+                    <span class="name">
+                        <span ><b>AuthGateway</b></span>
+                        <a href="#AuthGateway"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createAuthGateway({ namespace: &#x27;admin&#x27; })</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/socket/events/web.gateway.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AuthGateway"></a>
+                    <span class="name">
+                        <span ><b>AuthGateway</b></span>
+                        <a href="#AuthGateway"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createAuthGateway({ namespace: &#x27;web&#x27; })</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/auth/auth.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AuthStrategy"></a>
+                    <span class="name">
+                        <span ><b>AuthStrategy</b></span>
+                        <a href="#AuthStrategy"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{
+  LOCAL: &#x27;local&#x27;,
+  LOCAL_EMAIL: &#x27;local_email&#x27;,
+  LOCAL_PHONE: &#x27;local_phone&#x27;,
+
+  JWT: &#x27;jwt&#x27;,
+
+  GITHUB: &#x27;github&#x27;,
+  GOOGLE: &#x27;google&#x27;,
+} as const</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="PERMISSION_KEY"></a>
+                    <span class="name">
+                        <span ><b>PERMISSION_KEY</b></span>
+                        <a href="#PERMISSION_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__permission_key__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="PUBLIC_KEY"></a>
+                    <span class="name">
+                        <span ><b>PUBLIC_KEY</b></span>
+                        <a href="#PUBLIC_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__public_key__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="RESOURCE_KEY"></a>
+                    <span class="name">
+                        <span ><b>RESOURCE_KEY</b></span>
+                        <a href="#RESOURCE_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__resource_key__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ROLES_KEY"></a>
+                    <span class="name">
+                        <span ><b>ROLES_KEY</b></span>
+                        <a href="#ROLES_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__roles_key__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/auth/decorators/auth-user.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="AuthUser"></a>
+                    <span class="name">
+                        <span ><b>AuthUser</b></span>
+                        <a href="#AuthUser"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createParamDecorator(
+  (data: Payload, ctx: ExecutionContext) &#x3D;&gt; {
+    const request &#x3D; ctx.switchToHttp().getRequest&lt;FastifyRequest&gt;()
+    // auth guard will mount this
+    const user &#x3D; request.user as IAuthUser
+
+    return data ? user?.[data] : user
+  },
+)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/constants/path.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="BACKUP_DIR"></a>
+                    <span class="name">
+                        <span ><b>BACKUP_DIR</b></span>
+                        <a href="#BACKUP_DIR"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>!isDev
+  ? join(DATA_DIR, &#x27;backup&#x27;)
+  : join(TEMP_DIR, &#x27;backup&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DATA_DIR"></a>
+                    <span class="name">
+                        <span ><b>DATA_DIR</b></span>
+                        <a href="#DATA_DIR"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>isDev ? join(cwd, &#x27;./public&#x27;) : join(HOME, &#x27;.youni&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="HOME"></a>
+                    <span class="name">
+                        <span ><b>HOME</b></span>
+                        <a href="#HOME"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>homedir()</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="LOCAL_ADMIN_ASSET_PATH"></a>
+                    <span class="name">
+                        <span ><b>LOCAL_ADMIN_ASSET_PATH</b></span>
+                        <a href="#LOCAL_ADMIN_ASSET_PATH"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>isDev
+  ? join(DATA_DIR, &#x27;admin&#x27;)
+  : join(cwd, &#x27;./admin&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="LOG_DIR"></a>
+                    <span class="name">
+                        <span ><b>LOG_DIR</b></span>
+                        <a href="#LOG_DIR"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>join(DATA_DIR, &#x27;log&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NODE_REQUIRE_PATH"></a>
+                    <span class="name">
+                        <span ><b>NODE_REQUIRE_PATH</b></span>
+                        <a href="#NODE_REQUIRE_PATH"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>join(DATA_DIR, &#x27;node_modules&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="STATIC_FILE_DIR"></a>
+                    <span class="name">
+                        <span ><b>STATIC_FILE_DIR</b></span>
+                        <a href="#STATIC_FILE_DIR"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>join(DATA_DIR, &#x27;static&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TEMP_DIR"></a>
+                    <span class="name">
+                        <span ><b>TEMP_DIR</b></span>
+                        <a href="#TEMP_DIR"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>isDev ? join(cwd, &#x27;./public&#x27;) : &#x27;/public/youni&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="USER_ASSET_DIR"></a>
+                    <span class="name">
+                        <span ><b>USER_ASSET_DIR</b></span>
+                        <a href="#USER_ASSET_DIR"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>join(DATA_DIR, &#x27;assets&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/dto/pager.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="basePagerSchema"></a>
+                    <span class="name">
+                        <span ><b>basePagerSchema</b></span>
+                        <a href="#basePagerSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.object({
+  limit: z.coerce.number().int().min(1).max(50).optional().default(DEFAULT_LIMIT),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  sortBy: z.string().optional(),
+  sortOrder: z.string()
+    .or(z.enum([&#x27;asc&#x27;, &#x27;desc&#x27;]))
+    .optional(),
+
+  cursor: SnowflakeIdSchema
+    .or(z.null())
+    .or(z.boolean())
+    .transform(val &#x3D;&gt; val &#x3D;&#x3D;&#x3D; null || val &#x3D;&#x3D;&#x3D; false || val &#x3D;&#x3D;&#x3D; true ? &#x27;&#x27; : val)
+    .optional(),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DEFAULT_LIMIT"></a>
+                    <span class="name">
+                        <span ><b>DEFAULT_LIMIT</b></span>
+                        <a href="#DEFAULT_LIMIT"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>10</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/dto/delete.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="BatchDeleteSchema"></a>
+                    <span class="name">
+                        <span ><b>BatchDeleteSchema</b></span>
+                        <a href="#BatchDeleteSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.object({
+  ids: z.array(z.string()),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/decorators/bypass.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="BYPASS_KEY"></a>
+                    <span class="name">
+                        <span ><b>BYPASS_KEY</b></span>
+                        <a href="#BYPASS_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__bypass_key__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/casl/policy.decortor.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CHECK_POLICY_KEY"></a>
+                    <span class="name">
+                        <span ><b>CHECK_POLICY_KEY</b></span>
+                        <a href="#CHECK_POLICY_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__check_policy_key__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/collection/collection.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CollectionInputSchema"></a>
+                    <span class="name">
+                        <span ><b>CollectionInputSchema</b></span>
+                        <a href="#CollectionInputSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>CollectionOptionalDefaultsSchema.pick({
+  name: true,
+  description: true,
+  isPublished: true,
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CollectionItemSchema"></a>
+                    <span class="name">
+                        <span ><b>CollectionItemSchema</b></span>
+                        <a href="#CollectionItemSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.object({
+  itemId: z.string(),
+  // collectionId: z.string(),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/comment/comment.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CommentPagerSchema"></a>
+                    <span class="name">
+                        <span ><b>CommentPagerSchema</b></span>
+                        <a href="#CommentPagerSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>basePagerSchema.extend({
+  itemId: SnowflakeIdSchema,
+  itemType: z.nativeEnum(CommentRefType),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CreateCommentInputSchema"></a>
+                    <span class="name">
+                        <span ><b>CreateCommentInputSchema</b></span>
+                        <a href="#CreateCommentInputSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>CommentSchema.pick({
+  content: true,
+}).extend({
+  parentId: SnowflakeIdSchema.optional().nullable(),
+  itemId: SnowflakeIdSchema,
+  itemType: z.nativeEnum(CommentRefType),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/comment/comment.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CommentSelect"></a>
+                    <span class="name">
+                        <span ><b>CommentSelect</b></span>
+                        <a href="#CommentSelect"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="../miscellaneous/variables.html#CommentSelect" target="_self" >Prisma.CommentSelect</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{
+  id: true,
+  content: true,
+  location: true,
+  interact: true,
+  createdAt: true,
+  user: {
+    select: {
+      id: true,
+      avatar: true,
+      nickname: true,
+    },
+  },
+}</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/auth/auth.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="controllers"></a>
+                    <span class="name">
+                        <span ><b>controllers</b></span>
+                        <a href="#controllers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  AuthController,
+  AccountController,
+  EmailController,
+  GoogleController,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[AuthService, TokenService]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="strategies"></a>
+                    <span class="name">
+                        <span ><b>strategies</b></span>
+                        <a href="#strategies"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[LocalStrategy, JwtStrategy, GoogleStrategy]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/decorators/http.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Cookies"></a>
+                    <span class="name">
+                        <span ><b>Cookies</b></span>
+                        <a href="#Cookies"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createParamDecorator((data: string, ctx: ExecutionContext) &#x3D;&gt; {
+  const request &#x3D; ctx.switchToHttp().getRequest&lt;FastifyRequest&gt;()
+  return data ? request.cookies?.[data] : request.cookies
+})</code>
+                    </td>
+                </tr>
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>快速获取 cookies</p>
+</div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Ip"></a>
+                    <span class="name">
+                        <span ><b>Ip</b></span>
+                        <a href="#Ip"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createParamDecorator((_, context: ExecutionContext) &#x3D;&gt; {
+  const request &#x3D; context.switchToHttp().getRequest&lt;FastifyRequest&gt;()
+  return getIp(request)
+})</code>
+                    </td>
+                </tr>
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>快速获取 IP</p>
+</div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Uri"></a>
+                    <span class="name">
+                        <span ><b>Uri</b></span>
+                        <a href="#Uri"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createParamDecorator((_, context: ExecutionContext) &#x3D;&gt; {
+  const request &#x3D; context.switchToHttp().getRequest&lt;FastifyRequest&gt;()
+  return request.routerPath
+})</code>
+                    </td>
+                </tr>
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>快速获取request path，并不包括url params</p>
+</div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/auth/auth.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CredentialsSchema"></a>
+                    <span class="name">
+                        <span ><b>CredentialsSchema</b></span>
+                        <a href="#CredentialsSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.object({
+  username: z.string().min(4).max(255),
+  password: z.password().min(6).atLeastOne(&#x27;digit&#x27;),
+  type: LoginTypeEnum,
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="LoginTypeEnum"></a>
+                    <span class="name">
+                        <span ><b>LoginTypeEnum</b></span>
+                        <a href="#LoginTypeEnum"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.enum([&#x27;account&#x27;, &#x27;email&#x27;, &#x27;mobile&#x27;])</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/decorators/cron-once.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="CronOnce"></a>
+                    <span class="name">
+                        <span ><b>CronOnce</b></span>
+                        <a href="#CronOnce"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>(...rest): MethodDecorator &#x3D;&gt; {
+  // If not in cluster mode, and PM2 main worker
+  if (isMainProcess)
+    // eslint-disable-next-line no-useless-call
+    return Cron.call(null, ...rest)
+
+  if (cluster.isWorker &amp;&amp; cluster.worker?.id &#x3D;&#x3D;&#x3D; 1)
+    // eslint-disable-next-line no-useless-call
+    return Cron.call(null, ...rest)
+
+  const returnNothing: MethodDecorator &#x3D; () &#x3D;&gt; {}
+  return returnNothing
+}</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/global/env.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="cwd"></a>
+                    <span class="name">
+                        <span ><b>cwd</b></span>
+                        <a href="#cwd"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>process.cwd()</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isDev"></a>
+                    <span class="name">
+                        <span ><b>isDev</b></span>
+                        <a href="#isDev"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>process.env.NODE_ENV &#x3D;&#x3D;&#x3D; &#x27;development&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isMainCluster"></a>
+                    <span class="name">
+                        <span ><b>isMainCluster</b></span>
+                        <a href="#isMainCluster"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>process.env.NODE_APP_INSTANCE &amp;&amp; Number.parseInt(process.env.NODE_APP_INSTANCE) &#x3D;&#x3D;&#x3D; 0</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isMainProcess"></a>
+                    <span class="name">
+                        <span ><b>isMainProcess</b></span>
+                        <a href="#isMainProcess"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>cluster.isPrimary || isMainCluster</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isTest"></a>
+                    <span class="name">
+                        <span ><b>isTest</b></span>
+                        <a href="#isTest"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>!!process.env.TEST</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/config/database.config.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DATABASE"></a>
+                    <span class="name">
+                        <span ><b>DATABASE</b></span>
+                        <a href="#DATABASE"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object" target="_blank" >object</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{
+  url: env(&#x27;DATABASE_URL&#x27;),
+}</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DatabaseConfig"></a>
+                    <span class="name">
+                        <span ><b>DatabaseConfig</b></span>
+                        <a href="#DatabaseConfig"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>registerAs(&#x27;database&#x27;, () &#x3D;&gt; DATABASE)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/database/snowflake.util.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="datacenterId"></a>
+                    <span class="name">
+                        <span ><b>datacenterId</b></span>
+                        <a href="#datacenterId"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="snowflake"></a>
+                    <span class="name">
+                        <span ><b>snowflake</b></span>
+                        <a href="#snowflake"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>new Snowflake(BigInt(workerId), BigInt(datacenterId))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="workerId"></a>
+                    <span class="name">
+                        <span ><b>workerId</b></span>
+                        <a href="#workerId"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/utils/date.util.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DATE_FORMAT"></a>
+                    <span class="name">
+                        <span ><b>DATE_FORMAT</b></span>
+                        <a href="#DATE_FORMAT"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;YYYY-MM-DD&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DATE_TIME_FORMAT"></a>
+                    <span class="name">
+                        <span ><b>DATE_TIME_FORMAT</b></span>
+                        <a href="#DATE_TIME_FORMAT"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;YYYY-MM-DD HH:mm:ss&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/utils/zod.util.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="defaultProjectKeys"></a>
+                    <span class="name">
+                        <span ><b>defaultProjectKeys</b></span>
+                        <a href="#defaultProjectKeys"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  &#x27;id&#x27;,
+  &#x27;createdAt&#x27;,
+  &#x27;updatedAt&#x27;,
+  &#x27;deletedAt&#x27;,
+  &#x27;userId&#x27;,
+] as const</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="defaultSchemaOmit"></a>
+                    <span class="name">
+                        <span ><b>defaultSchemaOmit</b></span>
+                        <a href="#defaultSchemaOmit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>Object.fromEntries(defaultProjectKeys.map(key &#x3D;&gt; [key, true])) as Projection&lt;typeof defaultProjectKeys[number]&gt;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/interact/interact.listener.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="DELAY"></a>
+                    <span class="name">
+                        <span ><b>DELAY</b></span>
+                        <a href="#DELAY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>3_000</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/constants/error-code.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ErrorCode"></a>
+                    <span class="name">
+                        <span ><b>ErrorCode</b></span>
+                        <a href="#ErrorCode"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="../miscellaneous/variables.html#ErrorCode" target="_self" >Record&lt;ErrorCodeEnum, string&gt;</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{
+  [ErrorCodeEnum.Default]: &#x27;未知错误&#x27;,
+  [ErrorCodeEnum.ServerError]: &#x27;服务器错误, 请稍后再试&#x27;,
+
+  [ErrorCodeEnum.JWTInvalid]: &#x27;JWT无效&#x27;,
+  [ErrorCodeEnum.AuthFail]: &#x27;认证失败&#x27;,
+  [ErrorCodeEnum.NoPermission]: &#x27;没有权限&#x27;,
+  [ErrorCodeEnum.ResourceNotFound]: &#x27;资源不存在&#x27;,
+  [ErrorCodeEnum.RequestTooFast]: &#x27;请求过于频繁&#x27;,
+
+  [ErrorCodeEnum.UserNotFound]: &#x27;用户不存在&#x27;,
+  [ErrorCodeEnum.UserExist]: &#x27;用户已存在&#x27;,
+  [ErrorCodeEnum.PasswordMismatch]: &#x27;密码错误&#x27;,
+
+  [ErrorCodeEnum.VerificationCodeError]: &#x27;验证码无效&#x27;,
+  [ErrorCodeEnum.VerificationCodeSendFail]: &#x27;验证码发送失败&#x27;,
+  [ErrorCodeEnum.MaximumFiveVerificationCodesPerDay]: &#x27;一天最多发送5个验证码&#x27;,
+
+  [ErrorCodeEnum.NoteNotFound]: &#x27;笔记不存在&#x27;,
+  [ErrorCodeEnum.CommentNotFound]: &#x27;评论不存在&#x27;,
+  [ErrorCodeEnum.NoUserFollowing]: &#x27;您还未关注任何用户&#x27;,
+}</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/database/prisma.extension.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="extendedPrismaClient"></a>
+                    <span class="name">
+                        <span ><b>extendedPrismaClient</b></span>
+                        <a href="#extendedPrismaClient"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>getExtendedPrismaClient({ url: DatabaseConfig().url })</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="PRISMA_CLIENT"></a>
+                    <span class="name">
+                        <span ><b>PRISMA_CLIENT</b></span>
+                        <a href="#PRISMA_CLIENT"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>Symbol(&#x27;PRISMA_CLIENT&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/file/file.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="FileQuerySchema"></a>
+                    <span class="name">
+                        <span ><b>FileQuerySchema</b></span>
+                        <a href="#FileQuerySchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.object({
+  type: z.nativeEnum(FileTypeEnum),
+  name: z.string(),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="FileUploadSchema"></a>
+                    <span class="name">
+                        <span ><b>FileUploadSchema</b></span>
+                        <a href="#FileUploadSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.object({
+  type: z.nativeEnum(FileTypeEnum).optional(),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/config/google.config.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="GoogleConfig"></a>
+                    <span class="name">
+                        <span ><b>GoogleConfig</b></span>
+                        <a href="#GoogleConfig"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>registerAs(&#x27;google&#x27;, () &#x3D;&gt; ({
+  clientId: env(&#x27;GOOGLE_CLIENT_ID&#x27;),
+  secret: env(&#x27;GOOGLE_SECRET&#x27;),
+}))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/utils/tool.util.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="hashString"></a>
+                    <span class="name">
+                        <span ><b>hashString</b></span>
+                        <a href="#hashString"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>function (str, seed &#x3D; 0) {
+  let h1 &#x3D; 0xDEADBEEF ^ seed
+  let h2 &#x3D; 0x41C6CE57 ^ seed
+  for (let i &#x3D; 0, ch; i &lt; str.length; i++) {
+    ch &#x3D; str.charCodeAt(i)
+    h1 &#x3D; Math.imul(h1 ^ ch, 2654435761)
+    h2 &#x3D; Math.imul(h2 ^ ch, 1597334677)
+  }
+  h1
+    &#x3D; Math.imul(h1 ^ (h1 &gt;&gt;&gt; 16), 2246822507)
+    ^ Math.imul(h2 ^ (h2 &gt;&gt;&gt; 13), 3266489909)
+  h2
+    &#x3D; Math.imul(h2 ^ (h2 &gt;&gt;&gt; 16), 2246822507)
+    ^ Math.imul(h1 ^ (h1 &gt;&gt;&gt; 13), 3266489909)
+  return 4294967296 * (2097151 &amp; h2) + (h1 &gt;&gt;&gt; 0)
+}</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/decorators/idempotence.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="HTTP_IDEMPOTENCE_KEY"></a>
+                    <span class="name">
+                        <span ><b>HTTP_IDEMPOTENCE_KEY</b></span>
+                        <a href="#HTTP_IDEMPOTENCE_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__idempotence_key__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="HTTP_IDEMPOTENCE_OPTIONS"></a>
+                    <span class="name">
+                        <span ><b>HTTP_IDEMPOTENCE_OPTIONS</b></span>
+                        <a href="#HTTP_IDEMPOTENCE_OPTIONS"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__idempotence_options__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/interceptors/idempotence.interceptor.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="IdempotenceHeaderKey"></a>
+                    <span class="name">
+                        <span ><b>IdempotenceHeaderKey</b></span>
+                        <a href="#IdempotenceHeaderKey"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;x-idempotence&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/dto/image.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ImageSchema"></a>
+                    <span class="name">
+                        <span ><b>ImageSchema</b></span>
+                        <a href="#ImageSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.object({
+  src: z.string(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ImagesSchema"></a>
+                    <span class="name">
+                        <span ><b>ImagesSchema</b></span>
+                        <a href="#ImagesSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.array(ImageSchema)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/interact/interact.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="INTERACT_QUEUE"></a>
+                    <span class="name">
+                        <span ><b>INTERACT_QUEUE</b></span>
+                        <a href="#INTERACT_QUEUE"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;interact&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/utils/encrypt.util.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="iv"></a>
+                    <span class="name">
+                        <span ><b>iv</b></span>
+                        <a href="#iv"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>CryptoJS.enc.Utf8.parse(&#x27;0123456789kuizuo&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="key"></a>
+                    <span class="name">
+                        <span ><b>key</b></span>
+                        <a href="#key"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>CryptoJS.enc.Utf8.parse(&#x27;kuizuoabcdefe9bc&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/config/mailer.config.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="MailerConfig"></a>
+                    <span class="name">
+                        <span ><b>MailerConfig</b></span>
+                        <a href="#MailerConfig"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>registerAs(&#x27;mailer&#x27;, () &#x3D;&gt; ({
+  host: env(&#x27;SMTP_HOST&#x27;),
+  port: envNumber(&#x27;SMTP_PORT&#x27;),
+  ignoreTLS: true,
+  secure: true,
+  auth: {
+    user: env(&#x27;SMTP_USER&#x27;),
+    pass: env(&#x27;SMTP_PASS&#x27;),
+  },
+}))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>test/mock/data/user.data.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="mockUserData1"></a>
+                    <span class="name">
+                        <span ><b>mockUserData1</b></span>
+                        <a href="#mockUserData1"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>generateMockUser()</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/main.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="module"></a>
+                    <span class="name">
+                        <span ><b>module</b></span>
+                        <a href="#module"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/note/note.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NoteInputSchema"></a>
+                    <span class="name">
+                        <span ><b>NoteInputSchema</b></span>
+                        <a href="#NoteInputSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>NoteOptionalDefaultsSchema
+  .extend({
+    title: z.string().min(1, { message: &#x27;标题不能为空&#x27; }),
+    images: ImageSchema.array().min(1, { message: &#x27;至少需要一张图片&#x27; }),
+    publishTime: z.coerce.date().optional().nullable(),
+    tags: z.string().array().default([]),
+  })
+  .omit(defaultSchemaOmit)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/note/note.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NoteSelect"></a>
+                    <span class="name">
+                        <span ><b>NoteSelect</b></span>
+                        <a href="#NoteSelect"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{
+  id: true,
+  title: true,
+  content: true,
+  images: true,
+  cover: true,
+  tags: {
+    select: {
+      name: true,
+      type: true,
+    },
+  },
+  interact: true,
+  user: {
+    select: {
+      id: true,
+      nickname: true,
+      avatar: true,
+    },
+  },
+  userId: true,
+  publishTime: true,
+} satisfies Prisma.NoteSelect</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/note-tag/note-tag.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NoteTagInputSchema"></a>
+                    <span class="name">
+                        <span ><b>NoteTagInputSchema</b></span>
+                        <a href="#NoteTagInputSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>NoteTagOptionalDefaultsSchema.pick({
+  name: true,
+  type: true,
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/exceptions/not-found.exception.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NotFoundMessage"></a>
+                    <span class="name">
+                        <span ><b>NotFoundMessage</b></span>
+                        <a href="#NotFoundMessage"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[&#x27;404, Not Found&#x27;]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/notification/notification.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NotificationInputSchema"></a>
+                    <span class="name">
+                        <span ><b>NotificationInputSchema</b></span>
+                        <a href="#NotificationInputSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>NotificationSchema.pick({
+  action: true,
+  content: true,
+  sourceId: true,
+  sourceType: true,
+  source: true,
+  senderId: true,
+  recipientId: true,
+}).extend({
+  content: z.string().optional().default(&#x27;&#x27;),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="NotificationPagerSchema"></a>
+                    <span class="name">
+                        <span ><b>NotificationPagerSchema</b></span>
+                        <a href="#NotificationPagerSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>basePagerSchema.extend({
+  action: z.nativeEnum(NotificationAction),
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/decorators/protect-keys.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="OMIT_RESPONSE_PROTECT_KEY"></a>
+                    <span class="name">
+                        <span ><b>OMIT_RESPONSE_PROTECT_KEY</b></span>
+                        <a href="#OMIT_RESPONSE_PROTECT_KEY"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;__omit_response_protect_keys__&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/utils/redis.util.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="prefix"></a>
+                    <span class="name">
+                        <span ><b>prefix</b></span>
+                        <a href="#prefix"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;youni&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>test/lib/prisma.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="prisma"></a>
+                    <span class="name">
+                        <span ><b>prisma</b></span>
+                        <a href="#prisma"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>getExtendedPrismaClient({
+  url: process.env.DATABASE_URL,
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/socket/socket.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[AdminEventsGateway, WebEventsGateway]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/collection/collection.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  CollectionService,
+  CollectionTrpcRouter,
+  CollectionAbility,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/comment/comment.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  CommentService,
+  CommentTrpcRouter,
+  CommentAbility,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/file/file.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[FileService]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/history/history.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  HistoryService,
+  HistoryTrpcRouter,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/interact/interact.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  CountingService,
+  LikeService,
+  ViewService,
+  FollowService,
+  InteractTrpcRouter,
+  InteractListener,
+  InteractProcessor,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/note-tag/note-tag.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/note/note.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  NoteService,
+  NotePublicService,
+  NoteTrpcRouter,
+  NoteAbility,
+  NoteListener,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/notification/notification.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  NotificationService,
+  NotifactionTrpcRouter,
+  NotificationListener,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/todo/todo.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[TodoService, TodoTrpcRouter, TodoAbility]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/user/user.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  UserService,
+  UserPublicService,
+  UserTrpcRouter,
+  UserAbility,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/database/database.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  {
+    provide: PRISMA_CLIENT,
+    useFactory: () &#x3D;&gt; {
+      return extendedPrismaClient
+    },
+  },
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/helper/helper.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  CronService,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/redis/redis.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  {
+    provide: REDIS_PUBSUB,
+    useFactory: (configService: ConfigService) &#x3D;&gt; {
+      const redisOptions: RedisOptions &#x3D; configService.get&lt;IRedisConfig&gt;(&#x27;redis&#x27;)!
+      return new RedisSubPub(redisOptions)
+    },
+    inject: [ConfigService],
+  },
+  RedisPubSubService,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/auth/captcha/captcha.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[CaptchaService]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/helper/mailer/mailer.module.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="providers"></a>
+                    <span class="name">
+                        <span ><b>providers</b></span>
+                        <a href="#providers"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Provider[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[
+  MailerService,
+]</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/auth/decorators/public.decorator.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="Public"></a>
+                    <span class="name">
+                        <span ><b>Public</b></span>
+                        <a href="#Public"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>() &#x3D;&gt; SetMetadata(PUBLIC_KEY, true)</code>
+                    </td>
+                </tr>
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>当接口不需要检测用户登录时添加该装饰器</p>
+</div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/file/file.service.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="pump"></a>
+                    <span class="name">
+                        <span ><b>pump</b></span>
+                        <a href="#pump"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>promisify(pipeline)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/redis/redis.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="REDIS_PUBSUB"></a>
+                    <span class="name">
+                        <span ><b>REDIS_PUBSUB</b></span>
+                        <a href="#REDIS_PUBSUB"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>Symbol(&#x27;REDIS_PUBSUB&#x27;)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/config/redis.config.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="RedisConfig"></a>
+                    <span class="name">
+                        <span ><b>RedisConfig</b></span>
+                        <a href="#RedisConfig"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>registerAs(&#x27;redis&#x27;, () &#x3D;&gt; ({
+  host: env(&#x27;REDIS_HOST&#x27;, &#x27;127.0.0.1&#x27;),
+  port: envNumber(&#x27;REDIS_PORT&#x27;, 6379),
+  password: env(&#x27;REDIS_PASSWORD&#x27;),
+  db: envNumber(&#x27;REDIS_DB&#x27;),
+  ttl: null,
+  httpCacheTTL: 15,
+  max: 120,
+}))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/adapters/socket.adapter.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="RedisIoAdapterKey"></a>
+                    <span class="name">
+                        <span ><b>RedisIoAdapterKey</b></span>
+                        <a href="#RedisIoAdapterKey"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;m-shop-socket&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/constants/response.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="RESPONSE_SUCCESS_CODE"></a>
+                    <span class="name">
+                        <span ><b>RESPONSE_SUCCESS_CODE</b></span>
+                        <a href="#RESPONSE_SUCCESS_CODE"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>0</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="RESPONSE_SUCCESS_MSG"></a>
+                    <span class="name">
+                        <span ><b>RESPONSE_SUCCESS_MSG</b></span>
+                        <a href="#RESPONSE_SUCCESS_MSG"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;success&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/utils/schedule.util.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="scheduleManager"></a>
+                    <span class="name">
+                        <span ><b>scheduleManager</b></span>
+                        <a href="#scheduleManager"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createNotifyManager()</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="sleep"></a>
+                    <span class="name">
+                        <span ><b>sleep</b></span>
+                        <a href="#sleep"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>(ms: number) &#x3D;&gt; new Promise(resolve &#x3D;&gt; setTimeout(resolve, ms))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/config/security.config.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="SecurityConfig"></a>
+                    <span class="name">
+                        <span ><b>SecurityConfig</b></span>
+                        <a href="#SecurityConfig"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>registerAs(&#x27;security&#x27;, () &#x3D;&gt; ({
+  jwtSecret: env(&#x27;JWT_SECRET&#x27;),
+  jwtExprire: env(&#x27;JWT_EXPIRE&#x27;),
+  refreshSecret: env(&#x27;REFRESH_TOKEN_SECRET&#x27;),
+  refreshExpire: envNumber(&#x27;REFRESH_TOKEN_EXPIRE&#x27;),
+}))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/config/sms.config.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="SmsConfig"></a>
+                    <span class="name">
+                        <span ><b>SmsConfig</b></span>
+                        <a href="#SmsConfig"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>registerAs(&#x27;sms&#x27;, () &#x3D;&gt; ({
+  sign: env(&#x27;SMS_SING&#x27;, &#x27;Youni&#x27;),
+  region: env(&#x27;SMS_REGION&#x27;, &#x27;ap-guangzhou&#x27;),
+  appid: env(&#x27;SMS_APPID&#x27;, &#x27;1400437232&#x27;),
+  secretId: env(&#x27;SMS_SECRET_ID&#x27;, &#x27;your-secret-id&#x27;),
+  secretKey: env(&#x27;SMS_SECRET_KEY&#x27;, &#x27;your-secret-key&#x27;),
+}))</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/database/middlewares/snowflake.middleware.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="snowflakeGeneratorMiddleware"></a>
+                    <span class="name">
+                        <span ><b>snowflakeGeneratorMiddleware</b></span>
+                        <a href="#snowflakeGeneratorMiddleware"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Prisma.Middleware</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>async (
+  params,
+  next,
+) &#x3D;&gt; {
+  if (params.action &#x3D;&#x3D;&#x3D; &#x27;create&#x27;) {
+    const id &#x3D; snowflake.nextId()
+
+    params.args.data.id &#x3D; id
+  }
+
+  if (params.action &#x3D;&#x3D;&#x3D; &#x27;createMany&#x27;) {
+    params.args.data.forEach((item) &#x3D;&gt; {
+      item.id &#x3D; snowflake.nextId()
+    })
+  }
+
+  if (params.action &#x3D;&#x3D;&#x3D; &#x27;upsert&#x27;) {
+    const id &#x3D; snowflake.nextId()
+
+    params.args.create.id &#x3D; id
+  }
+  return next(params)
+}</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/dto/id.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="SnowflakeIdSchema"></a>
+                    <span class="name">
+                        <span ><b>SnowflakeIdSchema</b></span>
+                        <a href="#SnowflakeIdSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.string().regex(/^\d{16,19}$/)</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/user/dto/password.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="strongPasswordSchema"></a>
+                    <span class="name">
+                        <span ><b>strongPasswordSchema</b></span>
+                        <a href="#strongPasswordSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>z.string().refine((value) &#x3D;&gt; {
+  const strongPasswordRegex &#x3D; /^(?&#x3D;.*[a-z])(?&#x3D;.*[A-Z])(?&#x3D;.*\d)[a-zA-Z\d\W_]{6,}$/
+  return strongPasswordRegex.test(value)
+}, { message: &#x27;密码必须包含大小写字母和数字，且长度不能小于6位&#x27; })</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/constants/system.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="SYS_API_TOKEN"></a>
+                    <span class="name">
+                        <span ><b>SYS_API_TOKEN</b></span>
+                        <a href="#SYS_API_TOKEN"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;sys_api_token&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="SYS_USER_INITPASSWORD"></a>
+                    <span class="name">
+                        <span ><b>SYS_USER_INITPASSWORD</b></span>
+                        <a href="#SYS_USER_INITPASSWORD"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;sys_user_initPassword&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/todo/todo.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TodoInputSchema"></a>
+                    <span class="name">
+                        <span ><b>TodoInputSchema</b></span>
+                        <a href="#TodoInputSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>TodoOptionalDefaultsSchema.pick({
+  value: true,
+  status: true,
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/trpc/trpc.instance.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="trpc"></a>
+                    <span class="name">
+                        <span ><b>trpc</b></span>
+                        <a href="#trpc"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>initTRPC.context&lt;Context&gt;().meta&lt;Meta&gt;().create({
+  errorFormatter(opts) {
+    const { shape, error, ctx } &#x3D; opts
+    let bizMessage &#x3D; &#x27;&#x27;
+    let code &#x3D; undefined as number | undefined
+
+    if (error.cause instanceof BizException) {
+      const BizError &#x3D; error.cause
+
+      bizMessage
+        &#x3D; BizError.message
+      code &#x3D; BizError.bizCode
+    }
+
+    if (error.cause instanceof ZodError) {
+      return {
+        ...shape,
+        data: {},
+        zodError:
+          error.code &#x3D;&#x3D;&#x3D; &#x27;BAD_REQUEST&#x27;
+            ? error.cause.flatten()
+            : null,
+      }
+    }
+
+    return {
+      ...shape,
+      code: code || shape.code,
+      message: bizMessage || shape.message,
+      data: {},
+    }
+  },
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/shared/trpc/trpc.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="TRPC_ROUTER"></a>
+                    <span class="name">
+                        <span ><b>TRPC_ROUTER</b></span>
+                        <a href="#TRPC_ROUTER"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;TRPC_ROUTER&#x27;</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/user/dto/user.dto.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="UserInputSchema"></a>
+                    <span class="name">
+                        <span ><b>UserInputSchema</b></span>
+                        <a href="#UserInputSchema"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>UserOptionalDefaultsSchema.extend({
+  phone: z.string().optional(),
+  remark: z.string().optional(),
+  desc: z.string().optional(),
+
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/modules/user/user.constant.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="UserProfileSelect"></a>
+                    <span class="name">
+                        <span ><b>UserProfileSelect</b></span>
+                        <a href="#UserProfileSelect"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object" target="_blank" >object</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{
+  id: true,
+  nickname: true,
+  avatar: true,
+  desc: true,
+  email: true,
+  gender: true,
+  yoId: true,
+  role: true,
+}</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="UserSelect"></a>
+                    <span class="name">
+                        <span ><b>UserSelect</b></span>
+                        <a href="#UserSelect"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{
+  id: true,
+  nickname: true,
+  avatar: true,
+  desc: true,
+} satisfies Prisma.UserSelect</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+    <h3>src/common/pipes/zod-validation.pipe.ts</h3>
+    <section data-compodoc="block-properties">
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ZodValidationPipe"></a>
+                    <span class="name">
+                        <span ><b>ZodValidationPipe</b></span>
+                        <a href="#ZodValidationPipe"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>createZodValidationPipe({
+  createValidationException: (error: ZodError) &#x3D;&gt; {
+    const firstError &#x3D; error.errors[0]
+
+    if (&#x27;expected&#x27; in firstError) {
+      let formattedErrorMessage: string &#x3D; firstError.code
+      if (firstError.path.length !&#x3D;&#x3D; 0)
+        formattedErrorMessage &#x3D; &#x60;Path \&#x60;${firstError.path}\&#x60; should be \&#x60;${firstError.expected}\&#x60;, but got \&#x60;${firstError.received}\&#x60;&#x60;
+
+      return new UnprocessableEntityException(formattedErrorMessage)
+    }
+
+    return new UnprocessableEntityException(
+      &#x60;\&#x60;${firstError.path}\&#x60;: ${firstError.message}&#x60;,
+    )
+  },
+})</code>
+                    </td>
+                </tr>
+
+
+        </tbody>
+    </table>
+</section>
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'miscellaneous-variables';
+            var COMPODOC_CURRENT_PAGE_URL = 'variables.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

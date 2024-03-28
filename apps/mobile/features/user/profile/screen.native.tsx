@@ -21,8 +21,7 @@ const TAB_BAR_HEIGHT = 32
 const TAB_VIEW_MARGIN_TOP = -1
 
 function getTopBarBg() {
-  const themeName = useThemeName()
-  return themeName === 'light' ? '#334155' : '#333345'
+  return '#334155'
 }
 
 export function ProfileScreen() {
@@ -104,7 +103,7 @@ export function ProfileScreen() {
                 <Avatar.Image
                 // @ts-expect-error
                   source={{
-                    uri: data?.avatar!,
+                    uri: data?.avatar,
                     width: '100%',
                     height: '100%',
                   }}

@@ -13,7 +13,7 @@ import { Action } from '../casl/ability.class'
 
 import { HistoryService } from '../history/history.service'
 
-import { NoteDto, NoteInputSchema, NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
+import { NoteByTagDto, NoteDto, NoteInputSchema, NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
 
@@ -81,6 +81,17 @@ export class NoteTrpcRouter implements OnModuleInit {
           await this.notePublicService.appendInteractInfo(note as unknown as Note, user.id, true)
 
           return note
+        }),
+      byTag: procedureAuth
+        .input(NoteByTagDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          const { items, meta } = await this.notePublicService.getNotesByTag(input)
+
+          await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
+
+          return { items, meta }
         }),
       search: procedureAuth
         .input(NoteSearchDto.schema)

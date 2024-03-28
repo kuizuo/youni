@@ -33,8 +33,8 @@ export function NoteFooter({ item }: { item: NoteItem }) {
                 unstyled
               />
             </XStack>
-            <XStack gap="$3">
-              <NoteLikeButton size={18} item={item} />
+            <XStack gap="$2">
+              <NoteLikeButton size={18} item={item} placeholder="喜欢" />
               <NoteCollectButton size={18} item={item} />
             </XStack>
           </XStack>

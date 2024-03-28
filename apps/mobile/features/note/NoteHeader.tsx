@@ -31,6 +31,9 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
             <NoteShareButton item={item} />
           </>
       )}
+      style={{
+        marginBottom: 8,
+      }}
     >
       <Link href={`/user/${user.id}/profile`} asChild>
         <XStack flex={1} gap="$2.5" ai="center">

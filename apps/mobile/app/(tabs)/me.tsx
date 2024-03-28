@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router'
-import { ProfileScreen } from '@/features/user/profile/screen'
+import { ProfileScreen } from '@/features/user/profile/screen.native'
 
 export default function Screen() {
   return (

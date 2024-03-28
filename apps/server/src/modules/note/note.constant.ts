@@ -14,7 +14,12 @@ export const NoteSelect = {
   content: true,
   images: true,
   cover: true,
-  tags: true,
+  tags: {
+    select: {
+      name: true,
+      type: true,
+    },
+  },
   interact: true,
   user: {
     select: {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 
 import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
+import { snowflake } from '@server/shared/database/snowflake.util'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
@@ -62,7 +63,15 @@ export class NoteService {
   }
 
   async create(dto: NoteDto, userId: string) {
-    const { images, ...data } = dto
+    const { images, tags, ...data } = dto
+
+    // await this.prisma.noteTag.createMany({
+    //   data: tags.map(tag => ({
+    //     name: tag,
+    //     type: 'topic',
+    //   })),
+    //   skipDuplicates: true,
+    // })
 
     return this.prisma.note.create({
       data: {
@@ -71,12 +80,25 @@ export class NoteService {
         images,
         cover: images![0],
         publishTime: new Date(),
+        tags: {
+          connectOrCreate: tags.map(tag => ({
+            where: {
+              name: tag,
+            },
+            create: {
+              id: snowflake.nextId(),
+              name: tag,
+              type: 'topic',
+            },
+          })),
+        },
       },
     })
   }
 
   async update(id: string, dto: NoteUpdateDto) {
-    const { images, ...data } = dto
+    const { images, tags, ...data } = dto
+
     return this.prisma.note.update({
       where: { id },
       data: {
@@ -84,6 +106,19 @@ export class NoteService {
         images,
         cover: images![0],
         publishTime: new Date(),
+        ...(tags && {
+          tags: {
+            connectOrCreate: tags.map(tag => ({
+              where: {
+                name: tag,
+              },
+              create: {
+                name: tag,
+                type: 'topic',
+              },
+            })),
+          },
+        }),
       },
     })
   }

@@ -7,13 +7,13 @@ import { InteractType } from '../interact.constant'
 
 @Injectable()
 export class ViewService {
-  constructor(@InjectRedis() private redis: Redis) {}
+  constructor(@InjectRedis() private redis: Redis) { }
 
-  async addView(type: InteractType, itemId: number, uid: number): Promise<void> {
-    await this.redis.pfadd(getRedisKey(`${type}:${itemId}:views`), uid)
+  async increase(type: InteractType, itemId: string, userId: string): Promise<void> {
+    await this.redis.pfadd(getRedisKey(`${type}:${itemId}:views`), userId)
   }
 
-  async countViews(type: InteractType, itemId: number): Promise<number> {
+  async count(type: InteractType, itemId: string): Promise<number> {
     return +await this.redis.pfcount(getRedisKey(`${type}:${itemId}:views`))
   }
 }

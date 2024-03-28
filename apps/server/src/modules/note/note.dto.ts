@@ -11,6 +11,7 @@ export const NoteInputSchema = NoteOptionalDefaultsSchema
     title: z.string().min(1, { message: '标题不能为空' }),
     images: ImageSchema.array().min(1, { message: '至少需要一张图片' }),
     publishTime: z.coerce.date().optional().nullable(),
+    tags: z.string().array().default([]),
   })
   .omit(defaultSchemaOmit)
 
@@ -31,4 +32,8 @@ export class NoteSearchDto extends createZodDto(basePagerSchema.extend({
   sortOrder: z.string()
     .or(z.enum(['asc', 'desc']))
     .optional(),
+})) { }
+
+export class NoteByTagDto extends createZodDto(basePagerSchema.extend({
+  tag: z.string(),
 })) { }

@@ -24,8 +24,6 @@ interface Props {
 export function NoteList({ userId, contentContainerStyle }: Props) {
   const media = useMedia()
 
-  const { currentUser } = useUser()
-
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.userLikedNotes.useSuspenseInfiniteQuery(
     {
       userId,

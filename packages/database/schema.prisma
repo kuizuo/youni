@@ -106,10 +106,13 @@ model Note {
 }
 
 model NoteTag {
-  id    String @id @default("")
-  name  String
-  type  String
-  notes Note[]
+  id        String   @id @default("")
+  name      String   @unique() @db.VarChar(20)
+  type      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  notes     Note[]
+
+  @@index([name])
 }
 
 model Collection {

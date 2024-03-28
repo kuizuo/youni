@@ -1,8 +1,9 @@
+import { useId, useState } from 'react'
+import type { ReactNode } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { Link, useRouter } from 'expo-router'
 import type { BaseUserInfo } from '@server/modules/user/user'
 import { Check } from '@tamagui/lucide-icons'
-import { useId, useState } from 'react'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { NoteSheet } from './NoteSheet'
 import { NoteLikeButton } from './NoteLikeButton'
@@ -10,7 +11,7 @@ import { historyStateAtoms } from '@/atoms/history'
 import { useSheetOpen } from '@/atoms/sheet'
 import { Avatar, Card, Checkbox, CheckedState, Image, Paragraph, SizableText, View, XStack, YStack, useTheme } from '@/ui'
 
-export function NoteListItem(item: NoteItem): React.ReactNode {
+export function NoteListItem(item: NoteItem): ReactNode {
   const theme = useTheme()
   const router = useRouter()
   const [_, setSheetOpen] = useSheetOpen()
@@ -101,27 +102,25 @@ export function NoteListItem(item: NoteItem): React.ReactNode {
   )
 }
 
-function UserAvatar({ user }: { user: BaseUserInfo }): React.ReactNode {
+function UserAvatar({ user }: { user: BaseUserInfo }): ReactNode {
   return (
-    <Link href={`/user/${user.id}/profile`} asChild>
-      <XStack gap="$2.5" ai="center">
-        <Avatar circular size="$1">
-          <Avatar.Image
-            width="100%"
-            height="100%"
+    <XStack gap="$2.5" ai="center">
+      <Avatar circular size="$1">
+        <Avatar.Image
+          width="100%"
+          height="100%"
             // @ts-expect-error
-            source={{
-              uri: user.avatar,
-              width: '100%',
-              height: '100%',
-            }}
-          />
-          <Avatar.Fallback />
-        </Avatar>
-        <SizableText fontSize={14} opacity={0.7}>
-          {user.nickname}
-        </SizableText>
-      </XStack>
-    </Link>
+          source={{
+            uri: user.avatar,
+            width: '100%',
+            height: '100%',
+          }}
+        />
+        <Avatar.Fallback />
+      </Avatar>
+      <SizableText fontSize={14} opacity={0.7}>
+        {user.nickname}
+      </SizableText>
+    </XStack>
   )
 }

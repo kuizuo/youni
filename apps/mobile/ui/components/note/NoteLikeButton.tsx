@@ -11,9 +11,10 @@ export interface Props {
   item: NoteItem
   size?: number
   color?: ColorTokens
+  placeholder?: string
 }
 
-export function NoteLikeButton({ item, size = 16, color = 'gray' }: Props) {
+export function NoteLikeButton({ item, size = 16, color = 'gray', placeholder }: Props) {
   const [liked, setLiked] = useState(item.interact.liked)
   const [likedCount, setLikedCount] = useState(item.interact.likedCount)
 
@@ -56,7 +57,7 @@ export function NoteLikeButton({ item, size = 16, color = 'gray' }: Props) {
         </Animated.View>
       </TouchableOpacity>
       <SizableText fontSize={14} color={color}>
-        {likedCount || ' '}
+        {likedCount || placeholder || ' '}
       </SizableText>
     </XStack>
   )
