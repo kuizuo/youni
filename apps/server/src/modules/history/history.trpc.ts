@@ -7,6 +7,8 @@ import { TRPCService } from '@server/shared/trpc/trpc.service'
 
 import { Note } from '@youni/database'
 
+import { z } from 'zod'
+
 import { NotePublicService } from '../note/note.public.service'
 
 import { HistoryPagerDto } from './history.dto'
@@ -37,7 +39,7 @@ export class HistoryTrpcRouter implements OnModuleInit {
 
           const { items, meta } = await this.historyService.paginate(input, user.id)
 
-          const noteIds = items.map(item => item.noteId!)
+          const noteIds = items.filter(item => item.noteId).map(item => item.noteId!)
 
           const notes = await this.noteService.getNotesByIds(noteIds)
 
@@ -55,6 +57,13 @@ export class HistoryTrpcRouter implements OnModuleInit {
           const { ids } = input
 
           return this.historyService.batchDelete(ids, user.id)
+        }),
+      clear: procedureAuth
+        .input(z.undefined())
+        .mutation(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          return this.historyService.clear(user.id)
         }),
     })
   }

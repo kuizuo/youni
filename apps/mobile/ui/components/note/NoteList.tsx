@@ -1,12 +1,11 @@
 import type { NoteItem } from '@server/modules/note/note'
-import type { MasonryListRenderItem } from '@shopify/flash-list'
+import type { FlashListProps, MasonryListRenderItem } from '@shopify/flash-list'
 import { MasonryFlashList } from '@shopify/flash-list'
 import { useMedia } from 'tamagui'
 import { useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { ActivityIndicator } from 'react-native'
-import { EmptyResult } from '../EmptyResult'
 import { NoteListItem } from './NoteListItem'
 
 interface Props {
@@ -15,6 +14,7 @@ interface Props {
   isFetchingNextPage?: boolean
   onRefresh?: () => void
   onEndReached?: () => void
+  ListEmptyComponent?: FlashListProps<NoteItem>['ListEmptyComponent']
 }
 
 export function NoteList({
@@ -23,6 +23,7 @@ export function NoteList({
   isFetchingNextPage,
   onRefresh,
   onEndReached,
+  ListEmptyComponent,
 }: Props) {
   const media = useMedia()
 
@@ -55,11 +56,7 @@ export function NoteList({
             : null}
         </SafeAreaView>
       )}
-      ListEmptyComponent={(
-        <EmptyResult
-          title="没有更多笔记了"
-        />
-      )}
+      ListEmptyComponent={ListEmptyComponent}
     />
   )
 }

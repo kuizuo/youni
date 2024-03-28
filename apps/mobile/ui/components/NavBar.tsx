@@ -29,7 +29,8 @@ export function NavBar({
       fd="row"
       px="$2.5"
       gap="$2"
-      paddingTop={safeTop || '$2.5'}
+      pt={safeTop || '$2.5'}
+      pb="$2.5"
       ai="center"
       style={style}
     >

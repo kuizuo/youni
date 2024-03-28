@@ -38,13 +38,13 @@ export function ImageCarousel({ data, width, height }: Props): React.ReactNode {
         <View
           fd="row"
           jc="center"
-          paddingTop="$2"
+          pt="$2"
           gap="$1.5"
         >
           {data?.map((_, index) => {
             return (
               <PaginationItem
-                bg="gray"
+                backgroundColor="gray"
                 animValue={progressValue}
                 index={index}
                 key={index}
@@ -59,14 +59,21 @@ export function ImageCarousel({ data, width, height }: Props): React.ReactNode {
   )
 }
 
-const PaginationItem: React.FC<{
-  index: number
-  backgroundColor: string
-  length: number
-  animValue: Animated.SharedValue<number>
-  isRotate?: boolean
-}> = (props) => {
-  const { animValue, index, length, backgroundColor, isRotate } = props
+function PaginationItem(
+  {
+    animValue,
+    index,
+    length,
+    backgroundColor,
+    isRotate,
+  }: {
+    index: number
+    backgroundColor: string
+    length: number
+    animValue: Animated.SharedValue<number>
+    isRotate?: boolean
+  },
+) {
   const width = 8
 
   const animStyle = useAnimatedStyle(() => {

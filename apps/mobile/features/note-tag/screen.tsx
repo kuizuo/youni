@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useMemo } from 'react'
-import { uniqBy } from 'lodash-es'
+import type { NoteItem } from '@server/modules/note/note'
 import { Separator, SizableText, Text, XStack, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
@@ -23,7 +23,7 @@ export default function NoteTagScreen() {
   )
 
   const flatedData = useMemo(
-    () => uniqBy(data.pages.map(page => page.items).flat(), 'id'),
+    () => data.pages.map(page => page.items).flat(),
     [data.pages],
   )
 
@@ -47,7 +47,7 @@ export default function NoteTagScreen() {
 
       {/* TODO: 最热/最新 */}
       <NoteList
-        data={flatedData}
+        data={flatedData as unknown as NoteItem[]}
         isRefreshing={isRefetching}
         isFetchingNextPage={isFetchingNextPage}
         onRefresh={() => refetch()}

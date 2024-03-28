@@ -85,7 +85,6 @@ export function ProfileScreen() {
         right={<ArrowUpRightFromSquare size="$1" color="white" />}
         style={{
           backgroundColor: getTopBarBg(),
-          paddingBottom: 12,
           zIndex: 100,
         }}
       >

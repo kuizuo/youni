@@ -77,4 +77,12 @@ export class HistoryService {
       },
     })
   }
+
+  async clear(userId: string) {
+    return await this.prisma.history.deleteMany({
+      where: {
+        userId,
+      },
+    })
+  }
 }
