@@ -11,7 +11,7 @@ export function NotificationScreen(): React.ReactNode {
     <>
       <Stack.Screen options={{
         headerShown: true,
-        title: '通知',
+        title: '消息',
         headerTitleAlign: 'center',
         headerShadowVisible: false,
       }}
@@ -74,9 +74,10 @@ export function NotificationScreen(): React.ReactNode {
         </XStack>
         <YStack>
           <NotificationItem
-            title="消息通知"
-            image=""
-            onPress={() => {}}
+            title="系统通知"
+            image={require('@/assets/images/message2.png')}
+            desc=" "
+            onPress={() => router.push('/notification/system')}
           />
         </YStack>
       </YStack>

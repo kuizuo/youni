@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Avatar, SizableText, XStack, YStack } from '@/ui'
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
   onPress?: () => void
 }
 
-export function NotificationItem({ title, desc, image, onPress }: Props): React.ReactElement {
+export function NotificationItem({ title, desc, image, onPress }: Props): ReactNode {
   return (
     <XStack p="$3" gap="$3" height="$8" ai="center" onPress={onPress}>
       <Avatar circular size="$5">
