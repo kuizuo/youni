@@ -38,8 +38,8 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
             </Paragraph>
             <XStack gap="$2.5" ai="center">
               <XStack flex={1} jc="flex-end" ai="center" gap="$2.5">
-                <NoteLikeButton size={20} color="$gray10" item={item} />
-                <NoteCollectButton size={20} color="$gray10" item={item} />
+                <NoteLikeButton size={20} color="$gray10" item={item} placeholder="喜欢" />
+                <NoteCollectButton size={20} color="$gray10" item={item} placeholder="收藏" />
                 <NoteCommentButton size={20} color="$gray10" item={item} />
               </XStack>
             </XStack>

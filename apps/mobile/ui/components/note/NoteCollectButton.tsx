@@ -9,12 +9,14 @@ export interface Props {
   item: NoteItem
   size?: SizeTokens
   color?: ColorTokens
+  placeholder?: string
 }
 
 export function NoteCollectButton({
   item,
   size = 16,
   color = 'gray',
+  placeholder,
 }: Props) {
   const [collected, setCollected] = useState(item.interact.collected)
   const [collectedCount, setCollectedCount] = useState(item.interact.collectedCount)
@@ -46,7 +48,7 @@ export function NoteCollectButton({
       >
       </Button>
       <Text fontSize={14} color={color}>
-        {collectedCount || '收藏'}
+        {collectedCount || placeholder || '收藏'}
       </Text>
     </XStack>
   )
