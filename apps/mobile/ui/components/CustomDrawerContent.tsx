@@ -1,5 +1,5 @@
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer'
-import { BadgeHelp, History, Settings } from '@tamagui/lucide-icons'
+import { BadgeHelp, Highlighter, History, Settings } from '@tamagui/lucide-icons'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 
@@ -13,18 +13,31 @@ export default function CustomDrawerContent() {
   const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useDrawerOpen()
 
-  const bottomNav: { name: string, icon: JSX.Element, onPress: () => void }[] = [
+  const drawerItems: React.ComponentProps<typeof DrawerItem>[] = [
     {
-      name: '设置',
-      icon: <Settings size="$1.5" />,
+      label: '创作中心',
+      icon: () => <Highlighter size="$1" />,
+      onPress: () => handlePressItem(() => router.push('/(creator)/')),
+    },
+    {
+      label: '浏览记录',
+      icon: () => <History size="$1" />,
+      onPress: () => handlePressItem(() => router.push('/history/')),
+    },
+  ]
+
+  const bottomNav: { label: string, icon: JSX.Element, onPress: () => void }[] = [
+    {
+      label: '设置',
+      icon: <Settings size="$1" />,
       onPress: () => handlePressItem(() => router.push('/setting/')),
     },
     {
-      name: '帮助与反馈',
-      icon: <BadgeHelp size="$1.5" />,
+      label: '帮助与反馈',
+      icon: <BadgeHelp size="$1" />,
       onPress: () => {},
     },
-    // { name: '扫一扫', onPress: ()=>{}},
+    // { label: '扫一扫', onPress: ()=>{}},
   ]
 
   const handlePressItem = (callback: () => void) => {
@@ -45,11 +58,18 @@ export default function CustomDrawerContent() {
       {/* <DrawerItemList {...props} /> */}
 
       <YStack flex={1} mx="$2">
-        <DrawerItem
-          icon={() => <History />}
-          label="浏览记录"
-          onPress={() => handlePressItem(() => router.push('/history/'))}
-        />
+
+        {drawerItems.map(({ label, icon, onPress }) => (
+          <DrawerItem
+            key={label as string}
+            icon={icon}
+            label={label}
+            onPress={onPress}
+          />
+        ))}
+
+        <Separator my={15} />
+
         <DrawerItem
           label="子项 1"
           onPress={() => {}}
@@ -59,8 +79,6 @@ export default function CustomDrawerContent() {
           onPress={() => {}}
         />
 
-        <Separator my={15} />
-
         <XStack
           position="absolute"
           bottom={bottom}
@@ -68,9 +86,9 @@ export default function CustomDrawerContent() {
           mx="$4"
           gap="$4"
         >
-          {bottomNav.map(({ name, icon, onPress }) => (
+          {bottomNav.map(({ label, icon, onPress }) => (
             <YStack
-              key={name}
+              key={label}
               flex={1}
               jc="center"
               ai="center"
@@ -92,7 +110,7 @@ export default function CustomDrawerContent() {
                 <Button icon={icon} unstyled />
               </BlurView>
               <SizableText fontSize={10} flex={1} textAlign="center">
-                {name}
+                {label}
               </SizableText>
             </YStack>
           ))}
