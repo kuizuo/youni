@@ -42,5 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig & { hostUri?: string } =>
     tsconfigPaths: true,
     typedRoutes: true,
   },
-  plugins: ['expo-router'],
+  plugins: ['expo-router', ['expo-image-picker', {
+    photosPermission: 'The app accesses your photos to let you share them with your friends.',
+  }]],
 })

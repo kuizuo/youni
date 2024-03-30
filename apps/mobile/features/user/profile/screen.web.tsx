@@ -146,7 +146,8 @@ export function ProfileScreen() {
         zIndex: -1,
       }]}
     /> */}
-      <TabView
+      <UserHeader />
+      {/* <TabView
         style={{ marginTop: TAB_VIEW_MARGIN_TOP }}
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -265,7 +266,7 @@ export function ProfileScreen() {
           )
         }}
       >
-      </TabView>
+      </TabView> */}
     </YStack>
   )
 }

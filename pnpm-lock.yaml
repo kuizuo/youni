@@ -174,6 +174,9 @@ importers:
       '@expo/metro-runtime':
         specifier: ^3.1.3
         version: 3.1.3(react-native@0.73.5)
+      '@expo/react-native-action-sheet':
+        specifier: ^4.0.1
+        version: 4.0.1(react@18.2.0)
       '@hookform/resolvers':
         specifier: ^3.3.4
         version: 3.3.4(react-hook-form@7.50.1)
@@ -305,7 +308,7 @@ importers:
         version: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
       react-native-collapsible-tab-view:
         specifier: ^6.2.1
-        version: 6.2.1(@shopify/flash-list@1.6.3)(react-native-pager-view@6.2.3)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0)
+        version: 6.2.1(@shopify/flash-list@1.6.3)(react-native-pager-view@6.3.0)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0)
       react-native-drawer-layout:
         specifier: ^3.2.2
         version: 3.2.2(react-native-gesture-handler@2.14.1)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0)
@@ -319,8 +322,8 @@ importers:
         specifier: ^2.12.1
         version: 2.12.1(react-native@0.73.5)(react@18.2.0)
       react-native-pager-view:
-        specifier: ^6.2.3
-        version: 6.2.3(react-native@0.73.5)(react@18.2.0)
+        specifier: ^6.3.0
+        version: 6.3.0(react-native@0.73.5)(react@18.2.0)
       react-native-reanimated:
         specifier: ~3.6.2
         version: 3.6.3(@babel/core@7.24.0)(@babel/plugin-proposal-nullish-coalescing-operator@7.18.6)(@babel/plugin-proposal-optional-chaining@7.21.0)(@babel/plugin-transform-arrow-functions@7.23.3)(@babel/plugin-transform-shorthand-properties@7.23.3)(@babel/plugin-transform-template-literals@7.23.3)(react-native@0.73.5)(react@18.2.0)
@@ -338,7 +341,7 @@ importers:
         version: 15.0.0(react-native@0.73.5)(react@18.2.0)
       react-native-tab-view:
         specifier: ^3.5.2
-        version: 3.5.2(react-native-pager-view@6.2.3)(react-native@0.73.5)(react@18.2.0)
+        version: 3.5.2(react-native-pager-view@6.3.0)(react-native@0.73.5)(react@18.2.0)
       react-native-url-polyfill:
         specifier: ^2.0.0
         version: 2.0.0(react-native@0.73.5)
@@ -3392,7 +3395,7 @@ packages:
       object-assign: 4.1.1
       open: 8.4.0
       proxy-middleware: 0.15.0
-      send: 1.0.0-beta.2
+      send: 0.18.0
       serve-index: 1.9.1
     transitivePeerDependencies:
       - supports-color
@@ -4782,6 +4785,16 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+    dev: false
+
+  /@expo/react-native-action-sheet@4.0.1(react@18.2.0):
+    resolution: {integrity: sha512-FwCFpjpB6yzrK8CIWssLlh/i6zQFytFBiJfNdz0mJ2ckU4hWk8SrjB37P0Q4kF7w0bnIdYzPgRbdPR9hnfFqPw==}
+    peerDependencies:
+      react: '>=16.3.0'
+    dependencies:
+      '@types/hoist-non-react-statics': 3.3.5
+      hoist-non-react-statics: 3.3.2
+      react: 18.2.0
     dev: false
 
   /@expo/rudder-sdk-node@1.1.1:
@@ -9445,7 +9458,6 @@ packages:
     dependencies:
       '@types/react': 18.2.61
       hoist-non-react-statics: 3.3.2
-    dev: true
 
   /@types/html-minifier-terser@6.1.0:
     resolution: {integrity: sha512-oh/6byDPnL1zeNXFrDXFLyZjkr1MsBG667IM792caf1L2UPOOMf65NFzjUH/ltyfwjAGfs1rsX1eftK0jC/KIg==}
@@ -9575,7 +9587,6 @@ packages:
 
   /@types/prop-types@15.7.11:
     resolution: {integrity: sha512-ga8y9v9uyeiLdpKddhxYQkxNDrfvuPrlFb0N1qnZZByvcElJaXthF1UhvCh9TLWJBEHeNtdnbysW7Y6Uq8CVng==}
-    dev: true
 
   /@types/pug@2.0.10:
     resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
@@ -9641,7 +9652,6 @@ packages:
       '@types/prop-types': 15.7.11
       '@types/scheduler': 0.16.8
       csstype: 3.1.3
-    dev: true
 
   /@types/responselike@1.0.3:
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
@@ -9655,7 +9665,6 @@ packages:
 
   /@types/scheduler@0.16.8:
     resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
-    dev: true
 
   /@types/semver@7.5.8:
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -14299,17 +14308,6 @@ packages:
         optional: true
     dependencies:
       ms: 2.0.0
-
-  /debug@3.1.0:
-    resolution: {integrity: sha512-OX8XqP7/1a9cqkxYw2yXss15f26NKWBpDXQd0/uK/KPqdQhxbPa994hnzjcE2VqQpDslf55723cKPUOGSmMY3g==}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-    dependencies:
-      ms: 2.0.0
-    dev: true
 
   /debug@3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
@@ -26603,7 +26601,7 @@ packages:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}
     dev: true
 
-  /react-native-collapsible-tab-view@6.2.1(@shopify/flash-list@1.6.3)(react-native-pager-view@6.2.3)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0):
+  /react-native-collapsible-tab-view@6.2.1(@shopify/flash-list@1.6.3)(react-native-pager-view@6.3.0)(react-native-reanimated@3.6.3)(react-native@0.73.5)(react@18.2.0):
     resolution: {integrity: sha512-pgmpZYSg6TPYmhv3Dw/czFJHk4AzcYN2df3EMlKwFqbu1ifmlA866hBUVDX3mlbRaros75U5S1wpGCwlqqXLTQ==}
     peerDependencies:
       '@shopify/flash-list': '>=1.0.0'
@@ -26618,7 +26616,7 @@ packages:
       '@shopify/flash-list': 1.6.3(@babel/runtime@7.24.0)(react-native@0.73.5)(react@18.2.0)
       react: 18.2.0
       react-native: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
-      react-native-pager-view: 6.2.3(react-native@0.73.5)(react@18.2.0)
+      react-native-pager-view: 6.3.0(react-native@0.73.5)(react@18.2.0)
       react-native-reanimated: 3.6.3(@babel/core@7.24.0)(@babel/plugin-proposal-nullish-coalescing-operator@7.18.6)(@babel/plugin-proposal-optional-chaining@7.21.0)(@babel/plugin-transform-arrow-functions@7.23.3)(@babel/plugin-transform-shorthand-properties@7.23.3)(@babel/plugin-transform-template-literals@7.23.3)(react-native@0.73.5)(react@18.2.0)
       use-deep-compare: 1.2.1(react@18.2.0)
     dev: false
@@ -26716,8 +26714,8 @@ packages:
       react-native: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
     dev: false
 
-  /react-native-pager-view@6.2.3(react-native@0.73.5)(react@18.2.0):
-    resolution: {integrity: sha512-dqVpXWFtPNfD3D2QQQr8BP+ullS5MhjRJuF8Z/qml4QTILcrWaW8F5iAxKkQR3Jl0ikcEryG/+SQlNcwlo0Ggg==}
+  /react-native-pager-view@6.3.0(react-native@0.73.5)(react@18.2.0):
+    resolution: {integrity: sha512-ufJOoVa9pFL1J/yb4hpsCqp8n1qTlcF5VvwqvCacHX//D7hSeRscsiIXg1u1pXNWwllvACb+mqxec/3Uj2mxrA==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -26806,7 +26804,7 @@ packages:
       react-tween-state: 0.1.5
     dev: true
 
-  /react-native-tab-view@3.5.2(react-native-pager-view@6.2.3)(react-native@0.73.5)(react@18.2.0):
+  /react-native-tab-view@3.5.2(react-native-pager-view@6.3.0)(react-native@0.73.5)(react@18.2.0):
     resolution: {integrity: sha512-nE5WqjbeEPsWQx4mtz81QGVvgHRhujTNIIZiMCx3Bj6CBFDafbk7XZp9ocmtzXUQaZ4bhtVS43R4FIiR4LboJw==}
     peerDependencies:
       react: '*'
@@ -26815,7 +26813,7 @@ packages:
     dependencies:
       react: 18.2.0
       react-native: 0.73.5(@babel/core@7.24.0)(@babel/preset-env@7.24.0)(react@18.2.0)
-      react-native-pager-view: 6.2.3(react-native@0.73.5)(react@18.2.0)
+      react-native-pager-view: 6.3.0(react-native@0.73.5)(react@18.2.0)
       use-latest-callback: 0.1.9(react@18.2.0)
     dev: false
 
@@ -28247,26 +28245,6 @@ packages:
       statuses: 2.0.1
     transitivePeerDependencies:
       - supports-color
-
-  /send@1.0.0-beta.2:
-    resolution: {integrity: sha512-k1yHu/FNK745PULKdsGpQ+bVSXYNwSk+bWnYzbxGZbt5obZc0JKDVANsCRuJD1X/EG15JtP9eZpwxkhUxIYEcg==}
-    engines: {node: '>= 0.10'}
-    dependencies:
-      debug: 3.1.0
-      destroy: 1.2.0
-      encodeurl: 1.0.2
-      escape-html: 1.0.3
-      etag: 1.8.1
-      fresh: 0.5.2
-      http-errors: 2.0.0
-      mime-types: 2.1.35
-      ms: 2.1.3
-      on-finished: 2.4.1
-      range-parser: 1.2.1
-      statuses: 2.0.1
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
 
   /serialize-error@2.1.0:
     resolution: {integrity: sha512-ghgmKt5o4Tly5yEG/UJp8qTd0AN7Xalw4XBtDEKP655B699qMEtra1WlXeE6WIvdEG481JvRxULKsInq/iNysw==}

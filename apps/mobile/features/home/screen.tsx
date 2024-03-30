@@ -3,6 +3,7 @@ import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Menu, Search } from '@tamagui/lucide-icons'
 import { useRouter } from 'expo-router'
+import type { IconProps } from '@tamagui/helpers-icon'
 import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
 import { DrawerContainer } from '@/ui/components/DrawerContainer'
@@ -30,15 +31,19 @@ export function HomeScreen(): React.ReactNode {
     [],
   )
 
-  function MenuButton(props: any) {
+  function MenuButton(props: IconProps) {
     const [open, setOpen] = useDrawerOpen()
 
     return (
-      <Menu size="$1" onPress={() => setOpen(true)} {...props} />
+      <Menu
+        size="$1"
+        onPress={() => setOpen(true)}
+        {...props}
+      />
     )
   }
 
-  function SearchButton(props: any) {
+  function SearchButton(props: IconProps) {
     const router = useRouter()
     return (
       <Search size="$1" onPress={() => router.push('/search')} {...props} />
@@ -48,7 +53,6 @@ export function HomeScreen(): React.ReactNode {
   return (
     <YStack flex={1} bg="$background" pt={top}>
       <DrawerContainer>
-
         <TabView
           navigationState={{ index, routes: TABS }}
           onIndexChange={setIndex}
@@ -68,9 +72,9 @@ export function HomeScreen(): React.ReactNode {
           renderTabBar={(props) => {
             return (
               <>
-                <View position="relative" height={24} ai="center" px="$4" marginBottom="$2">
-                  <MenuButton position="absolute" left={0} marginLeft="$3" />
-                  <SearchButton position="absolute" right={0} marginRight="$3" />
+                <View position="relative" height={30} ai="center" mx="$4">
+                  <MenuButton position="absolute" left={0} />
+                  <SearchButton position="absolute" right={0} />
 
                   <TabBar
                     {...props}

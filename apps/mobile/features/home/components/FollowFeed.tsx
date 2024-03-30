@@ -10,7 +10,7 @@ import { useUser } from '@/utils/auth/hooks/useUser'
 const FollowFeed = memo((): React.ReactNode => {
   const { currentUser } = useUser()
 
-  const { data } = trpc.interact.state.useQuery({ id: currentUser!.id })
+  const [data] = trpc.interact.state.useSuspenseQuery({ id: currentUser?.id })
 
   const hasFollowedUsers = useMemo(() => data?.followingCount !== 0, [data?.followingCount])
 
