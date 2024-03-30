@@ -1,11 +1,12 @@
-import type { NoteItem } from '@server/modules/note/note'
+import type { ReactNode } from 'react'
 import { memo, useMemo } from 'react'
+import type { NoteItem } from '@server/modules/note/note'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 
-function HomeFeed(): React.ReactNode {
+function HomeFeed(): ReactNode {
   const [data, { isRefetching, refetch, hasNextPage, fetchNextPage }] = trpc.note.homeFeed.useSuspenseInfiniteQuery(
     {
       limit: 10,

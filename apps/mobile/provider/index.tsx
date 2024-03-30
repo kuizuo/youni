@@ -21,7 +21,6 @@ export function Provider({
         <TamaguiProvider>
           <SafeAreaProvider>
             <ActionSheetProvider>
-
               <SolitoImageProvider>
                 <ToastProvider swipeDirection="horizontal" duration={5000} native={['mobile']}>
                   <JotaiProvider>
@@ -34,7 +33,6 @@ export function Provider({
                 </ToastProvider>
               </SolitoImageProvider>
             </ActionSheetProvider>
-
           </SafeAreaProvider>
         </TamaguiProvider>
       </TamaguiThemeProvider>

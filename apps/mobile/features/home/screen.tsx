@@ -72,7 +72,7 @@ export function HomeScreen(): React.ReactNode {
           renderTabBar={(props) => {
             return (
               <>
-                <View position="relative" height={30} ai="center" mx="$4">
+                <View position="relative" height={30} ai="center" mx="$4" mb="$2.5">
                   <MenuButton position="absolute" left={0} />
                   <SearchButton position="absolute" right={0} />
 

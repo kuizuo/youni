@@ -3,7 +3,7 @@ import { Link } from 'expo-router'
 import { XStack } from 'tamagui'
 import type { UserInfo } from '@server/modules/user/user'
 import { BlurView } from 'expo-blur'
-import { Button, Text } from '@/ui'
+import { Button, Text, useTheme } from '@/ui'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useUser } from '@/utils/auth/hooks/useUser'
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export function InteractInfo({ user }: Props): React.ReactNode {
+  const theme = useTheme()
   const { data } = trpc.interact.state.useQuery({ id: user.id })
 
   const { currentUser } = useUser()
@@ -26,7 +27,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
           borderRadius: 50,
           overflow: 'hidden',
           borderWidth: 1,
-          borderColor: '#f1f5f9',
+          borderColor: theme.$borderColor?.get(),
           paddingHorizontal: 8,
           paddingVertical: 2,
         }}
@@ -49,7 +50,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
           borderRadius: 50,
           overflow: 'hidden',
           borderWidth: 1,
-          borderColor: '#f1f5f9',
+          borderColor: theme.$borderColor?.get(),
           paddingHorizontal: 6,
           paddingVertical: 4,
         }}
@@ -69,7 +70,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
           borderRadius: 50,
           overflow: 'hidden',
           borderWidth: 1,
-          borderColor: '#f1f5f9',
+          borderColor: theme.$borderColor?.get(),
           paddingHorizontal: 6,
           paddingVertical: 4,
           justifyContent: 'center',
@@ -130,7 +131,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
             )
           : (
             <>
-              <UserFollowButton userId={user.id} isFollowing={data?.isFollowing!} />
+              <UserFollowButton userId={user.id} isFollowing={data?.isFollowing} />
               <ChatButton />
             </>
             )

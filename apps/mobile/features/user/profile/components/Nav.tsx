@@ -3,9 +3,11 @@ import type { IconProps } from '@tamagui/helpers-icon'
 import type { Href } from 'expo-router'
 import { Link } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Text, XStack } from '@/ui'
+import { Text, XStack, useTheme } from '@/ui'
 
 export function Navs() {
+  const theme = useTheme()
+
   interface Item {
     href: Href<string>
     icon: React.ReactElement<IconProps>
@@ -40,10 +42,13 @@ export function Navs() {
       navItems.map(({ href, icon, text, desc }) => {
         return (
           <BlurView
+            key={href}
             intensity={60}
             style={{
               flex: 1,
               borderRadius: 8,
+              borderWidth: 1,
+              borderColor: theme.$borderColor?.get(),
               overflow: 'hidden',
               paddingHorizontal: 12,
               paddingVertical: 8,

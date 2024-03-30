@@ -4,13 +4,13 @@ import { useLocalSearchParams } from 'expo-router'
 import { useRoute } from '@react-navigation/native'
 import { ArrowUpRightFromSquare, Menu } from '@tamagui/lucide-icons'
 import Animated, { interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
-import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
+import { MaterialTabBar, MaterialTabItem, Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
 import { InteractInfo } from './components/InteractInfo'
 import { Navs } from './components/Nav'
 import { UserNote } from './components/UserNote'
 import { UserCollection } from './components/UserCollection'
 import { UserLiked } from './components/UserLiked'
-import { Avatar, Image, Paragraph, SizableText, View, XStack, YStack, useWindowDimensions } from '@/ui'
+import { Avatar, Image, Paragraph, SizableText, View, XStack, YStack, useTheme, useWindowDimensions } from '@/ui'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { trpc } from '@/utils/trpc'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
@@ -25,6 +25,7 @@ function getTopBarBg() {
 }
 
 export function ProfileScreen() {
+  const theme = useTheme()
   const { id: userId } = useLocalSearchParams<{ id: string }>()
 
   const window = useWindowDimensions()
@@ -214,6 +215,16 @@ export function ProfileScreen() {
             >
               <UserHeader />
             </View>
+          )
+        }}
+        renderTabBar={(props) => {
+          return (
+            <MaterialTabBar
+              {...props}
+              indicatorStyle={{
+                backgroundColor: theme.$accent10?.get(),
+              }}
+            />
           )
         }}
       >

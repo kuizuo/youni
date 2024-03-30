@@ -228,11 +228,14 @@ export class NotePublicService {
 
     const likedList = await Promise.all(items.map(item => this.likeService.getItemLiked(InteractType.Note, item.id, userId)))
     const collectedList = includeCollected ? await Promise.all(items.map(item => this.collectionService.isItemInCollection(item.id, userId))) : []
+    const collectCount = includeCollected ? await Promise.all(items.map(item => this.collectionService.getItemCollectedCount(item.id))) : []
 
     items.forEach((item, index) => {
       item.interact.liked = likedList[index]
-      if (includeCollected)
+      if (includeCollected) {
+        item.interact.collectedCount = collectCount
         item.interact.collected = collectedList[index]
+      }
     })
   }
 

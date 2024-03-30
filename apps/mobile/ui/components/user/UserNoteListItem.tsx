@@ -5,7 +5,7 @@ import { NoteCollectButton } from '../note/NoteCollectButton'
 import { NoteShareButton } from '../note/NoteShareButton'
 import { NoteCommentButton } from '../note/NoteCommentButton'
 import { formatTime } from '@/utils/date'
-import { Avatar, Card, Image, Paragraph, SizableText, XStack, YStack } from '@/ui'
+import { Avatar, Card, Image, ImageCarousel, Paragraph, SizableText, XStack, YStack } from '@/ui'
 
 export function UserNoteListItem(item: NoteItem): React.ReactNode {
   const router = useRouter()
@@ -15,7 +15,7 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
   }
 
   return (
-    <YStack position="relative" margin="$2.5" p="$1.5" gap="$2" br="$4">
+    <YStack position="relative" mx="$2.5" p="$1.5" gap="$2" br="$4">
       <Card size="$3">
         <Card.Header>
           <XStack mx="$1" jc="space-between" ai="center">
@@ -24,12 +24,17 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
           </XStack>
         </Card.Header>
         <Card.Background unstyled onPress={handlePressBackground}>
-          <Image
+          <ImageCarousel
+            height={350}
+            data={item?.images.map(image => image.src)}
+          />
+
+          {/* <Image
             width="100%"
             minHeight={350}
             source={{ uri: item.cover.src }}
             resizeMode="cover"
-          />
+          /> */}
         </Card.Background>
         <Card.Footer p="$2.5">
           <YStack width="100%" gap="$2">

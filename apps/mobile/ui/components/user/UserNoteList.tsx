@@ -12,7 +12,13 @@ interface Props {
   ListEmptyComponent?: FlashListProps<NoteItem>['ListEmptyComponent']
 }
 
-export function UserNoteList({ data, isRefreshing, onRefresh, onEndReached, ListEmptyComponent }: Props) {
+export function UserNoteList({
+  data,
+  isRefreshing,
+  onRefresh,
+  onEndReached,
+  ListEmptyComponent,
+}: Props) {
   return (
     <FlashList
       data={data}
