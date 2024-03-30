@@ -4,7 +4,7 @@ import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FollowerList } from './FollowerList'
 import { SizableText, View, YStack, useTheme, useWindowDimensions } from '@/ui'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 
 export function FollowerScreen() {
   const theme = useTheme()
@@ -53,7 +53,7 @@ export function FollowerScreen() {
           return (
             <>
               <View position="relative" height={28} ai="center" px="$4">
-                <BackButton position="absolute" left={0} marginLeft="$3" />
+                <NavButton.Back position="absolute" left={0} marginLeft="$3" />
 
                 <TabBar
                   {...props}

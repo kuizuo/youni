@@ -5,7 +5,7 @@ import { ChevronRight, Hash, MapPin, Plus } from '@tamagui/lucide-icons'
 import { useWindowDimensions } from 'react-native'
 import { Button, Form, Image, Input, ListItem, Spinner, Text, TextArea, View, XStack, YStack, getTokens } from '@/ui'
 import { NavBar } from '@/ui/components/NavBar'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 
 const gap = getTokens().space.$2
 const padding = getTokens().space.$4
@@ -100,7 +100,7 @@ export function CreateScreen() {
   return (
     <YStack flex={1} bg="$background">
       <NavBar
-        left={<BackButton />}
+        left={<NavButton.Back />}
         right={(
           <Button size="$2" icon={status === 'submitting' ? () => <Spinner /> : undefined}>
             发布

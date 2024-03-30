@@ -9,7 +9,7 @@ import { useUser } from '@/utils/auth/hooks/useUser'
 import { NoteMenu } from '@/ui/components/note/NoteMenu'
 import { NavBar } from '@/ui/components/NavBar'
 import { NoteShareButton } from '@/ui/components/note/NoteShareButton'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 
 interface Props {
   user: Pick<UserInfo, 'id' | 'nickname' | 'avatar'>
@@ -23,7 +23,7 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
 
   return (
     <NavBar
-      left={<BackButton />}
+      left={<NavButton.Back />}
       right={currentUser?.id === user?.id
         ? <NoteMenu item={item} />
         : (

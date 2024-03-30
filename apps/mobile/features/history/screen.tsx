@@ -1,11 +1,11 @@
 import { Trash } from '@tamagui/lucide-icons'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Button, EmptyResult, YStack } from '@/ui'
+import { Button, EmptyResult, SizableText, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 import { CustomDialog } from '@/ui/components/CustomDialog'
 
 export function HistoryScreen() {
@@ -30,20 +30,19 @@ export function HistoryScreen() {
   return (
     <YStack fullscreen flex={1} bg="$background">
       <NavBar
-        left={<BackButton />}
+        left={<NavButton.Back />}
         right={(
           <CustomDialog title="确认清空浏览记录?" onOk={handleClear}>
             <Button
               size="$2"
               br={50}
-              marginRight="$2"
               icon={<Trash />}
             >
             </Button>
           </CustomDialog>
         )}
       >
-        浏览记录
+        <SizableText flex={1} textAlign="center">浏览记录</SizableText>
       </NavBar>
       <NoteList
         data={flatedData as unknown as NoteItem[]}

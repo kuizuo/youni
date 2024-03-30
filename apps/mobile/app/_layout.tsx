@@ -3,6 +3,7 @@ import { SplashScreen, Stack } from 'expo-router'
 import { useEffect } from 'react'
 import { Platform } from 'react-native'
 import { Provider } from '@/provider'
+import { DrawerContainer } from '@/ui/components/DrawerContainer'
 
 import 'react-native-gesture-handler'
 
@@ -38,12 +39,13 @@ export default function RootLayout() {
 
   return (
     <Provider>
-      <Stack screenOptions={{
-        headerShown: false,
-      }}
-      >
-      </Stack>
-
+      <DrawerContainer>
+        <Stack screenOptions={{
+          headerShown: false,
+        }}
+        >
+        </Stack>
+      </DrawerContainer>
     </Provider>
   )
 }

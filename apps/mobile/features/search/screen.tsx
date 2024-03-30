@@ -10,7 +10,7 @@ import { NoteList } from '@/ui/components/note/NoteList'
 import { dataNotFetched, empty, error, loading } from '@/utils/trpc/patterns'
 import { NavBar } from '@/ui/components/NavBar'
 import { searchHistoryAtom } from '@/atoms/searchHistroy'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 
 export function SearchScreen() {
   const [keyword, setKeyword] = useState('')
@@ -43,7 +43,7 @@ export function SearchScreen() {
   return (
     <YStack fullscreen bg="$background">
       <NavBar
-        left={<BackButton />}
+        left={<NavButton.Back />}
         right={<Button color="gray" unstyled onPress={() => handleSearch(keyword)}>搜索</Button>}
       >
         <XStack flex={1} gap="$1" ai="center" bg="$gray3" px="$2.5" py="$2" br={50}>

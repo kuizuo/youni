@@ -5,7 +5,7 @@ import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { MessageList } from '@/ui/components/notification/MessageList'
 import { NavBar } from '@/ui/components/NavBar'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 
 export default function Screen() {
   const [data, { isRefetching, isFetchingNextPage, hasNextPage, refetch, fetchNextPage }] = trpc.notification.message.useSuspenseInfiniteQuery(
@@ -25,7 +25,7 @@ export default function Screen() {
 
   return (
     <YStack flex={1} bg="$background">
-      <NavBar left={<BackButton />} right={<></>}>
+      <NavBar left={<NavButton.Back />} right={<></>}>
         <SizableText flex={1} textAlign="center">赞</SizableText>
       </NavBar>
       <MessageList

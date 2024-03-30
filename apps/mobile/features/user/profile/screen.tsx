@@ -14,7 +14,7 @@ import { Avatar, Image, Paragraph, SizableText, View, XStack, YStack, useTheme, 
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { trpc } from '@/utils/trpc'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 
 const TAB_BAR_HEIGHT = 32
@@ -81,8 +81,8 @@ export function ProfileScreen() {
     return (
       <NavBar
         left={!isMe
-          ? <BackButton color="white" />
-          : <Menu color="white" size="$1" />}
+          ? <NavButton.Back color="white" />
+          : <NavButton.Menu color="white" size="$1" />}
         right={<ArrowUpRightFromSquare size="$1" color="white" />}
         style={{
           backgroundColor: getTopBarBg(),

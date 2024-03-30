@@ -5,7 +5,7 @@ import { Separator, SizableText, Text, XStack, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 
 export default function NoteTagScreen() {
   const { name } = useLocalSearchParams<{ name: string }>()
@@ -29,7 +29,7 @@ export default function NoteTagScreen() {
 
   return (
     <YStack flex={1} bg="$background">
-      <NavBar left={<BackButton />} right={<></>} />
+      <NavBar left={<NavButton.Back />} right={<></>} />
       <YStack pt="$6" pb="$3" px="$4" gap="$3">
         <XStack gap="$2">
           <Text fontSize={20} color="gray">#</Text>

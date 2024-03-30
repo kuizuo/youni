@@ -14,7 +14,7 @@ import { UserCollection } from './components/UserCollection'
 import { UserLiked } from './components/UserLiked'
 import { trpc } from '@/utils/trpc'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
-import { BackButton } from '@/ui/components/BackButton'
+import { NavButton } from '@/ui/components/NavButton'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { Avatar, Image, Paragraph, Separator, SizableText, View, XStack, YStack, useTheme, useThemeName, useWindowDimensions } from '@/ui'
 import { useUser } from '@/utils/auth/hooks/useUser'
@@ -92,7 +92,7 @@ export function ProfileScreen() {
     return (
       <NavBar
         left={!isMe
-          ? <BackButton />
+          ? <NavButton.Back />
           : <Menu color="white" size="$1" />}
         right={<ArrowUpRightFromSquare size="$1" color="white" />}
         style={{
