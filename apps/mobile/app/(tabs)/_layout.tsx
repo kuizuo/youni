@@ -6,7 +6,7 @@ import { useUser } from '@/utils/auth/hooks/useUser'
 
 export default function TabLayout() {
   const theme = useTheme()
-  const { currentUser, isLoading } = useUser()
+  const { currentUser, isLoading, isSignined } = useUser()
 
   if (isLoading)
     return <></>
@@ -41,7 +41,6 @@ export default function TabLayout() {
         listeners={({ navigation }) => ({
           tabPress: (event) => {
             event.preventDefault()
-            navigation.navigate('create')
           },
         })}
         options={{
@@ -76,7 +75,7 @@ export default function TabLayout() {
                 <Avatar circular p="$1" size={size}>
                   <Image
                     source={{
-                      uri: currentUser?.avatar!,
+                      uri: currentUser?.avatar,
                       width: size,
                       height: size,
                     }}
@@ -94,6 +93,7 @@ export default function TabLayout() {
 
 function PlusButton({ size }: { size: number }) {
   const router = useRouter()
+  const { isSignined } = useUser()
   const bottom = 4
 
   return (
@@ -112,7 +112,13 @@ function PlusButton({ size }: { size: number }) {
         />
         <LinearGradient
           position="absolute"
-          onPress={() => router.push('/create')}
+          onPress={() => {
+            if (!isSignined) {
+              router.replace('/sign-in')
+              return
+            }
+            router.push('/create/')
+          }}
           colors={['$accent10', '$accent10']}
           start={[1, 1]}
           end={[0.8, 0]}

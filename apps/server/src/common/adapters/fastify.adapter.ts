@@ -14,7 +14,7 @@ app.register(FastifyMultipart, {
   limits: {
     fields: 10, // Max number of non-file fields
     fileSize: 1024 * 1024 * 6, // limit size 6M
-    files: 5, // Max number of file fields
+    files: 10, // Max number of file fields
   },
 })
 

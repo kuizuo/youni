@@ -20,14 +20,34 @@ export class NoteTagService {
     private readonly viewService: ViewService,
   ) { }
 
-  async paginate({
-    page,
-    limit,
-  }: NoteTagPagerDto, userId?: string) {
+  async paginate(dto: NoteTagPagerDto, userId?: string) {
+    const { page, limit, name, sortBy, sortOrder = 'desc' } = dto
     const [items, meta] = await this.prisma.noteTag.paginate({
       where: {
+        name: { contains: name },
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
       },
     }).withPages({ page, limit, includePageCount: true })
+
+    return {
+      items,
+      meta,
+    }
+  }
+
+  async search(dto: NoteTagPagerDto, userId?: string) {
+    const { cursor, limit, name, sortBy, sortOrder = 'desc' } = dto
+
+    const [items, meta] = await this.prisma.noteTag.paginate({
+      where: {
+        name: { contains: name },
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+    }).withCursor({ limit, after: cursor })
 
     return {
       items,

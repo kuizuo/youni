@@ -10,7 +10,7 @@ export function DrawerContainer({ children }: { children: React.ReactNode }) {
       open={open}
       onOpen={() => setOpen(true)}
       onClose={() => setOpen(false)}
-      swipeEnabled
+      swipeEnabled={false}
       renderDrawerContent={() => <CustomDrawerContent></CustomDrawerContent>}
     >
       {children}

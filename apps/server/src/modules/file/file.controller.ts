@@ -87,6 +87,29 @@ export class FileController {
     }
   }
 
+  @Post('/upload/multiple')
+  async uploadMultiple(@Query() query: FileUploadDto, @Req() req: FastifyRequest) {
+    const { type = 'file' } = query
+    const uploadedFiles: any[] = []
+
+    const files = req.files()
+
+    for await (const file of files) {
+      const ext = path.extname(file.filename)
+      const filename = customAlphabet(alphabet)(18) + ext.toLowerCase()
+
+      if (!(await this.fileService.exists(type, filename)))
+        await this.fileService.writeFile(type, filename, file.file)
+
+      uploadedFiles.push({
+        url: await this.fileService.resolveFileUrl(type, filename),
+        name: filename,
+      })
+    }
+
+    return uploadedFiles
+  }
+
   @Delete('/:type/:name')
   async delete(@Param() params: FileQueryDto) {
     const { type, name } = params

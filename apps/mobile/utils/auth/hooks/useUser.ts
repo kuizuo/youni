@@ -28,6 +28,7 @@ export function useUser() {
   return {
     currentUser: data,
     isLoading,
+    isSignined: !!data,
     logOut,
   }
 }

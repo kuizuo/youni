@@ -7,12 +7,18 @@ import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 
+import { FileService } from '../file/file.service'
+
 import { NoteDto, NotePagerDto, NoteUpdateDto } from './note.dto'
 
 @Injectable()
 export class NoteService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
+
+  constructor(
+    private readonly fileService: FileService,
+  ) { }
 
   async paginate(dto: NotePagerDto, userId: string) {
     const { cursor, limit } = dto
@@ -72,6 +78,21 @@ export class NoteService {
     //   })),
     //   skipDuplicates: true,
     // })
+
+    // for await (const image of images) {
+    //   if (image.src.startsWith('data:image/png;base64,')) {
+    //     const readableStream = new Readable()
+
+    //     // 将base64字符串写入可读流
+    //     readableStream.push(Buffer.from(image.src, 'base64'))
+    //     readableStream.push(null)
+
+    //     const filename = customAlphabet(alphabet)(18) + '.png'.toLowerCase()
+    //     await this.fileService.writeFile(FileTypeEnum.photo, filename, readableStream)
+    //     const url = await this.fileService.resolveFileUrl(FileTypeEnum.photo, filename)
+    //     image.src = url
+    //   }
+    // }
 
     return this.prisma.note.create({
       data: {

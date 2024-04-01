@@ -76,8 +76,8 @@ export class FileService {
   }
 
   async resolveFileUrl(type: FileType, name: string) {
-    const { baseUrl } = await this.configService.get<IAppConfig>('app')!
-    return `${baseUrl.replace(/\/+$/, '')}/objects/${type}/${name}`
+    const { baseUrl, globalPrefix } = await this.configService.get<IAppConfig>('app')!
+    return `${baseUrl.replace(/\/+$/, '')}/${globalPrefix}/files/${type}/${name}`
   }
 
   exists(type: FileType, name: string) {

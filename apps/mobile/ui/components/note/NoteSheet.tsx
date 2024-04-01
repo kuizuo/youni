@@ -37,7 +37,7 @@ export function NoteSheet({ item }: Props): React.ReactNode {
             br="$4"
           >
             <XStack gap="$4">
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
+              <ChevronDown size="$1" />
             </XStack>
           </ScrollView>
           <Separator />

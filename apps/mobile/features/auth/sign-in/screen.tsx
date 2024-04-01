@@ -1,12 +1,24 @@
 import { useRouter } from 'expo-router'
+import { useEffect } from 'react'
 import { YStack, useToastController } from '@/ui'
 import { capitalizeWord } from '@/ui/libs/string'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
+import { useUser } from '@/utils/auth/hooks/useUser'
 
 export function SignInScreen(): React.ReactNode {
   const router = useRouter()
   const { signInWithPassword } = useAuth()
+  const { isSignined } = useUser()
+
+  useEffect(() => {
+    if (isSignined) {
+      setTimeout(() => {
+        router.replace('/')
+      })
+    }
+  }, [])
+
   const toast = useToastController()
 
   const handleOAuthSignInWithPress = async (provider: 'wechat' | 'google' | 'apple') => {

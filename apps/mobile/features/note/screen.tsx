@@ -5,12 +5,13 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import { NoteHeader } from './NoteHeader'
 import { NoteFooter } from './NoteFooter'
 import { trpc } from '@/utils/trpc'
-import { H5, ImageCarousel, Paragraph, ScrollView, Separator, Text, XStack, YStack } from '@/ui'
+import { H5, Paragraph, ScrollView, Separator, Text, XStack, YStack } from '@/ui'
 import { formatTime } from '@/utils/date'
 
 import { useCurrentNote } from '@/atoms/comment'
 import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
-import NotFound from '@/ui/components/NotFound'
+import { NotFound } from '@/ui/components/NotFound'
+import { ImageCarousel } from '@/ui/components/ImageCarousel'
 
 // @ts-expect-error
 const Comments = lazy(() => import('@/ui/components/comment/Comment'))
@@ -74,11 +75,7 @@ export function NoteScreen(): React.ReactNode {
             <Separator my={15} />
 
             <Text fontSize="$3" color="gray">
-              共
-              {' '}
-              {data.interact.commentCount}
-              {' '}
-              条评论
+              {`共 ${data.interact.commentCount} 条评论`}
             </Text>
 
             <Comments />

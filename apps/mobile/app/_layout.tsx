@@ -5,8 +5,6 @@ import { Platform } from 'react-native'
 import { Provider } from '@/provider'
 import { DrawerContainer } from '@/ui/components/DrawerContainer'
 
-import 'react-native-gesture-handler'
-
 if (Platform.OS === 'web') {
   // @ts-expect-error
   import('../global.css')

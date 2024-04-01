@@ -1,7 +1,7 @@
 import type { FlashListProps } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
 import { RefreshControl } from 'react-native-gesture-handler'
-import type { NoteItem } from '../../../../server/src/modules/note/note'
+import type { NoteItem } from '@server/modules/note/note'
 import { UserNoteListItem } from './UserNoteListItem'
 
 interface Props {

@@ -4,8 +4,9 @@ import { NoteLikeButton } from '../note/NoteLikeButton'
 import { NoteCollectButton } from '../note/NoteCollectButton'
 import { NoteShareButton } from '../note/NoteShareButton'
 import { NoteCommentButton } from '../note/NoteCommentButton'
+import { ImageCarousel } from '../ImageCarousel'
 import { formatTime } from '@/utils/date'
-import { Avatar, Card, Image, ImageCarousel, Paragraph, SizableText, XStack, YStack } from '@/ui'
+import { Avatar, Card, Paragraph, SizableText, XStack, YStack } from '@/ui'
 
 export function UserNoteListItem(item: NoteItem): React.ReactNode {
   const router = useRouter()

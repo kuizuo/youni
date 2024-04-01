@@ -7,7 +7,7 @@ interface Props {
   title: string
 }
 
-export default function NotFound({ title }: Props) {
+export function NotFound({ title }: Props) {
   return (
     <>
       <View style={styles.container}>

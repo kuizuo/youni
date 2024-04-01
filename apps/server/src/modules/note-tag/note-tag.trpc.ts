@@ -37,6 +37,13 @@ export class NoteTagTrpcRouter implements OnModuleInit {
 
           return this.noteTagService.paginate(input, user.id)
         }),
+      search: procedureAuth
+        .input(NoteTagPagerDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          return this.noteTagService.search(input, user.id)
+        }),
       byId: procedureAuth
         .input(IdDto.schema)
         .query(async (opt) => {
