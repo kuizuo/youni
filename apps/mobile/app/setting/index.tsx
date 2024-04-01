@@ -1,5 +1,7 @@
-import { Text } from '@/ui'
+import { SettingScreen } from '@/features/setting/screen'
 
 export default function Screen() {
-  return <Text>Setting</Text>
+  return (
+    <SettingScreen />
+  )
 }

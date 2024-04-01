@@ -11,6 +11,7 @@ import { UserModule } from '../user/user.module'
 
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
+import { AuthTrpcRouter } from './auth.trpc'
 import { CaptchaModule } from './captcha/captcha.module'
 import { AccountController } from './controllers/account.controller'
 import { EmailController } from './controllers/email.controller'
@@ -26,7 +27,11 @@ const controllers = [
   EmailController,
   GoogleController,
 ]
-const providers: Provider[] = [AuthService, TokenService]
+const providers: Provider[] = [
+  AuthService,
+  TokenService,
+  AuthTrpcRouter,
+]
 const strategies = [LocalStrategy, JwtStrategy, GoogleStrategy]
 
 @Module({

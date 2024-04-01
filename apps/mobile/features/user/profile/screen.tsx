@@ -145,7 +145,7 @@ export function ProfileScreen() {
     const [data, { isLoading, refetch, isRefetching }] = trpc.user.byId.useSuspenseQuery({ id: userId }, {})
 
     return (
-      <>
+      <View bg="$background">
         <View bg={getTopBarBg()} paddingTop="$6" pointerEvents="none" />
         {/* 基本信息 */}
         <XStack gap="$4" px="$4" marginTop="$-5" marginBottom="$3">
@@ -184,7 +184,7 @@ export function ProfileScreen() {
         <InteractInfo user={data ?? currentUser!}></InteractInfo>
         {/* 快捷导航 */}
         {isMe && <Navs />}
-      </>
+      </View>
     )
   })
 
@@ -223,6 +223,13 @@ export function ProfileScreen() {
               {...props}
               indicatorStyle={{
                 backgroundColor: theme.$accent10?.get(),
+              }}
+              activeColor={theme.$color?.get()}
+              labelStyle={{
+                color: theme.$color?.get(),
+              }}
+              tabStyle={{
+                backgroundColor: theme.$background?.get(),
               }}
             />
           )
