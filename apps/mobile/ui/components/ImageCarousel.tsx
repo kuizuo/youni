@@ -1,15 +1,17 @@
 import Carousel from 'react-native-reanimated-carousel'
 import Animated, { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
-import { Image, View, useWindowDimensions } from '@/ui'
+import { Image, View, useTheme, useWindowDimensions } from '@/ui'
 import { window } from '@/constant'
 
 interface Props {
   data: string[]
   width?: number
   height?: number
+  showProgress?: boolean
 }
 
-export function ImageCarousel({ data, width, height }: Props): React.ReactNode {
+export function ImageCarousel({ data, width, height, showProgress = true }: Props): React.ReactNode {
+  const theme = useTheme()
   const progressValue = useSharedValue<number>(0)
   const { width: windowWidth } = useWindowDimensions()
 
@@ -18,7 +20,7 @@ export function ImageCarousel({ data, width, height }: Props): React.ReactNode {
       <Carousel
         width={width ?? windowWidth}
         height={height ?? window.width / 2}
-        style={{ width: '100%' }}
+        style={{ width: '100%', backgroundColor: theme.$background?.get() }}
         loop={false}
         pagingEnabled={false}
         overscrollEnabled={false}
@@ -34,7 +36,7 @@ export function ImageCarousel({ data, width, height }: Props): React.ReactNode {
           />
         )}
       />
-      {!!progressValue && (
+      {!!progressValue && showProgress && (
         <View
           fd="row"
           jc="center"

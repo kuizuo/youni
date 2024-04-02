@@ -153,7 +153,6 @@ export function ProfileScreen() {
             <Avatar.Image
               width="100%"
               height="100%"
-            // @ts-expect-error
               source={{
                 uri: data.avatar,
               }}

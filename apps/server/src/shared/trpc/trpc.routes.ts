@@ -1,4 +1,5 @@
 import { AuthTrpcRouter } from '@server/modules/auth/auth.trpc'
+import { CampusTrpcRouter } from '@server/modules/campus/campus.trpc'
 import { CollectionTrpcRouter } from '@server/modules/collection/collection.trpc'
 import { CommentTrpcRouter } from '@server/modules/comment/comment.trpc'
 import { HistoryTrpcRouter } from '@server/modules/history/history.trpc'
@@ -20,4 +21,5 @@ export type TRPCRouters = [
   CommentTrpcRouter,
   InteractTrpcRouter,
   NotifactionTrpcRouter,
+  CampusTrpcRouter,
 ]

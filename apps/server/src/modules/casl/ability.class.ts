@@ -1,6 +1,6 @@
 import { PureAbility } from '@casl/ability'
 import { Subjects } from '@casl/prisma'
-import { Collection, Comment, History, Note, NoteTag, Notification, Todo, User } from '@youni/database'
+import { Campus, Collection, Comment, History, Note, NoteTag, Notification, Todo, User } from '@youni/database'
 
 export enum Action {
   Manage = 'manage',
@@ -20,6 +20,7 @@ export type PrismaSubjects = {
   History: History
   Comment: Comment
   Notification: Notification
+  Campus: Campus
 }
 
 export type AppAbility = PureAbility<[Action, Subjects<PrismaSubjects>]>

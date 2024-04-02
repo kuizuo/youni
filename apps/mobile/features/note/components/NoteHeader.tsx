@@ -1,7 +1,7 @@
 import type { UserInfo } from '@server/modules/user/user'
 import { Link } from 'expo-router'
 import React from 'react'
-import type { NoteItem } from '../../../server/src/modules/note/note'
+import type { NoteItem } from '../../../../server/src/modules/note/note'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { Avatar, Text, XStack } from '@/ui'
 import { trpc } from '@/utils/trpc'

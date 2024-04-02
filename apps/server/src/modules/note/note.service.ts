@@ -69,7 +69,7 @@ export class NoteService {
   }
 
   async create(dto: NoteDto, userId: string) {
-    const { images, tags, ...data } = dto
+    const { images, tags, campusId, ...data } = dto
 
     // await this.prisma.noteTag.createMany({
     //   data: tags.map(tag => ({
@@ -94,6 +94,14 @@ export class NoteService {
     //   }
     // }
 
+    // if (campusId) {
+    //   const campus = await this.prisma.campus.findUniqueOrThrow({
+    //     where: {
+    //       id: campusId,
+    //     },
+    //   })
+    // }
+
     return this.prisma.note.create({
       data: {
         ...data,
@@ -101,6 +109,7 @@ export class NoteService {
         images,
         cover: images![0],
         publishTime: new Date(),
+        campusId: campusId || null,
         tags: {
           connectOrCreate: tags.map(tag => ({
             where: {

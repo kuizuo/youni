@@ -1,12 +1,13 @@
 declare global {
   namespace PrismaJson {
-    type NoteImage = {
+    type Image = {
+      name?: string
       src: string
       width?: number
       height?: number
     }
 
-    type NoteImages = NoteImage[]
+    type Images = Image[]
 
     type Interact = {
       liked?: boolean

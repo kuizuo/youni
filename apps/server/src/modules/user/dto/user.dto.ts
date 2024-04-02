@@ -5,16 +5,17 @@ import { createZodDto } from 'nestjs-zod'
 
 import { z } from 'zod'
 
-const UserInputSchema = UserOptionalDefaultsSchema.extend({
-  phone: z.string().optional(),
-  remark: z.string().optional(),
-  desc: z.string().optional(),
+const UserInputSchema = UserOptionalDefaultsSchema
+  .omit({ campusId: true })
+  .extend({
+    phone: z.string().optional(),
+    remark: z.string().optional(),
+    desc: z.string().optional(),
+  })
 
-})
+export class UserDto extends createZodDto(UserInputSchema) { }
 
-export class UserDto extends createZodDto(UserInputSchema) {}
-
-export class UserUpdateDto extends createZodDto(UserInputSchema.partial()) {}
+export class UserUpdateDto extends createZodDto(UserInputSchema.partial()) { }
 
 export class UserQueryDto extends createZodDto(
   basePagerSchema
@@ -22,4 +23,4 @@ export class UserQueryDto extends createZodDto(
       keyword: z.string().optional(),
       status: z.number().optional(),
     }),
-) {}
+) { }

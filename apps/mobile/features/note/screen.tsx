@@ -2,8 +2,8 @@ import React, { lazy, useEffect } from 'react'
 import { Link, useLocalSearchParams } from 'expo-router'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
-import { NoteHeader } from './NoteHeader'
-import { NoteFooter } from './NoteFooter'
+import { NoteHeader } from './components/NoteHeader'
+import { NoteFooter } from './components/NoteFooter'
 import { trpc } from '@/utils/trpc'
 import { H5, Paragraph, ScrollView, Separator, Text, XStack, YStack } from '@/ui'
 import { formatTime } from '@/utils/date'
@@ -18,14 +18,14 @@ const Comments = lazy(() => import('@/ui/components/comment/Comment'))
 
 export function NoteScreen(): React.ReactNode {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const [_, setNote] = useCurrentNote()
+  const [_, setCurrentNote] = useCurrentNote()
 
   const { data, isLoading, isRefetching, refetch } = trpc.note.byId.useQuery({ id })
 
   useEffect(() => {
     if (data)
-      setNote(data as NoteItem)
-  }, [data, setNote])
+      setCurrentNote(data as NoteItem)
+  }, [data, setCurrentNote])
 
   if (isLoading)
     return <FullscreenSpinner />

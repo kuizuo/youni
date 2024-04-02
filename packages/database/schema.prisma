@@ -68,6 +68,8 @@ model User {
   comment                Comment[]
   notificationSenders    Notification[] @relation("Sender")
   notificationRecipients Notification[] @relation("Recipient")
+  campus                 Campus?        @relation(fields: [campusId], references: [id])
+  campusId               String?
 
   @@index([yoId])
 }
@@ -88,9 +90,9 @@ model Note {
   content     String
   isPublished Boolean      @default(true) @map("is_published")
   publishTime DateTime?
-  /// [NoteImages]
+  /// [Images]
   images      Json         @default("[]")
-  /// [NoteImage]
+  /// [Image]
   cover       Json         @default("{}") /// @zod.custom.omit(["model", "input"])
   /// [Interact]
   interact    Json         @default("{\"likedCount\": 0, \"collectCount\": 0, \"commentCount\": 0 }") /// @zod.custom.omit(["model", "input"])
@@ -101,6 +103,9 @@ model Note {
   history     History[]
   user        User         @relation(fields: [userId], references: [id])
   userId      String
+
+  campus   Campus? @relation(fields: [campusId], references: [id])
+  campusId String?
 
   @@index([createdAt])
 }
@@ -172,6 +177,20 @@ model Notification {
   recipientId String
   recipient   User                   @relation("Recipient", fields: [recipientId], references: [id])
   // channel
+}
+
+model Campus {
+  id        String   @id @default("")
+  name      String
+  logo      String
+  desc      String?
+  alias     String?
+  location  String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  /// [Images]
+  carousels Json     @default("[]")
+  users     User[]
+  notes     Note[]
 }
 
 // model File {

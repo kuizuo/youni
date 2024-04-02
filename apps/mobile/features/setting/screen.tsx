@@ -5,6 +5,7 @@ import { Button, ListItem, ScrollView, Separator, SizableText, Text, View, YGrou
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { trpc } from '@/utils/trpc'
 import { removeToken } from '@/utils/auth/util'
+import { useAuth } from '@/utils/auth/hooks/useAuth'
 
 export function SettingScreen() {
   const router = useRouter()
@@ -95,6 +96,8 @@ export function SettingScreen() {
 }
 
 function LogOutItem() {
+  const { signOut } = useAuth()
+
   const { isLoading, mutateAsync } = trpc.auth.logout.useMutation()
 
   async function logout() {
@@ -107,7 +110,7 @@ function LogOutItem() {
       // empty
     }
     finally {
-      await removeToken()
+      signOut()
     }
   }
 

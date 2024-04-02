@@ -40,10 +40,6 @@ export function NoteShareButton({ item }: Props) {
             br="$4"
           >
             <XStack gap="$4">
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
 
               <Button size="$1" icon={<ChevronDown size="$1" />} />
             </XStack>
@@ -56,8 +52,6 @@ export function NoteShareButton({ item }: Props) {
             br="$4"
           >
             <XStack gap="$4">
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
               <Button size="$1" icon={<ChevronDown size="$1" />} />
 
             </XStack>

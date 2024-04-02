@@ -8,6 +8,12 @@ export enum NoteType {
   News = 'news', // 新闻
 }
 
+export const PublicNoteWhere = {
+  isPublished: true,
+  // state: 1,
+  campusId: null,
+} satisfies Prisma.NoteWhereInput
+
 export const NoteSelect = {
   id: true,
   title: true,

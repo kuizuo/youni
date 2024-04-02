@@ -14,6 +14,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { ZodValidationPipe } from './common/pipes/zod-validation.pipe'
 import { AuthModule } from './modules/auth/auth.module'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
+import { CampusModule } from './modules/campus/campus.module'
 import { CaslModule } from './modules/casl/casl.module'
 import { CollectionModule } from './modules/collection/collection.module'
 import { CommentModule } from './modules/comment/comment.module'
@@ -62,6 +63,7 @@ import { SocketModule } from './socket/socket.module'
     InteractModule, // 交互
     NotificationModule, // 通知
     // ChatModule, // 聊天
+    CampusModule, // 校园
     // end biz
 
     // TodoModule,

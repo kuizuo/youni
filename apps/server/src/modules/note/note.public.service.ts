@@ -17,8 +17,8 @@ import { FollowService } from '../interact/services/follow.service'
 import { LikeService } from '../interact/services/like.service'
 
 import { NoteLikeEvent } from './events/note-like.event'
-import { NoteEvents, NoteSelect } from './note.constant'
-import { NoteByTagDto, NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
+import { NoteEvents, NoteSelect, PublicNoteWhere } from './note.constant'
+import { NoteByCampusDto, NoteByTagDto, NotePagerDto, NoteSearchDto, UserNotePagerDto } from './note.dto'
 
 @Injectable()
 export class NotePublicService {
@@ -36,9 +36,7 @@ export class NotePublicService {
     const { cursor, limit } = dto
 
     const [items, meta] = await this.prisma.note.paginate({
-      where: {
-        isPublished: true,
-      },
+      where: PublicNoteWhere,
       include: {
         user: {
           select: {
@@ -73,7 +71,7 @@ export class NotePublicService {
 
     const [items, meta] = await this.prisma.note.paginate({
       where: {
-        isPublished: true,
+        ...PublicNoteWhere,
         publishTime: {
           gte: threeDaysAgo,
         },
@@ -192,6 +190,33 @@ export class NotePublicService {
     }
   }
 
+  async getNotesByCampus(dto: NoteByCampusDto) {
+    const { campusId, cursor, limit, sortBy, sortOrder = 'desc' } = dto
+
+    const where: Prisma.NoteWhereInput = {
+      isPublished: true,
+      campusId,
+    }
+
+    const [items, meta] = await this.prisma.note.paginate({
+      where,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      select: {
+        ...NoteSelect,
+      },
+    }).withCursor({
+      limit,
+      after: cursor,
+    })
+
+    return {
+      items,
+      meta,
+    }
+  }
+
   async likeNote(itemId: string, userId: string) {
     const note = await this.getNoteById(itemId)
 
@@ -233,7 +258,7 @@ export class NotePublicService {
     items.forEach((item, index) => {
       item.interact.liked = likedList[index]
       if (includeCollected) {
-        item.interact.collectedCount = collectCount
+        item.interact.collectedCount = collectCount[index]
         item.interact.collected = collectedList[index]
       }
     })

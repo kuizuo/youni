@@ -6,7 +6,6 @@ import { AppConfig, IAppConfig } from '@server/config'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 
 import { RegisterDto } from '@server/modules/auth/auth.dto'
-
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'

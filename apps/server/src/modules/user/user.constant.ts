@@ -15,5 +15,6 @@ export const UserProfileSelect = {
   email: true,
   gender: true,
   yoId: true,
+  campusId: true,
   role: true,
 }

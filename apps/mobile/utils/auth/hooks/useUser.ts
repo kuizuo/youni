@@ -9,6 +9,7 @@ export function useUser() {
   const {
     data,
     isLoading,
+    error,
   } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -17,6 +18,9 @@ export function useUser() {
       return data as UserProfile
     },
   })
+
+  if (error)
+    router.replace('/sign-in')
 
   const logOut = async () => {
     await client.post('/api/account/logout')
