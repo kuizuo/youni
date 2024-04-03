@@ -36,7 +36,6 @@ export function SignUpScreen(): React.ReactNode {
       password,
     })
     if (error) {
-      console.log('error', error)
       toast.show('Sign up failed', {
         message: error.message,
       })

@@ -142,9 +142,14 @@ export function SearchScreen() {
         </XStack>
       </NavBar>
 
-      <SectionList>
+      {isSearching
+        ? <SectionList />
+        : (
+          <>
 
-      </SectionList>
+          </>
+          )}
+
       {/* <YStack flex={1}>
         {searchResultLayout}
 

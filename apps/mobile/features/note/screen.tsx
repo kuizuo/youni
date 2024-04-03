@@ -4,12 +4,12 @@ import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { NoteHeader } from './components/NoteHeader'
 import { NoteFooter } from './components/NoteFooter'
+import { NoteDetailPlaceholder } from './components/NoteDetailPlaceholder'
 import { trpc } from '@/utils/trpc'
 import { H5, Paragraph, ScrollView, Separator, Text, XStack, YStack } from '@/ui'
 import { formatTime } from '@/utils/date'
 
 import { useCurrentNote } from '@/atoms/comment'
-import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
 import { NotFound } from '@/ui/components/NotFound'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
 
@@ -17,7 +17,7 @@ import { ImageCarousel } from '@/ui/components/ImageCarousel'
 const Comments = lazy(() => import('@/ui/components/comment/Comment'))
 
 export function NoteScreen(): React.ReactNode {
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id } = useLocalSearchParams<{ id: string, title: string, username: string, avatar: string }>()
   const [_, setCurrentNote] = useCurrentNote()
 
   const { data, isLoading, isRefetching, refetch } = trpc.note.byId.useQuery({ id })
@@ -28,7 +28,7 @@ export function NoteScreen(): React.ReactNode {
   }, [data, setCurrentNote])
 
   if (isLoading)
-    return <FullscreenSpinner />
+    return <NoteDetailPlaceholder></NoteDetailPlaceholder>
 
   if (!data) {
     return (

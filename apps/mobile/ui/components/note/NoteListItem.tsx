@@ -12,7 +12,10 @@ export function NoteListItem(item: NoteItem): ReactNode {
   const [_, setSheetOpen] = useSheetOpen()
 
   const goToNote = () => {
-    router.push(`/note/${item.id}`)
+    router.push({
+      pathname: `/note/[id]`,
+      params: { id: item.id },
+    })
   }
 
   const handleLongPress = () => {
