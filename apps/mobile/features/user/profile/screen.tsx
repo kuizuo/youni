@@ -30,7 +30,8 @@ export function ProfileScreen() {
 
   const window = useWindowDimensions()
   const route = useRoute()
-  const isMe = route.name === 'me'
+  const { currentUser } = useUser()
+  const isMe = userId === currentUser?.id
 
   const [headerHeight, setHeaderHeight] = useState(0)
 
@@ -80,7 +81,7 @@ export function ProfileScreen() {
 
     return (
       <NavBar
-        left={!isMe
+        left={route.name !== 'me'
           ? <NavButton.Back color="white" />
           : <NavButton.Menu color="white" size="$1" />}
         right={<ArrowUpRightFromSquare size="$1" color="white" />}
@@ -153,6 +154,7 @@ export function ProfileScreen() {
             <Avatar.Image
               width="100%"
               height="100%"
+              // @ts-expect-error
               source={{
                 uri: data.avatar,
               }}

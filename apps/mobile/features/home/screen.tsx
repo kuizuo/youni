@@ -32,6 +32,7 @@ export function HomeScreen(): React.ReactNode {
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
+        overScrollMode="never"
         lazy
         lazyPreloadDistance={1}
         initialLayout={{ width: windowWidth }}

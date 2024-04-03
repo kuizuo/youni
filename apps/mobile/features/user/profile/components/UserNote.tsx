@@ -2,7 +2,7 @@ import type { NoteItem } from '@server/modules/note/note'
 import type { MasonryListRenderItem } from '@shopify/flash-list'
 import { memo, useCallback, useMemo } from 'react'
 import type { ViewStyle } from 'react-native'
-import { ActivityIndicator } from 'react-native'
+import { Spinner } from '@/ui'
 import { uniqBy } from 'lodash-es'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -68,7 +68,7 @@ export function NoteList({ userId, contentContainerStyle }: Props) {
         <SafeAreaView edges={['bottom']}>
           {isFetchingNextPage
             ? (
-              <ActivityIndicator />
+              <Spinner />
               )
             : null}
         </SafeAreaView>

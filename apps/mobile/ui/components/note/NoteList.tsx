@@ -5,8 +5,8 @@ import { useMedia } from 'tamagui'
 import { useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native-gesture-handler'
-import { ActivityIndicator } from 'react-native'
 import { NoteListItem } from './NoteListItem'
+import { Spinner } from '@/ui'
 
 interface Props {
   data: NoteItem[]
@@ -51,7 +51,7 @@ export function NoteList({
         <SafeAreaView edges={['bottom']}>
           {isFetchingNextPage
             ? (
-              <ActivityIndicator />
+              <Spinner />
               )
             : null}
         </SafeAreaView>

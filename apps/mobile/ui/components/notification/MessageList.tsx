@@ -3,8 +3,8 @@ import { FlashList } from '@shopify/flash-list'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { ActivityIndicator } from 'react-native'
 import { MessageListItem } from './MessageListItem'
+import { Spinner } from '@/ui'
 
 interface Props {
   data: MessageItem[]
@@ -40,7 +40,7 @@ export function MessageList({
         <SafeAreaView edges={['bottom']}>
           {isFetchingNextPage
             ? (
-              <ActivityIndicator />
+              <Spinner />
               )
             : null}
         </SafeAreaView>

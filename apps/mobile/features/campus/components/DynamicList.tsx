@@ -4,9 +4,9 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import type { NoteItem } from '@server/modules/note/note'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { ViewStyle } from 'react-native'
-import { ActivityIndicator } from 'react-native'
 import { Tabs } from 'react-native-collapsible-tab-view'
 import { DynamicListItem } from './DynamicListItem'
+import { Spinner } from '@/ui'
 import { useCurrentCampus } from '@/atoms/campus'
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
@@ -52,7 +52,7 @@ export function DynamicListComp({ contentContainerStyle }: { contentContainerSty
         <SafeAreaView edges={['bottom']}>
           {isFetchingNextPage
             ? (
-              <ActivityIndicator />
+              <Spinner />
               )
             : null}
         </SafeAreaView>

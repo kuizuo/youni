@@ -376,7 +376,7 @@ const TagSheet = memo(() => {
               <SafeAreaView edges={['bottom']}>
                 {isFetchingNextPage
                   ? (
-                    <ActivityIndicator />
+                    <Spinner />
                     )
                   : null}
               </SafeAreaView>

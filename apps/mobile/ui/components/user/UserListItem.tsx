@@ -33,7 +33,7 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
 
         <SizableText size="$1" color="gray">
           {item.desc}
-          {/* 笔记 · 1 | 粉丝 · 1 */}
+          {/* TODO: 笔记 · 1 | 粉丝 · 1 */}
         </SizableText>
       </YStack>
       {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.isFollowing} userId={item.id} />}

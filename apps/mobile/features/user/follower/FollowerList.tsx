@@ -4,9 +4,8 @@ import { FlashList } from '@shopify/flash-list'
 import type { UserInfoWithFollow } from '@server/modules/interact/interact'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { ActivityIndicator } from 'react-native'
 import { FollowerListItem } from './FollowerItem'
-import { YStack } from '@/ui'
+import { Spinner, YStack } from '@/ui'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { trpc } from '@/utils/trpc'
 
@@ -52,7 +51,7 @@ export function FollowerList({ userId, type }: Props) {
           <SafeAreaView edges={['bottom']}>
             {isFetchingNextPage
               ? (
-                <ActivityIndicator />
+                <Spinner />
                 )
               : null}
           </SafeAreaView>

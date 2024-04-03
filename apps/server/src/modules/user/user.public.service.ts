@@ -7,10 +7,10 @@ import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
+import { Role } from '@youni/database'
 import Redis from 'ioredis'
 
-import { NoteSearchDto } from '../note/note.dto'
-
+import { UserSearchDto } from './dto/search.dto'
 import { UserSelect } from './user.constant'
 
 @Injectable()
@@ -49,10 +49,25 @@ export class UserPublicService {
     })
   }
 
-  async search(dto: NoteSearchDto) {
-    return await this.prisma.user.findMany({
+  async search(dto: UserSearchDto) {
+    const { keyword, cursor, limit, sortBy = 'createdAt', sortOrder = 'desc' } = dto
+
+    const [items, meta] = await this.prisma.user.paginate({
       where: {
+        nickname: { contains: keyword },
+        role: Role.User,
       },
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+    }).withCursor({
+      limit,
+      after: cursor,
     })
+
+    return {
+      items,
+      meta,
+    }
   }
 }
