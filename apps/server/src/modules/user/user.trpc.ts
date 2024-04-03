@@ -5,6 +5,7 @@ import { TRPCRouter } from '@server/shared/trpc/trpc.decorator'
 import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
 import { TRPCService } from '@server/shared/trpc/trpc.service'
 
+import { UserSearchDto } from './dto/search.dto'
 import { UserPublicService } from './user.public.service'
 import { UserService } from './user.service'
 
@@ -33,6 +34,13 @@ export class UserTrpcRouter implements OnModuleInit {
           const { id } = input
 
           return await this.userPublicService.getUserById(id)
+        }),
+      search: procedureAuth
+        .input(UserSearchDto.schema)
+        .query(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          return await this.userPublicService.search(input)
         }),
       profile: procedureAuth.query(async (opt) => {
         const { ctx: { user } } = opt

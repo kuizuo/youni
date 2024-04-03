@@ -1,12 +1,13 @@
 import { Trash } from '@tamagui/lucide-icons'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Button, EmptyResult, SizableText, YStack } from '@/ui'
+import { Button, SizableText, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 import { CustomDialog } from '@/ui/components/CustomDialog'
+import { EmptyResult } from '@/ui/components/EmptyResult'
 
 export function HistoryScreen() {
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.history.list.useSuspenseInfiniteQuery({

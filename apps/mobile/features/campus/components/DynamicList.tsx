@@ -46,6 +46,7 @@ export function DynamicListComp({ contentContainerStyle }: { contentContainerSty
           fetchNextPage()
       }}
       contentContainerStyle={contentContainerStyle}
+      showsVerticalScrollIndicator={false}
       estimatedItemSize={200}
       ListFooterComponent={(
         <SafeAreaView edges={['bottom']}>

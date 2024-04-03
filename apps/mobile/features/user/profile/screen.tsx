@@ -206,6 +206,9 @@ export function ProfileScreen() {
         revealHeaderOnScroll={false}
         lazy
         snapThreshold={0.5}
+        headerContainerStyle={{
+          shadowOpacity: 0,
+        }}
         renderHeader={(props) => {
           return (
             <View

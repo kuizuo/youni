@@ -39,7 +39,6 @@ export function CampusScreen() {
       </View>
       <GridNav />
 
-      <DynamicList />
     </YStack>
   )
 }

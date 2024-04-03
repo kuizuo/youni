@@ -9,6 +9,8 @@ import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/databas
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 import Redis from 'ioredis'
 
+import { NoteSearchDto } from '../note/note.dto'
+
 import { UserSelect } from './user.constant'
 
 @Injectable()
@@ -43,6 +45,13 @@ export class UserPublicService {
       },
       select: {
         ...UserSelect,
+      },
+    })
+  }
+
+  async search(dto: NoteSearchDto) {
+    return await this.prisma.user.findMany({
+      where: {
       },
     })
   }
