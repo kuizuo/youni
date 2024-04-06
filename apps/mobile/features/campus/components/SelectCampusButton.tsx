@@ -31,9 +31,9 @@ export function SelectCampusButton() {
       onOpenChange={setOpen}
     >
       <Popover.Trigger asChild>
-        <BlurView intensity={20}>
-          <Button size="$2" icon={ArrowLeftRight}>切换校区</Button>
-        </BlurView>
+        {/* <BlurView intensity={20}> */}
+        <Button size="$2" bg="$color3" icon={ArrowLeftRight}>切换校区</Button>
+        {/* </BlurView> */}
       </Popover.Trigger>
 
       <Adapt when="sm" platform="touch">

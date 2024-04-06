@@ -15,41 +15,41 @@ import { NoteService } from './note.service'
 @UseGuards(PolicyGuard)
 @Controller('notes')
 export class NoteController {
-  constructor(private readonly todoService: NoteService) { }
+  constructor(private readonly noteService: NoteService) { }
 
   @Get()
   @Policy({ model: 'Note', action: Action.Read })
   async list(@Query() dto: NotePagerDto, @AuthUser() user: IAuthUser) {
-    return this.todoService.paginate(dto, user.id)
+    return this.noteService.paginate(dto, user.id)
   }
 
   @Get(':id')
   @Policy({ model: 'Note', action: Action.Read })
   async findOne(@Param() { id }: IdDto) {
-    return this.todoService.findOne(id)
+    return this.noteService.findOne(id)
   }
 
   @Post()
   @Policy({ model: 'Note', action: Action.Create })
   async create(@Body() dto: NoteDto, @AuthUser() user: IAuthUser) {
-    await this.todoService.create(dto, user.id)
+    await this.noteService.create(dto, user.id)
   }
 
   @Put(':id')
   @Policy({ model: 'Note', action: Action.Update })
   async update(@Param() { id }: IdDto, @Body() dto: NoteUpdateDto) {
-    await this.todoService.update(id, dto)
+    await this.noteService.update(id, dto)
   }
 
   @Delete(':id')
   @Policy({ model: 'Note', action: Action.Delete })
   async delete(@Param() { id }: IdDto) {
-    await this.todoService.delete(id)
+    await this.noteService.delete(id)
   }
 
   @Delete()
   async batchDelete(@Body() dto: BatchDeleteDto, @AuthUser() user: IAuthUser) {
     const { ids } = dto
-    await this.todoService.batchDelete(ids, user.id)
+    await this.noteService.batchDelete(ids, user.id)
   }
 }

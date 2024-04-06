@@ -61,11 +61,8 @@ export function CampusScreen() {
   return (
     <YStack fullscreen flex={1} bg="$background">
       <NavBar
-        left={(
-          <CampusTitle campus={data as unknown as Campus}></CampusTitle>)}
-        right={(
-          <SelectCampusButton></SelectCampusButton>
-        )}
+        left={(<CampusTitle campus={data as unknown as Campus}></CampusTitle>)}
+        right={(<SelectCampusButton></SelectCampusButton>)}
         style={{
           zIndex: 100,
           backgroundColor: theme.$background?.get(),

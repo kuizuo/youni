@@ -3,7 +3,7 @@ import { Input, View, XStack, YStack } from '@/ui'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 
-export function SearchTagScreen() {
+export function MapScreen() {
   return (
     <YStack fullscreen bg="$background">
       <NavBar left={<NavButton.Back />}>

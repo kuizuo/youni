@@ -6,11 +6,14 @@ import { ScrollView, SizableText, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { UserNoteList } from '@/ui/components/user/UserNoteList'
 import { useUser } from '@/utils/auth/hooks/useUser'
+import { withQuerySuspense } from '@/ui/components/QuerySuspense'
 
-const FollowFeed = memo((): React.ReactNode => {
+const FollowFeed = memo(() => {
   const { currentUser } = useUser()
 
-  const [data] = trpc.interact.state.useSuspenseQuery({ id: currentUser?.id })
+  const [data] = trpc.interact.state.useSuspenseQuery({ id: currentUser?.id }, {
+    useErrorBoundary: true,
+  })
 
   const hasFollowedUsers = useMemo(() => data?.followingCount !== 0, [data?.followingCount])
 
@@ -20,6 +23,7 @@ const FollowFeed = memo((): React.ReactNode => {
     },
     {
       getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+      useErrorBoundary: true,
     },
   )
 
@@ -74,4 +78,4 @@ const FollowFeed = memo((): React.ReactNode => {
   )
 })
 
-export default memo(FollowFeed)
+export default withQuerySuspense(memo(FollowFeed))

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Avatar, Image, Separator, SizableText, Text, XStack, YStack } from 'tamagui'
+import { Avatar, Image, Separator, SizableText, Text, View, XStack, YStack } from 'tamagui'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
 import { formatTime } from '@/utils/date'
@@ -27,24 +27,34 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
 
     const actionString = actionMap[item.action][item.sourceType]
 
+    const truncatedTitle = item.source.title.length > 16 ? `${item.source.title.slice(0, 16)}...` : item.source.title
     return (
-      <XStack gap="$2">
+      <Text>
         <Link href={`/user/${item.sender.id}/profile`} asChild>
-          <SizableText size="$4">
+          <SizableText size="$3" ml="$2">
             {item.sender.nickname}
           </SizableText>
         </Link>
 
-        <SizableText size="$4" color="gray">
+        <View w="$0.75" />
+
+        <SizableText size="$3" color="gray">
           {actionString}
         </SizableText>
 
+        <View w="$0.75" />
         {(item.sourceId && item.sourceType === 'Note') && (
           <Link href={`/note/${item.sourceId}`} asChild>
-            <SizableText size="$4">{item.source.title}</SizableText>
+            <SizableText
+              flexWrap="wrap"
+              size="$3"
+              numberOfLines={2}
+            >
+              {truncatedTitle }
+            </SizableText>
           </Link>
         )}
-      </XStack>
+      </Text>
     )
   }
 
@@ -55,7 +65,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
   return (
     <>
       <XStack p="$3" gap="$3" ai="center">
-        <Avatar circular size="$5" onPress={handleNavigateToUser}>
+        <Avatar circular size="$4" onPress={handleNavigateToUser}>
           <Avatar.Image
             width="100%"
             height="100%"

@@ -3,7 +3,7 @@ import { NotificationItem } from './components/NotificationItem'
 import { Image, Text, XStack, YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 
-export function NotificationScreen(): React.ReactNode {
+export function NotificationScreen() {
   const { data } = trpc.notification.count.useQuery()
   const router = useRouter()
 
@@ -16,7 +16,6 @@ export function NotificationScreen(): React.ReactNode {
         headerShadowVisible: false,
       }}
       />
-
       <YStack flex={1} bg="$background">
         <XStack jc="space-around" p="$4" ai="center" gap="$2">
           <YStack

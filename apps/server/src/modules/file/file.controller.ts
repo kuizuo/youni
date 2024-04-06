@@ -13,6 +13,8 @@ import { lookup } from 'mime-types'
 
 import { customAlphabet } from 'nanoid'
 
+import { Public } from '../auth/decorators/public.decorator'
+
 import { FileQueryDto, FileUploadDto } from './file.dto'
 import { FileService } from './file.service'
 
@@ -38,6 +40,7 @@ export class FileController {
   @Get('/:type/:name')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @Bypass()
+  @Public()
   async get(@Param() params: FileQueryDto, @Res() res: FastifyReply) {
     const { type, name } = params
     const ext = path.extname(name)

@@ -1,12 +1,12 @@
-import type { ReactNode } from 'react'
 import { memo, useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { YStack } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
+import { withQuerySuspense } from '@/ui/components/QuerySuspense'
 
-function HomeFeed(): ReactNode {
+function HomeFeed() {
   const [data, { isRefetching, refetch, hasNextPage, fetchNextPage }] = trpc.note.homeFeed.useSuspenseInfiniteQuery(
     {
       limit: 10,
@@ -14,6 +14,7 @@ function HomeFeed(): ReactNode {
     {
       getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
       cacheTime: 1,
+      useErrorBoundary: true,
     },
   )
 
@@ -40,4 +41,4 @@ function HomeFeed(): ReactNode {
   )
 }
 
-export default memo(HomeFeed)
+export default withQuerySuspense(memo(HomeFeed))

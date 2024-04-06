@@ -53,17 +53,17 @@ export function ProfileScreen() {
     {
       key: 'note',
       title: '笔记',
-      component: <UserNote userId={userId} contentContainerStyle={contentContainerStyle} />,
+      component: <UserNote {...{ userId, contentContainerStyle }} />,
     },
     {
       key: 'collection',
       title: '收藏',
-      component: <UserCollection userId={userId} contentContainerStyle={contentContainerStyle} />,
+      component: <UserCollection {...{ userId, contentContainerStyle }} />,
     },
     {
       key: 'like',
       title: '赞过',
-      component: <UserLiked userId={userId} contentContainerStyle={contentContainerStyle} />,
+      component: <UserLiked {...{ userId, contentContainerStyle }} />,
     },
   ]
 

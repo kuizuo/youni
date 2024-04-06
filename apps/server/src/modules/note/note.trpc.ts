@@ -104,6 +104,7 @@ export class NoteTrpcRouter implements OnModuleInit {
 
           return { items, meta }
         }),
+      // relatedNotes
       search: procedureAuth
         .input(NoteSearchDto.schema)
         .query(async (opt) => {
