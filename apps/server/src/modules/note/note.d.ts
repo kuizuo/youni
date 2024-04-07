@@ -1,3 +1,5 @@
+export { NoteState } from '@youni/database'
+
 export type NoteItem = Awaited<
   ReturnType<import('./note.public.service').NotePublicService['getNoteById']>
 >

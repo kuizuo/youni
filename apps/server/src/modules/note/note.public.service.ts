@@ -6,7 +6,7 @@ import { BizException } from '@server/common/exceptions/biz.exception'
 import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
-import { Note, Prisma } from '@youni/database'
+import { Note, NoteState, Prisma } from '@youni/database'
 
 import dayjs from 'dayjs'
 
@@ -138,7 +138,7 @@ export class NotePublicService {
     return await this.prisma.note.findUniqueOrThrow({
       where: {
         id,
-        isPublished: true,
+        state: NoteState.Published,
       },
       select: {
         ...NoteSelect,
@@ -163,7 +163,7 @@ export class NotePublicService {
     const { tag, cursor, limit, sortBy, sortOrder = 'desc' } = dto
 
     const where: Prisma.NoteWhereInput = {
-      isPublished: true,
+      state: NoteState.Published,
       tags: {
         some: {
           name: tag,
@@ -194,7 +194,7 @@ export class NotePublicService {
     const { campusId, cursor, limit, sortBy, sortOrder = 'desc' } = dto
 
     const where: Prisma.NoteWhereInput = {
-      isPublished: true,
+      state: NoteState.Published,
       campusId,
     }
 
@@ -270,7 +270,7 @@ export class NotePublicService {
     const [items, meta] = await this.prisma.note.paginate({
       where: {
         userId,
-        isPublished: true,
+        state: NoteState.Published,
       },
       select: {
         ...NoteSelect,
@@ -296,7 +296,7 @@ export class NotePublicService {
             userId,
           },
         },
-        isPublished: true,
+        state: NoteState.Published,
       },
       select: {
         ...NoteSelect,

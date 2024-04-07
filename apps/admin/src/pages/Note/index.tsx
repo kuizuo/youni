@@ -1,5 +1,4 @@
-import { addTodo, removeTodo, queryTodo, updateTodo } from '@/services/todo/api';
-import { PlusOutlined } from '@ant-design/icons';
+import { addNote, removeNote, queryNote, updateNote } from '@/services/note/api';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
   FooterToolbar,
@@ -7,17 +6,16 @@ import {
   PageContainer,
   ProDescriptions,
   ProFormSwitch,
-  ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, Input, message } from 'antd';
+import { FormattedMessage } from '@umijs/max';
+import { Button, Drawer, Typography, message, Image } from 'antd';
 import React, { useRef, useState } from 'react';
 
-const handleAdd = async (fields: API.TodoItem) => {
+const handleAdd = async (fields: API.NoteItem) => {
   const hide = message.loading('正在添加');
   try {
-    await addTodo({ ...fields });
+    await addNote({ ...fields });
     hide();
     message.success('Added successfully');
     return true;
@@ -28,10 +26,10 @@ const handleAdd = async (fields: API.TodoItem) => {
   }
 };
 
-const handleUpdate = async (fields: API.TodoItem) => {
+const handleUpdate = async (fields: API.NoteItem) => {
   const hide = message.loading('Configuring');
   try {
-    await updateTodo(fields.id!, {
+    await updateNote(fields.id!, {
       value: fields.value,
       status: fields.status,
     });
@@ -46,12 +44,12 @@ const handleUpdate = async (fields: API.TodoItem) => {
   }
 };
 
-const handleRemove = async (selectedRows: API.TodoItem[]) => {
+const handleRemove = async (selectedRows: API.NoteItem[]) => {
   console.log("🚀 ~ handleRemove ~ selectedRows:", selectedRows)
   const hide = message.loading('正在删除');
   if (!selectedRows) return true;
   try {
-    await removeTodo(selectedRows.map((row) => row.id));
+    await removeNote(selectedRows.map((row) => row.id));
     hide();
     message.success('Deleted successfully and will refresh soon');
     return true;
@@ -63,33 +61,49 @@ const handleRemove = async (selectedRows: API.TodoItem[]) => {
 };
 
 const TableList: React.FC = () => {
-  /**
-   * @en-US Pop-up window of new window
-   * @zh-CN 新建窗口的弹窗
-   *  */
+
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
-  /**
-   * @en-US The pop-up window of the distribution update window
-   * @zh-CN 分布更新窗口的弹窗
-   * */
+
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
 
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.TodoItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.TodoItem[]>([]);
+  const [currentRow, setCurrentRow] = useState<API.NoteItem>();
+  const [selectedRowsState, setSelectedRows] = useState<API.NoteItem[]>([]);
 
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
-
-  const columns: ProColumns<API.TodoItem>[] = [
+  const columns: ProColumns<API.NoteItem>[] = [
     {
-      title: '事项',
-      dataIndex: 'value',
+      title: '图片',
+      dataIndex: 'images',
+      width: 120,
+      hideInSearch: true,
+      render: (dom, entity) => {
+        return (
+          <Image.PreviewGroup
+            items={entity.images.map((item) => item.src)}
+          >
+            <Image
+              width={120}
+              height={120}
+              src={entity.cover.src}
+            />
+            {showDetail && entity.images.slice(1).map((item, index) => (
+              <Image
+                key={index}
+                width={120}
+                height={120}
+                src={item.src}
+              />
+            ))}
+          </Image.PreviewGroup>
+        );
+      },
+    },
+    {
+      title: '标题',
+      dataIndex: 'title',
+      width: 160,
       render: (dom, entity) => {
         return (
           <a
@@ -104,17 +118,40 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.searchTable.titleStatus" defaultMessage="Status" />,
-      dataIndex: 'status',
+      title: '内容',
+      dataIndex: 'content',
+      // width: 150,
+      hideInSearch: true,
+      render: (dom, entity) => {
+        return (
+          <Typography.Paragraph ellipsis={{ rows: 2, tooltip: true }} >
+            {entity.content}
+          </Typography.Paragraph>
+
+        );
+      },
+    },
+    {
+      title: '状态',
+      dataIndex: 'state',
       hideInForm: true,
+      width: 100,
       valueEnum: {
-        false: {
-          text: '进行中',
+        'Draft': {
+          text: '草稿',
+          status: 'Default',
+        },
+        'Audit': {
+          text: '待审核',
           status: 'Processing',
         },
-        true: {
-          text: '已完成',
-          status: 'Processing',
+        'Published': {
+          text: '已发布',
+          status: 'Success',
+        },
+        'Rejected': {
+          text: '已拒绝',
+          status: 'Error',
         },
       },
     },
@@ -145,25 +182,25 @@ const TableList: React.FC = () => {
   ];
 
   return (
-    <PageContainer>
-      <ProTable<API.TodoItem, API.PageParams>
+    <PageContainer header={{ title: '图文管理' }}>
+      <ProTable<API.NoteItem, API.PageParams>
         actionRef={actionRef}
         rowKey="id"
         search={{
           labelWidth: 120,
         }}
-        toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalOpen(true);
-            }}
-          >
-            <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
-          </Button>,
-        ]}
-        request={queryTodo}
+        // toolBarRender={() => [
+        //   <Button
+        //     type="primary"
+        //     key="primary"
+        //     onClick={() => {
+        //       handleModalOpen(true);
+        //     }}
+        //   >
+        //     <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
+        //   </Button>,
+        // ]}
+        request={queryNote}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
@@ -195,15 +232,15 @@ const TableList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
-      <ModalForm
-        title={'新建待办事项'}
+      {/* <ModalForm
+        title={'新建图文'}
         width="400px"
         layout="horizontal"
         grid
         open={createModalOpen}
         onOpenChange={handleModalOpen}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.TodoItem);
+          const success = await handleAdd(value as API.NoteItem);
           if (success) {
             handleModalOpen(false);
             if (actionRef.current) {
@@ -216,7 +253,7 @@ const TableList: React.FC = () => {
           rules={[
             {
               required: true,
-              message: "待办事项的值不能为空",
+              message: "图文的值不能为空",
             },
           ]}
           label={"事项"}
@@ -232,18 +269,18 @@ const TableList: React.FC = () => {
           }}
           name="status"
         />
-      </ModalForm>
+      </ModalForm> */}
 
       <ModalForm
-        title={'更新待办事项'}
+        title={'更新图文'}
         width="400px"
         layout="horizontal"
         grid
         open={updateModalOpen}
         onOpenChange={handleUpdateModalOpen}
         initialValues={{
-          value: currentRow?.value,
-          status: currentRow?.status,
+          value: currentRow?.title,
+          status: currentRow?.state,
         }}
         onFinish={async (value) => {
           const success = await handleUpdate({ id: currentRow?.id, ...value });
@@ -256,19 +293,7 @@ const TableList: React.FC = () => {
           }
         }}
       >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: "待办事项的值不能为空",
-            },
-          ]}
-          label={"事项"}
-          colProps={{
-            span: 18,
-          }}
-          name="value"
-        />
+
         <ProFormSwitch
           label={"状态"}
           colProps={{
@@ -287,17 +312,17 @@ const TableList: React.FC = () => {
         }}
         closable={false}
       >
-        {currentRow?.value && (
-          <ProDescriptions<API.TodoItem>
-            column={2}
-            title={currentRow?.value}
+        {currentRow?.title && (
+          <ProDescriptions<API.NoteItem>
+            column={1}
+            title={currentRow?.title}
             request={async () => ({
               data: currentRow || {},
             })}
             params={{
-              id: currentRow?.value,
+              id: currentRow?.title,
             }}
-            columns={columns as ProDescriptionsItemProps<API.TodoItem>[]}
+            columns={columns as ProDescriptionsItemProps<API.NoteItem>[]}
           />
         )}
       </Drawer>

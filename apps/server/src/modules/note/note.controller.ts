@@ -17,8 +17,8 @@ import { NoteService } from './note.service'
 export class NoteController {
   constructor(private readonly noteService: NoteService) { }
 
-  @Get()
-  @Policy({ model: 'Note', action: Action.Read })
+  @Get('page')
+  @Policy({ model: 'Note', action: Action.Manage })
   async list(@Query() dto: NotePagerDto, @AuthUser() user: IAuthUser) {
     return this.noteService.paginate(dto, user.id)
   }

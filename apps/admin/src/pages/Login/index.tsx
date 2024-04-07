@@ -18,10 +18,9 @@ import {
 import { useEmotionCss } from '@ant-design/use-emotion-css';
 import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
 import { Alert, message, Tabs } from 'antd';
-import Settings from '../../../../config/defaultSettings';
+import Settings from '../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
-import { LoginResult } from '@server/modules/auth/auth.model';
 import { LoginType } from '@server/modules/auth/auth.constant';
 import { LoginDto } from '@server/modules/auth/auth.dto';
 import { setToken } from '@/utils/auth';

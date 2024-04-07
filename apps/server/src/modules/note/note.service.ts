@@ -21,18 +21,16 @@ export class NoteService {
   ) { }
 
   async paginate(dto: NotePagerDto, userId: string) {
-    const { cursor, limit } = dto
+    const { page, limit } = dto
 
     const [items, meta] = await this.prisma.note.paginate({
-      where: {
-        userId,
-      },
       orderBy: {
         createdAt: 'desc',
       },
-    }).withCursor({
+    }).withPages({
+      page,
       limit,
-      after: cursor,
+      includePageCount: true,
     })
 
     return {

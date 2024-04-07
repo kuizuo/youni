@@ -38,6 +38,5 @@ export default antfu({
         'warnOnUnassignedImports': true,
       },
     ],
-
   },
 })

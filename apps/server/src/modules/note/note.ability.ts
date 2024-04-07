@@ -4,6 +4,8 @@ import { Injectable } from '@nestjs/common'
 
 import { Role } from '@server/modules/auth/auth.constant'
 
+import { NoteState } from '@youni/database'
+
 import { Action, AppAbility, BaseAbility } from '../casl/ability.class'
 import { DefineAbility } from '../casl/ability.decorator'
 
@@ -17,7 +19,7 @@ export class NoteAbility implements BaseAbility {
       can(Action.Manage, 'Note')
 
     can(Action.Create, 'Note')
-    can(Action.Read, 'Note', { isPublished: true })
+    can(Action.Read, 'Note', { state: NoteState.Published })
     can(Action.Update, 'Note', { userId: user.id })
     can(Action.Delete, 'Note', { userId: user.id })
 

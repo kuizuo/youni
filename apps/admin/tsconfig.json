@@ -24,7 +24,7 @@
       "@/*": ["./src/*"],
       "@@/*": ["./src/.umi/*"],
       "@server/*": ["../server/src/*"],
-      "@model": ["../../prisma/client/index.d.ts"]
+      "@model": ["../../packages/database/client/index.d.ts"]
     }
   }
 }

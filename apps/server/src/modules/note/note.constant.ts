@@ -1,4 +1,4 @@
-import { Prisma } from '@youni/database'
+import { NoteState, Prisma } from '@youni/database'
 
 export enum NoteType {
   Follow = 'follow', // 关注
@@ -9,8 +9,7 @@ export enum NoteType {
 }
 
 export const PublicNoteWhere = {
-  isPublished: true,
-  // state: 1,
+  state: NoteState.Published,
   campusId: null,
 } satisfies Prisma.NoteWhereInput
 
@@ -36,6 +35,7 @@ export const NoteSelect = {
   },
   userId: true,
   publishTime: true,
+  state: true,
 } satisfies Prisma.NoteSelect
 
 export enum NoteEvents {

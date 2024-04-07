@@ -10,7 +10,6 @@ import { UserModule } from '../user/user.module'
 
 import { NoteAbility } from './note.ability'
 import { NoteController } from './note.controller'
-import { NoteListener } from './note.listener'
 import { NotePublicService } from './note.public.service'
 import { NoteService } from './note.service'
 import { NoteTrpcRouter } from './note.trpc'
@@ -20,7 +19,6 @@ const providers: Provider[] = [
   NotePublicService,
   NoteTrpcRouter,
   NoteAbility,
-  NoteListener,
 ]
 
 @Module({

@@ -88,7 +88,6 @@ model Note {
   id          String       @id @default("")
   title       String       @db.VarChar(100)
   content     String
-  isPublished Boolean      @default(true) @map("is_published")
   publishTime DateTime?
   /// [Images]
   images      Json         @default("[]")
@@ -96,6 +95,7 @@ model Note {
   cover       Json         @default("{}") /// @zod.custom.omit(["model", "input"])
   /// [Interact]
   interact    Json         @default("{\"likedCount\": 0, \"collectCount\": 0, \"commentCount\": 0 }") /// @zod.custom.omit(["model", "input"])
+  state       NoteState
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @map("updated_at")
   tags        NoteTag[]
@@ -218,6 +218,13 @@ enum Provider {
 enum NoteType {
   Normal
   Video
+}
+
+enum NoteState {
+  Draft // 草稿
+  Published // 已发布
+  Audit // 审核中
+  Rejected // 审核不通过
 }
 
 enum CommentRefType {

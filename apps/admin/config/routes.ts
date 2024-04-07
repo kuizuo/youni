@@ -12,15 +12,10 @@
  */
 export default [
   {
-    path: '/user',
     layout: false,
-    routes: [
-      {
-        name: 'login',
-        path: '/user/login',
-        component: './User/Login',
-      },
-    ],
+    name: 'login',
+    path: '/login',
+    component: './Login',
   },
   {
     path: '/welcome',
@@ -29,33 +24,25 @@ export default [
     component: './Welcome',
   },
   {
-    path: '/admin',
-    name: 'admin',
-    icon: 'crown',
+    name: '图文管理',
+    icon: 'table',
+    path: '/note',
+    component: './Note',
     access: 'canAdmin',
-    routes: [
-      {
-        path: '/admin',
-        redirect: '/admin/sub-page',
-      },
-      {
-        path: '/admin/sub-page',
-        name: 'sub-page',
-        component: './Admin',
-      },
-    ],
   },
   {
-    name: 'Todo list',
+    name: '校区管理',
     icon: 'table',
-    path: '/todoList',
-    component: './TodoList',
+    path: '/campus',
+    component: './Campus',
+    access: 'canAdmin',
   },
   {
-    name: '文章列表',
-    icon: 'table',
-    path: '/post',
-    component: './Post',
+    name: '用户管理',
+    icon: 'user',
+    path: '/user',
+    component: './User',
+    access: 'canAdmin',
   },
   {
     path: '/',
