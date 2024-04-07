@@ -26,10 +26,31 @@ export class NoteTagService {
       where: {
         name: { contains: name },
       },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        _count: {
+          select: {
+            notes: true,
+          },
+        },
+      },
       orderBy: {
         [sortBy]: sortOrder,
       },
     }).withPages({ page, limit, includePageCount: true })
+
+    const promises = items.map(async (item) => {
+      const viewCount = await this.viewService.count(InteractType.NoteTag, item.id)
+
+      // 图文数量
+
+      // FIXME:
+      ;(item as any).viewCount = viewCount
+    })
+
+    await Promise.all(promises)
 
     return {
       items,
@@ -115,5 +136,15 @@ export class NoteTagService {
         id,
       },
     })
+  }
+
+  async batchDelete(ids: string[]) {
+    const items = await this.prisma.noteTag.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    })
+
+    return items
   }
 }

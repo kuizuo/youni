@@ -24,6 +24,9 @@ export class NoteService {
     const { page, limit } = dto
 
     const [items, meta] = await this.prisma.note.paginate({
+      include: {
+        tags: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },

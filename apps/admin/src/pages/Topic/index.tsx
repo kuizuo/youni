@@ -1,4 +1,5 @@
-import { addNote, removeNote, queryNote, updateNote } from '@/services/note/api';
+import { addTopic, removeTopic, queryTopic, updateTopic } from '@/services/topic/api';
+import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
   FooterToolbar,
@@ -6,16 +7,17 @@ import {
   PageContainer,
   ProDescriptions,
   ProFormSwitch,
+  ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Button, Drawer, Typography, message, Image, Tag } from 'antd';
+import { Button, Drawer, message } from 'antd';
 import React, { useRef, useState } from 'react';
 
-const handleAdd = async (fields: API.NoteItem) => {
+const handleAdd = async (fields: API.TopicItem) => {
   const hide = message.loading('正在添加');
   try {
-    await addNote({ ...fields });
+    await addTopic({ ...fields });
     hide();
     message.success('添加成功');
     return true;
@@ -26,12 +28,11 @@ const handleAdd = async (fields: API.NoteItem) => {
   }
 };
 
-const handleUpdate = async (fields: API.NoteItem) => {
+const handleUpdate = async (fields: API.TopicItem) => {
   const hide = message.loading('Configuring');
   try {
-    await updateNote(fields.id!, {
-      value: fields.value,
-      status: fields.status,
+    await updateTopic(fields.id!, {
+      name: fields.name,
     });
     hide();
 
@@ -44,12 +45,12 @@ const handleUpdate = async (fields: API.NoteItem) => {
   }
 };
 
-const handleRemove = async (selectedRows: API.NoteItem[]) => {
+const handleRemove = async (selectedRows: API.TopicItem[]) => {
   console.log("🚀 ~ handleRemove ~ selectedRows:", selectedRows)
   const hide = message.loading('正在删除');
   if (!selectedRows) return true;
   try {
-    await removeNote(selectedRows.map((row) => row.id));
+    await removeTopic(selectedRows.map((row) => row.id));
     hide();
     message.success('已成功删除，将很快刷新');
     return true;
@@ -69,40 +70,13 @@ const TableList: React.FC = () => {
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.NoteItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.NoteItem[]>([]);
+  const [currentRow, setCurrentRow] = useState<API.TopicItem>();
+  const [selectedRowsState, setSelectedRows] = useState<API.TopicItem[]>([]);
 
-  const columns: ProColumns<API.NoteItem>[] = [
+  const columns: ProColumns<API.TopicItem>[] = [
     {
-      title: '图片',
-      dataIndex: 'images',
-      width: 120,
-      hideInSearch: true,
-      render: (dom, entity) => {
-        return (
-          <Image.PreviewGroup
-            items={entity.images.map((item) => item.src)}
-          >
-            <Image
-              width={120}
-              height={120}
-              src={entity.cover.src}
-            />
-            {showDetail && entity.images.slice(1).map((item, index) => (
-              <Image
-                key={index}
-                width={120}
-                height={120}
-                src={item.src}
-              />
-            ))}
-          </Image.PreviewGroup>
-        );
-      },
-    },
-    {
-      title: '标题',
-      dataIndex: 'title',
+      title: '话题',
+      dataIndex: 'name',
       width: 160,
       render: (dom, entity) => {
         return (
@@ -118,52 +92,15 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: '内容',
-      dataIndex: 'content',
-      // width: 150,
-      hideInSearch: true,
-      render: (dom, entity) => {
-        return (
-          <Typography.Paragraph ellipsis={{ rows: 2, tooltip: true }} >
-            {entity.content}
-          </Typography.Paragraph>
-
-        );
-      },
+      title: '浏览量',
+      dataIndex: 'viewCount',
     },
     {
-      title: '标签',
-      dataIndex: 'tags',
+      title: '图文数量',
+      dataIndex: '_count.note',
       width: 160,
       render: (dom, entity) => {
-
-        return entity.tags?.map((item) => (
-          <Tag color="blue" key={item.name} onClick={() => { }}>{item.name}</Tag>
-        ))
-      },
-    },
-    {
-      title: '状态',
-      dataIndex: 'state',
-      hideInForm: true,
-      width: 100,
-      valueEnum: {
-        'Draft': {
-          text: '草稿',
-          status: 'Default',
-        },
-        'Audit': {
-          text: '待审核',
-          status: 'Processing',
-        },
-        'Published': {
-          text: '已发布',
-          status: 'Success',
-        },
-        'Rejected': {
-          text: '已拒绝',
-          status: 'Error',
-        },
+        return (<span>{entity._count.notes}</span>)
       },
     },
     {
@@ -180,7 +117,7 @@ const TableList: React.FC = () => {
       width: 100,
       render: (_, record) => [
         <a
-          key="config"
+          key="update"
           onClick={() => {
             handleUpdateModalOpen(true);
             setCurrentRow(record);
@@ -193,25 +130,25 @@ const TableList: React.FC = () => {
   ];
 
   return (
-    <PageContainer header={{ title: '图文管理' }}>
-      <ProTable<API.NoteItem, API.PageParams>
+    <PageContainer header={{ title: '话题管理' }}>
+      <ProTable<API.TopicItem, API.PageParams>
         actionRef={actionRef}
         rowKey="id"
         search={{
           labelWidth: 120,
         }}
-        // toolBarRender={() => [
-        //   <Button
-        //     type="primary"
-        //     key="primary"
-        //     onClick={() => {
-        //       handleModalOpen(true);
-        //     }}
-        //   >
-        //     <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
-        //   </Button>,
-        // ]}
-        request={queryNote}
+        toolBarRender={() => [
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              handleModalOpen(true);
+            }}
+          >
+            <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
+          </Button>,
+        ]}
+        request={queryTopic}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
@@ -243,15 +180,15 @@ const TableList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
-      {/* <ModalForm
-        title={'新建图文'}
+      <ModalForm
+        title={'新建话题'}
         width="400px"
         layout="horizontal"
         grid
         open={createModalOpen}
         onOpenChange={handleModalOpen}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.NoteItem);
+          const success = await handleAdd(value as API.TopicItem);
           if (success) {
             handleModalOpen(false);
             if (actionRef.current) {
@@ -264,7 +201,7 @@ const TableList: React.FC = () => {
           rules={[
             {
               required: true,
-              message: "图文的值不能为空",
+              message: "话题的值不能为空",
             },
           ]}
           label={"事项"}
@@ -280,10 +217,10 @@ const TableList: React.FC = () => {
           }}
           name="status"
         />
-      </ModalForm> */}
+      </ModalForm>
 
       <ModalForm
-        title={'更新图文'}
+        title={'更新话题'}
         width="400px"
         layout="horizontal"
         grid
@@ -324,7 +261,7 @@ const TableList: React.FC = () => {
         closable={false}
       >
         {currentRow?.title && (
-          <ProDescriptions<API.NoteItem>
+          <ProDescriptions<API.TopicItem>
             column={1}
             title={currentRow?.title}
             request={async () => ({
@@ -333,7 +270,7 @@ const TableList: React.FC = () => {
             params={{
               id: currentRow?.title,
             }}
-            columns={columns as ProDescriptionsItemProps<API.NoteItem>[]}
+            columns={columns as ProDescriptionsItemProps<API.TopicItem>[]}
           />
         )}
       </Drawer>

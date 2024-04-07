@@ -25,14 +25,21 @@ export default [
   },
   {
     name: '图文管理',
-    icon: 'table',
+    icon: 'picture',
     path: '/note',
     component: './Note',
     access: 'canAdmin',
   },
   {
+    name: '话题管理',
+    icon: 'tag',
+    path: '/topic',
+    component: './Topic',
+    access: 'canAdmin',
+  },
+  {
     name: '校区管理',
-    icon: 'table',
+    icon: 'read',
     path: '/campus',
     component: './Campus',
     access: 'canAdmin',
