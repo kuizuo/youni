@@ -1,16 +1,16 @@
 import { request } from '@umijs/max';
 
 import { IBaseResponse } from '@server/common/model/response.model'
-import { NoteDto, NoteUpdateDto } from '@server/modules/note/note.dto';
+import { CampusDto, CampusUpdateDto } from '@server/modules/campus/campus.dto';
 
-export async function queryNote(
+export async function queryCampus(
   params: {
     current?: number;
     pageSize?: number;
   },
   options?: { [key: string]: any },
 ) {
-  const result = await request<IBaseResponse<API.NoteList>>('/api/notes/page', {
+  const result = await request<IBaseResponse<API.CampusList>>('/api/campus/page', {
     method: 'GET',
     params: {
       // ...params,
@@ -27,22 +27,22 @@ export async function queryNote(
   }
 }
 
-export async function addNote(data: NoteDto) {
-  return request<IBaseResponse<API.NoteItem>>(`/api/notes`, {
+export async function addCampus(data: CampusDto) {
+  return request<IBaseResponse<API.CampusItem>>(`/api/campus`, {
     method: 'POST',
     data,
   });
 }
 
-export async function updateNote(id: string, data: NoteUpdateDto) {
-  return request<IBaseResponse<API.NoteItem>>(`/api/notes/${id}`, {
+export async function updateCampus(id: string, data: CampusUpdateDto) {
+  return request<IBaseResponse<API.CampusItem>>(`/api/campus/${id}`, {
     method: 'PUT',
     data,
   });
 }
 
-export async function removeNote(ids: string[]) {
-  return request('/api/notes', {
+export async function removeCampus(ids: string[]) {
+  return request('/api/campus', {
     method: 'DELETE',
     data: { ids },
   });

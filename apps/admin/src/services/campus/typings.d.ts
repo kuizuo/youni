@@ -1,6 +1,6 @@
 declare namespace API {
-  type NoteList = import('@server/modules/note/note').NoteList
+  type CampusItem = import('@server/modules/campus/campus').CampusItem
 
-  type NoteItem = import('@server/modules/note/note').NoteItem
+  type CampusList = import('@server/modules/campus/campus').CampusList
 }
 

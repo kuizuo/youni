@@ -204,18 +204,20 @@ const TableList: React.FC = () => {
               message: "话题的值不能为空",
             },
           ]}
-          label={"事项"}
+          label={"话题"}
           colProps={{
-            span: 18,
+            span: 24,
           }}
-          name="value"
+          name="name"
         />
-        <ProFormSwitch
-          label={"状态"}
+        <ProFormText
+          hidden
+          label={"类型"}
           colProps={{
-            span: 6,
+            span: 24,
           }}
-          name="status"
+          initialValue={"topic"}
+          name="type"
         />
       </ModalForm>
 

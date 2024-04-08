@@ -5,7 +5,10 @@ import { ImageSchema } from 'src/common/dto/image.dto'
 import { z } from 'zod'
 
 export const CampusInputSchema = CampusOptionalDefaultsSchema.extend({
-  carousels: ImageSchema.array().min(1, { message: '至少需要一张图片' }),
+  carousels: ImageSchema.array().min(1, { message: '至少需要一张图片' }).optional(),
+  desc: z.string().optional(),
+  alias: z.string().optional(),
+  location: z.string().optional(),
 })
 
 export class CampusDto extends createZodDto(CampusInputSchema) { }
@@ -13,6 +16,7 @@ export class CampusDto extends createZodDto(CampusInputSchema) { }
 export class CampusUpdateDto extends createZodDto(CampusInputSchema.partial()) { }
 
 export class CampusPagerDto extends createZodDto(basePagerSchema.extend({
+  name: z.string().optional(),
   sortBy: z.enum(['createdAt', 'updateAt']).optional(),
   // select: z.array(CampusSchema.keyof()).optional(),
 })) { }

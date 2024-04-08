@@ -9,12 +9,12 @@ export class CampusService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
 
-  async paginate({
-    page,
-    limit,
-  }: CampusPagerDto, userId?: string) {
+  async paginate(dto: CampusPagerDto) {
+    const { page, limit, name } = dto
     const [items, meta] = await this.prisma.campus.paginate({
-
+      where: {
+        name: { contains: name },
+      },
     }).withPages({ page, limit, includePageCount: true })
 
     return {
@@ -71,5 +71,15 @@ export class CampusService {
         id,
       },
     })
+  }
+
+  async batchDelete(ids: string[]) {
+    const items = await this.prisma.campus.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    })
+
+    return items
   }
 }

@@ -4,7 +4,7 @@ export const TOKEN_KEY = 'TOKEN__';
 
 export function getToken() {
   const token = Cookies.get(TOKEN_KEY);
-  return token ? `Bearer ${token}` : null;
+  return token ? `Bearer ${token}` : '';
 }
 
 export function setToken(token: string) {
