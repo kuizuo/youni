@@ -7,8 +7,6 @@ import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 
-import { FileService } from '../file/file.service'
-
 import { NoteDto, NotePagerDto, NoteUpdateDto } from './note.dto'
 
 @Injectable()
@@ -16,16 +14,17 @@ export class NoteService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
 
-  constructor(
-    private readonly fileService: FileService,
-  ) { }
-
   async paginate(dto: NotePagerDto, userId: string) {
     const { page, limit } = dto
 
     const [items, meta] = await this.prisma.note.paginate({
       include: {
         tags: true,
+        user: {
+          select: {
+            nickname: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

@@ -3,7 +3,6 @@ import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-desi
 import {
   FooterToolbar,
   ModalForm,
-  PageContainer,
   ProDescriptions,
   ProFormItemRender,
   ProFormSegmented,
@@ -267,7 +266,7 @@ const TableList: React.FC = () => {
   ];
 
   return (
-    <PageContainer header={{ title: '图文管理' }}>
+    <>
       <ProTable<API.NoteItem, API.PageParams>
         actionRef={actionRef}
         rowKey="id"
@@ -431,7 +430,7 @@ const TableList: React.FC = () => {
           />
         )}
       </Drawer>
-    </PageContainer>
+    </>
   );
 };
 

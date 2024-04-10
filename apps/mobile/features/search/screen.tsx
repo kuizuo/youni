@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { Search } from '@tamagui/lucide-icons'
 import { useAtom } from 'jotai'
-import { TextInput } from 'react-native'
+import type { TextInput } from 'react-native'
 import { SectionList } from './components/SectionList'
 import { SearchResult } from './components/SearchResult'
 import { Button, Input, XStack, YStack } from '@/ui'
@@ -36,7 +36,6 @@ export function SearchScreen() {
     },
     [setSearchHistory],
   )
-
   function SearchBar() {
     return (
       <XStack flex={1} gap="$1" ai="center" bg="$gray3" px="$2.5" py="$2" br={50}>
@@ -48,10 +47,9 @@ export function SearchScreen() {
           size="$1"
           value={searchText}
           onChangeText={(text) => {
-            if (text !== searchText) {
+            if (text !== searchText)
               setSearchText(text)
-              setIsSearched(true)
-            }
+              // setIsSearched(true)
           }}
           onSubmitEditing={() => handleSubmit(searchText)}
           unstyled

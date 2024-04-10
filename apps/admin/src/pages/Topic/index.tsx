@@ -94,11 +94,13 @@ const TableList: React.FC = () => {
     {
       title: '浏览量',
       dataIndex: 'viewCount',
+      sorter: true,
     },
     {
       title: '图文数量',
       dataIndex: '_count.note',
       width: 160,
+      sorter: true,
       render: (dom, entity) => {
         return (<span>{entity._count.notes}</span>)
       },
@@ -123,7 +125,7 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          修改
+          编辑
         </a>
       ],
     },

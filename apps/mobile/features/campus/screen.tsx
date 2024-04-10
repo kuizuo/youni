@@ -1,6 +1,6 @@
 import type { Campus } from '@youni/database'
 import { Tabs, useCurrentTabScrollY, useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
 import { Platform } from 'react-native'
 import { DynamicList } from './components/DynamicList'
@@ -21,6 +21,12 @@ export function CampusScreen() {
     enabled: !!currentCampus.id,
   })
 
+  // useEffect(() => {
+  //   setCurrentCampus({
+  //     id: '35618370883588004',
+  //   })
+  // }, [])
+
   const window = useWindowDimensions()
   const [headerHeight, setHeaderHeight] = useState(0)
   const navBarHeight = useNavBarHeight()
@@ -36,9 +42,6 @@ export function CampusScreen() {
     - TAB_VIEW_MARGIN_TOP,
     paddingTop: headerHeight ? headerHeight + TAB_BAR_HEIGHT : 0,
   }
-
-  if (isLoading)
-    return (<FullscreenSpinner />)
 
   const CampusHeader = () => {
     const Y = useCurrentTabScrollY()
@@ -125,7 +128,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
       <Image
         w={24}
         h={24}
-    // @ts-expect-error
+        // @ts-expect-error
         source={{ uri: campus.logo, width: '100%', height: '100%' }}
         resizeMode="contain"
       />

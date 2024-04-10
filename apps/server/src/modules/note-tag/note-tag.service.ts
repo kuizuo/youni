@@ -44,8 +44,6 @@ export class NoteTagService {
     const promises = items.map(async (item) => {
       const viewCount = await this.viewService.count(InteractType.NoteTag, item.id)
 
-      // 图文数量
-
       // FIXME:
       ;(item as any).viewCount = viewCount
     })

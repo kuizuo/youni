@@ -27,9 +27,7 @@ export function NotificationScreen() {
             onPress={() => router.push('/notification/like')}
           >
             <Image width={60} height={60} source={require('@/assets/images/heart.png')}></Image>
-            {/* {
-            data?.count.like! > 0 && <Text position="absolute" top={0} right={20}>{data?.count.like} </Text>
-          } */}
+
             <Text fontSize="$3">赞</Text>
           </YStack>
           <YStack
@@ -71,7 +69,26 @@ export function NotificationScreen() {
             <Text fontSize="$3">新增关注</Text>
           </YStack>
         </XStack>
+
         <YStack>
+          {/* <NotificationItem
+            title="系统通知"
+            image={require('@/assets/images/heart.png')}
+            desc=" "
+            onPress={() => router.push('/notification/like')}
+          />
+          <NotificationItem
+            title="系统通知"
+            image={require('@/assets/images/message.png')}
+            desc=" "
+            onPress={() => router.push('/notification/comment')}
+          />
+          <NotificationItem
+            title="系统通知"
+            image={require('@/assets/images/follow.png')}
+            desc=" "
+            onPress={() => router.push('/notification/follow')}
+          /> */}
           <NotificationItem
             title="系统通知"
             image={require('@/assets/images/message2.png')}

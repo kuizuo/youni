@@ -7,12 +7,11 @@ import {
   ModalForm,
   PageContainer,
   ProDescriptions,
-  ProFormSwitch,
   ProFormText,
   ProFormUploadButton,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage } from '@umijs/max';
+import { FormattedMessage, useNavigate } from '@umijs/max';
 import { Button, Drawer, Image, message } from 'antd';
 import React, { useRef, useState } from 'react';
 
@@ -64,6 +63,7 @@ const handleRemove = async (selectedRows: API.CampusItem[]) => {
 };
 
 const TableList: React.FC = () => {
+  const navigate = useNavigate();
 
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
 
@@ -100,8 +100,7 @@ const TableList: React.FC = () => {
         return (
           <a
             onClick={() => {
-              setCurrentRow(entity);
-              setShowDetail(true);
+              navigate(`/campus/detail/${entity.id}`)
             }}
           >
             {dom}
@@ -145,7 +144,7 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          修改
+          编辑
         </a>
       ],
     },
@@ -223,6 +222,12 @@ const TableList: React.FC = () => {
           name="logo"
           label="校徽"
           max={1}
+          rules={[
+            {
+              required: true,
+              message: "校徽不能为空",
+            },
+          ]}
           fieldProps={{
             name: 'file',
             listType: 'picture-card',
@@ -272,7 +277,7 @@ const TableList: React.FC = () => {
         open={updateModalOpen}
         onOpenChange={handleUpdateModalOpen}
         initialValues={{
-          // logo: currentRow?.logo,
+          logo: currentRow?.logo,
           name: currentRow?.name,
           desc: currentRow?.desc,
         }}
@@ -299,10 +304,12 @@ const TableList: React.FC = () => {
             }
           }}
           action="/api/files/upload"
-          transform={(file) => {
-            console.log(file)
-            return file?.[0].response.data.url
+          convertValue={(value, field) => {
+            return [{ url: value }]
           }}
+        // transform={(file) => {
+        //   return file?.[0].response.data.url
+        // }}
         />
         <ProFormText
           rules={[

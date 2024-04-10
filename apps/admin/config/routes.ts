@@ -88,8 +88,21 @@ export default [
     name: '校区管理',
     icon: 'read',
     path: '/campus',
-    component: './campus',
     access: 'canAdmin',
+    routes: [
+      {
+        path: '/campus',
+        component: './campus',
+      },
+      {
+        name: '校区详情',
+        path: '/campus/detail/:id',
+        component: './campus/detail/$id',
+        hideChildrenInMenu: true,
+        hideInMenu: true,
+
+      },
+    ],
   },
   {
     name: '用户管理',
