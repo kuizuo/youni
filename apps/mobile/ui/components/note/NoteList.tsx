@@ -1,12 +1,11 @@
 import type { NoteItem } from '@server/modules/note/note'
 import type { FlashListProps, MasonryListRenderItem } from '@shopify/flash-list'
 import { MasonryFlashList } from '@shopify/flash-list'
-import { useMedia } from 'tamagui'
 import { useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { NoteListItem } from './NoteListItem'
-import { Spinner } from '@/ui'
+import { Spinner, useMedia } from '@/ui'
 
 interface Props {
   data: NoteItem[]

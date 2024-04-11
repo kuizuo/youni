@@ -37,11 +37,11 @@ export function UserFollowButton({ userId, isFollowing: initState }: Props) {
           borderRadius: 50,
           overflow: 'hidden',
           backgroundColor: theme.$accent10?.get(),
-          paddingHorizontal: 12,
+          paddingHorizontal: 16,
         }}
         >
           <Theme name="dark">
-            <SizableText fontSize={14} onPress={isFollowing ? null : handleFollow}>
+            <SizableText fontSize={16} onPress={isFollowing ? null : handleFollow}>
               {isFollowing ? '取关' : '关注'}
             </SizableText>
           </Theme>

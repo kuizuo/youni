@@ -1,7 +1,7 @@
 import React from 'react'
-import { Avatar, Image, Separator, SizableText, Text, View, XStack, YStack } from 'tamagui'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
+import { Avatar, Image, Separator, SizableText, Text, View, XStack, YStack } from '@/ui'
 import { formatTime } from '@/utils/date'
 
 export function MessageListItem(item: MessageItem): React.ReactNode {

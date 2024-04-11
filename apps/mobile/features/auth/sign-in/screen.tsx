@@ -9,15 +9,6 @@ import { useUser } from '@/utils/auth/hooks/useUser'
 export function SignInScreen(): React.ReactNode {
   const router = useRouter()
   const { signInWithPassword } = useAuth()
-  const { isSignined } = useUser()
-
-  useEffect(() => {
-    if (isSignined) {
-      setTimeout(() => {
-        router.replace('/')
-      })
-    }
-  }, [])
 
   const toast = useToastController()
 

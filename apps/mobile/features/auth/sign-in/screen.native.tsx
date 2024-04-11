@@ -10,13 +10,6 @@ export function SignInScreen(): React.ReactNode {
   const { replace } = useRouter()
   const { signInWithPassword } = useAuth()
 
-  const { isSignined } = useUser()
-
-  useEffect(() => {
-    if (isSignined)
-      replace('/')
-  }, [])
-
   const toast = useToastController()
   // const signInWithApple = async () => {
   //   try {

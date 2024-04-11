@@ -1,5 +1,5 @@
 import { Toast, useToastState } from '@tamagui/toast'
-import { YStack } from 'tamagui'
+import { YStack } from '@/ui'
 
 export function NativeToast(): React.ReactNode {
   const currentToast = useToastState()
