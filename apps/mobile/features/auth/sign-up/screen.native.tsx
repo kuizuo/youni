@@ -2,10 +2,11 @@ import { getInitialURL } from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser'
 import { Platform } from 'react-native'
 import { useRouter } from 'expo-router'
-import { YStack, useToastController } from '@/ui'
+import { View, useToastController } from '@/ui'
 import { capitalizeWord } from '@/ui/libs/string'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
+import tw from '@/utils/tw'
 
 export function SignUpScreen(): React.ReactNode {
   const { replace } = useRouter()
@@ -85,12 +86,12 @@ export function SignUpScreen(): React.ReactNode {
   }
 
   return (
-    <YStack flex={1} jc="center" ai="center" space>
+    <View style={tw`flex-1 justify-center items-center gap-1`}>
       <SignUpSignInComponent
         type="sign-up"
         handleOAuthWithPress={handleOAuthSignInWithPress}
         handleEmailWithPress={handleEmailSignUpWithPress}
       />
-    </YStack>
+    </View>
   )
 }

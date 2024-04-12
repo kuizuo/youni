@@ -1,20 +1,20 @@
 import type { Campus } from '@youni/database'
-import { Tabs, useCurrentTabScrollY, useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { useEffect, useState } from 'react'
+import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
+import { useState } from 'react'
 import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
 import { Platform } from 'react-native'
 import { DynamicList } from './components/DynamicList'
 import { SelectCampusButton } from './components/SelectCampusButton'
 import { useCurrentCampus } from '@/atoms/campus'
-import { Image, SizableText, View, XStack, YStack, useTheme, useWindowDimensions } from '@/ui'
+import { Image, Text, View, useTheme, useWindowDimensions } from '@/ui'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
+import tw from '@/utils/tw'
 
 export function CampusScreen() {
-  const theme = useTheme()
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
 
   const { data, isLoading } = trpc.campus.byId.useQuery({ id: currentCampus.id }, {
@@ -62,14 +62,11 @@ export function CampusScreen() {
   }
 
   return (
-    <YStack fullscreen flex={1} bg="$background">
+    <View style={tw`flex-1 bg-background`}>
       <NavBar
         left={(<CampusTitle campus={data as unknown as Campus}></CampusTitle>)}
         right={(<SelectCampusButton></SelectCampusButton>)}
-        style={{
-          zIndex: 100,
-          backgroundColor: theme.$background?.get(),
-        }}
+        style={tw`z-1 bg-background`}
       >
       </NavBar>
 
@@ -79,34 +76,25 @@ export function CampusScreen() {
         revealHeaderOnScroll={false}
         lazy
         snapThreshold={0.5}
-        headerContainerStyle={{
-          shadowOpacity: 0,
-        }}
-        renderHeader={(props) => {
-          return (
-            <View
-              onLayout={ev => setHeaderHeight(ev.nativeEvent.layout.height)}
-              pointerEvents="box-none"
-            >
-              <CampusHeader />
-            </View>
-          )
-        }}
+        headerContainerStyle={{ shadowOpacity: 0 }}
+        renderHeader={props => (
+          <View
+            onLayout={ev => setHeaderHeight(ev.nativeEvent.layout.height)}
+            pointerEvents="box-none"
+          >
+            <CampusHeader />
+          </View>
+        )}
         renderTabBar={(props) => {
           // eslint-disable-next-line react/prop-types
           const { tabNames } = props
           return (
-            <XStack
+            <View
               {...props}
-              h={TAB_BAR_HEIGHT}
-              px="$3"
-              py="$2"
-              bg="$background"
+              style={tw`h-[${TAB_BAR_HEIGHT}px] p-3 py-2 bg-background`}
             >
-              <SizableText>
-                {tabNames}
-              </SizableText>
-            </XStack>
+              <Text>{tabNames}</Text>
+            </View>
           )
         }}
       >
@@ -115,16 +103,16 @@ export function CampusScreen() {
           <DynamicList contentContainerStyle={contentContainerStyle} />
         </Tabs.Tab>
       </Tabs.Container>
-    </YStack>
+    </View>
   )
 }
 
 function CampusTitle({ campus }: { campus?: Campus }) {
   if (!campus)
-    return <SizableText>请选择校区</SizableText>
+    return <Text>请选择校区</Text>
 
   return (
-    <View flexDirection="row" gap="$2" ai="center">
+    <View style={tw`flex-row items-center gap-2`}>
       <Image
         w={24}
         h={24}
@@ -133,7 +121,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
         resizeMode="contain"
       />
       {/* <School /> */}
-      <SizableText fontSize={18}>{campus.name}</SizableText>
+      <Text style={tw`text-lg`}>{campus.name}</Text>
     </View>
   )
 }

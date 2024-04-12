@@ -1,5 +1,5 @@
 import { Toast, useToastState } from '@tamagui/toast'
-import { YStack } from '@/ui'
+import { View } from '@/ui'
 
 export function NativeToast(): React.ReactNode {
   const currentToast = useToastState()
@@ -19,10 +19,10 @@ export function NativeToast(): React.ReactNode {
       scale={1}
       animation="quick"
     >
-      <YStack>
+      <View>
         <Toast.Title>{currentToast.title}</Toast.Title>
         {!!currentToast.message && <Toast.Description>{currentToast.message}</Toast.Description>}
-      </YStack>
+      </View>
     </Toast>
   )
 }

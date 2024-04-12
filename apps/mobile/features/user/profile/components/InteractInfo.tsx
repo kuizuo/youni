@@ -2,10 +2,11 @@ import { MessageCircle, Settings } from '@tamagui/lucide-icons'
 import { Link } from 'expo-router'
 import type { UserInfo } from '@server/modules/user/user'
 import { BlurView } from 'expo-blur'
-import { Button, Text, XStack, useTheme } from '@/ui'
+import { Button, Text, View, XStack, useTheme } from '@/ui'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useUser } from '@/utils/auth/hooks/useUser'
+import tw from '@/utils/tw'
 
 interface Props {
   user: UserInfo
@@ -21,15 +22,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
     return (
       <BlurView
         intensity={20}
-        style={{
-          justifyContent: 'center',
-          borderRadius: 50,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: theme.$borderColor?.get(),
-          paddingHorizontal: 8,
-          paddingVertical: 2,
-        }}
+        style={tw`justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2`}
       >
         <Link href="/profile/edit" asChild>
           <Text color="gray" fontSize={12} unstyled>
@@ -44,15 +37,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
     return (
       <BlurView
         intensity={20}
-        style={{
-          justifyContent: 'center',
-          borderRadius: 50,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: theme.$borderColor?.get(),
-          paddingHorizontal: 6,
-          paddingVertical: 4,
-        }}
+        style={tw`justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2`}
       >
         <Link href="/setting/" asChild>
           <Button color="gray" icon={<Settings size="$1" />} unstyled />
@@ -65,15 +50,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
     return (
       <BlurView
         intensity={20}
-        style={{
-          borderRadius: 50,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: theme.$borderColor?.get(),
-          paddingHorizontal: 6,
-          paddingVertical: 4,
-          justifyContent: 'center',
-        }}
+        style={tw`justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2`}
       >
         <Link href={`/chat/${user.id}`} asChild>
           <MessageCircle size="$1" />
@@ -83,7 +60,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
   }
 
   return (
-    <XStack gap="$4" mx="$4" marginBottom="$3" ai="center">
+    <View style={tw`flex-row bg-background`} gap="$4" mx="$4" marginBottom="$3" ai="center">
       <Link
         href={{
           pathname: '/user/[id]/follower',
@@ -121,21 +98,21 @@ export function InteractInfo({ user }: Props): React.ReactNode {
 
       <XStack flex={1} jc="flex-end" gap="$3">
         {
-        user.id === currentUser?.id
-          ? (
-            <>
-              <EditProfileButton />
-              <SettingButton />
-            </>
-            )
-          : (
-            <>
-              <UserFollowButton userId={user.id} isFollowing={data?.isFollowing} />
-              <ChatButton />
-            </>
-            )
-      }
+          user.id === currentUser?.id
+            ? (
+              <>
+                <EditProfileButton />
+                <SettingButton />
+              </>
+              )
+            : (
+              <>
+                <UserFollowButton userId={user.id} isFollowing={data?.isFollowing} />
+                <ChatButton />
+              </>
+              )
+        }
       </XStack>
-    </XStack>
+    </View>
   )
 }

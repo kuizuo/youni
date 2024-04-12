@@ -4,8 +4,9 @@ import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button, Separator, SizableText, View, XStack, YStack, useTheme, useWindowDimensions } from '..'
+import { Button, Separator, Text, XStack, YStack, useTheme } from '..'
 import { useDrawerOpen } from '@/atoms/drawer'
+import tw from '@/utils/tw'
 
 export default function CustomDrawerContent() {
   const router = useRouter()
@@ -35,7 +36,7 @@ export default function CustomDrawerContent() {
     {
       label: '帮助与反馈',
       icon: <BadgeHelp size="$1" />,
-      onPress: () => {},
+      onPress: () => { },
     },
     // { label: '扫一扫', onPress: ()=>{}},
   ]
@@ -72,11 +73,11 @@ export default function CustomDrawerContent() {
 
         <DrawerItem
           label="子项 1"
-          onPress={() => {}}
+          onPress={() => { }}
         />
         <DrawerItem
           label="子项 2"
-          onPress={() => {}}
+          onPress={() => { }}
         />
 
         <XStack
@@ -109,9 +110,9 @@ export default function CustomDrawerContent() {
               >
                 <Button icon={icon} unstyled />
               </BlurView>
-              <SizableText fontSize={10} flex={1} textAlign="center">
+              <Text style={tw`flex-1 text-center text-xs`}>
                 {label}
-              </SizableText>
+              </Text>
             </YStack>
           ))}
         </XStack>

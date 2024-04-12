@@ -42,14 +42,6 @@ export function NoteMenu({ item }: Props) {
             <XStack gap="$4">
               <Button size="$1" icon={<ChevronDown size="$1" />} />
               <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
             </XStack>
           </ScrollView>
           <Separator />

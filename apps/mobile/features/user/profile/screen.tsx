@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import { Platform } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { useRoute } from '@react-navigation/native'
 import { ArrowUpRightFromSquare } from '@tamagui/lucide-icons'
@@ -12,21 +12,19 @@ import { Navs } from './components/Nav'
 import { UserNote } from './components/UserNote'
 import { UserCollection } from './components/UserCollection'
 import { UserLiked } from './components/UserLiked'
-import { Avatar, Image, Paragraph, SizableText, View, XStack, YStack, useTheme, useWindowDimensions } from '@/ui'
+import { Avatar, Image, Text, View, XStack, YStack, useTheme, useWindowDimensions } from '@/ui'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { trpc } from '@/utils/trpc'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
+
+import tw from '@/utils/tw'
 
 const TAB_BAR_HEIGHT = 32
 const TAB_VIEW_MARGIN_TOP = -1
 
 const VERTICAL_SPACING = 12
 const ROOT_HORIZONTAL_PADDING = 12
-const TWITTER_PRIMARY_COLOR = '#1d9bf0'
-const DISABLED_COLOR = 'rgba(255, 255, 255, 0.6)'
-const AVATAR_START_SCALE = 1
-const AVATAR_END_SCALE = 0.5
 const AVATAR_SIZE_VALUE = 48
 const BANNER_BOTTOM_HEIGHT_ADDITION = AVATAR_SIZE_VALUE
 
@@ -82,16 +80,7 @@ export function ProfileScreen() {
       return { opacity: blurOpacity }
     })
 
-    const profileImageScale = useDerivedValue(() => {
-      return interpolate(
-        scrollY.value,
-        [0, BANNER_BOTTOM_HEIGHT_ADDITION],
-        [AVATAR_START_SCALE, AVATAR_END_SCALE],
-        Extrapolation.CLAMP,
-      )
-    })
-
-    const bannerTranslationStyle = useAnimatedStyle(() => {
+    const bannerImageStyle = useAnimatedStyle(() => {
       const bannerTranslation = interpolate(
         scrollY.value,
         [0, BANNER_BOTTOM_HEIGHT_ADDITION],
@@ -112,7 +101,7 @@ export function ProfileScreen() {
     // Once the profile image has been scaled down, we allow the profile container to be
     // hidden behind the banner. This is done by setting the zIndex to -1.
     const rootProfileRowZIndexStyle = useAnimatedStyle(() => {
-      return { zIndex: profileImageScale.value <= AVATAR_END_SCALE ? -1 : 1 }
+      return { zIndex: scrollY.value <= BANNER_BOTTOM_HEIGHT_ADDITION ? 1 : -1 }
     })
 
     const animatedScaleStyle = useAnimatedStyle(() => {
@@ -142,27 +131,22 @@ export function ProfileScreen() {
     })
 
     return (
-      <View
-        style={{ position: 'relative', zIndex: 1 }}
-      >
+      <View style={tw`relative z-1`}>
         {/* 顶部背景 */}
-        <Animated.View style={[StyleSheet.absoluteFill, bannerTranslationStyle]}>
+        <Animated.View style={[tw`absolute inset-0`, bannerImageStyle]}>
           <Animated.View
             onLayout={e => (bannerHeight.value = e.nativeEvent.layout.height)}
             style={animatedScaleStyle}
           >
             <View style={{ marginBottom: -BANNER_BOTTOM_HEIGHT_ADDITION }}>
-              <Animated.View style={[StyleSheet.absoluteFill, styles.blurView, blurStyle]}>
-                <BlurView style={[StyleSheet.absoluteFill]} intensity={50} tint="dark" />
+              <Animated.View style={[tw`absolute inset-0 z-1`, blurStyle]}>
+                <BlurView style={tw`absolute inset-0`} intensity={50} />
               </Animated.View>
 
-              {/* banner image */}
               <Image
                 source={require('../../../assets/images/profile-background.png')}
-                // contentFit="cover"
-                // contentPosition="center"
                 style={[
-                  styles.imageStyle,
+                  tw`h-full`,
                   { width },
                   Platform.OS === 'web' && { height: bannerHeight.value },
                 ]}
@@ -192,27 +176,19 @@ export function ProfileScreen() {
                   />
                   <Avatar.Fallback />
                 </Avatar>
-                <SizableText themeInverse fontSize={14} opacity={0.7}>
+                <Text themeInverse fontSize={14} opacity={0.7}>
                   {data?.nickname}
-                </SizableText>
+                </Text>
               </View>
             </XStack>
           </Animated.View>
         </NavBar>
 
         {/* 用户头像 */}
-        <Animated.View style={[{ paddingHorizontal: 12 }, rootProfileRowZIndexStyle]}>
+        <Animated.View style={[tw`px-2`, rootProfileRowZIndexStyle]}>
           <Animated.View
             style={[
-              {
-                position: 'absolute',
-                left: 12,
-                right: 12,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                gap: 12,
-              },
+              tw`absolute left-3 right-3 flex flex-row justify-between items-end gap-3`,
               {
                 left: Math.max(left, ROOT_HORIZONTAL_PADDING),
                 right: Math.max(right, ROOT_HORIZONTAL_PADDING),
@@ -231,11 +207,11 @@ export function ProfileScreen() {
               />
               <Avatar.Fallback />
             </Avatar>
-            <YStack flex={1}>
-              <XStack gap="$1.5" ai="center" marginBottom="$2">
-                <SizableText fontSize={18}>
+            <View style={tw`flex-1`}>
+              <View style={tw`flex-row mb-2 items-center gap-2`}>
+                <Text style={tw`text-lg`}>
                   {data.nickname}
-                </SizableText>
+                </Text>
                 {data.gender
                   ? (
                     <Image
@@ -245,9 +221,9 @@ export function ProfileScreen() {
                     />
                     )
                   : <></>}
-              </XStack>
-              <SizableText fontSize={18}>{' '}</SizableText>
-            </YStack>
+              </View>
+              <Text style={tw`text-lg`}>{' '}</Text>
+            </View>
           </Animated.View>
         </Animated.View>
       </View>
@@ -274,12 +250,12 @@ export function ProfileScreen() {
     const [data, { isLoading, refetch, isRefetching }] = trpc.user.byId.useSuspenseQuery({ id: userId }, {})
 
     return (
-      <View bg="$background" mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
-        <View paddingTop="$6" pointerEvents="none" />
+      <View style={tw`bg-background`} mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
+        <View style={tw`pt-[${AVATAR_SIZE_VALUE}px]`} pointerEvents="none" />
         {/* 基本信息 */}
-        <XStack gap="$4" px="$4" marginBottom="$3">
-          <Paragraph alignContent="flex-end">{data.desc ?? '暂无简介'}</Paragraph>
-        </XStack>
+        <View style={tw`px-4 mb-3 gap-4`}>
+          <Text>{data.desc ?? '暂无简介'}</Text>
+        </View>
 
         {/* 互动 */}
         <InteractInfo user={data ?? currentUser!}></InteractInfo>
@@ -290,7 +266,7 @@ export function ProfileScreen() {
   }
 
   return (
-    <YStack flex={1} bg="$background">
+    <View style={tw`flex-1 bg-background`}>
       <NavBarComponent />
 
       <Tabs.Container
@@ -299,9 +275,7 @@ export function ProfileScreen() {
         revealHeaderOnScroll={false}
         lazy
         snapThreshold={0.5}
-        headerContainerStyle={{
-          shadowOpacity: 0,
-        }}
+        headerContainerStyle={{ shadowOpacity: 0 }}
         renderHeader={props => (
           <View
             onLayout={ev => setHeaderHeight(ev.nativeEvent.layout.height)}
@@ -313,16 +287,12 @@ export function ProfileScreen() {
         renderTabBar={props => (
           <MaterialTabBar
             {...props}
-            indicatorStyle={{
-              backgroundColor: theme.$accent10?.get(),
-            }}
+            indicatorStyle={tw`bg-primary`}
             activeColor={theme.$color?.get()}
             labelStyle={{
               color: theme.$color?.get(),
             }}
-            tabStyle={{
-              backgroundColor: theme.$background?.get(),
-            }}
+            tabStyle={tw`bg-${theme.$background?.get()}`}
           />
         )}
       >
@@ -332,73 +302,6 @@ export function ProfileScreen() {
           </Tabs.Tab>
         ))}
       </Tabs.Container>
-    </YStack>
+    </View>
   )
 }
-
-const styles = StyleSheet.create({
-  children: { marginTop: 16, paddingHorizontal: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: 'white' },
-  navBarTitle: { fontSize: 16, fontWeight: 'bold', color: 'white' },
-  largeHeaderStyle: {
-    flexDirection: 'column',
-    gap: 12,
-    marginTop: AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION,
-  },
-  backButtonContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 100,
-    padding: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerStyle: { backgroundColor: 'transparent' },
-  smallHeaderContainer: { position: 'relative', zIndex: 1 },
-  headerRightStyle: { gap: 6, paddingLeft: 12 },
-  headerLeftStyle: { gap: 12, paddingLeft: 12 },
-  blurView: { zIndex: 1 },
-  imageStyle: { height: '100%' },
-  container: { flex: 1, backgroundColor: '#000' },
-  contentContainer: { backgroundColor: '#000', flexGrow: 1 },
-  text: { color: '#fff' },
-  primaryText: { color: TWITTER_PRIMARY_COLOR },
-  mediumText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  rootContainer: { backgroundColor: '#000' },
-  profileFollowContainer: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  followText: { fontSize: 12, fontWeight: '600' },
-  pillButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 32,
-    backgroundColor: '#fff',
-    borderRadius: 200,
-  },
-  disabledSmallText: { color: DISABLED_COLOR, fontSize: 12 },
-  disabledText: { color: DISABLED_COLOR, fontSize: 14 },
-  profileHeaderRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  profileContainer: { paddingHorizontal: 12 },
-  profileHandleContainer: { gap: 4 },
-  statsContainer: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  whoFollowsThemContainer: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  followerPreviewContainer: { position: 'relative', width: 36 * (7 / 3) },
-  followerText: { flex: 1 },
-  tabBarContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#000' },
-  tabButton: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  tabText: { color: 'white', fontSize: 14, fontWeight: '600', paddingVertical: 12 },
-  blueUnderline: {
-    height: 2,
-    width: '50%',
-    backgroundColor: TWITTER_PRIMARY_COLOR,
-    borderRadius: 4,
-  },
-  locationAndWebContainer: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  dataRow: { flexDirection: 'row', gap: 4, alignItems: 'center' },
-  androidBlurViewBg: { backgroundColor: 'rgba(0,0,0,0.5)' },
-  twitterVerifiedIcon: { height: 18, width: 18 },
-})

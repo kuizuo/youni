@@ -2,17 +2,16 @@ import type { NoteItem } from '@server/modules/note/note'
 import type { MasonryListRenderItem } from '@shopify/flash-list'
 import { memo, useCallback, useMemo } from 'react'
 import type { ViewStyle } from 'react-native'
-import { Spinner } from '@/ui'
 import { uniqBy } from 'lodash-es'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated from 'react-native-reanimated'
 import { Tabs } from 'react-native-collapsible-tab-view'
+import { Spinner, useMedia } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { NoteListItem } from '@/ui/components/note/NoteListItem'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { useMedia } from '@/ui'
 
 const AnimatedMasonryFlashList = Animated.createAnimatedComponent(Tabs.MasonryFlashList)
 

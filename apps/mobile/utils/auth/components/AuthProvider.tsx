@@ -1,5 +1,5 @@
 import { router } from 'expo-router'
-import { LoginResult } from '@server/modules/auth/auth.model'
+import type { LoginResult } from '@server/modules/auth/auth.model'
 import type { Credentials } from '../hooks/useAuth'
 import { AuthContext } from '../hooks/useAuth'
 import { getToken, removeToken, setToken } from '../util'

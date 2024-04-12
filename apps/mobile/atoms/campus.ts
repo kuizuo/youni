@@ -1,4 +1,4 @@
-import { Campus } from '@youni/database'
+import type { Campus } from '@youni/database'
 import { atom, useAtom } from 'jotai'
 import { atomWithMMKV } from '@/provider/jotai/store'
 

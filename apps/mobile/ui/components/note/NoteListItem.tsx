@@ -5,7 +5,8 @@ import type { BaseUserInfo } from '@server/modules/user/user'
 import { NoteSheet } from './NoteSheet'
 import { NoteLikeButton } from './NoteLikeButton'
 import { useSheetOpen } from '@/atoms/sheet'
-import { Avatar, Card, Image, Paragraph, SizableText, XStack, YStack } from '@/ui'
+import { Avatar, Card, Image, Text, View } from '@/ui'
+import tw from '@/utils/tw'
 
 export function NoteListItem(item: NoteItem): ReactNode {
   const router = useRouter()
@@ -24,12 +25,10 @@ export function NoteListItem(item: NoteItem): ReactNode {
 
   function UserAvatar({ user }: { user: BaseUserInfo }): ReactNode {
     return (
-      <XStack gap="$2.5" ai="center" onPress={goToNote}>
-        <Avatar circular size="$1">
+      <View style={tw`flex-row flex-1 gap-2 items-center`} onPress={goToNote}>
+        <Avatar circular style={tw`w-[12px] h-[12px]`}>
           <Avatar.Image
-            width="100%"
-            height="100%"
-              // @ts-expect-error
+            // @ts-expect-error
             source={{
               uri: user.avatar,
               width: '100%',
@@ -38,42 +37,38 @@ export function NoteListItem(item: NoteItem): ReactNode {
           />
           <Avatar.Fallback />
         </Avatar>
-        <SizableText fontSize={14} opacity={0.7}>
+        <Text style={tw`text-base opacity-70`}>
           {user.nickname}
-        </SizableText>
-      </XStack>
+        </Text>
+      </View>
     )
   }
 
   return (
-    <YStack position="relative" p="$1.5" flex={1} gap="$2" br="$4">
+    <View style={tw`flex-1 relative p-1.5 gap-2 rounded-md`}>
       <Card size="$4" bg="$color2">
         <Card.Background unstyled onLongPress={handleLongPress} onPress={goToNote}>
           <Image
-            borderTopLeftRadius="$4"
-            borderTopRightRadius="$4"
-            width="100%"
-            minHeight={200}
             source={{ uri: item.cover.src }}
             resizeMode="cover"
-            alignSelf="center"
+            style={tw`rounded-t-md w-full min-h-[200px] self-center`}
           />
         </Card.Background>
-        <Card.Footer p="$2.5">
-          <YStack width="100%" gap="$2">
-            <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail" onPress={goToNote}>
+        <Card.Footer style={tw`p-2`}>
+          <View style={tw`w-full gap-2`}>
+            <Text style={tw`text-base`} numberOfLines={2} ellipsizeMode="tail" onPress={goToNote}>
               {item.title}
-            </Paragraph>
-            <XStack gap="$2.5" ai="center">
+            </Text>
+            <View style={tw`flex-row items-center gap-2`}>
               <UserAvatar user={item.user} />
-              <XStack flex={1} jc="flex-end" ai="center" gap="$1.5" opacity={0.7}>
+              <View style={tw`flex-row flex-1 justify-end items-center gap-2 opacity-70`}>
                 <NoteLikeButton item={item} />
-              </XStack>
-            </XStack>
-          </YStack>
+              </View>
+            </View>
+          </View>
         </Card.Footer>
       </Card>
       <NoteSheet item={item} />
-    </YStack>
+    </View>
   )
 }

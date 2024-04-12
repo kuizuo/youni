@@ -6,12 +6,13 @@ import { NoteHeader } from './components/NoteHeader'
 import { NoteFooter } from './components/NoteFooter'
 import { NoteDetailPlaceholder } from './components/NoteDetailPlaceholder'
 import { trpc } from '@/utils/trpc'
-import { H5, Paragraph, ScrollView, Separator, Text, XStack, YStack } from '@/ui'
+import { H5, Paragraph, ScrollView, Separator, Text, View, XStack } from '@/ui'
 import { formatTime } from '@/utils/date'
 
 import { useCurrentNote } from '@/atoms/comment'
 import { NotFound } from '@/ui/components/NotFound'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
+import tw from '@/utils/tw'
 
 // @ts-expect-error
 const Comments = lazy(() => import('@/ui/components/comment/Comment'))
@@ -28,7 +29,8 @@ export function NoteScreen(): React.ReactNode {
   }, [data, setCurrentNote])
 
   if (isLoading)
-    return <NoteDetailPlaceholder></NoteDetailPlaceholder>
+    return <></>
+  // return <NoteDetailPlaceholder></NoteDetailPlaceholder>
 
   if (!data) {
     return (
@@ -40,49 +42,47 @@ export function NoteScreen(): React.ReactNode {
   }
 
   return (
-    <>
-      <YStack fullscreen bg="$background">
-        <NoteHeader item={data as NoteItem} user={data.user} />
-        <ScrollView
-          position="relative"
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-        >
-          <ImageCarousel data={data?.images.map(image => image.src)} />
+    <View style={tw`flex-1 bg-background`}>
+      <NoteHeader item={data as NoteItem} user={data.user} />
+      <ScrollView
+        position="relative"
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+      >
+        <ImageCarousel data={data?.images.map(image => image.src)} />
 
-          <YStack px="$3" mt="$3" gap="$2">
-            <H5>{data?.title}</H5>
+        <View style={tw`px-3 mt-3 gap-2`}>
+          <H5>{data?.title}</H5>
 
-            <Paragraph size="$2">
-              {data?.content}
-            </Paragraph>
+          <Paragraph size="$2">
+            {data?.content}
+          </Paragraph>
 
-            <XStack rowGap="$1" columnGap="$2" flexWrap="wrap" mb="$4">
-              {data?.tags.map(tag => (
-                <Link key={tag.name} href={`/tag/${tag.name}`} asChild>
-                  <Text color="$blue8">
-                    {`# ${tag.name}`}
-                  </Text>
-                </Link>
-              ),
-              )}
-            </XStack>
+          <View style={tw`flex-row mb-4 flex-warp gap-x-1 gap-y-2 `}>
+            {data?.tags.map(tag => (
+              <Link key={tag.name} href={`/tag/${tag.name}`} asChild>
+                <Text color="$blue8">
+                  {`# ${tag.name}`}
+                </Text>
+              </Link>
+            ),
+            )}
+          </View>
 
-            <Text fontSize="$1" color="gray">
-              {formatTime(data?.publishTime)}
-            </Text>
+          <Text fontSize="$1" color="gray">
+            {formatTime(data?.publishTime)}
+          </Text>
 
-            <Separator my={15} />
+          <Separator my={15} />
 
-            <Text fontSize="$3" color="gray">
-              {`共 ${data.interact.commentCount} 条评论`}
-            </Text>
+          <Text fontSize="$3" color="gray">
+            {`共 ${data.interact.commentCount} 条评论`}
+          </Text>
 
-            <Comments />
-          </YStack>
-        </ScrollView>
-        <NoteFooter item={data as unknown as NoteItem} />
-      </YStack>
-    </>
+          <Comments />
+        </View>
+      </ScrollView>
+      <NoteFooter item={data as unknown as NoteItem} />
+    </View>
   )
 }

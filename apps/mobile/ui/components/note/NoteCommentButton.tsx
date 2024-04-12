@@ -1,7 +1,8 @@
 import { MessageCircle } from '@tamagui/lucide-icons'
 import type { NoteItem } from '@server/modules/note/note'
 import type { ColorTokens, SizeTokens } from '../..'
-import { Button, Text, XStack } from '../..'
+import { Button, Text, View } from '../..'
+import tw from '@/utils/tw'
 
 export interface Props {
   item: NoteItem
@@ -15,7 +16,7 @@ export function NoteCommentButton({
   color = 'gray',
 }: Props) {
   return (
-    <XStack ai="center" gap="$1.5">
+    <View style={tw`items-center gap-1.5`}>
       <Button
         icon={(
           <MessageCircle
@@ -26,9 +27,9 @@ export function NoteCommentButton({
         unstyled
       >
       </Button>
-      <Text fontSize={14} color={color}>
+      <Text style={tw`text-base text-[${color}]`}>
         评论
       </Text>
-    </XStack>
+    </View>
   )
 }

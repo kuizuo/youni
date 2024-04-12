@@ -7,6 +7,7 @@ import { NoteCommentButton } from '@/ui/components/note/NoteCommentButton'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
 import { formatTime } from '@/utils/date'
 import { Avatar, Card, Image, Paragraph, SizableText, XStack, YStack } from '@/ui'
+import tw from '@/utils/tw'
 
 export function DynamicListItem({ item }: { item: NoteItem }): React.ReactNode {
   const router = useRouter()
@@ -39,7 +40,7 @@ export function DynamicListItem({ item }: { item: NoteItem }): React.ReactNode {
         </Card.Background>
         <Card.Footer p="$2.5">
           <YStack width="100%" gap="$2">
-            <Paragraph fontSize={16} numberOfLines={2} ellipsizeMode="tail">
+            <Paragraph style={tw`text-base`} numberOfLines={2} ellipsizeMode="tail">
               {item.title}
             </Paragraph>
             <XStack gap="$2.5" ai="center">
@@ -74,7 +75,7 @@ function UserAvatar({ item }: { item: NoteItem }): React.ReactNode {
           <Avatar.Fallback />
         </Avatar>
         <XStack gap="$2">
-          <SizableText fontSize={16}>{item.user.nickname}</SizableText>
+          <SizableText style={tw`text-base`}>{item.user.nickname}</SizableText>
           <SizableText>{' · '}</SizableText>
           <SizableText fontSize={12} opacity={0.7}>{formatTime(item.publishTime)}</SizableText>
         </XStack>

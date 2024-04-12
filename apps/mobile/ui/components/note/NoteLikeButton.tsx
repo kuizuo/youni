@@ -4,17 +4,17 @@ import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 
 import type { NoteItem } from '@server/modules/note/note'
 import { Like } from '@/ui/icons/like'
 import { trpc } from '@/utils/trpc'
-import type { ColorTokens } from '@/ui'
-import { SizableText, XStack } from '@/ui'
+import { Text, View } from '@/ui'
+import tw from '@/utils/tw'
 
 export interface Props {
   item: NoteItem
   size?: number
-  color?: ColorTokens
+  color?: string
   placeholder?: string
 }
 
-export function NoteLikeButton({ item, size = 16, color = 'gray', placeholder }: Props) {
+export function NoteLikeButton({ item, size = 18, color = 'gray', placeholder }: Props) {
   const [liked, setLiked] = useState(item.interact.liked)
   const [likedCount, setLikedCount] = useState(item.interact.likedCount)
 
@@ -46,7 +46,7 @@ export function NoteLikeButton({ item, size = 16, color = 'gray', placeholder }:
   })
 
   return (
-    <XStack gap="$1.5" ai="center">
+    <View style={tw`flex-row gap-2 items-center`}>
       <TouchableOpacity onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
           <Like
@@ -56,9 +56,9 @@ export function NoteLikeButton({ item, size = 16, color = 'gray', placeholder }:
           />
         </Animated.View>
       </TouchableOpacity>
-      <SizableText fontSize={14} color={color}>
+      <Text style={tw`text-base`}>
         {likedCount || placeholder || ' '}
-      </SizableText>
-    </XStack>
+      </Text>
+    </View>
   )
 }

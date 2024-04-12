@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router'
-import { YStack, useToastController } from '@/ui'
+import { View, useToastController } from '@/ui'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
+import tw from '@/utils/tw'
 
 export function SignUpScreen(): React.ReactNode {
   const { push } = useRouter()
   const toast = useToastController()
-  const {} = useAuth()
 
   const handleOAuthSignInWithPress = async (provider: 'wechat' | 'google' | 'apple') => {
     // const { error } = await supabase.auth.signInWithOAuth({
@@ -49,12 +49,12 @@ export function SignUpScreen(): React.ReactNode {
   }
 
   return (
-    <YStack flex={1} jc="center" ai="center" space>
+    <View style={tw`flex-1 justify-center items-center gap-1`}>
       <SignUpSignInComponent
         type="sign-up"
         handleOAuthWithPress={handleOAuthSignInWithPress}
         handleEmailWithPress={handleEmailSignUpWithPress}
       />
-    </YStack>
+    </View>
   )
 }

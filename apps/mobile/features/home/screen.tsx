@@ -5,10 +5,10 @@ import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
 import { Text, View, YStack, useTheme, useWindowDimensions } from '@/ui'
 import { NavButton } from '@/ui/components/NavButton'
+import tw from '@/utils/tw'
 
 export function HomeScreen(): React.ReactNode {
   const { top } = useSafeAreaInsets()
-  const theme = useTheme()
 
   const [index, setIndex] = useState(0)
   const { width: windowWidth } = useWindowDimensions()
@@ -28,7 +28,7 @@ export function HomeScreen(): React.ReactNode {
   )
 
   return (
-    <YStack flex={1} bg="$background" pt={top}>
+    <View style={tw`flex-1 pt-[${top}px]`}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -46,58 +46,45 @@ export function HomeScreen(): React.ReactNode {
               return null
           }
         }}
-        renderTabBar={(props) => {
-          return (
-            <>
-              <View position="relative" height={30} ai="center" mx="$4" mb="$2">
-                <NavButton.Menu position="absolute" left={0} />
-                <NavButton.Search position="absolute" right={0} />
+        renderTabBar={props => (
+          <View style={tw`relative h-[30px] mx-4 mb-2 items-center`}>
+            <NavButton.Menu position="absolute" left={0} />
+            <NavButton.Search position="absolute" right={0} />
 
-                <TabBar
-                  {...props}
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                  }}
-                  tabStyle={{
-                    height: 50,
-                  }}
-                  indicatorStyle={{
-                    height: 2,
-                    alignItems: 'center',
-                    width: '50%',
-                    backgroundColor: theme.$accent10?.get(),
-                  }}
-                  indicatorContainerStyle={{
-                    borderBottomWidth: 0,
-                  }}
-                  scrollEnabled
-                  gap={16}
-                  renderTabBarItem={(tabBarItemProps) => {
-                    const { route } = tabBarItemProps
-                    const active = TABS[index]!.key === route.key
+            <TabBar
+              {...props}
+              style={tw`flex-1 justify-center bg-transparent`}
+              tabStyle={{
+                height: 50,
+              }}
+              indicatorStyle={tw`h-[2px] items-center w-1/2 bg-primary`}
+              indicatorContainerStyle={{
+                borderBottomWidth: 0,
+              }}
+              scrollEnabled
+              gap={16}
+              renderTabBarItem={(tabBarItemProps) => {
+                const { route } = tabBarItemProps
+                const active = TABS[index]!.key === route.key
 
-                    return (
-                      <Text
-                        opacity={active ? 1 : 0.5}
-                        fontSize={16}
-                        onPress={() => {
-                          const index = TABS.findIndex(tab => tab.key === route.key)
-                          setIndex(index)
-                        }}
-                      >
-                        {route.title}
-                      </Text>
-                    )
-                  }}
-                />
-              </View>
-            </>
-          )
-        }}
+                return (
+                  <Text
+                    opacity={active ? 1 : 0.5}
+                    style={tw`text-base`}
+                    onPress={() => {
+                      const index = TABS.findIndex(tab => tab.key === route.key)
+                      setIndex(index)
+                    }}
+                  >
+                    {route.title}
+                  </Text>
+                )
+              }}
+            />
+          </View>
+        )}
       >
       </TabView>
-    </YStack>
+    </View>
   )
 }

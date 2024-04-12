@@ -1050,7 +1050,7 @@ PODS:
   - react-native-mmkv (2.12.1):
     - MMKV (>= 1.3.3)
     - React-Core
-  - react-native-pager-view (6.2.3):
+  - react-native-pager-view (6.3.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1605,7 +1605,7 @@ SPEC CHECKSUMS:
   React-logger: 0331362115f0f5b392bd7ed14636d1a3ea612479
   React-Mapbuffer: 7c35cd53a22d0be04d3f26f7881c7fb7dd230216
   react-native-mmkv: 124b22209aacdcd172b6ac39071b9647080f0411
-  react-native-pager-view: d5f3adb58a4e6e0d200055e9a4afdcda9b9022ce
+  react-native-pager-view: 0eb900a8c5d83c02a74b0125d4b5f9fdcc5b8f44
   react-native-safe-area-context: 0ee144a6170530ccc37a0fd9388e28d06f516a89
   React-nativeconfig: 1166714a4f7ea57a0df5c2cb44fbc70f98d580f9
   React-NativeModulesApple: 726664e9829eb5eed8170241000e46ead269a05f

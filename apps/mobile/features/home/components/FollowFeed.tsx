@@ -2,11 +2,12 @@ import React, { memo, useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { ScrollView, SizableText, YStack } from '@/ui'
+import { ScrollView, Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { UserNoteList } from '@/ui/components/user/UserNoteList'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { withQuerySuspense } from '@/ui/components/QuerySuspense'
+import tw from '@/utils/tw'
 
 const FollowFeed = memo(() => {
   const { currentUser } = useUser()
@@ -42,17 +43,17 @@ const FollowFeed = memo(() => {
         marginTop="$4"
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
       >
-        <YStack ai="center">
-          <SizableText fontSize={16}>还没有关注的用户</SizableText>
-          <SizableText fontSize={10}>关注后，可在这里查看对方的最新动态</SizableText>
-        </YStack>
+        <View style={tw`items-center`}>
+          <Text style={tw`text-base`}>还没有关注的用户</Text>
+          <Text style={tw`text-xs`}>关注后，可在这里查看对方的最新动态</Text>
+        </View>
         {/* 你可能认识的人 */}
       </ScrollView>
     )
   }
 
   return (
-    <YStack flex={1} bg="$background">
+    <View style={tw`flex-1 bg-background`}>
       {!hasFollowedUsers
         ? <EmptyUserFollowing />
         : (
@@ -74,7 +75,7 @@ const FollowFeed = memo(() => {
             />
           </>
           )}
-    </YStack>
+    </View>
   )
 })
 

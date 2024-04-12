@@ -1,8 +1,9 @@
 import React from 'react'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
-import { Avatar, Image, Separator, SizableText, Text, View, XStack, YStack } from '@/ui'
+import { Avatar, Image, Separator, Text, View } from '@/ui'
 import { formatTime } from '@/utils/date'
+import tw from '@/utils/tw'
 
 export function MessageListItem(item: MessageItem): React.ReactNode {
   const router = useRouter()
@@ -31,27 +32,26 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
     return (
       <Text>
         <Link href={`/user/${item.sender.id}/profile`} asChild>
-          <SizableText size="$3" ml="$2">
+          <Text style={tw`text-base mt-2`}>
             {item.sender.nickname}
-          </SizableText>
+          </Text>
         </Link>
 
         <View w="$0.75" />
 
-        <SizableText size="$3" color="gray">
+        <Text style={tw`text-base text-gray-500`}>
           {actionString}
-        </SizableText>
+        </Text>
 
         <View w="$0.75" />
         {(item.sourceId && item.sourceType === 'Note') && (
           <Link href={`/note/${item.sourceId}`} asChild>
-            <SizableText
-              flexWrap="wrap"
-              size="$3"
+            <Text
+              style={tw`flex-warp text-base`}
               numberOfLines={2}
             >
-              {truncatedTitle }
-            </SizableText>
+              {truncatedTitle}
+            </Text>
           </Link>
         )}
       </Text>
@@ -64,27 +64,27 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
 
   return (
     <>
-      <XStack p="$3" gap="$3" ai="center">
+      <View style={tw`flex-row items-center p-3 gap-3`}>
         <Avatar circular size="$4" onPress={handleNavigateToUser}>
           <Avatar.Image
-            width="100%"
-            height="100%"
-          // @ts-expect-error
+            // @ts-expect-error
             source={{
               uri: item.sender.avatar,
+              width: '100%',
+              height: '100%',
             }}
           />
           <Avatar.Fallback />
         </Avatar>
-        <YStack flex={1}>
+        <View style={tw`flex-1`}>
           <MessageTitle></MessageTitle>
 
           {item.content && <Text>{item.content}</Text>}
 
-          <SizableText size="$1" color="gray">
+          <Text style={tw`text-sm text-gray`}>
             {formatTime(item.createdAt)}
-          </SizableText>
-        </YStack>
+          </Text>
+        </View>
         {item.source.image && (
           <Image
             br="$2"
@@ -95,7 +95,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
             }}
           />
         )}
-      </XStack>
+      </View>
       <Separator />
     </>
   )

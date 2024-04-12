@@ -1,12 +1,12 @@
 import { Tabs, useRouter } from 'expo-router'
 import { LinearGradient } from '@tamagui/linear-gradient'
 import { Clover, Home, MessageCircleMore, Plus } from '@tamagui/lucide-icons'
-import { Avatar, Image, Square, Theme, YStack, useTheme } from '@/ui'
+import { Avatar, Image, Square, Theme, View } from '@/ui'
 import { useUser } from '@/utils/auth/hooks/useUser'
+import tw from '@/utils/tw'
 
 export default function TabLayout() {
-  const theme = useTheme()
-  const { currentUser, isLoading, isSignined } = useUser()
+  const { currentUser, isLoading } = useUser()
 
   if (isLoading)
     return <></>
@@ -19,7 +19,7 @@ export default function TabLayout() {
         tabBarStyle: {
           borderWidth: 0,
         },
-        tabBarActiveTintColor: theme.$accent10?.get(),
+        tabBarActiveTintColor: tw.color(`bg-primary`),
       }}
     >
       <Tabs.Screen
@@ -71,7 +71,7 @@ export default function TabLayout() {
           title: '我',
           tabBarIcon: ({ color, size }) => {
             return (
-              <YStack borderWidth="$1" borderColor={color} br="$10">
+              <View style={tw`b-1 b-[${color}] rounded-full`}>
                 <Avatar circular p="$1" size={size}>
                   <Image
                     source={{
@@ -82,7 +82,7 @@ export default function TabLayout() {
                     alt="your avatar"
                   />
                 </Avatar>
-              </YStack>
+              </View>
             )
           },
         }}
@@ -99,19 +99,18 @@ function PlusButton({ size }: { size: number }) {
   return (
     <>
       <Theme name="dark">
-        <Square
-          position="absolute"
-          bottom={bottom}
-          bg="$accent10"
-          br="$5"
-          width={size + 24}
-          height={size + 14}
+
+        <LinearGradient
+          style={tw.style(
+            tw`absolute bg-primary bottom-[${bottom}] rounded-lg`,
+            tw`w-[${size + 24}px]`,
+            tw`h-[${size + 14}px]`,
+          )}
+          start={[1, 1]}
+          end={[0.8, 0]}
           pressStyle={{
             scale: 1.1,
           }}
-        />
-        <LinearGradient
-          position="absolute"
           onPress={() => {
             if (!isSignined) {
               router.replace('/sign-in')
@@ -119,28 +118,19 @@ function PlusButton({ size }: { size: number }) {
             }
             router.push('/create/')
           }}
-          colors={['$accent10', '$accent10']}
-          start={[1, 1]}
-          end={[0.8, 0]}
-          width={size + 24}
-          height={size + 14}
-          br="$5"
-          bottom={bottom}
-          pressStyle={{
-            scale: 1.1,
-          }}
+
         />
-        <YStack
-          position="absolute"
-          bottom={bottom}
-          jc="center"
-          alignContent="center"
+        <View
+          style={tw.style(
+            tw`absolute flex-1 justify-center content-center bottom-[${bottom}] `,
+            tw`h-[${size + 14}px]`,
+            tw`left-[14px]`,
+          )}
           animation="quick"
           pointerEvents="none"
-          height={size + 14}
         >
-          <Plus color="$color" size={size + 14} />
-        </YStack>
+          <Plus color="white" size={size + 14} />
+        </View>
       </Theme>
     </>
   )

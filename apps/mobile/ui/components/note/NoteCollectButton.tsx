@@ -2,8 +2,9 @@ import { Star } from '@tamagui/lucide-icons'
 import { useState } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import type { ColorTokens, SizeTokens } from '../..'
-import { Button, Text, XStack } from '../..'
+import { Button, Text, View } from '../..'
 import { trpc } from '@/utils/trpc'
+import tw from '@/utils/tw'
 
 export interface Props {
   item: NoteItem
@@ -35,7 +36,7 @@ export function NoteCollectButton({
   }
 
   return (
-    <XStack ai="center" gap="$1.5" onPressOut={handleCollect}>
+    <View style={tw`items-center gap-1.5`} onPressOut={handleCollect}>
       <Button
         icon={(
           <Star
@@ -47,9 +48,9 @@ export function NoteCollectButton({
         unstyled
       >
       </Button>
-      <Text fontSize={14} color={color}>
+      <Text style={tw`text-base text-[${color}]`}>
         {collectedCount || placeholder || '收藏'}
       </Text>
-    </XStack>
+    </View>
   )
 }

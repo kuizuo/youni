@@ -1,7 +1,8 @@
 import Carousel from 'react-native-reanimated-carousel'
-import Animated, { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
+import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { Image, View, useTheme, useWindowDimensions } from '@/ui'
 import { window } from '@/constant'
+import tw from '@/utils/tw'
 
 interface Props {
   data: string[]
@@ -11,7 +12,6 @@ interface Props {
 }
 
 export function ImageCarousel({ data, width, height, showProgress = true }: Props): React.ReactNode {
-  const theme = useTheme()
   const progressValue = useSharedValue<number>(0)
   const { width: windowWidth } = useWindowDimensions()
 
@@ -20,7 +20,7 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
       <Carousel
         width={width ?? windowWidth}
         height={height ?? window.width / 2}
-        style={{ width: '100%', backgroundColor: theme.$background?.get() }}
+        style={tw`w-full bg-background`}
         loop={false}
         pagingEnabled={false}
         overscrollEnabled={false}
@@ -30,7 +30,7 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
         data={data}
         renderItem={({ item }) => (
           <Image
-          // @ts-expect-error
+            // @ts-expect-error
             source={{ uri: item, width: '100%', height: '100%' }}
             resizeMode="cover"
           />
@@ -38,10 +38,7 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
       />
       {!!progressValue && showProgress && (
         <View
-          fd="row"
-          jc="center"
-          pt="$2"
-          gap="$1.5"
+          style={tw`flex-row justify-center pt-2 gap-2`}
         >
           {data?.map((_, index) => {
             return (
@@ -94,7 +91,7 @@ function PaginationItem(
             animValue?.value,
             inputRange,
             outputRange,
-            Extrapolate.CLAMP,
+            Extrapolation.CLAMP,
           ),
         },
       ],

@@ -1,4 +1,3 @@
 export * from 'tamagui'
 export * from '@tamagui/toast'
-export * from './components/CustomToast'
-export * from './components/NativeToast'
+export { Text, View } from './components/MyComponent'

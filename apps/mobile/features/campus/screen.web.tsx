@@ -57,7 +57,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
         resizeMode="contain"
       />
       {/* <School /> */}
-      <SizableText fontSize={18}>{campus.name}</SizableText>
+      <SizableText style={tw`text-lg`}>{campus.name}</SizableText>
     </View>
   )
 }

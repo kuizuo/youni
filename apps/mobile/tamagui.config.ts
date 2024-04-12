@@ -1,12 +1,10 @@
 import { createInterFont } from '@tamagui/font-inter'
 import { createMedia } from '@tamagui/react-native-media-driver'
 import { shorthands } from '@tamagui/shorthands'
-import { tokens } from '@tamagui/themes/v3-themes'
 import { createTamagui } from 'tamagui'
 import { createAnimations } from '@tamagui/animations-react-native'
 import type { AnimationDriver } from '@tamagui/web'
-
-import * as themes from './ui/themes/theme-generated'
+import { themes, tokens } from '@tamagui/themes'
 
 const headingFont = createInterFont({
   size: {
@@ -111,5 +109,5 @@ export const config = createTamagui({
 export type Conf = typeof config
 
 declare module 'tamagui' {
-  interface TamaguiCustomConfig extends Conf {}
+  interface TamaguiCustomConfig extends Conf { }
 }

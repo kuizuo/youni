@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react'
 import type { MessageItem } from '@server/modules/notification/notification'
-import { SizableText, YStack } from '@/ui'
+import { Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { MessageList } from '@/ui/components/notification/MessageList'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
+import tw from '@/utils/tw'
 
 export default function Screen() {
   const [data, { isRefetching, isFetchingNextPage, hasNextPage, refetch, fetchNextPage }] = trpc.notification.message.useSuspenseInfiniteQuery(
@@ -24,9 +25,9 @@ export default function Screen() {
   )
 
   return (
-    <YStack flex={1} bg="$background">
+    <View style={tw`flex-1 bg-background`}>
       <NavBar left={<NavButton.Back />} right={<></>}>
-        <SizableText flex={1} textAlign="center">消息通知</SizableText>
+        <Text style={tw`flex-1 text-center`}>消息通知</Text>
       </NavBar>
       <MessageList
         data={flatedData}
@@ -39,6 +40,6 @@ export default function Screen() {
         isFetchingNextPage={isFetchingNextPage}
         ListEmptyComponent={<EmptyResult title="暂无消息" />}
       />
-    </YStack>
+    </View>
   )
 }

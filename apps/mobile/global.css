@@ -1,58 +1,50 @@
-/* mimic the native viewport full width/height + flex */
-body,
-#root,
-#__next {
-  display: flex;
-  flex-direction: column;
-  min-width: calc(100vw - (100vw - 100%)); /* reserve space for scrollbar */
-  min-height: 100vh;
+@tailwind base;
+@tailwind components;
+@tailwind utilities; 
+
+:root {
+  --background: 255, 255, 255;
+  --foreground: 10, 11, 12;
+  --card: 255, 255, 255;
+  --card-foreground: 10, 11, 12;
+  --popover: 255, 255, 255;
+  --popover-foreground: 10, 11, 12;
+  --primary: 242, 85, 90;
+  --primary-foreground: 46, 17, 49;
+  --secondary: 243, 245, 246;
+  --secondary-foreground: 26, 27, 28;
+  --muted: 243, 245, 246;
+  --muted-foreground: 118, 120, 121;
+  --accent: 243, 245, 246;
+  --accent-foreground: 26, 27, 28;
+  --destructive: 255, 72, 91;
+  --destructive-foreground: 250, 251, 252;
+  --border: 230, 232, 233;
+  --input: 230, 232, 233;
+  --ring: 165, 167, 168;
+  --radius: 0.5rem;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-a {
-  color: inherit;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  padding: 0;
-}
-
-li,
-select,
-input,
-button,
-[role='slider'],
-[role='listbox'] {
-  outline: none;
-}
-
-.is_Fieldset {
-  all: unset;
-}
-
-p,
-input,
-textarea,
-button,
-ul,
-ol,
-li,
-pre,
-dialog {
-  box-sizing: border-box;
-  all: unset;
-}
-
-a.is_Button,
-.is_Anchor:has(.is_Button) {
-  text-decoration: none;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 21, 21, 21;
+    --foreground: 250, 251, 252;
+    --card: 10, 11, 12;
+    --card-foreground: 250, 251, 252;
+    --popover: 10, 11, 12;
+    --popover-foreground: 250, 251, 252;
+    --primary: 242, 85, 90;
+    --primary-foreground: 46, 17, 49;
+    --secondary: 41, 42, 43;
+    --secondary-foreground: 250, 251, 252;
+    --muted: 41, 42, 43;
+    --muted-foreground: 165, 167, 168;
+    --accent: 41, 42, 43;
+    --accent-foreground: 250, 251, 252;
+    --destructive: 130, 32, 44;
+    --destructive-foreground: 246, 248, 249;
+    --border: 41, 42, 43;
+    --input: 41, 42, 43;
+    --ring: 214, 215, 216;
+  }
 }

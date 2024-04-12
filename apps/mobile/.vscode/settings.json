@@ -39,5 +39,14 @@
     "jsonc",
     "yaml",
     "toml"
+  ],
+
+  "tailwindCSS.classAttributes": [
+    // ...
+    "style"
+  ],
+  "tailwindCSS.experimental.classRegex": [
+    "tw`([^`]*)",
+    ["tw.style\\(([^)]*)\\)", "'([^']*)'"]
   ]
 }

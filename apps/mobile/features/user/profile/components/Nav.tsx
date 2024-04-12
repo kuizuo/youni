@@ -3,11 +3,10 @@ import type { IconProps } from '@tamagui/helpers-icon'
 import type { Href } from 'expo-router'
 import { Link } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Text, XStack, useTheme } from '@/ui'
+import { Text, View, useTheme } from '@/ui'
+import tw from '@/utils/tw'
 
 export function Navs() {
-  const theme = useTheme()
-
   interface Item {
     href: Href<string>
     icon: React.ReactElement<IconProps>
@@ -37,38 +36,30 @@ export function Navs() {
   ]
 
   return (
-    <XStack gap="$2.5" mx="$4" marginBottom="$3">
+    <View style={tw`flex-row mx-4 mb-3 gap-2.5`}>
       {
-      navItems.map(({ href, icon, text, desc }) => {
-        return (
-          <BlurView
-            key={href}
-            intensity={60}
-            style={{
-              flex: 1,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: theme.$borderColor?.get(),
-              overflow: 'hidden',
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-            }}
-          >
-            <Link href={href} asChild>
-              <XStack gap="$1.5" ai="center">
-                {icon}
-                <Text fontSize="$2">
-                  {text}
-                </Text>
-              </XStack>
-            </Link>
-            <Text fontSize={10}>
-              {desc}
-            </Text>
-          </BlurView>
-        )
-      })
-    }
-    </XStack>
+        navItems.map(({ href, icon, text, desc }) => {
+          return (
+            <BlurView
+              key={href}
+              intensity={60}
+              style={tw`flex-1 rounded-md b-1 b-gray overflow-hidden px-3 py-2`}
+            >
+              <Link href={href} asChild>
+                <View style={tw`flex-row items-center mb-3 gap-1`}>
+                  {icon}
+                  <Text fontSize="$2">
+                    {text}
+                  </Text>
+                </View>
+              </Link>
+              <Text fontSize={10}>
+                {desc}
+              </Text>
+            </BlurView>
+          )
+        })
+      }
+    </View>
   )
 }

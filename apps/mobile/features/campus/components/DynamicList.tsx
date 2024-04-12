@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from 'react'
-import { FlashList, type ListRenderItem } from '@shopify/flash-list'
+import type { ListRenderItem } from '@shopify/flash-list'
 import { RefreshControl } from 'react-native-gesture-handler'
 import type { NoteItem } from '@server/modules/note/note'
 import { SafeAreaView } from 'react-native-safe-area-context'

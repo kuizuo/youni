@@ -1,13 +1,14 @@
 import { Trash } from '@tamagui/lucide-icons'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Button, SizableText, YStack } from '@/ui'
+import { Button, Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 import { CustomDialog } from '@/ui/components/CustomDialog'
 import { EmptyResult } from '@/ui/components/EmptyResult'
+import tw from '@/utils/tw'
 
 export function HistoryScreen() {
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.history.list.useSuspenseInfiniteQuery({
@@ -29,7 +30,7 @@ export function HistoryScreen() {
   }
 
   return (
-    <YStack fullscreen flex={1} bg="$background">
+    <View style={tw`flex-1 bg-background`}>
       <NavBar
         left={<NavButton.Back />}
         right={(
@@ -43,7 +44,7 @@ export function HistoryScreen() {
           </CustomDialog>
         )}
       >
-        <SizableText flex={1} textAlign="center">浏览记录</SizableText>
+        <Text style={tw`flex-1 text-center`}>浏览记录</Text>
       </NavBar>
       <NoteList
         data={flatedData as unknown as NoteItem[]}
@@ -58,6 +59,6 @@ export function HistoryScreen() {
       >
       </NoteList>
       {/* <HistoryFooter /> */}
-    </YStack>
+    </View>
   )
 }

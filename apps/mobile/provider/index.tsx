@@ -8,7 +8,8 @@ import { TamaguiThemeProvider } from './theme'
 import { ToastViewport } from './toast-viewport'
 import { JotaiProvider } from './jotai'
 import { TRPCProvider } from './trpc'
-import { CustomToast, ToastProvider } from '@/ui'
+import { ToastProvider } from '@/ui'
+import { CustomToast } from '@/ui/components/CustomToast'
 
 export function Provider({
   children,

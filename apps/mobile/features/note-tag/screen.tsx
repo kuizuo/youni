@@ -1,11 +1,12 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Separator, SizableText, Text, XStack, YStack } from '@/ui'
+import { Separator, Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
+import tw from '@/utils/tw'
 
 export default function NoteTagScreen() {
   const { name } = useLocalSearchParams<{ name: string }>()
@@ -28,20 +29,20 @@ export default function NoteTagScreen() {
   )
 
   return (
-    <YStack flex={1} bg="$background">
+    <View style={tw`flex-1 bg-background`}>
       <NavBar left={<NavButton.Back />} right={<></>} />
-      <YStack pt="$6" pb="$3" px="$4" gap="$3">
-        <XStack gap="$2">
-          <Text fontSize={20} color="gray">#</Text>
-          <SizableText fontSize={20}>{name}</SizableText>
+      <View style={tw`flex-row pt-3 pb-2 px-4 gap-3`}>
+        <View style={tw`flex-row gap-2`}>
+          <Text style={tw`text-xl`} color="gray">#</Text>
+          <Text style={tw`text-xl`}>{name}</Text>
 
-        </XStack>
-        <XStack jc="space-between">
+        </View>
+        <View style={tw`flex-row justify-between`}>
           <Text fontSize={13} color="gray">
             {`${noteTag.viewCount} 浏览`}
           </Text>
-        </XStack>
-      </YStack>
+        </View>
+      </View>
 
       <Separator mb="$3" />
 
@@ -57,6 +58,6 @@ export default function NoteTagScreen() {
         }}
       >
       </NoteList>
-    </YStack>
+    </View>
   )
 }

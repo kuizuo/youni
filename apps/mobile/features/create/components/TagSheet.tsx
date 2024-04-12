@@ -139,7 +139,7 @@ const TagItem = memo(({ item }: { item: NoteTag }) => {
   }
   return (
     <View flexDirection="row" width="100%" jc="space-between" onPress={handleSelect}>
-      <SizableText flex={1} fontSize={16}>
+      <SizableText flex={1} style={tw`text-base`}>
         {`# ${item.name}`}
       </SizableText>
       {

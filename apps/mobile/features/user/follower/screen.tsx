@@ -3,12 +3,11 @@ import { useLocalSearchParams } from 'expo-router'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FollowerList } from './FollowerList'
-import { SizableText, View, YStack, useTheme, useWindowDimensions } from '@/ui'
+import { SizableText, View, useWindowDimensions } from '@/ui'
 import { NavButton } from '@/ui/components/NavButton'
+import tw from '@/utils/tw'
 
 export function FollowerScreen() {
-  const theme = useTheme()
-
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
 
   const { top } = useSafeAreaInsets()
@@ -38,7 +37,7 @@ export function FollowerScreen() {
   const FollowersList = memo(FollowerList)
 
   return (
-    <YStack flex={1} position="relative" bg="$background" paddingTop={top}>
+    <View style={tw`flex-1 relative pt-[${top}px] bg-background`}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -52,26 +51,14 @@ export function FollowerScreen() {
         renderTabBar={(props) => {
           return (
             <>
-              <View position="relative" height={28} ai="center" px="$4">
+              <View style={tw`relative px-4 h-[28px] items-center`}>
                 <NavButton.Back position="absolute" left={0} marginLeft="$3" />
 
                 <TabBar
                   {...props}
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                  }}
-                  tabStyle={{
-                    height: 50,
-                  }}
-                  indicatorStyle={{
-                    height: 2,
-                    alignItems: 'center',
-                    width: '50%',
-                    backgroundColor: theme.$accent10?.get(),
-                  }}
-                  indicatorContainerStyle={{}}
+                  style={tw`flex-1 justify-center bg-transparent`}
+                  tabStyle={{ height: 50 }}
+                  indicatorStyle={tw`h-[2px] w-1/2 bg-primary items-center`}
                   scrollEnabled
                   gap={16}
                   renderTabBarItem={(tabBarItemProps) => {
@@ -81,7 +68,7 @@ export function FollowerScreen() {
                     return (
                       <SizableText
                         opacity={active ? 1 : 0.5}
-                        fontSize={16}
+                        style={tw`text-base`}
                         onPress={() => {
                           const index = TABS.findIndex(tab => tab.key === route.key)
                           setIndex(index)
@@ -98,6 +85,6 @@ export function FollowerScreen() {
         }}
       >
       </TabView>
-    </YStack>
+    </View>
   )
 }

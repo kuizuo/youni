@@ -1,6 +1,6 @@
 import { atom, useAtom } from 'jotai'
-import { CommentItem } from '@server/modules/comment/comment'
-import { NoteItem } from '@server/modules/note/note'
+import type { CommentItem } from '@server/modules/comment/comment'
+import type { NoteItem } from '@server/modules/note/note'
 
 const commentModalOpenAtom = atom(false)
 

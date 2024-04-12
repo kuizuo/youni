@@ -1,10 +1,11 @@
 import { memo, useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { YStack } from '@/ui'
+import { View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { withQuerySuspense } from '@/ui/components/QuerySuspense'
+import tw from '@/utils/tw'
 
 function HomeFeed() {
   const [data, { isRefetching, refetch, hasNextPage, fetchNextPage }] = trpc.note.homeFeed.useSuspenseInfiniteQuery(
@@ -24,7 +25,7 @@ function HomeFeed() {
   )
 
   return (
-    <YStack flex={1} bg="$background">
+    <View style={tw`flex-1 bg-background`}>
       <NoteList
         data={flatedData}
         isRefreshing={isRefetching}
@@ -37,7 +38,7 @@ function HomeFeed() {
           <EmptyResult title="没有更多了" />
         }
       />
-    </YStack>
+    </View>
   )
 }
 

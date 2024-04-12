@@ -1,10 +1,9 @@
 import { Platform } from 'react-native'
 import { useRouter } from 'expo-router'
-import { useEffect } from 'react'
-import { YStack, useToastController } from '@/ui'
+import { View, useToastController } from '@/ui'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import tw from '@/utils/tw'
 
 export function SignInScreen(): React.ReactNode {
   const { replace } = useRouter()
@@ -71,12 +70,12 @@ export function SignInScreen(): React.ReactNode {
   }
 
   return (
-    <YStack flex={1} jc="center" ai="center" gap="$4">
+    <View style={tw`flex-1 justify-center items-center gap-4`}>
       <SignUpSignInComponent
         type="sign-in"
         handleOAuthWithPress={handleOAuthSignInWithPress}
         handleEmailWithPress={handleEmailSignInWithPress}
       />
-    </YStack>
+    </View>
   )
 }
