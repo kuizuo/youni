@@ -5,7 +5,6 @@ import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
 import { Text, View, YStack, useTheme, useWindowDimensions } from '@/ui'
 import { NavButton } from '@/ui/components/NavButton'
-import tw from '@/utils/tw'
 
 export function HomeScreen(): React.ReactNode {
   const { top } = useSafeAreaInsets()
@@ -28,7 +27,7 @@ export function HomeScreen(): React.ReactNode {
   )
 
   return (
-    <View style={tw`flex-1 pt-[${top}px]`}>
+    <View className="flex-1" style={{ paddingTop: top }}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -47,17 +46,21 @@ export function HomeScreen(): React.ReactNode {
           }
         }}
         renderTabBar={props => (
-          <View style={tw`relative h-[30px] mx-4 mb-2 items-center`}>
+          <View className="relative h-[30px] mx-4 mb-2 items-center">
             <NavButton.Menu position="absolute" left={0} />
             <NavButton.Search position="absolute" right={0} />
 
             <TabBar
               {...props}
-              style={tw`flex-1 justify-center bg-transparent`}
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                backgroundColor: 'transparent',
+              }}
               tabStyle={{
                 height: 50,
               }}
-              indicatorStyle={tw`h-[2px] items-center w-1/2 bg-primary`}
+              // indicatorStyle={tw`h-[2px] items-center w-1/2 bg-primary`}
               indicatorContainerStyle={{
                 borderBottomWidth: 0,
               }}
@@ -69,8 +72,7 @@ export function HomeScreen(): React.ReactNode {
 
                 return (
                   <Text
-                    opacity={active ? 1 : 0.5}
-                    style={tw`text-base`}
+                    className={`text-base ${active ? 'opacity-100' : 'opacty-50'}`}
                     onPress={() => {
                       const index = TABS.findIndex(tab => tab.key === route.key)
                       setIndex(index)

@@ -6,7 +6,6 @@ import { Button, Text, View, XStack, useTheme } from '@/ui'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useUser } from '@/utils/auth/hooks/useUser'
-import tw from '@/utils/tw'
 
 interface Props {
   user: UserInfo
@@ -22,7 +21,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
     return (
       <BlurView
         intensity={20}
-        style={tw`justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2`}
+        className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
       >
         <Link href="/profile/edit" asChild>
           <Text color="gray" fontSize={12} unstyled>
@@ -37,7 +36,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
     return (
       <BlurView
         intensity={20}
-        style={tw`justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2`}
+        className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
       >
         <Link href="/setting/" asChild>
           <Button color="gray" icon={<Settings size="$1" />} unstyled />
@@ -50,7 +49,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
     return (
       <BlurView
         intensity={20}
-        style={tw`justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2`}
+        className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
       >
         <Link href={`/chat/${user.id}`} asChild>
           <MessageCircle size="$1" />
@@ -60,7 +59,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
   }
 
   return (
-    <View style={tw`flex-row bg-background`} gap="$4" mx="$4" marginBottom="$3" ai="center">
+    <View className="flex-row bg-background" gap="$4" mx="$4" marginBottom="$3" ai="center">
       <Link
         href={{
           pathname: '/user/[id]/follower',

@@ -1,9 +1,10 @@
 import { Tabs, useRouter } from 'expo-router'
 import { LinearGradient } from '@tamagui/linear-gradient'
 import { Clover, Home, MessageCircleMore, Plus } from '@tamagui/lucide-icons'
+import { TouchableOpacity } from 'react-native'
 import { Avatar, Image, Square, Theme, View } from '@/ui'
 import { useUser } from '@/utils/auth/hooks/useUser'
-import tw from '@/utils/tw'
+import { theme } from '@/utils/tw'
 
 export default function TabLayout() {
   const { currentUser, isLoading } = useUser()
@@ -19,7 +20,7 @@ export default function TabLayout() {
         tabBarStyle: {
           borderWidth: 0,
         },
-        tabBarActiveTintColor: tw.color(`bg-primary`),
+        tabBarActiveTintColor: theme.colors.primary,
       }}
     >
       <Tabs.Screen
@@ -71,7 +72,7 @@ export default function TabLayout() {
           title: '我',
           tabBarIcon: ({ color, size }) => {
             return (
-              <View style={tw`b-1 b-[${color}] rounded-full`}>
+              <View className={`b-1 b-[${color}] rounded-full`}>
                 <Avatar circular p="$1" size={size}>
                   <Image
                     source={{
@@ -94,44 +95,37 @@ export default function TabLayout() {
 function PlusButton({ size }: { size: number }) {
   const router = useRouter()
   const { isSignined } = useUser()
-  const bottom = 4
 
+  // TODO: fixme
   return (
     <>
-      <Theme name="dark">
+      <TouchableOpacity
+        className="absolute bg-primary rounded-lg"
+        style={{
+          width: size + 24,
+          height: size + 14,
+        }}
+        // pressStyle={{
+        //   scale: 1.1,
+        // }}
+        onPress={() => {
+          if (!isSignined) {
+            router.replace('/sign-in')
+            return
+          }
+          router.push('/create/')
+        }}
 
-        <LinearGradient
-          style={tw.style(
-            tw`absolute bg-primary bottom-[${bottom}] rounded-lg`,
-            tw`w-[${size + 24}px]`,
-            tw`h-[${size + 14}px]`,
-          )}
-          start={[1, 1]}
-          end={[0.8, 0]}
-          pressStyle={{
-            scale: 1.1,
-          }}
-          onPress={() => {
-            if (!isSignined) {
-              router.replace('/sign-in')
-              return
-            }
-            router.push('/create/')
-          }}
-
-        />
-        <View
-          style={tw.style(
-            tw`absolute flex-1 justify-center content-center bottom-[${bottom}] `,
-            tw`h-[${size + 14}px]`,
-            tw`left-[14px]`,
-          )}
-          animation="quick"
-          pointerEvents="none"
-        >
-          <Plus color="white" size={size + 14} />
-        </View>
-      </Theme>
+      />
+      <View
+        className="absolute justify-center content-center"
+        style={{
+          height: size + 14,
+        }}
+        pointerEvents="none"
+      >
+        <Plus color="white" size={size + 14} />
+      </View>
     </>
   )
 }

@@ -1,5 +1,4 @@
 import { Paragraph, YStack } from '@/ui'
-import tw from '@/utils/tw'
 
 interface Props {
   title: string | undefined
@@ -15,7 +14,7 @@ export function EmptyResult({
   return (
     <YStack flex={1} jc="center" ai="center" p="$6" gap="$3">
       {image}
-      <Paragraph style={tw`text-base`}>{title}</Paragraph>
+      <Paragraph className="text-base">{title}</Paragraph>
       {subTitle && <Paragraph fontSize={10}>{subTitle}</Paragraph>}
     </YStack>
   )

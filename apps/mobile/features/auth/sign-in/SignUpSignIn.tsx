@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'solito/link'
-import { Button, Image, Input, Paragraph, Stack, XStack, YStack } from '@/ui'
+import { Link } from 'expo-router'
+import { Button, Image, Input, Paragraph, Stack, View } from '@/ui'
 
 interface Props {
   type: 'sign-up' | 'sign-in'
@@ -17,22 +17,14 @@ export function SignUpSignInComponent({
   const [password, setPassword] = useState('')
 
   return (
-    <YStack
-      br="$10"
-      gap="$4"
-      px="$7"
-      py="$6"
-      width={350}
-      shadowColor="#00000020"
-      shadowRadius={26}
-      shadowOffset={{ width: 0, height: 4 }}
-      bg="$background"
+    <View
+      className="rounded-xl gap-4 px-6 py-4 w-[350px] bg-background shadow-gray-100"
     >
       <Paragraph size="$5" fontWeight="700" opacity={0.8} marginBottom="$1">
         {type === 'sign-up' ? '创建你的账户' : '登录你的帐户'}
       </Paragraph>
       {/* all the oauth sign up options */}
-      <XStack gap="$4" jc="space-evenly" theme="light">
+      <View className="flex-row gap-4 justify-evenly">
         <Button
           size="$5"
           onPress={() => handleOAuthWithPress('wechat')}
@@ -78,14 +70,14 @@ export function SignUpSignInComponent({
             alt="Apple Logo"
           />
         </Button>
-      </XStack>
-      <XStack ai="center" width="100%" jc="space-between">
+      </View>
+      <View className="flex-row items-center w-full justify-between">
         <Stack height="$0.25" bg="black" width="$10" opacity={0.1} />
         <Paragraph size="$3" opacity={0.5}>
           or
         </Paragraph>
         <Stack height="$0.25" bg="black" width="$10" opacity={0.1} />
-      </XStack>
+      </View>
 
       {/* email sign up option */}
       <Input
@@ -119,7 +111,7 @@ export function SignUpSignInComponent({
         {type === 'sign-up' ? '注册' : '登录'}
       </Button>
 
-      <XStack>
+      <View className="flex-row">
         <Paragraph size="$2" marginRight="$2" opacity={0.4}>
           {type === 'sign-up' ? '已有账户?' : '没有账户?'}
         </Paragraph>
@@ -134,15 +126,15 @@ export function SignUpSignInComponent({
             {type === 'sign-up' ? '登录' : '注册'}
           </Paragraph>
         </Link>
-      </XStack>
+      </View>
 
       {/* forgot password */}
       {type === 'sign-in' && (
-        <XStack marginTop="$-2.5">
+        <View className="flex-row mt-3">
           <Paragraph size="$2" marginRight="$2" opacity={0.4}>
             忘记密码?
           </Paragraph>
-          <Link href="/password-reset">
+          <Link href="/(auth)/reset-password">
             <Paragraph
               cursor="pointer"
               size="$2"
@@ -153,8 +145,8 @@ export function SignUpSignInComponent({
               重置密码
             </Paragraph>
           </Link>
-        </XStack>
+        </View>
       )}
-    </YStack>
+    </View>
   )
 }

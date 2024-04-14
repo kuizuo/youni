@@ -11,7 +11,7 @@ const config = getDefaultConfig(__dirname, {
 module.exports = withMonorepoPaths(
   withNativeWind(config, {
     input: './global.css',
-    configPath: './tailwind.config.js',
+    configPath: './tailwind.config.ts',
   }),
 )
 

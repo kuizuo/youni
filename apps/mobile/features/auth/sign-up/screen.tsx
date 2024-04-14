@@ -1,8 +1,6 @@
 import { useRouter } from 'expo-router'
 import { View, useToastController } from '@/ui'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
-import { useAuth } from '@/utils/auth/hooks/useAuth'
-import tw from '@/utils/tw'
 
 export function SignUpScreen(): React.ReactNode {
   const { push } = useRouter()
@@ -49,7 +47,7 @@ export function SignUpScreen(): React.ReactNode {
   }
 
   return (
-    <View style={tw`flex-1 justify-center items-center gap-1`}>
+    <View className="flex-1 justify-center items-center gap-1">
       <SignUpSignInComponent
         type="sign-up"
         handleOAuthWithPress={handleOAuthSignInWithPress}

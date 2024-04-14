@@ -1,5 +1,8 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from 'tailwindcss'
+
+import nativewind from 'nativewind/preset'
+
+export default {
   darkMode: ['class'],
   content: [
     './app/**/*.{js,ts,jsx,tsx}',
@@ -7,19 +10,16 @@ module.exports = {
     './provider/**/*.{js,ts,jsx,tsx}',
     './ui/**/*.{js,ts,jsx,tsx}',
   ],
-  presets: [require('nativewind/preset')],
+  presets: [nativewind],
   theme: {
     extend: {
       colors: {
+        primary: 'rgb(242, 85, 90)',
         border: 'rgb(var(--border))',
         input: 'rgb(var(--input))',
         ring: 'rgb(var(--ring))',
         background: 'rgb(var(--background))',
         foreground: 'rgb(var(--foreground))',
-        primary: {
-          DEFAULT: 'rgb(var(--primary))',
-          foreground: 'rgb(var(--primary-foreground))',
-        },
         secondary: {
           DEFAULT: 'rgb(var(--secondary))',
           foreground: 'rgb(var(--secondary-foreground))',
@@ -54,4 +54,4 @@ module.exports = {
       tablet: '1024px',
     },
   },
-}
+} satisfies Config

@@ -5,7 +5,6 @@ import type { NoteItem } from '@server/modules/note/note'
 import { Like } from '@/ui/icons/like'
 import { trpc } from '@/utils/trpc'
 import { Text, View } from '@/ui'
-import tw from '@/utils/tw'
 
 export interface Props {
   item: NoteItem
@@ -46,7 +45,7 @@ export function NoteLikeButton({ item, size = 18, color = 'gray', placeholder }:
   })
 
   return (
-    <View style={tw`flex-row gap-2 items-center`}>
+    <View className="flex-row gap-2 items-center">
       <TouchableOpacity onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
           <Like
@@ -56,7 +55,7 @@ export function NoteLikeButton({ item, size = 18, color = 'gray', placeholder }:
           />
         </Animated.View>
       </TouchableOpacity>
-      <Text style={tw`text-base`}>
+      <Text className="text-base">
         {likedCount || placeholder || ' '}
       </Text>
     </View>

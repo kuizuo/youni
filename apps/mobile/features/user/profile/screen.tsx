@@ -18,7 +18,7 @@ import { trpc } from '@/utils/trpc'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 
-import tw from '@/utils/tw'
+
 
 const TAB_BAR_HEIGHT = 32
 const TAB_VIEW_MARGIN_TOP = -1
@@ -43,9 +43,9 @@ export function ProfileScreen() {
 
   const contentContainerStyle = {
     minHeight: window.height
-    - navBarHeight
-    + headerHeight
-    + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
+      - navBarHeight
+      + headerHeight
+      + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
     // paddingTop: headerHeight ? headerHeight + TAB_BAR_HEIGHT : 0,
   }
 
@@ -131,22 +131,22 @@ export function ProfileScreen() {
     })
 
     return (
-      <View style={tw`relative z-1`}>
+      <View className="relative z-1">
         {/* 顶部背景 */}
-        <Animated.View style={[tw`absolute inset-0`, bannerImageStyle]}>
+        <Animated.View className="absolute inset-0" style={[bannerImageStyle]}>
           <Animated.View
             onLayout={e => (bannerHeight.value = e.nativeEvent.layout.height)}
             style={animatedScaleStyle}
           >
             <View style={{ marginBottom: -BANNER_BOTTOM_HEIGHT_ADDITION }}>
-              <Animated.View style={[tw`absolute inset-0 z-1`, blurStyle]}>
-                <BlurView style={tw`absolute inset-0`} intensity={50} />
+              <Animated.View className="absolute inset-0 z-1" style={[blurStyle]}>
+                <BlurView className="absolute inset-0" intensity={50} />
               </Animated.View>
 
               <Image
                 source={require('../../../assets/images/profile-background.png')}
+                className='h-full'
                 style={[
-                  tw`h-full`,
                   { width },
                   Platform.OS === 'web' && { height: bannerHeight.value },
                 ]}
@@ -176,7 +176,7 @@ export function ProfileScreen() {
                   />
                   <Avatar.Fallback />
                 </Avatar>
-                <Text themeInverse fontSize={14} opacity={0.7}>
+                <Text className='text-base opacity-70'>
                   {data?.nickname}
                 </Text>
               </View>
@@ -185,10 +185,10 @@ export function ProfileScreen() {
         </NavBar>
 
         {/* 用户头像 */}
-        <Animated.View style={[tw`px-2`, rootProfileRowZIndexStyle]}>
+        <Animated.View className="px-2" style={[rootProfileRowZIndexStyle]}>
           <Animated.View
+            className={`absolute left-3 right-3 flex flex-row justify-between items-end gap-3`}
             style={[
-              tw`absolute left-3 right-3 flex flex-row justify-between items-end gap-3`,
               {
                 left: Math.max(left, ROOT_HORIZONTAL_PADDING),
                 right: Math.max(right, ROOT_HORIZONTAL_PADDING),
@@ -207,9 +207,9 @@ export function ProfileScreen() {
               />
               <Avatar.Fallback />
             </Avatar>
-            <View style={tw`flex-1`}>
-              <View style={tw`flex-row mb-2 items-center gap-2`}>
-                <Text style={tw`text-lg`}>
+            <View className="flex-1">
+              <View className="flex-row mb-2 items-center gap-2">
+                <Text className="text-lg">
                   {data.nickname}
                 </Text>
                 {data.gender
@@ -219,10 +219,10 @@ export function ProfileScreen() {
                       width={20}
                       height={20}
                     />
-                    )
+                  )
                   : <></>}
               </View>
-              <Text style={tw`text-lg`}>{' '}</Text>
+              <Text className="text-lg">{' '}</Text>
             </View>
           </Animated.View>
         </Animated.View>
@@ -250,10 +250,10 @@ export function ProfileScreen() {
     const [data, { isLoading, refetch, isRefetching }] = trpc.user.byId.useSuspenseQuery({ id: userId }, {})
 
     return (
-      <View style={tw`bg-background`} mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
-        <View style={tw`pt-[${AVATAR_SIZE_VALUE}px]`} pointerEvents="none" />
+      <View className="bg-background" mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
+        <View className={`pt-[${AVATAR_SIZE_VALUE}px]`} pointerEvents="none" />
         {/* 基本信息 */}
-        <View style={tw`px-4 mb-3 gap-4`}>
+        <View className="px-4 mb-3 gap-4">
           <Text>{data.desc ?? '暂无简介'}</Text>
         </View>
 
@@ -266,7 +266,7 @@ export function ProfileScreen() {
   }
 
   return (
-    <View style={tw`flex-1 bg-background`}>
+    <View className="flex-1 bg-background">
       <NavBarComponent />
 
       <Tabs.Container
@@ -287,12 +287,12 @@ export function ProfileScreen() {
         renderTabBar={props => (
           <MaterialTabBar
             {...props}
-            indicatorStyle={tw`bg-primary`}
+            // indicatorStyle={tw`bg-primary`}
             activeColor={theme.$color?.get()}
             labelStyle={{
               color: theme.$color?.get(),
             }}
-            tabStyle={tw`bg-${theme.$background?.get()}`}
+            // tabStyle={tw`bg-${theme.$background?.get()}`}
           />
         )}
       >

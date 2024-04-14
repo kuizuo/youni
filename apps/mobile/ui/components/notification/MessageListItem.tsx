@@ -3,7 +3,6 @@ import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
 import { Avatar, Image, Separator, Text, View } from '@/ui'
 import { formatTime } from '@/utils/date'
-import tw from '@/utils/tw'
 
 export function MessageListItem(item: MessageItem): React.ReactNode {
   const router = useRouter()
@@ -32,14 +31,14 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
     return (
       <Text>
         <Link href={`/user/${item.sender.id}/profile`} asChild>
-          <Text style={tw`text-base mt-2`}>
+          <Text className="text-base mt-2">
             {item.sender.nickname}
           </Text>
         </Link>
 
         <View w="$0.75" />
 
-        <Text style={tw`text-base text-gray-500`}>
+        <Text className="text-base text-gray-500">
           {actionString}
         </Text>
 
@@ -47,7 +46,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
         {(item.sourceId && item.sourceType === 'Note') && (
           <Link href={`/note/${item.sourceId}`} asChild>
             <Text
-              style={tw`flex-warp text-base`}
+              className="flex-warp text-base"
               numberOfLines={2}
             >
               {truncatedTitle}
@@ -64,7 +63,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
 
   return (
     <>
-      <View style={tw`flex-row items-center p-3 gap-3`}>
+      <View className="flex-row items-center p-3 gap-3">
         <Avatar circular size="$4" onPress={handleNavigateToUser}>
           <Avatar.Image
             // @ts-expect-error
@@ -76,12 +75,12 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
           />
           <Avatar.Fallback />
         </Avatar>
-        <View style={tw`flex-1`}>
+        <View className="flex-1">
           <MessageTitle></MessageTitle>
 
           {item.content && <Text>{item.content}</Text>}
 
-          <Text style={tw`text-sm text-gray`}>
+          <Text className="text-sm text-gray">
             {formatTime(item.createdAt)}
           </Text>
         </View>

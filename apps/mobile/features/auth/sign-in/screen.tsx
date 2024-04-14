@@ -3,7 +3,6 @@ import { View, useToastController } from '@/ui'
 import { capitalizeWord } from '@/ui/libs/string'
 import { SignUpSignInComponent } from '@/features/auth/sign-in/SignUpSignIn'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
-import tw from '@/utils/tw'
 
 export function SignInScreen(): React.ReactNode {
   const router = useRouter()
@@ -53,7 +52,7 @@ export function SignInScreen(): React.ReactNode {
   }
 
   return (
-    <View style={tw`flex-1 justify-center items-center gap-4`}>
+    <View className="flex-1 justify-center items-center gap-4">
       <SignUpSignInComponent
         type="sign-in"
         handleOAuthWithPress={handleOAuthSignInWithPress}

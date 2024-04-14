@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { CustomDialog } from '../CustomDialog'
 import { Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
-import tw from '@/utils/tw'
 
 interface Props {
   userId: string
@@ -31,8 +30,8 @@ export function UserFollowButton({ userId, isFollowing: initState }: Props) {
   return (
     <>
       <CustomDialog title="确认不再关注?" onOk={handleUnFollow}>
-        <View style={tw`flex-row rounded-full overflow-hidden bg-primary py-4`}>
-          <Text style={tw`text-base`} onPress={isFollowing ? () => null : handleFollow}>
+        <View className="flex-row rounded-full overflow-hidden bg-primary py-4">
+          <Text className="text-base" onPress={isFollowing ? () => null : handleFollow}>
             {isFollowing ? '取关' : '关注'}
           </Text>
         </View>

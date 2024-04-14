@@ -5,7 +5,6 @@ import { View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { withQuerySuspense } from '@/ui/components/QuerySuspense'
-import tw from '@/utils/tw'
 
 function HomeFeed() {
   const [data, { isRefetching, refetch, hasNextPage, fetchNextPage }] = trpc.note.homeFeed.useSuspenseInfiniteQuery(
@@ -25,7 +24,7 @@ function HomeFeed() {
   )
 
   return (
-    <View style={tw`flex-1 bg-background`}>
+    <View className="flex-1 bg-background">
       <NoteList
         data={flatedData}
         isRefreshing={isRefetching}

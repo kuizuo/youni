@@ -5,7 +5,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FollowerList } from './FollowerList'
 import { SizableText, View, useWindowDimensions } from '@/ui'
 import { NavButton } from '@/ui/components/NavButton'
-import tw from '@/utils/tw'
 
 export function FollowerScreen() {
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
@@ -37,7 +36,7 @@ export function FollowerScreen() {
   const FollowersList = memo(FollowerList)
 
   return (
-    <View style={tw`flex-1 relative pt-[${top}px] bg-background`}>
+    <View className={`flex-1 relative bg-background`} style={{ paddingTop: top }}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -51,14 +50,18 @@ export function FollowerScreen() {
         renderTabBar={(props) => {
           return (
             <>
-              <View style={tw`relative px-4 h-[28px] items-center`}>
+              <View className="relative px-4 h-[28px] items-center">
                 <NavButton.Back position="absolute" left={0} marginLeft="$3" />
 
                 <TabBar
                   {...props}
-                  style={tw`flex-1 justify-center bg-transparent`}
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
+                  }}
                   tabStyle={{ height: 50 }}
-                  indicatorStyle={tw`h-[2px] w-1/2 bg-primary items-center`}
+                  // indicatorStyle={tw`h-[2px] w-1/2 bg-primary items-center`}
                   scrollEnabled
                   gap={16}
                   renderTabBarItem={(tabBarItemProps) => {
@@ -68,7 +71,7 @@ export function FollowerScreen() {
                     return (
                       <SizableText
                         opacity={active ? 1 : 0.5}
-                        style={tw`text-base`}
+                        className="text-base"
                         onPress={() => {
                           const index = TABS.findIndex(tab => tab.key === route.key)
                           setIndex(index)

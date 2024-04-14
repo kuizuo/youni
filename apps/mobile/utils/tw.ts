@@ -1,16 +1,6 @@
-import type { TailwindFn } from 'twrnc'
-import { create } from 'twrnc'
+import resolveConfig from 'tailwindcss/resolveConfig'
+import tailwindConfig from '@/tailwind.config'
 
-// eslint-disable-next-line ts/no-var-requires
-const tw = create(require('../tailwind.config.js')) as TailwindFn & {
-  setColorScheme: (theme: 'dark' | 'light') => void
-}
+export const twConfig = resolveConfig(tailwindConfig)
 
-tw.color = (utils) => {
-  const styleObj = tw.style(utils)
-  const color
-    = styleObj.color || styleObj.backgroundColor || styleObj.borderColor
-  return typeof color === `string` ? color : undefined
-}
-
-export default tw
+export const theme = twConfig.theme

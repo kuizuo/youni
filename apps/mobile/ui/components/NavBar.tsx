@@ -7,6 +7,7 @@ import { Text, View } from '@/ui'
 export const NAV_BAR_HEIGHT = 48
 
 interface Props {
+  className: string
   children?: ReactNode
   left?: ReactNode
   right?: ReactNode
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function NavBar({
+  className,
   children,
   hideSafeTop,
   left,
@@ -25,25 +27,22 @@ export function NavBar({
 
   return (
     <View
-      position="relative"
-      fd="row"
-      px="$2.5"
-      gap="$2"
-      pt={safeTop || '$2.5'}
-      pb="$2.5"
-      ai="center"
-      style={style}
+      className={`${className} relative flex-row items-center px-2 gap-2 pb-2.5`}
+      style={{
+        paddingTop: safeTop || 8,
+        ...style,
+      }}
     >
       {left && (
-        <View minWidth="$1.5" fd="row" jc="flex-start" ai="center">
+        <View className="min-w-2 flex-row justify-start items-center">
           {left}
         </View>
       )}
 
-      <View flex={1} fd="row" ai="center">
+      <View className="flex-1 flex-row items-center">
         {typeof children === 'string'
           ? (
-            <Text textAlign="center" numberOfLines={1}>
+            <Text className="text-center" numberOfLines={1}>
               {children}
             </Text>
             )
@@ -53,7 +52,7 @@ export function NavBar({
       </View>
 
       {right && (
-        <View minWidth="$1.5" fd="row" jc="flex-end" ai="center">
+        <View className="min-w-2 flex-row justify-start items-center">
           {right}
         </View>
       )}

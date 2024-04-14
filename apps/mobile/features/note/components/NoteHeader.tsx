@@ -10,7 +10,6 @@ import { NoteMenu } from '@/ui/components/note/NoteMenu'
 import { NavBar } from '@/ui/components/NavBar'
 import { NoteShareButton } from '@/ui/components/note/NoteShareButton'
 import { NavButton } from '@/ui/components/NavButton'
-import tw from '@/utils/tw'
 
 interface Props {
   user: Pick<UserInfo, 'id' | 'nickname' | 'avatar'>
@@ -37,7 +36,7 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
       }}
     >
       <Link href={`/user/${user.id}/profile`} asChild>
-        <View style={tw`flex-row flex-1 gap-2 items-center`}>
+        <View className="flex-row flex-1 gap-2 items-center">
           <Avatar circular size="$2">
             <Avatar.Image
               // @ts-expect-error
@@ -49,7 +48,7 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
             />
             <Avatar.Fallback />
           </Avatar>
-          <Text style={tw`text-base opacity-70`}>
+          <Text className="text-base opacity-70">
             {user.nickname}
           </Text>
         </View>

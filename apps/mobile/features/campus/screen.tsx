@@ -12,7 +12,7 @@ import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
-import tw from '@/utils/tw'
+
 
 export function CampusScreen() {
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
@@ -62,11 +62,11 @@ export function CampusScreen() {
   }
 
   return (
-    <View style={tw`flex-1 bg-background`}>
+    <View className="flex-1 bg-background">
       <NavBar
         left={(<CampusTitle campus={data as unknown as Campus}></CampusTitle>)}
         right={(<SelectCampusButton></SelectCampusButton>)}
-        style={tw`z-1 bg-background`}
+        className="z-1 bg-background"
       >
       </NavBar>
 
@@ -91,7 +91,7 @@ export function CampusScreen() {
           return (
             <View
               {...props}
-              style={tw`h-[${TAB_BAR_HEIGHT}px] p-3 py-2 bg-background`}
+              className="h-[${TAB_BAR_HEIGHT}px] p-3 py-2 bg-background"
             >
               <Text>{tabNames}</Text>
             </View>
@@ -112,7 +112,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
     return <Text>请选择校区</Text>
 
   return (
-    <View style={tw`flex-row items-center gap-2`}>
+    <View className="flex-row items-center gap-2">
       <Image
         w={24}
         h={24}
@@ -121,7 +121,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
         resizeMode="contain"
       />
       {/* <School /> */}
-      <Text style={tw`text-lg`}>{campus.name}</Text>
+      <Text className="text-lg">{campus.name}</Text>
     </View>
   )
 }

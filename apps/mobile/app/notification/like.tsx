@@ -6,7 +6,6 @@ import { EmptyResult } from '@/ui/components/EmptyResult'
 import { MessageList } from '@/ui/components/notification/MessageList'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
-import tw from '@/utils/tw'
 
 export default function Screen() {
   const [data, { isRefetching, isFetchingNextPage, hasNextPage, refetch, fetchNextPage }] = trpc.notification.message.useSuspenseInfiniteQuery(
@@ -25,9 +24,9 @@ export default function Screen() {
   )
 
   return (
-    <View style={tw`flex-1 bg-background`}>
+    <View className="flex-1 bg-background">
       <NavBar left={<NavButton.Back />} right={<></>}>
-        <Text style={tw`flex-1 text-center`}>赞</Text>
+        <Text className="flex-1 text-center">赞</Text>
       </NavBar>
       <MessageList
         data={flatedData}

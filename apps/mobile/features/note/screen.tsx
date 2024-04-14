@@ -12,7 +12,6 @@ import { formatTime } from '@/utils/date'
 import { useCurrentNote } from '@/atoms/comment'
 import { NotFound } from '@/ui/components/NotFound'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
-import tw from '@/utils/tw'
 
 // @ts-expect-error
 const Comments = lazy(() => import('@/ui/components/comment/Comment'))
@@ -42,7 +41,7 @@ export function NoteScreen(): React.ReactNode {
   }
 
   return (
-    <View style={tw`flex-1 bg-background`}>
+    <View className="flex-1 bg-background">
       <NoteHeader item={data as NoteItem} user={data.user} />
       <ScrollView
         position="relative"
@@ -51,14 +50,14 @@ export function NoteScreen(): React.ReactNode {
       >
         <ImageCarousel data={data?.images.map(image => image.src)} />
 
-        <View style={tw`px-3 mt-3 gap-2`}>
+        <View className="px-3 mt-3 gap-2">
           <H5>{data?.title}</H5>
 
           <Paragraph size="$2">
             {data?.content}
           </Paragraph>
 
-          <View style={tw`flex-row mb-4 flex-warp gap-x-1 gap-y-2 `}>
+          <View className="flex-row mb-4 flex-warp gap-x-1 gap-y-2 ">
             {data?.tags.map(tag => (
               <Link key={tag.name} href={`/tag/${tag.name}`} asChild>
                 <Text color="$blue8">

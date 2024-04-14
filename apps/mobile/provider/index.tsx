@@ -2,9 +2,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet'
 import { AuthProvider } from './auth'
 import { SafeAreaProvider } from './safe-area'
-import { SolitoImageProvider } from './solito-image'
 import { TamaguiProvider } from './tamagui'
-import { TamaguiThemeProvider } from './theme'
+import { ThemeProvider } from './theme'
 import { ToastViewport } from './toast-viewport'
 import { JotaiProvider } from './jotai'
 import { TRPCProvider } from './trpc'
@@ -18,25 +17,23 @@ export function Provider({
 }) {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <TamaguiThemeProvider>
+      <ThemeProvider>
         <TamaguiProvider>
           <SafeAreaProvider>
             <ActionSheetProvider>
-              <SolitoImageProvider>
-                <ToastProvider swipeDirection="horizontal" duration={5000} native={['mobile']}>
-                  <JotaiProvider>
-                    <AuthProvider>
-                      <TRPCProvider>{children}</TRPCProvider>
-                      <CustomToast />
-                      <ToastViewport />
-                    </AuthProvider>
-                  </JotaiProvider>
-                </ToastProvider>
-              </SolitoImageProvider>
+              <ToastProvider swipeDirection="horizontal" duration={5000} native={['mobile']}>
+                <JotaiProvider>
+                  <AuthProvider>
+                    <TRPCProvider>{children}</TRPCProvider>
+                    <CustomToast />
+                    <ToastViewport />
+                  </AuthProvider>
+                </JotaiProvider>
+              </ToastProvider>
             </ActionSheetProvider>
           </SafeAreaProvider>
         </TamaguiProvider>
-      </TamaguiThemeProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   )
 }

@@ -6,7 +6,6 @@ import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Button, Separator, Text, XStack, YStack, useTheme } from '..'
 import { useDrawerOpen } from '@/atoms/drawer'
-import tw from '@/utils/tw'
 
 export default function CustomDrawerContent() {
   const router = useRouter()
@@ -110,7 +109,7 @@ export default function CustomDrawerContent() {
               >
                 <Button icon={icon} unstyled />
               </BlurView>
-              <Text style={tw`flex-1 text-center text-xs`}>
+              <Text className="flex-1 text-center text-xs">
                 {label}
               </Text>
             </YStack>

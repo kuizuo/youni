@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { Avatar, SizableText, View, XStack, YStack } from '@/ui'
-import tw from '@/utils/tw'
 
 interface Props {
   title: string
@@ -11,7 +10,7 @@ interface Props {
 
 export function NotificationItem({ title, desc, image, onPress }: Props): ReactNode {
   return (
-    <View style={tw`p-3 gap-3 h-8 items-center`} onPress={onPress}>
+    <View className="p-3 gap-3 h-8 items-center" onPress={onPress}>
       <Avatar circular size="$5">
         <Avatar.Image
           width="100%"

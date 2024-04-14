@@ -21,7 +21,7 @@ import { client } from '@/utils/http/client'
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { selectTagsAtom, tagSheetOpenAtom } from '@/atoms/create'
-import tw from '@/utils/tw'
+
 
 interface IFormInput {
   title: string
@@ -179,7 +179,7 @@ export function CreateScreen() {
   }
 
   return (
-    <View style={tw`flex-1 bg-background`}>
+    <View className="flex-1 bg-background">
       <NavBar
         left={<NavButton.Back />}
         right={(
@@ -206,7 +206,7 @@ export function CreateScreen() {
           render={({ field: { value, onChange, onBlur } }) => (
             <Input
               size="$2"
-              style={tw`text-base`}
+              className="text-base"
               bbw={1}
               bbc="$borderColor"
               placeholder="标题"

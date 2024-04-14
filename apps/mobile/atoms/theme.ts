@@ -1,7 +1,8 @@
 import { atom, useAtom } from 'jotai'
 import { Appearance } from 'react-native'
 import { storage } from '@/provider/kv'
-import { type CurrentThemeVariant, ThemeVariant } from '@/utils/theme'
+import { themeVariant } from '@/utils/theme'
+import type { CurrentThemeVariant, ThemeVariant } from '@/utils/theme'
 
 export const appThemeKey = 'appTheme'
 
@@ -13,7 +14,7 @@ export function useAppTheme() {
 
 const currentThemeAtom = atom<CurrentThemeVariant>((get) => {
   const userTheme = get(appThemeAtom)
-  if (userTheme === ThemeVariant.system)
+  if (userTheme === themeVariant.system)
     return Appearance.getColorScheme() as CurrentThemeVariant
 
   return userTheme

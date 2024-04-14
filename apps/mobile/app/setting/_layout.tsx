@@ -1,5 +1,4 @@
-import { Stack } from 'expo-router'
-import { useRouter } from 'solito/router'
+import { Stack, useRouter } from 'expo-router'
 import { NavButton } from '@/ui/components/NavButton'
 
 export default function Layout() {

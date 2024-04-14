@@ -1,24 +1,27 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { DarkTheme, DefaultTheme, ThemeProvider as ThemeProviderOg } from '@react-navigation/native'
 import { StatusBar } from 'expo-status-bar'
 import React, { useEffect, useLayoutEffect } from 'react'
-import { Appearance } from 'react-native'
+import { Appearance, View } from 'react-native'
+import { useColorScheme } from 'nativewind'
 import { storage } from '../kv'
-import { ThemeVariant } from '@/utils/theme'
+import type { ThemeVariant } from '@/utils/theme'
+import { themeVariant } from '@/utils/theme'
 import { appThemeKey, useAppTheme, useCurrentTheme } from '@/atoms/theme'
 import { useForceUpdate } from '@/ui'
 
-export function TamaguiThemeProvider({
+export function ThemeProvider({
   children,
 }: {
   children: React.ReactNode
 }): React.ReactNode {
+  const { colorScheme, setColorScheme, toggleColorScheme } = useColorScheme()
   const [appTheme, setAppTheme] = useAppTheme()
   const [currentTheme] = useCurrentTheme()
   const forceUpdate = useForceUpdate()
 
   const defaultTheme = 'system'
-  const statusBarStyle = currentTheme === ThemeVariant.dark ? ThemeVariant.light : ThemeVariant.dark
-  const themeValue = currentTheme === ThemeVariant.dark ? DarkTheme : DefaultTheme
+  const statusBarStyle = currentTheme === themeVariant.dark ? themeVariant.light : themeVariant.dark
+  const themeValue = currentTheme === themeVariant.dark ? DarkTheme : DefaultTheme
 
   useEffect(() => {
     const systemThemeChangeListener = Appearance.addChangeListener(() => {
@@ -47,10 +50,12 @@ export function TamaguiThemeProvider({
   }, [appTheme, setAppTheme])
 
   return (
-    <ThemeProvider value={themeValue}>
+    <ThemeProviderOg value={themeValue}>
       <StatusBar style={statusBarStyle} />
-      {children}
-    </ThemeProvider>
+      <View className="flex-1">
+        {children}
+      </View>
+    </ThemeProviderOg>
   )
 }
 

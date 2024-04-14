@@ -2,7 +2,6 @@ import { Stack, useRouter } from 'expo-router'
 import { NotificationItem } from './components/NotificationItem'
 import { Image, Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
-import tw from '@/utils/tw'
 
 export function NotificationScreen() {
   const { data } = trpc.notification.count.useQuery()
@@ -17,18 +16,18 @@ export function NotificationScreen() {
         headerShadowVisible: false,
       }}
       />
-      <View style={tw`flex-1 bg-background`}>
-        <View style={tw`flex-row p-4 justify-center items-center gap-2`}>
+      <View className="flex-1 bg-background">
+        <View className="flex-row p-4 justify-center items-center gap-2">
           <View
-            style={tw`relative flex-1 justify-center items-center gap-2`}
+            className="relative flex-1 justify-center items-center gap-2"
             onPress={() => router.push('/notification/like')}
           >
             <Image width={60} height={60} source={require('@/assets/images/heart.png')}></Image>
 
-            <Text style={tw`text-md`}>赞</Text>
+            <Text className="text-md">赞</Text>
           </View>
           <View
-            style={tw`relative flex-1 justify-center items-center gap-2`}
+            className="relative flex-1 justify-center items-center gap-2"
             onPress={() => router.push('/notification/comment')}
           >
             <Image width={60} height={60} source={require('@/assets/images/message.png')}></Image>
@@ -40,10 +39,10 @@ export function NotificationScreen() {
                 </Text>
               )
             }
-            <Text style={tw`text-md`}>评论</Text>
+            <Text className="text-md">评论</Text>
           </View>
           <View
-            style={tw`relative flex-1 justify-center items-center gap-2`}
+            className="relative flex-1 justify-center items-center gap-2"
             onPress={() => router.push('/notification/follow')}
           >
             <Image width={60} height={60} source={require('@/assets/images/follow.png')}></Image>
@@ -55,7 +54,7 @@ export function NotificationScreen() {
                 </Text>
               )
             }
-            <Text style={tw`text-md`}>新增关注</Text>
+            <Text className="text-md">新增关注</Text>
           </View>
         </View>
 

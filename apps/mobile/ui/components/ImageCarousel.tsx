@@ -2,7 +2,6 @@ import Carousel from 'react-native-reanimated-carousel'
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { Image, View, useTheme, useWindowDimensions } from '@/ui'
 import { window } from '@/constant'
-import tw from '@/utils/tw'
 
 interface Props {
   data: string[]
@@ -20,7 +19,7 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
       <Carousel
         width={width ?? windowWidth}
         height={height ?? window.width / 2}
-        style={tw`w-full bg-background`}
+        className="w-full bg-background"
         loop={false}
         pagingEnabled={false}
         overscrollEnabled={false}
@@ -38,7 +37,7 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
       />
       {!!progressValue && showProgress && (
         <View
-          style={tw`flex-row justify-center pt-2 gap-2`}
+          className="flex-row justify-center pt-2 gap-2"
         >
           {data?.map((_, index) => {
             return (

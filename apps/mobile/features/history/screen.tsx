@@ -8,7 +8,6 @@ import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 import { CustomDialog } from '@/ui/components/CustomDialog'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import tw from '@/utils/tw'
 
 export function HistoryScreen() {
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.history.list.useSuspenseInfiniteQuery({
@@ -30,7 +29,7 @@ export function HistoryScreen() {
   }
 
   return (
-    <View style={tw`flex-1 bg-background`}>
+    <View className="flex-1 bg-background">
       <NavBar
         left={<NavButton.Back />}
         right={(
@@ -44,7 +43,7 @@ export function HistoryScreen() {
           </CustomDialog>
         )}
       >
-        <Text style={tw`flex-1 text-center`}>浏览记录</Text>
+        <Text className="flex-1 text-center">浏览记录</Text>
       </NavBar>
       <NoteList
         data={flatedData as unknown as NoteItem[]}

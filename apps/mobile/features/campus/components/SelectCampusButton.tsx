@@ -5,7 +5,6 @@ import { BlurView } from 'expo-blur'
 import { Adapt, Button, Input, Popover, SizableText, View, XStack, YStack } from '@/ui'
 import { useCurrentCampus } from '@/atoms/campus'
 import { trpc } from '@/utils/trpc'
-import tw from '@/utils/tw'
 
 export function SelectCampusButton() {
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
@@ -84,7 +83,7 @@ export function SelectCampusButton() {
               ? data?.map(campus => (
                 <SizableText
                   key={campus.id}
-                  style={tw`text-base`}
+                  className="text-base"
                   pressStyle={{
                     backgroundColor: '$gray4',
                   }}
@@ -94,7 +93,7 @@ export function SelectCampusButton() {
                 </SizableText>
               ))
               : (
-                <SizableText style={tw`text-base`} textAlign="center">
+                <SizableText className="text-base" textAlign="center">
                   未能搜索到相关学校～
                 </SizableText>
                 )}
