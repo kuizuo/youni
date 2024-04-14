@@ -1,6 +1,6 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ChevronRight } from '@tamagui/lucide-icons'
+import { ChevronRight } from 'lucide-react-native'
 import { Button, ListItem, ScrollView, Separator, SizableText, Text, View, YGroup } from '@/ui'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { trpc } from '@/utils/trpc'

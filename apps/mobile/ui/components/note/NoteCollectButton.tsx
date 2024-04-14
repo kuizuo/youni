@@ -1,4 +1,4 @@
-import { Star } from '@tamagui/lucide-icons'
+import { Star } from 'lucide-react-native'
 import { useState } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { vars } from 'nativewind'

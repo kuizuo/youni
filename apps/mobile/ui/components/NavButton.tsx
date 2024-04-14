@@ -1,10 +1,10 @@
-import { ChevronLeft, Menu, Search } from '@tamagui/lucide-icons'
-import type { IconProps } from '@tamagui/helpers-icon'
+import { ChevronLeft, Menu, Search } from 'lucide-react-native'
+import type { LucideProps } from 'lucide-react-native'
 import { useRouter } from 'expo-router'
 
 import { useDrawerOpen } from '@/atoms/drawer'
 
-function BackButton({ onPress, ...props }: IconProps) {
+function BackButton({ onPress, ...props }: LucideProps) {
   const router = useRouter()
 
   return (
@@ -26,7 +26,7 @@ function BackButton({ onPress, ...props }: IconProps) {
   )
 }
 
-function MenuButton(props: IconProps) {
+function MenuButton(props: LucideProps) {
   const [open, setOpen] = useDrawerOpen()
 
   return (
@@ -38,7 +38,7 @@ function MenuButton(props: IconProps) {
   )
 }
 
-function SearchButton(props: IconProps) {
+function SearchButton(props: LucideProps) {
   const router = useRouter()
   return (
     <Search size="$1" onPress={() => router.push('/search')} {...props} />

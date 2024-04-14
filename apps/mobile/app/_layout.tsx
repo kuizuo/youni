@@ -13,24 +13,24 @@ SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
   const { colorScheme } = useColorScheme()
 
-  const [loaded, error] = useFonts({
-    Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
-    InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
-  })
+  // const [loaded, error] = useFonts({
+  //   Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
+  //   InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
+  // })
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error)
-      throw error
-  }, [error])
+  // useEffect(() => {
+  //   if (error)
+  //     throw error
+  // }, [error])
 
-  useEffect(() => {
-    if (loaded)
-      SplashScreen.hideAsync()
-  }, [loaded])
+  // useEffect(() => {
+  //   if (loaded)
+  //     SplashScreen.hideAsync()
+  // }, [loaded])
 
-  if (!loaded)
-    return null
+  // if (!loaded)
+  //   return null
 
   return (
     <Provider>

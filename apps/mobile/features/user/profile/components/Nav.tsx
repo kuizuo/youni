@@ -1,4 +1,4 @@
-import { Highlighter, History, LifeBuoy } from '@tamagui/lucide-icons'
+import { Highlighter, History, LifeBuoy } from 'lucide-react-native'
 import type { IconProps } from '@tamagui/helpers-icon'
 import type { Href } from 'expo-router'
 import { Link } from 'expo-router'

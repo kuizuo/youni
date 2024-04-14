@@ -1,4 +1,4 @@
-// import { Check } from '@tamagui/lucide-icons'
+// import { Check } from 'lucide-react-native'
 // import { useSafeAreaInsets } from 'react-native-safe-area-context'
 // import { useId } from 'react'
 // import { useAtom } from 'jotai'

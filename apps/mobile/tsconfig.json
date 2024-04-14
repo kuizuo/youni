@@ -5,11 +5,20 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "paths": {
-      "@/*": ["./*"],
-      "@server/*": ["../../apps/server/src/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@server/*": [
+        "../../apps/server/src/*"
+      ]
     },
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
 }

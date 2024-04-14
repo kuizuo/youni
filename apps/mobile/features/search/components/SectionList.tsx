@@ -1,7 +1,7 @@
 import { useAtom } from 'jotai'
 import { useMemo } from 'react'
 import { RESET } from 'jotai/utils'
-import { Trash } from '@tamagui/lucide-icons'
+import { Trash } from 'lucide-react-native'
 import { searchHistoryAtom } from '@/atoms/searchHistroy'
 import { Text, View } from '@/ui'
 import { NAV_BAR_HEIGHT } from '@/ui/components/NavBar'

@@ -1,4 +1,4 @@
-import { MessageCircle } from '@tamagui/lucide-icons'
+import { MessageCircle } from 'lucide-react-native'
 import type { NoteItem } from '@server/modules/note/note'
 import type { ColorTokens, SizeTokens } from '../..'
 import { Button, Text, View } from '../..'

@@ -9,9 +9,6 @@
       "ios": {
         "simulator": true,
         "image": "latest"
-      },
-      "env": {
-        "TAMAGUI_TARGET": "native"
       }
     },
     "preview": {
@@ -27,9 +24,6 @@
       },
       "ios": {
         "node": "20.11.0"
-      },
-      "env": {
-        "TAMAGUI_TARGET": "native"
       }
     }
   },

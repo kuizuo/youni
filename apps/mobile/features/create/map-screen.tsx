@@ -1,4 +1,4 @@
-import { Search } from '@tamagui/lucide-icons'
+import { Search } from 'lucide-react-native'
 import { Input, View, XStack, YStack } from '@/ui'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'

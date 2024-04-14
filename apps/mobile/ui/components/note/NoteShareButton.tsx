@@ -1,4 +1,4 @@
-import { ArrowUpRightFromSquare, ChevronDown } from '@tamagui/lucide-icons'
+import { ArrowUpRightFromSquare, ChevronDown } from 'lucide-react-native'
 import type { NoteItem } from '@server/modules/note/note'
 import React, { useState } from 'react'
 import { Button, ScrollView, Separator, Sheet, SizableText, XStack } from '@/ui'

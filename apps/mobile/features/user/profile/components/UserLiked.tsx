@@ -7,7 +7,7 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated from 'react-native-reanimated'
 import { Tabs } from 'react-native-collapsible-tab-view'
-import { Spinner, useMedia } from '@/ui'
+import { Spinner } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteListItem } from '@/ui/components/note/NoteListItem'
 import { EmptyResult } from '@/ui/components/EmptyResult'
@@ -20,8 +20,6 @@ interface Props {
 }
 
 export function NoteList({ userId, contentContainerStyle }: Props) {
-  const media = useMedia()
-
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.userLikedNotes.useSuspenseInfiniteQuery(
     {
       userId,

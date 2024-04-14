@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useWindowDimensions } from 'react-native'
 import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
-import { Text, View, YStack, useTheme, useWindowDimensions } from '@/ui'
+import { Text, View } from '@/ui'
 import { NavButton } from '@/ui/components/NavButton'
 
 export function HomeScreen(): React.ReactNode {

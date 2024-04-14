@@ -1,4 +1,4 @@
-import { Trash } from '@tamagui/lucide-icons'
+import { Trash } from 'lucide-react-native'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { Button, Text, View } from '@/ui'

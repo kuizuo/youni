@@ -1,4 +1,4 @@
-import { MessageCircle } from '@tamagui/lucide-icons'
+import { MessageCircle } from 'lucide-react-native'
 import type { CommentItem } from '@server/modules/comment/comment'
 import { useState } from 'react'
 import type { SizeTokens } from '@/ui'

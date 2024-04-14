@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo, useState } from 'react'
-import { CheckCircle, Circle, Search } from '@tamagui/lucide-icons'
+import { CheckCircle, Circle, Search } from 'lucide-react-native'
 import { useAtom } from 'jotai'
 import type { ListRenderItem } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'

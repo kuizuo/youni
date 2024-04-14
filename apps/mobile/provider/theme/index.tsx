@@ -7,7 +7,6 @@ import { storage } from '../kv'
 import type { ThemeVariant } from '@/utils/theme'
 import { themeVariant } from '@/utils/theme'
 import { appThemeKey, useAppTheme, useCurrentTheme } from '@/atoms/theme'
-import { useForceUpdate } from '@/ui'
 
 export function ThemeProvider({
   children,
@@ -17,7 +16,6 @@ export function ThemeProvider({
   const { colorScheme, setColorScheme, toggleColorScheme } = useColorScheme()
   const [appTheme, setAppTheme] = useAppTheme()
   const [currentTheme] = useCurrentTheme()
-  const forceUpdate = useForceUpdate()
 
   const defaultTheme = 'system'
   const statusBarStyle = currentTheme === themeVariant.dark ? themeVariant.light : themeVariant.dark
@@ -26,12 +24,11 @@ export function ThemeProvider({
   useEffect(() => {
     const systemThemeChangeListener = Appearance.addChangeListener(() => {
       setAppTheme(Appearance.getColorScheme() as ThemeVariant)
-      forceUpdate()
     })
     return () => {
       systemThemeChangeListener.remove()
     }
-  }, [setAppTheme, forceUpdate])
+  }, [setAppTheme])
 
   useLayoutEffect(() => {
     const savedAppTheme = storage.getString(appThemeKey)

@@ -1,8 +1,7 @@
 import { Tabs, useRouter } from 'expo-router'
-import { LinearGradient } from '@tamagui/linear-gradient'
-import { Clover, Home, MessageCircleMore, Plus } from '@tamagui/lucide-icons'
+import { Avatar, Icon, Image, View, useToken } from '@gluestack-ui/themed'
 import { TouchableOpacity } from 'react-native'
-import { Avatar, Image, Square, Theme, View } from '@/ui'
+import { Home, Plus } from 'lucide-react-native'
 import { useUser } from '@/utils/auth/hooks/useUser'
 import { theme } from '@/utils/tw'
 
@@ -20,21 +19,21 @@ export default function TabLayout() {
         tabBarStyle: {
           borderWidth: 0,
         },
-        tabBarActiveTintColor: theme.colors.primary,
+        // tabBarActiveTintColor: theme.colors.primary,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: '首页',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Icon as={Home} color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="campus"
         options={{
           title: '校园',
-          tabBarIcon: ({ color, size }) => <Clover color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Icon as={Home} color={color} size={size} />,
         }}
       />
       <Tabs.Screen
@@ -57,7 +56,7 @@ export default function TabLayout() {
         name="notification"
         options={{
           title: '消息',
-          tabBarIcon: ({ color, size }) => <MessageCircleMore color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Icon as={Home} color={color} size={size} />,
         }}
       />
       <Tabs.Screen
@@ -73,10 +72,10 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => {
             return (
               <View className={`b-1 b-[${color}] rounded-full`}>
-                <Avatar circular p="$1" size={size}>
+                <Avatar className="rounded-full" size={size}>
                   <Image
                     source={{
-                      uri: currentUser?.avatar,
+                      uri: currentUser.avatar!,
                       width: size,
                       height: size,
                     }}
@@ -105,16 +104,16 @@ function PlusButton({ size }: { size: number }) {
           width: size + 24,
           height: size + 14,
         }}
-        // pressStyle={{
-        //   scale: 1.1,
-        // }}
-        onPress={() => {
-          if (!isSignined) {
-            router.replace('/sign-in')
-            return
-          }
-          router.push('/create/')
-        }}
+      // pressStyle={{
+      //   scale: 1.1,
+      // }}
+      // onPress={() => {
+      //   if (!isSignined) {
+      //     router.replace('/sign-in')
+      //     return
+      //   }
+      //   router.push('/create/')
+      // }}
 
       />
       <View

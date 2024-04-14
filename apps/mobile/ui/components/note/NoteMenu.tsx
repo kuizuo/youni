@@ -1,4 +1,4 @@
-import { ChevronDown, Menu } from '@tamagui/lucide-icons'
+import { ChevronDown, Menu } from 'lucide-react-native'
 import type { NoteItem } from '../../../../server/src/modules/note/note'
 import { Button, ScrollView, Separator, Sheet, SizableText, XStack } from '@/ui'
 import { useSheetOpen } from '@/atoms/sheet'

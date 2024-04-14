@@ -1,14 +1,9 @@
-/** @type {import("@babel/core").ConfigFunction} */
 module.exports = function (api) {
-  api.cache(true)
+  api.cache(true);
   return {
     presets: [
-      ['babel-preset-expo', { jsxRuntime: 'automatic' }],
+      ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
       'nativewind/babel',
     ],
-    plugins: [
-      'react-native-reanimated/plugin',
-      'jotai/babel/plugin-react-refresh',
-    ],
-  }
-}
+  };
+};

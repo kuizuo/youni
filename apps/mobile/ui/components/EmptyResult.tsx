@@ -1,4 +1,5 @@
-import { Paragraph, YStack } from '@/ui'
+import { Heading } from '@gluestack-ui/themed'
+import { View } from '@/ui'
 
 interface Props {
   title: string | undefined
@@ -12,10 +13,10 @@ export function EmptyResult({
   image,
 }: Props): React.ReactElement {
   return (
-    <YStack flex={1} jc="center" ai="center" p="$6" gap="$3">
+    <View className="flex-1 justify-center items-center p-6 gap-3">
       {image}
-      <Paragraph className="text-base">{title}</Paragraph>
-      {subTitle && <Paragraph fontSize={10}>{subTitle}</Paragraph>}
-    </YStack>
+      <Heading className="text-base">{title}</Heading>
+      {subTitle && <Heading>{subTitle}</Heading>}
+    </View>
   )
 }

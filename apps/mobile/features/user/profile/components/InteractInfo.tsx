@@ -1,11 +1,13 @@
-import { MessageCircle, Settings } from '@tamagui/lucide-icons'
+import { MessageCircle, Settings } from 'lucide-react-native'
 import { Link } from 'expo-router'
 import type { UserInfo } from '@server/modules/user/user'
 import { BlurView } from 'expo-blur'
-import { Button, Text, View, XStack, useTheme } from '@/ui'
+import { Button, View, useTheme } from '@/ui'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useUser } from '@/utils/auth/hooks/useUser'
+import { Text } from '@/components/ui/text'
+import { HStack } from '@/components/ui/hstack'
 
 interface Props {
   user: UserInfo
@@ -59,7 +61,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
   }
 
   return (
-    <View className="flex-row bg-background" gap="$4" mx="$4" marginBottom="$3" ai="center">
+    <View className="flex-row bg-background gap-4 mx-4 mb-3 items-center">
       <Link
         href={{
           pathname: '/user/[id]/follower',
@@ -67,12 +69,12 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         }}
         asChild
       >
-        <XStack gap="$2" ai="center">
+        <HStack space="$2">
           <Text>{data?.followingCount}</Text>
           <Text fontSize="$2">
             关注
           </Text>
-        </XStack>
+        </HStack>
       </Link>
       <Link
         href={{
@@ -81,21 +83,21 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         }}
         asChild
       >
-        <XStack gap="$2" ai="center">
+        <HStack space="$2" ai="center">
           <Text>{data?.followerCount}</Text>
           <Text fontSize="$2">
             粉丝
           </Text>
-        </XStack>
+        </HStack>
       </Link>
-      <XStack gap="$2" ai="center">
+      <HStack space="$2" ai="center">
         <Text>{data?.likesCount}</Text>
         <Text fontSize="$2">
           获赞
         </Text>
-      </XStack>
+      </HStack>
 
-      <XStack flex={1} jc="flex-end" gap="$3">
+      <HStack flex={1} jc="flex-end" gap="$3">
         {
           user.id === currentUser?.id
             ? (
@@ -111,7 +113,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
               </>
               )
         }
-      </XStack>
+      </HStack>
     </View>
   )
 }

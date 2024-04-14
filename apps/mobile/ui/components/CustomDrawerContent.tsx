@@ -1,15 +1,14 @@
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer'
-import { BadgeHelp, Highlighter, History, Settings } from '@tamagui/lucide-icons'
+import { BadgeHelp, Highlighter, History, Settings } from 'lucide-react-native'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button, Separator, Text, XStack, YStack, useTheme } from '..'
+import { Button, Divider, HStack, Text, VStack, useTheme } from '@gluestack-ui/themed'
 import { useDrawerOpen } from '@/atoms/drawer'
 
 export default function CustomDrawerContent() {
   const router = useRouter()
-  const theme = useTheme()
   const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useDrawerOpen()
 
@@ -51,13 +50,13 @@ export default function CustomDrawerContent() {
       contentContainerStyle={{
         flexGrow: 1,
       }}
-      style={{
-        backgroundColor: theme.backgroundColor?.get(),
-      }}
+      // style={{
+      //   backgroundColor: theme.backgroundColor?.get(),
+      // }}
     >
       {/* <DrawerItemList {...props} /> */}
 
-      <YStack flex={1} mx="$2">
+      <VStack flex={1} mx="$2">
 
         {drawerItems.map(({ label, icon, onPress }) => (
           <DrawerItem
@@ -68,7 +67,7 @@ export default function CustomDrawerContent() {
           />
         ))}
 
-        <Separator my={15} />
+        <Divider my={15} />
 
         <DrawerItem
           label="子项 1"
@@ -79,7 +78,7 @@ export default function CustomDrawerContent() {
           onPress={() => { }}
         />
 
-        <XStack
+        <HStack
           position="absolute"
           bottom={bottom}
           flex={1}
@@ -87,12 +86,12 @@ export default function CustomDrawerContent() {
           gap="$4"
         >
           {bottomNav.map(({ label, icon, onPress }) => (
-            <YStack
+            <VStack
               key={label}
               flex={1}
               jc="center"
               ai="center"
-              gap="$1"
+              space="$1"
               onPress={onPress}
             >
               <BlurView
@@ -112,10 +111,10 @@ export default function CustomDrawerContent() {
               <Text className="flex-1 text-center text-xs">
                 {label}
               </Text>
-            </YStack>
+            </VStack>
           ))}
-        </XStack>
-      </YStack>
+        </HStack>
+      </VStack>
     </DrawerContentScrollView>
   )
 }

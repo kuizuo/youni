@@ -1,10 +1,11 @@
 import { useCallback, useRef, useState } from 'react'
-import { Search } from '@tamagui/lucide-icons'
+import { Search } from 'lucide-react-native'
 import { useAtom } from 'jotai'
 import type { TextInput } from 'react-native'
+import { Button, Input } from '@gluestack-ui/themed'
 import { SectionList } from './components/SectionList'
 import { SearchResult } from './components/SearchResult'
-import { Button, Input, XStack, YStack } from '@/ui'
+import { View } from '@/ui'
 import { NavBar } from '@/ui/components/NavBar'
 import { searchHistoryAtom } from '@/atoms/searchHistroy'
 import { NavButton } from '@/ui/components/NavButton'
@@ -38,7 +39,7 @@ export function SearchScreen() {
   )
   function SearchBar() {
     return (
-      <XStack flex={1} gap="$1" ai="center" bg="$gray3" px="$2.5" py="$2" br={50}>
+      <View className="flex-row flex-1 gap-1 items-center bg-gray px-2.5 py-2 rounded-full">
         <Search size="$1" />
         <Input
           ref={inputRef}
@@ -55,12 +56,12 @@ export function SearchScreen() {
           unstyled
         >
         </Input>
-      </XStack>
+      </View>
     )
   }
 
   return (
-    <YStack fullscreen bg="$background">
+    <View className="flex-1 bg-background">
       <NavBar
         left={<NavButton.Back />}
         right={<Button color="gray" unstyled onPress={() => handleSubmit(trimedSearchText)}>搜索</Button>}
@@ -71,6 +72,6 @@ export function SearchScreen() {
       {!isSearched
         ? (<SectionList onPressItem={item => handleSubmit(item)} />)
         : (<SearchResult searchText={trimedSearchText}></SearchResult>)}
-    </YStack>
+    </View>
   )
 }

@@ -1,5 +1,5 @@
 import type { NoteItem } from '@server/modules/note/note'
-import { PencilLine } from '@tamagui/lucide-icons'
+import { PencilLine } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { KeyboardAvoidingView, Platform } from 'react-native'
 import { CommentModel } from '@/ui/components/comment/CommentModel'
