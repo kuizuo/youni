@@ -42,9 +42,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertTriangle, EyeIcon, EyeOffIcon } from 'lucide-react-native'
 
 import { Keyboard } from 'react-native'
-
 import GuestLayout from '../../layouts/GuestLayout'
-import { FacebookIcon, GoogleIcon } from './assets/Icons/Social'
+import { GoogleIcon, QQIcon, WechatIcon } from './assets/Icons/Social'
+import { NavButton } from '@/ui/components/NavButton'
 
 const signUpSchema = z.object({
   email: z.string().min(1, 'Email is required').email(),
@@ -87,7 +87,7 @@ function SideContainerWeb() {
         w="$80"
         alt="gluestack-ui Pro"
         resizeMode="contain"
-        source={require('./assets/images/gluestackUiProLogo_web_light.svg')}
+        source={require('./assets/images/logo.svg')}
       />
     </Center>
   )
@@ -96,26 +96,20 @@ function MobileHeader() {
   return (
     <VStack px="$3" mt="$4.5" mb="$5" space="md">
       <HStack space="md" alignItems="center">
-        <Link href="/">
-          <Icon
-            as={ArrowLeftIcon}
-            color="$textLight50"
-            sx={{ _dark: { color: '$textDark50' } }}
-          />
-        </Link>
+        <NavButton.Back />
         <Text
           color="$textLight50"
           sx={{ _dark: { color: '$textDark50' } }}
           fontSize="$lg"
         >
-          Sign Up
+          注册
         </Text>
       </HStack>
       <VStack space="xs" ml="$1" my="$4">
         <Heading color="$textLight50" sx={{ _dark: { color: '$textDark50' } }}>
-          Welcome
+          Youni
         </Heading>
-        <Text
+        {/* <Text
           color="$primary300"
           fontSize="$md"
           sx={{
@@ -124,8 +118,8 @@ function MobileHeader() {
             },
           }}
         >
-          Sign up to continue
-        </Text>
+          注册
+        </Text> */}
       </VStack>
     </VStack>
   )
@@ -163,7 +157,7 @@ function SignUpForm() {
         render: ({ id }) => {
           return (
             <Toast nativeID={id} action="error">
-              <ToastTitle>Passwords do not match</ToastTitle>
+              <ToastTitle>密码不正确</ToastTitle>
             </Toast>
           )
         },
@@ -212,7 +206,7 @@ function SignUpForm() {
             render={({ field: { onChange, onBlur, value } }) => (
               <Input>
                 <InputField
-                  placeholder="Email"
+                  placeholder="邮箱"
                   fontSize="$sm"
                   type="text"
                   value={value}
@@ -253,7 +247,7 @@ function SignUpForm() {
               <Input>
                 <InputField
                   fontSize="$sm"
-                  placeholder="Password"
+                  placeholder="密码"
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -296,7 +290,7 @@ function SignUpForm() {
             render={({ field: { onChange, onBlur, value } }) => (
               <Input>
                 <InputField
-                  placeholder="Confirm Password"
+                  placeholder="确认密码"
                   fontSize="$sm"
                   value={value}
                   onChangeText={onChange}
@@ -343,7 +337,7 @@ function SignUpForm() {
                 },
               }}
             >
-              I accept the
+              我接受
               {' '}
               <Link href="#">
                 <LinkText
@@ -356,7 +350,7 @@ function SignUpForm() {
                     },
                   }}
                 >
-                  Terms of Use
+                  使用条款
                 </LinkText>
               </Link>
               {' '}
@@ -373,7 +367,7 @@ function SignUpForm() {
                     },
                   }}
                 >
-                  Privacy Policy
+                  隐私政策
                 </LinkText>
               </Link>
             </CheckboxLabel>
@@ -386,7 +380,7 @@ function SignUpForm() {
         mt="$5"
         onPress={handleSubmit(onSubmit)}
       >
-        <ButtonText fontSize="$sm"> SIGN UP</ButtonText>
+        <ButtonText fontSize="$sm">注册</ButtonText>
       </Button>
     </>
   )
@@ -425,7 +419,7 @@ function SignUpFormComponent() {
             '@md': { display: 'flex', fontSize: '$2xl' },
           }}
         >
-          Sign up to continue
+          注册
         </Heading>
         <SignUpForm />
         <HStack my="$4" space="md" alignItems="center" justifyContent="center">
@@ -460,13 +454,18 @@ function SignUpFormComponent() {
           space="lg"
         >
           <Link href="#">
-            <Button action="secondary" variant="link" onPress={() => {}}>
-              <ButtonIcon as={FacebookIcon} size="md" />
+            <Button action="secondary" variant="link" onPress={() => { }}>
+              <ButtonIcon as={WechatIcon} size="lg" />
             </Button>
           </Link>
           <Link href="#">
-            <Button action="secondary" variant="link" onPress={() => {}}>
-              <ButtonIcon as={GoogleIcon} size="md" />
+            <Button action="secondary" variant="link" onPress={() => { }}>
+              <ButtonIcon as={QQIcon} size="lg" />
+            </Button>
+          </Link>
+          <Link href="#">
+            <Button action="secondary" variant="link" onPress={() => { }}>
+              <ButtonIcon as={GoogleIcon} size="lg" />
             </Button>
           </Link>
         </HStack>
@@ -485,10 +484,10 @@ function SignUpFormComponent() {
             }}
             fontSize="$sm"
           >
-            Already have an account?
+            已有账户?
           </Text>
           <Link href="/login">
-            <LinkText fontSize="$sm">Sign In</LinkText>
+            <LinkText fontSize="$sm">登录</LinkText>
           </Link>
         </HStack>
       </Box>

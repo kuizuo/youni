@@ -46,7 +46,7 @@ model User {
   username               String         @unique() @db.VarChar(80)
   password               String         @db.VarChar(80)
   /// @zod.string.url()
-  avatar                 String?        @db.VarChar(1024)
+  avatar                 String         @db.VarChar(1024)
   /// @zod.string.email()
   email                  String?        @unique() @db.VarChar(80)
   nickname               String         @default("") @db.VarChar(50)

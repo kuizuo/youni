@@ -1,25 +1,25 @@
 import React, { useRef, useState } from 'react'
 import {
-  VStack,
+  ArrowLeftIcon,
   Box,
-  HStack,
-  Icon,
-  Text,
   Button,
-  Image,
+  ButtonText,
   Center,
   FormControl,
-  Input,
-  LinkText,
-  FormControlHelperText,
-  InputField,
-  ButtonText,
-  ArrowLeftIcon,
   FormControlError,
   FormControlErrorIcon,
   FormControlErrorText,
-  useToast,
+  FormControlHelperText,
+  HStack,
   Heading,
+  Icon,
+  Image,
+  Input,
+  InputField,
+  LinkText,
+  Text,
+  VStack,
+  useToast,
 } from '@gluestack-ui/themed'
 
 import { Link } from 'solito/link'
@@ -30,9 +30,8 @@ import { z } from 'zod'
 
 import { AlertTriangle } from 'lucide-react-native'
 
-import GuestLayout from '../../layouts/GuestLayout'
-
 import { useRouter } from 'solito/router'
+import GuestLayout from '../../layouts/GuestLayout'
 
 interface PinInputProps {
   refList: React.RefObject<HTMLInputElement>[]
@@ -54,7 +53,7 @@ function PinInput({
       {Array.from({ length: 6 }, (_, index) => (
         <Input key={index} variant="outline" w={14} size="md">
           <InputField
-            //@ts-ignore
+            // @ts-expect-error
             ref={refList[index]}
             placeholder=""
             borderBottomColor={
@@ -68,7 +67,7 @@ function PinInput({
               '@lg': {
                 w: '$25/2',
               },
-              _dark: {
+              '_dark': {
                 bgColor: '$backgroundDark400',
                 borderBottomColor:
                   focusedIndex === index ? '$primary500' : '$borderDark100',
@@ -82,7 +81,8 @@ function PinInput({
               if (text.length === 1 && index < 5) {
                 refList[index + 1].current?.focus()
                 setInputFocus(index + 1)
-              } else if (text.length === 0 && index > 0) {
+              }
+              else if (text.length === 0 && index > 0) {
                 refList[index - 1].current?.focus()
               }
 
@@ -137,7 +137,7 @@ function SideContainerWeb() {
         w="$80"
         alt="gluestack-ui Pro"
         resizeMode="contain"
-        source={require('./assets/images/gluestackUiProLogo_web_light.svg')}
+        source={require('./assets/images/logo.svg')}
       />
     </Center>
   )
@@ -161,7 +161,7 @@ function MainText() {
             '@md': {
               pb: '$12',
             },
-            _dark: {
+            '_dark': {
               color: '$textDark400',
             },
           }}
@@ -178,7 +178,9 @@ function MainText() {
             }}
             fontSize="$sm"
           >
-            {} 87******47
+            {}
+            {' '}
+            87******47
           </Text>
         </Text>
       </HStack>
@@ -210,7 +212,7 @@ function AccountLink() {
         Already have an account?
       </Text>
       <Link href="/login">
-        <LinkText fontSize="$sm">Sign In</LinkText>
+        <LinkText fontSize="$sm">登录</LinkText>
       </Link>
     </HStack>
   )
@@ -227,7 +229,8 @@ function ResendLink() {
         }}
         fontSize="$sm"
       >
-        Didn't receive the OTP?{' '}
+        Didn't receive the OTP?
+        {' '}
       </Text>
       <Link href="#">
         <LinkText fontSize="$sm">RESEND OTP</LinkText>
@@ -277,9 +280,9 @@ export default function OtpVerification() {
     toast.show({
       placement: 'bottom right',
       render: ({ id }) => {
-        const pinValues = refList.map((ref) => ref?.current?.value)
+        const pinValues = refList.map(ref => ref?.current?.value)
         const pin = pinValues.join('')
-        const Count = otpInput.filter((value) => value !== '').length
+        const Count = otpInput.filter(value => value !== '').length
 
         if (Count < 6) {
           setValidationError('OTP must be at least 6 characters in length')
@@ -325,7 +328,7 @@ export default function OtpVerification() {
           '@md': {
             p: '$8',
           },
-          _dark: {
+          '_dark': {
             bg: '$backgroundDark800',
           },
         }}

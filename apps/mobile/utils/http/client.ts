@@ -1,9 +1,8 @@
 import axios from 'axios'
 import type { AxiosError } from 'axios'
 import { useRouter } from 'expo-router'
-import { getToken, removeToken } from '../auth/util'
+import { getToken, removeToken } from '../auth/utils'
 import { getApiUrl } from '../api'
-import { useToastController } from '@/ui'
 
 export const client = axios.create({
   baseURL: getApiUrl(),
@@ -24,7 +23,14 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => {
     // transform data
-    return response.data
+    const data = response.data
+
+    const { code, data: result, message } = data
+    const hasSuccess = data && Reflect.has(data, 'code') && code === 0
+    if (hasSuccess)
+      return result
+
+    throw new Error(message)
   },
   (error: AxiosError) => {
     if (!error.response)
@@ -42,8 +48,7 @@ client.interceptors.response.use(
     const data: any = res.data || {}
     if (typeof data.code === 'number') {
       if (!error.config?.ignoreBizError) {
-        const toast = useToastController()
-        toast.show(data.message)
+        // ...
       }
     }
 

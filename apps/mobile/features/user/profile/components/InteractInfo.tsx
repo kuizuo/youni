@@ -5,7 +5,7 @@ import { BlurView } from 'expo-blur'
 import { Button, View, useTheme } from '@/ui'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 import { Text } from '@/components/ui/text'
 import { HStack } from '@/components/ui/hstack'
 
@@ -17,7 +17,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
   const theme = useTheme()
   const { data } = trpc.interact.state.useQuery({ id: user.id })
 
-  const { currentUser } = useUser()
+  const { currentUser } = useAuth()
 
   const EditProfileButton = () => {
     return (

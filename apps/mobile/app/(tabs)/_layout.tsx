@@ -1,14 +1,15 @@
-import { Tabs, useRouter } from 'expo-router'
+import { Redirect, Tabs, useRouter } from 'expo-router'
 import { Avatar, AvatarFallbackText, AvatarImage, Pressable, View, useToken } from '@gluestack-ui/themed'
 import { Clover, Home, MessageCircleMore, Plus } from 'lucide-react-native'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 
 export default function TabLayout() {
   const primaryColor = useToken('colors', 'primary500')
-  const { currentUser, isLoading } = useUser()
 
-  if (isLoading)
-    return <></>
+  const { isLogged, currentUser } = useAuth()
+
+  if (!isLogged)
+    return <Redirect href="/login" />
 
   return (
     <Tabs
@@ -60,7 +61,7 @@ export default function TabLayout() {
           href: {
             pathname: '/me',
             params: {
-              id: currentUser?.id,
+              id: currentUser.id,
             },
           },
           title: '我',
@@ -68,13 +69,13 @@ export default function TabLayout() {
             return (
               <View borderWidth={1} borderColor={color} borderRadius="$full">
                 <Avatar h={size} w={size}>
-                  <AvatarFallbackText>{currentUser?.nickname}</AvatarFallbackText>
-                  {/* <AvatarImage
+                  <AvatarFallbackText>{currentUser.nickname}</AvatarFallbackText>
+                  <AvatarImage
                     source={{
-                      uri: currentUser?.avatar,
+                      uri: currentUser.avatar,
                     }}
                     alt="avatar"
-                  /> */}
+                  />
                 </Avatar>
               </View>
             )
@@ -87,7 +88,7 @@ export default function TabLayout() {
 
 function PlusButton({ size }: { size: number }) {
   const router = useRouter()
-  const { isSignined } = useUser()
+  const { isLogged } = useAuth()
 
   return (
     <>
@@ -99,7 +100,7 @@ function PlusButton({ size }: { size: number }) {
         w={size + 24}
         h={size + 14}
         onPress={() => {
-          if (!isSignined) {
+          if (!isLogged) {
             router.replace('/login')
             return
           }

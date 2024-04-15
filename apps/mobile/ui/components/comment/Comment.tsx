@@ -8,7 +8,7 @@ import { trpc } from '@/utils/trpc'
 import { Avatar, Separator, SizableText, Spinner, Text, View, XStack, YStack, useTheme } from '@/ui'
 import { formatTime } from '@/utils/date'
 import { newCommentsAtom, useCurrentNote } from '@/atoms/comment'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 
 export function CommentList() {
   const [note, _] = useCurrentNote()
@@ -84,7 +84,7 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
   const [note, _] = useCurrentNote()
 
   const newComments = useAtomValue(newCommentsAtom)
-  const { currentUser } = useUser()
+  const { currentUser } = useAuth()
   const theme = useTheme()
 
   const { isFetching, hasNextPage, fetchNextPage } = trpc.comment.subPage.useInfiniteQuery({

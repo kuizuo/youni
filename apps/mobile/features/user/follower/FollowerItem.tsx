@@ -2,10 +2,10 @@ import { useRouter } from 'expo-router'
 import type { UserInfoWithFollow } from '@server/modules/interact/interact'
 import { Avatar, SizableText, XStack, YStack } from '@/ui'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 
 export function FollowerListItem(item: UserInfoWithFollow): React.ReactElement {
-  const { currentUser } = useUser()
+  const { currentUser } = useAuth()
   const router = useRouter()
 
   const handleNavigateToUser = () => {

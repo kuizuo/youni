@@ -186,7 +186,7 @@ export default function CreatePassword() {
           h="$10"
           alt="gluestack-ui Pro"
           resizeMode="contain"
-          source={require('./assets/images/gluestackUiProLogo_web_light.svg')}
+          source={require('./assets/images/logo.svg')}
         />
       </Center>
     )

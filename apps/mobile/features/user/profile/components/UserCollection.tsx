@@ -7,9 +7,9 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated from 'react-native-reanimated'
 import { Tabs } from 'react-native-collapsible-tab-view'
-import { Spinner } from "@gluestack-ui/themed"
+import { Spinner } from '@gluestack-ui/themed'
 import { trpc } from '@/utils/trpc'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 import { NoteListItem } from '@/ui/components/note/NoteListItem'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 
@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function NoteList({ userId, contentContainerStyle }: Props) {
-  const { currentUser } = useUser()
+  const { currentUser } = useAuth()
 
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.userCollectNotes.useSuspenseInfiniteQuery(
     {

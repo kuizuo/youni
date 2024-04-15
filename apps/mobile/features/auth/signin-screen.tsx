@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import {
-  ArrowLeftIcon,
   Box,
   Button,
   ButtonIcon,
@@ -45,20 +44,21 @@ import { Keyboard } from 'react-native'
 import { AlertTriangle, EyeIcon, EyeOffIcon } from 'lucide-react-native'
 
 import GuestLayout from '../../layouts/GuestLayout'
-import { FacebookIcon, GoogleIcon } from './assets/Icons/Social'
+import { GoogleIcon, QQIcon, WechatIcon } from './assets/Icons/Social'
+import { useAuth } from '@/utils/auth'
 
 const signInSchema = z.object({
-  email: z.string().min(1, 'Email is required').email(),
+  email: z.string().min(1, '账号必填'), // .email({ message: '无效的邮箱格式' }),
   password: z
     .string()
-    .min(6, 'Must be at least 8 characters in length')
-    .regex(new RegExp('.*[A-Z].*'), 'One uppercase character')
-    .regex(new RegExp('.*[a-z].*'), 'One lowercase character')
-    .regex(new RegExp('.*\\d.*'), 'One number')
-    .regex(
-      new RegExp('.*[`~<>?,./!@#$%^&*()\\-_+="\'|{}\\[\\];:\\\\].*'),
-      'One special character',
-    ),
+    .min(6, '长度必须至少为6个字符'),
+  // .regex(new RegExp('.*[A-Z].*'), 'One uppercase character')
+  // .regex(new RegExp('.*[a-z].*'), 'One lowercase character')
+  // .regex(new RegExp('.*\\d.*'), 'One number')
+  // .regex(
+  //   new RegExp('.*[`~<>?,./!@#$%^&*()\\-_+="\'|{}\\[\\];:\\\\].*'),
+  //   'One special character',
+  // ),
   rememberme: z.boolean().optional(),
 })
 
@@ -77,14 +77,35 @@ function SignInForm() {
 
   const router = useRouter()
   const toast = useToast()
+  const { login: { mutateAsync: loginApi } } = useAuth()
 
-  const onSubmit = (_data: SignInSchemaType) => {
+  const onSubmit = async (_data: SignInSchemaType) => {
+    try {
+      await loginApi({
+        username: _data.email,
+        password: _data.password,
+      })
+    }
+    catch (error) {
+      toast.show({
+        placement: 'top right',
+        render: ({ id }) => {
+          return (
+            <Toast nativeID={id} variant="accent" action="error">
+              <ToastTitle>{error.message}</ToastTitle>
+            </Toast>
+          )
+        },
+      })
+      return
+    }
+
     toast.show({
-      placement: 'bottom right',
+      placement: 'top right',
       render: ({ id }) => {
         return (
           <Toast nativeID={id} variant="accent" action="success">
-            <ToastTitle>Signed in successfully</ToastTitle>
+            <ToastTitle>登录成功</ToastTitle>
           </Toast>
         )
       },
@@ -132,7 +153,7 @@ function SignInForm() {
               <Input>
                 <InputField
                   fontSize="$sm"
-                  placeholder="Email"
+                  placeholder="账户/邮箱"
                   type="text"
                   value={value}
                   onChangeText={onChange}
@@ -173,7 +194,7 @@ function SignInForm() {
               <Input>
                 <InputField
                   fontSize="$sm"
-                  placeholder="Password"
+                  placeholder="密码"
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -199,7 +220,7 @@ function SignInForm() {
       </VStack>
       <Link href="/forgot-password">
         <LinkText fontSize="$xs" ml="auto">
-          Forgot password?
+          忘记密码?
         </LinkText>
       </Link>
       <Controller
@@ -218,7 +239,7 @@ function SignInForm() {
             <CheckboxIndicator mr="$2">
               <CheckboxIcon as={CheckIcon} />
             </CheckboxIndicator>
-            <CheckboxLabel>Remember me and keep me logged in</CheckboxLabel>
+            <CheckboxLabel>记住密码</CheckboxLabel>
           </Checkbox>
         )}
       />
@@ -228,7 +249,7 @@ function SignInForm() {
         mt="$5"
         onPress={handleSubmit(onSubmit)}
       >
-        <ButtonText fontSize="$sm"> SIGN IN</ButtonText>
+        <ButtonText fontSize="$sm"> 登录</ButtonText>
       </Button>
     </>
   )
@@ -244,11 +265,11 @@ function SideContainerWeb() {
       }}
     >
       <Image
-        w="$80"
+        w="$10"
         h="$10"
         resizeMode="contain"
-        source={require('./assets/images/gluestackUiProLogo_web_light.svg')}
-        alt="gluestack ui pro logo"
+        source={require('./assets/images/logo.svg')}
+        alt="logo"
       />
     </Center>
   )
@@ -257,25 +278,18 @@ function SideContainerWeb() {
 function MobileHeader() {
   return (
     <VStack px="$3" mt="$4.5" space="md">
-      <HStack space="md" alignItems="center">
-        <Pressable onPress={() => { }}>
-          <Icon
-            as={ArrowLeftIcon}
-            color="$textLight50"
-            sx={{ _dark: { color: '$textDark50' } }}
-          />
-        </Pressable>
+      {/* <HStack space="md" alignItems="center">
         <Text
           color="$textLight50"
           sx={{ _dark: { color: '$textDark50' } }}
           fontSize="$lg"
         >
-          Sign In
+          登录
         </Text>
-      </HStack>
+      </HStack> */}
       <VStack space="xs" ml="$1" my="$4">
         <Heading color="$textLight50" sx={{ _dark: { color: '$textDark50' } }}>
-          Welcome back
+          Youni
         </Heading>
         <Text
           fontSize="$md"
@@ -285,7 +299,7 @@ function MobileHeader() {
             _dark: { color: '$textDark400' },
           }}
         >
-          Sign in to continue
+          登录
         </Text>
       </VStack>
     </VStack>
@@ -324,7 +338,7 @@ function Main() {
             '@md': { display: 'flex', fontSize: '$2xl' },
           }}
         >
-          Sign in to continue
+          登录
         </Heading>
         <SignInForm />
         <HStack my="$4" space="md" alignItems="center" justifyContent="center">
@@ -360,12 +374,17 @@ function Main() {
         >
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={FacebookIcon} size="md" />
+              <ButtonIcon as={WechatIcon} size="lg" />
             </Button>
           </Link>
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={GoogleIcon} size="md" />
+              <ButtonIcon as={QQIcon} size="md" />
+            </Button>
+          </Link>
+          <Link href="#">
+            <Button action="secondary" variant="link" onPress={() => { }}>
+              <ButtonIcon as={GoogleIcon} size="lg" />
             </Button>
           </Link>
         </HStack>
@@ -380,10 +399,10 @@ function Main() {
             fontSize="$sm"
             sx={{ _dark: { color: '$textDark400' } }}
           >
-            Don't have an account?
+            没有账户?
           </Text>
           <Link href="/signup">
-            <LinkText fontSize="$sm">Sign up</LinkText>
+            <LinkText fontSize="$sm">注册</LinkText>
           </Link>
         </HStack>
       </Box>

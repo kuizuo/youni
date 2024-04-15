@@ -13,12 +13,10 @@ import { UserNote } from './components/UserNote'
 import { UserCollection } from './components/UserCollection'
 import { UserLiked } from './components/UserLiked'
 import { Avatar, Image, Text, View, XStack, YStack, useTheme, useWindowDimensions } from '@/ui'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
-
-
 
 const TAB_BAR_HEIGHT = 32
 const TAB_VIEW_MARGIN_TOP = -1
@@ -43,9 +41,9 @@ export function ProfileScreen() {
 
   const contentContainerStyle = {
     minHeight: window.height
-      - navBarHeight
-      + headerHeight
-      + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
+    - navBarHeight
+    + headerHeight
+    + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
     // paddingTop: headerHeight ? headerHeight + TAB_BAR_HEIGHT : 0,
   }
 
@@ -145,7 +143,7 @@ export function ProfileScreen() {
 
               <Image
                 source={require('../../../assets/images/profile-background.png')}
-                className='h-full'
+                className="h-full"
                 style={[
                   { width },
                   Platform.OS === 'web' && { height: bannerHeight.value },
@@ -176,7 +174,7 @@ export function ProfileScreen() {
                   />
                   <Avatar.Fallback />
                 </Avatar>
-                <Text className='text-base opacity-70'>
+                <Text className="text-base opacity-70">
                   {data?.nickname}
                 </Text>
               </View>
@@ -187,7 +185,7 @@ export function ProfileScreen() {
         {/* 用户头像 */}
         <Animated.View className="px-2" style={[rootProfileRowZIndexStyle]}>
           <Animated.View
-            className={`absolute left-3 right-3 flex flex-row justify-between items-end gap-3`}
+            className="absolute left-3 right-3 flex flex-row justify-between items-end gap-3"
             style={[
               {
                 left: Math.max(left, ROOT_HORIZONTAL_PADDING),
@@ -219,7 +217,7 @@ export function ProfileScreen() {
                       width={20}
                       height={20}
                     />
-                  )
+                    )
                   : <></>}
               </View>
               <Text className="text-lg">{' '}</Text>
@@ -231,7 +229,7 @@ export function ProfileScreen() {
   }
 
   const HeaderComponent = () => {
-    const { currentUser } = useUser()
+    const { currentUser } = useAuth()
     const route = useRoute()
     const isMe = route.name === 'me'
 

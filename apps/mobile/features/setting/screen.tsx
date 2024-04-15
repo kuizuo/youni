@@ -1,16 +1,16 @@
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+wimport { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ChevronRight } from 'lucide-react-native'
 import { Button, ListItem, ScrollView, Separator, SizableText, Text, View, YGroup } from '@/ui'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
-import { removeToken } from '@/utils/auth/util'
+import { removeToken } from '@/utils/auth/utils'
 import { useAuth } from '@/utils/auth/hooks/useAuth'
 
 export function SettingScreen() {
   const router = useRouter()
   const { bottom } = useSafeAreaInsets()
-  const { isSignined } = useUser()
+  const { isSignined } = useAuth()
 
   const renderItem = ({ item }: { item: string }) => (
     <YGroup.Item>

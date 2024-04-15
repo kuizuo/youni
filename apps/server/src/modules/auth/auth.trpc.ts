@@ -23,7 +23,10 @@ export class AuthTrpcRouter implements OnModuleInit {
 
   private createRouter() {
     const procedureAuth = this.trpcService.procedureAuth
+    const procedure = this.trpcService.procedure
     return defineTrpcRouter('auth', {
+      // login: procedure.input({}).mutation(async (opt) => {
+      // }),
       logout: procedureAuth
         .input(z.undefined())
         .mutation(async (opt) => {

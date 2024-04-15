@@ -7,7 +7,7 @@ import { Image, SizableText, View, XStack, YStack } from '@/ui'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
 import { NavBar } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
 
 export function CampusScreen() {
@@ -63,7 +63,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
 }
 
 function GridNav() {
-  const { currentUser } = useUser()
+  const { currentUser } = useAuth()
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
 
   // TODO: 当所选校区与用户所在校区一致显示

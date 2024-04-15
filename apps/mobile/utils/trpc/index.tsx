@@ -3,7 +3,7 @@ import { AppRouter } from '@server/shared/trpc/trpc.instance'
 import { createTRPCReact } from '@trpc/react-query'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
-import { getToken } from '../auth/util'
+import { getToken } from '../auth/utils'
 import { getApiUrl } from '../api'
 
 export const trpc = createTRPCReact<AppRouter>()

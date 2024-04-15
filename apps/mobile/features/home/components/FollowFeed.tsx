@@ -6,13 +6,13 @@ import { EmptyResult } from '@/ui/components/EmptyResult'
 import { Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { UserNoteList } from '@/ui/components/user/UserNoteList'
-import { useUser } from '@/utils/auth/hooks/useUser'
 import { withQuerySuspense } from '@/ui/components/QuerySuspense'
+import { useAuth } from '@/utils/auth'
 
 const FollowFeed = memo(() => {
-  const { currentUser } = useUser()
+  const { currentUser } = useAuth()
 
-  const [data] = trpc.interact.state.useSuspenseQuery({ id: currentUser?.id }, {
+  const [data] = trpc.interact.state.useSuspenseQuery({ id: currentUser.id }, {
     useErrorBoundary: true,
   })
 

@@ -5,7 +5,7 @@ import type { NoteItem } from '@server/modules/note/note'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { Avatar, Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
-import { useUser } from '@/utils/auth/hooks/useUser'
+import { useAuth } from '@/utils/auth'
 import { NoteMenu } from '@/ui/components/note/NoteMenu'
 import { NavBar } from '@/ui/components/NavBar'
 import { NoteShareButton } from '@/ui/components/note/NoteShareButton'
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function NoteHeader({ user, item }: Props): React.ReactNode {
-  const { currentUser } = useUser()
+  const { currentUser } = useAuth()
 
   const { data: isFollowing } = trpc.interact.isFollowing.useQuery({ id: user.id! }, { enabled: !!user.id })
 

@@ -57,7 +57,7 @@ function Header() {
         fontSize="$lg"
         sx={{ _dark: { color: '$textDark50' } }}
       >
-        Forgot Password
+        忘记密码
       </Text>
     </HStack>
   )
@@ -227,7 +227,7 @@ export default function ForgotPassword() {
                 },
               }}
             >
-              Forgot Password?
+              忘记密码?
             </Heading>
 
             <Text

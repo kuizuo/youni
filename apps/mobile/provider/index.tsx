@@ -1,6 +1,5 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet'
-import { AuthProvider } from './auth'
 import { SafeAreaProvider } from './safe-area'
 import { ThemeProvider } from './theme'
 import { JotaiProvider } from './jotai'
@@ -15,9 +14,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
           <ThemeProvider>
             <ActionSheetProvider>
               <JotaiProvider>
-                <AuthProvider>
-                  <TRPCProvider>{children}</TRPCProvider>
-                </AuthProvider>
+                <TRPCProvider>{children}</TRPCProvider>
               </JotaiProvider>
             </ActionSheetProvider>
           </ThemeProvider>
