@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { Avatar, SizableText, View, XStack, YStack } from '@/ui'
+import { Avatar, AvatarImage, HStack, Text, View } from '@gluestack-ui/themed'
+import { Pressable } from 'react-native'
 
 interface Props {
   title: string
@@ -10,28 +11,25 @@ interface Props {
 
 export function NotificationItem({ title, desc, image, onPress }: Props): ReactNode {
   return (
-    <View className="p-3 gap-3 h-8 items-center" onPress={onPress}>
-      <Avatar circular size="$5">
-        <Avatar.Image
-          width="100%"
-          height="100%"
+    <Pressable className="p-3 gap-3 h-8 items-center" onPress={onPress}>
+      <Avatar size="lg">
+        <AvatarImage
           source={{
             uri: image,
           }}
         />
-        <Avatar.Fallback />
       </Avatar>
-      <YStack flex={1}>
-        <XStack gap="$2">
-          <SizableText size="$4">
+      <View flex={1}>
+        <HStack gap="$2">
+          <Text size="md">
             {title}
-          </SizableText>
-        </XStack>
+          </Text>
+        </HStack>
 
-        <SizableText size="$1" color="gray">
+        <Text size="sm" color="gray">
           {desc}
-        </SizableText>
-      </YStack>
-    </View>
+        </Text>
+      </View>
+    </Pressable>
   )
 }

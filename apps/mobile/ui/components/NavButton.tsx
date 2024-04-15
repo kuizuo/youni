@@ -9,10 +9,10 @@ interface IconProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xs' | undefined
   color?: string
   onPress?: (ev: any) => void
-  style: ViewStyle
+  style?: ViewStyle
 }
 
-function BackButton({ size = 'md', color, onPress, ...props }: IconProps) {
+function BackButton({ size = 'xl', color, onPress, ...props }: IconProps) {
   const router = useRouter()
 
   return (
@@ -36,7 +36,7 @@ function BackButton({ size = 'md', color, onPress, ...props }: IconProps) {
   )
 }
 
-function MenuButton({ size = 'md', color, ...props }: IconProps) {
+function MenuButton({ size = 'xl', color, ...props }: IconProps) {
   const [open, setOpen] = useDrawerOpen()
 
   return (
@@ -56,7 +56,7 @@ function MenuButton({ size = 'md', color, ...props }: IconProps) {
   )
 }
 
-function SearchButton({ size = 'md', color, ...props }: IconProps) {
+function SearchButton({ size = 'xl', color, ...props }: IconProps) {
   const router = useRouter()
   return (
     <Icon

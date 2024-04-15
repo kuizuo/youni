@@ -1,9 +1,26 @@
-import type { ReactNode } from 'react'
-import { AlertDialog, Button, XStack, YStack } from '..'
+import { useState } from 'react'
+import {
+  AlertDialog,
+  AlertDialogBackdrop,
+  AlertDialogBody,
+  AlertDialogCloseButton,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  Button,
+  ButtonGroup,
+  ButtonText,
+  Center,
+  CloseIcon,
+  Heading,
+  Icon,
+  Text,
+} from '@gluestack-ui/themed'
 
 interface Props {
-  children: ReactNode
+  children: React.ReactNode
   title: string
+  content?: string
   cancelText?: string
   okText?: string
   onOk: () => void
@@ -12,55 +29,64 @@ interface Props {
 export function CustomDialog({
   children,
   title,
+  content,
   cancelText = '取消',
   okText = '确认',
   onOk,
 }: Props) {
+  const [showAlertDialog, setShowAlertDialog] = useState(false)
+
   return (
-    <AlertDialog>
-      <AlertDialog.Trigger asChild>
+    <>
+      <Button size="xs" onPress={() => setShowAlertDialog(true)}>
         {children}
-      </AlertDialog.Trigger>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay
-          key="overlay"
-          animation="quick"
-          opacity={0.5}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-        />
-        <AlertDialog.Content
-          bordered
-          elevate
-          key="content"
-          animation={[
-            'quick',
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
-          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          x={0}
-          scale={1}
-          opacity={1}
-          y={0}
-        >
-          <YStack gap="$4" minWidth="80%">
-            <AlertDialog.Title size="$4">{title}</AlertDialog.Title>
-            <XStack gap="$3" jc="flex-end">
-              <AlertDialog.Cancel asChild>
-                <Button size="$2">{cancelText}</Button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action asChild>
-                <Button size="$2" theme="red" onPress={onOk}>{okText}</Button>
-              </AlertDialog.Action>
-            </XStack>
-          </YStack>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog>
+      </Button>
+      <AlertDialog
+        isOpen={showAlertDialog}
+        onClose={() => {
+          setShowAlertDialog(false)
+        }}
+      >
+        <AlertDialogBackdrop />
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <Heading size="lg">{title}</Heading>
+            <AlertDialogCloseButton>
+              <Icon as={CloseIcon} />
+            </AlertDialogCloseButton>
+          </AlertDialogHeader>
+          {content && (
+            <AlertDialogBody>
+              <Text size="sm">
+                {content}
+              </Text>
+            </AlertDialogBody>
+          )}
+          <AlertDialogFooter>
+            <ButtonGroup space="lg">
+              <Button
+                variant="outline"
+                action="secondary"
+                onPress={() => {
+                  setShowAlertDialog(false)
+                }}
+              >
+                <ButtonText>{cancelText}</ButtonText>
+              </Button>
+              <Button
+                bg="$error600"
+                action="negative"
+                onPress={() => {
+                  setShowAlertDialog(false)
+                  onOk()
+                }}
+              >
+                <ButtonText>{okText}</ButtonText>
+              </Button>
+            </ButtonGroup>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

@@ -5,19 +5,22 @@ import { useRouter } from 'expo-router'
 import type { LoginResult } from '@server/modules/auth/auth.model'
 import { client } from '../http/client'
 import { getToken, setToken } from './utils'
+import { atomWithMMKV } from '@/provider/jotai/store'
 
 export interface Credentials {
   username: string
   password: string
 }
 
-const isLoggedAtom = atom<boolean>(false)
+const userAtom = atomWithMMKV<UserProfile | null>('user', null)
+const isLoggedAtom = atomWithMMKV<boolean>('isLogged', false)
 
 export function useAuth() {
   const router = useRouter()
 
   const store = useStore()
   const [isLogged] = useAtom(isLoggedAtom)
+  const [user] = useAtom(userAtom)
 
   const login = async (_data: Credentials) => {
     const { username, password } = _data
@@ -30,35 +33,37 @@ export function useAuth() {
     store.set(isLoggedAtom, true)
 
     setToken(data.authToken)
+
+    // set user info
+
+    const userInfo = await client.get('/api/account/profile') as UserProfile
+    store.set(userAtom, userInfo)
+
     return data
   }
 
-  const {
-    data: currentUser,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => {
-      const data = await client.get('/api/account/profile') as UserProfile
-
-      return data
-    },
-    onError: (error) => {
-      console.error('Failed to fetch user profile:', error)
-      router.navigate('/login') // 当发生错误时跳转到登录页面
-    },
-    enabled: !!getToken(),
-    staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
-  })
+  // const {
+  //   data: currentUser,
+  //   isLoading,
+  //   isError,
+  //   error,
+  // } = useQuery({
+  //   queryKey: ['profile'],
+  //   queryFn: async () => {
+  //     const data = await client.get('/api/account/profile') as UserProfile
+  //     return data
+  //   },
+  //   onError: (error) => {
+  //     console.error('Failed to fetch user profile:', error)
+  //     router.navigate('/login') // 当发生错误时跳转到登录页面
+  //   },
+  //   enabled: !!getToken(),
+  //   staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
+  // })
 
   return {
     isLogged,
-    currentUser: currentUser!,
-    isLoading,
-    isError,
-    error,
+    currentUser: user!,
     login: useMutation({
       mutationFn: login,
     }),

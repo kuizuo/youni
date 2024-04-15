@@ -1,6 +1,7 @@
 import Carousel from 'react-native-reanimated-carousel'
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
-import { Image, View, useTheme, useWindowDimensions } from '@/ui'
+import { useWindowDimensions } from 'react-native'
+import { HStack, Image, View, useToken } from '@gluestack-ui/themed'
 import { window } from '@/constant'
 
 interface Props {
@@ -14,12 +15,17 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
   const progressValue = useSharedValue<number>(0)
   const { width: windowWidth } = useWindowDimensions()
 
+  const imageWidth = width ?? windowWidth
+  const imageHeight = height ?? window.width / 2
+
   return (
     <>
       <Carousel
-        width={width ?? windowWidth}
-        height={height ?? window.width / 2}
-        className="w-full bg-background"
+        width={imageWidth}
+        height={imageHeight}
+        style={{
+          width: '100%',
+        }}
         loop={false}
         pagingEnabled={false}
         overscrollEnabled={false}
@@ -29,16 +35,15 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
         data={data}
         renderItem={({ item }) => (
           <Image
-            // @ts-expect-error
-            source={{ uri: item, width: '100%', height: '100%' }}
-            resizeMode="cover"
+            w={imageWidth}
+            h={imageHeight}
+            source={{ uri: item }}
+            alt="image"
           />
         )}
       />
       {!!progressValue && showProgress && (
-        <View
-          className="flex-row justify-center pt-2 gap-2"
-        >
+        <HStack m="$2" justifyContent="center" gap="$2">
           {data?.map((_, index) => {
             return (
               <PaginationItem
@@ -51,7 +56,7 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
               />
             )
           })}
-        </View>
+        </HStack>
       )}
     </>
   )
@@ -99,10 +104,10 @@ function PaginationItem(
 
   return (
     <View
-      bg="$gray7"
+      bg="$backgroundLight800"
       width={width}
       height={width}
-      br={50}
+      borderRadius="$full"
       overflow="hidden"
       style={{
         transform: [

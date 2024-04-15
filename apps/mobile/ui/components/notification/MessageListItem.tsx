@@ -1,7 +1,7 @@
 import React from 'react'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
-import { Avatar, Image, Separator, Text, View } from '@/ui'
+import { Avatar, Divider, Image, MyText, MyView } from '@/ui'
 import { formatTime } from '@/utils/date'
 
 export function MessageListItem(item: MessageItem): React.ReactNode {
@@ -64,8 +64,8 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
   return (
     <>
       <View className="flex-row items-center p-3 gap-3">
-        <Avatar circular size="$4" onPress={handleNavigateToUser}>
-          <Avatar.Image
+        <Avatar borderRadius="$full" size="$4" onPress={handleNavigateToUser}>
+          <AvatarImage
             // @ts-expect-error
             source={{
               uri: item.sender.avatar,
@@ -73,9 +73,9 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
               height: '100%',
             }}
           />
-          <Avatar.Fallback />
+
         </Avatar>
-        <View className="flex-1">
+        <View flex={1}>
           <MessageTitle></MessageTitle>
 
           {item.content && <Text>{item.content}</Text>}
@@ -95,7 +95,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
           />
         )}
       </View>
-      <Separator />
+      <Divider />
     </>
   )
 }

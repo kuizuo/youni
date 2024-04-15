@@ -90,8 +90,10 @@ function SignInForm() {
       toast.show({
         placement: 'top right',
         render: ({ id }) => {
+          const toastId = `toast-${id}`
+
           return (
-            <Toast nativeID={id} variant="accent" action="error">
+            <Toast nativeID={toastId} variant="accent" action="error">
               <ToastTitle>{error.message}</ToastTitle>
             </Toast>
           )
@@ -103,8 +105,10 @@ function SignInForm() {
     toast.show({
       placement: 'top right',
       render: ({ id }) => {
+        const toastId = `toast-${id}`
+
         return (
-          <Toast nativeID={id} variant="accent" action="success">
+          <Toast nativeID={toastId} variant="accent" action="success">
             <ToastTitle>登录成功</ToastTitle>
           </Toast>
         )

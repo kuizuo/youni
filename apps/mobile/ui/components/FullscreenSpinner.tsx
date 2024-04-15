@@ -1,9 +1,9 @@
-import { Spinner, YStack } from '@/ui'
+import { Spinner, VStack } from '@/ui'
 
 export function FullscreenSpinner() {
   return (
-    <YStack flex={1} jc="center" ai="center">
+    <VStack flex={1} jc="center" ai="center">
       <Spinner />
-    </YStack>
+    </VStack>
   )
 }

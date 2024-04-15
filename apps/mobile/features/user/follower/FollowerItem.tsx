@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router'
 import type { UserInfoWithFollow } from '@server/modules/interact/interact'
-import { Avatar, SizableText, XStack, YStack } from '@/ui'
+import { Avatar, HStack, Text, VStack } from '@/ui'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { useAuth } from '@/utils/auth'
 
@@ -13,34 +13,34 @@ export function FollowerListItem(item: UserInfoWithFollow): React.ReactElement {
   }
 
   return (
-    <XStack p="$3" gap="$3" height="$8" ai="center">
-      <Avatar circular size="$5" onPress={handleNavigateToUser}>
-        <Avatar.Image
+    <HStack p="$3" gap="$3" height="$8" ai="center">
+      <Avatar borderRadius="$full" size="lg" onPress={handleNavigateToUser}>
+        <AvatarImage
           width="100%"
           height="100%"
           source={{
             uri: item.avatar,
           }}
         />
-        <Avatar.Fallback />
-      </Avatar>
-      <YStack flex={1} onPress={handleNavigateToUser}>
-        <XStack gap="$2">
-          <SizableText size="$4">
-            {item.nickname}
-          </SizableText>
-        </XStack>
 
-        <SizableText size="$1" color="gray">
+      </Avatar>
+      <VStack flex={1} onPress={handleNavigateToUser}>
+        <HStack gap="$2">
+          <Text size="$4">
+            {item.nickname}
+          </Text>
+        </HStack>
+
+        <Text size="sm" color="gray">
           {
             item.noteCount > 0 ? `笔记 · ${item.noteCount}` : <></>
           }
           {
             item.followerCount > 0 ? `粉丝 · ${item.followerCount}` : <></>
           }
-        </SizableText>
-      </YStack>
+        </Text>
+      </VStack>
       {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.isFollowing} userId={item.id} />}
-    </XStack>
+    </HStack>
   )
 }

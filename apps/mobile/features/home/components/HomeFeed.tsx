@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
+import { View } from '@gluestack-ui/themed'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { withQuerySuspense } from '@/ui/components/QuerySuspense'
@@ -24,7 +24,7 @@ function HomeFeed() {
   )
 
   return (
-    <View className="flex-1 bg-background">
+    <View flex={1}>
       <NoteList
         data={flatedData}
         isRefreshing={isRefetching}

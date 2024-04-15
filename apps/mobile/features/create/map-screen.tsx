@@ -1,16 +1,16 @@
 import { Search } from 'lucide-react-native'
-import { Input, View, XStack, YStack } from '@/ui'
+import { HStack, Input, MyView, VStack } from '@/ui'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 
 export function MapScreen() {
   return (
-    <YStack fullscreen bg="$background">
+    <VStack fullscreen bg="$background">
       <NavBar left={<NavButton.Back />}>
         位置
       </NavBar>
       <View fd="row" margin="$2" px="$2">
-        <XStack
+        <HStack
           flex={1}
           ai="center"
           bg="$gray3"
@@ -19,11 +19,11 @@ export function MapScreen() {
           gap="$2"
           br={50}
         >
-          <Search size="$1" />
+          <Search size="sm" />
           <Input placeholder="搜索" textAlignVertical="center" unstyled></Input>
-        </XStack>
+        </HStack>
       </View>
 
-    </YStack>
+    </VStack>
   )
 }

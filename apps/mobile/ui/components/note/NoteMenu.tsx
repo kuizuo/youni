@@ -1,6 +1,6 @@
 import { ChevronDown, Menu } from 'lucide-react-native'
 import type { NoteItem } from '../../../../server/src/modules/note/note'
-import { Button, ScrollView, Separator, Sheet, SizableText, XStack } from '@/ui'
+import { Button, Divider, HStack, ScrollView, Sheet, Text } from '@/ui'
 import { useSheetOpen } from '@/atoms/sheet'
 
 interface Props {
@@ -12,7 +12,7 @@ export function NoteMenu({ item }: Props) {
 
   return (
     <>
-      <Button size="$1" icon={<Menu size="$1" />} unstyled onPress={() => setOpen(true)} />
+      <Button size="sm" icon={<Menu size="sm" />} unstyled onPress={() => setOpen(true)} />
       <Sheet
         forceRemoveScrollEnabled={open}
         modal
@@ -32,37 +32,37 @@ export function NoteMenu({ item }: Props) {
         />
         <Sheet.Handle />
         <Sheet.Frame p="$4" jc="center" ai="center" gap="$5">
-          <SizableText>分享至</SizableText>
+          <Text>分享至</Text>
           <ScrollView
             maxHeight={250}
             bg="$background"
             p="$4"
             br="$4"
           >
-            <XStack gap="$4">
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-            </XStack>
+            <HStack gap="$4">
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+            </HStack>
           </ScrollView>
-          <Separator />
+          <Divider />
           <ScrollView
             maxHeight={250}
             bg="$background"
             p="$4"
             br="$4"
           >
-            <XStack gap="$4">
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-              <Button size="$1" icon={<ChevronDown size="$1" />} />
-            </XStack>
+            <HStack gap="$4">
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+              <Button size="sm" icon={<ChevronDown size="sm" />} />
+            </HStack>
           </ScrollView>
         </Sheet.Frame>
       </Sheet>

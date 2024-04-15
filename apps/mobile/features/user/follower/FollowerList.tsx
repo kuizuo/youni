@@ -5,7 +5,7 @@ import type { UserInfoWithFollow } from '@server/modules/interact/interact'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FollowerListItem } from './FollowerItem'
-import { Spinner, YStack } from '@/ui'
+import { Spinner, VStack } from '@/ui'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { trpc } from '@/utils/trpc'
 
@@ -36,7 +36,7 @@ export function FollowerList({ userId, type }: Props) {
   )
 
   return (
-    <YStack flex={1}>
+    <VStack flex={1}>
       <FlashList
         data={flatedData}
         renderItem={renderItem}
@@ -60,6 +60,6 @@ export function FollowerList({ userId, type }: Props) {
           <EmptyResult title={type === 'following' ? '你还没有关注任何人' : '你还没有粉丝'} />
         }
       />
-    </YStack>
+    </VStack>
   )
 }

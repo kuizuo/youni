@@ -1,1 +1,1 @@
-export { Text, View, TouchableOpacity } from './components/MyComponent'
+export { Text as MyText, View as MyView } from './components/MyComponent'

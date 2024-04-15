@@ -3,7 +3,7 @@
 // import { useId } from 'react'
 // import { useAtom } from 'jotai'
 // import { trpc } from '@/utils/trpc'
-// import { Button, Checkbox, Label, XStack, useTheme } from '@/ui'
+// import { Button, Checkbox, Label, HStack, useTheme } from '@/ui'
 // import { historyStateAtoms } from '@/atoms/history'
 
 // export function HistoryFooter() {
@@ -37,8 +37,8 @@
 //     <>
 //       {isManageMode
 //       && (
-//         <XStack py="$2" pb={bottom || '$2'} mx="$3" gap="$3" jc="space-between" ai="center">
-//           <XStack flex={1} ai="center" gap="$3">
+//         <HStack py="$2" pb={bottom || '$2'} mx="$3" gap="$3" jc="space-between" ai="center">
+//           <HStack flex={1} ai="center" gap="$3">
 //             <Checkbox
 //               id={id}
 //               size="$4"
@@ -54,9 +54,9 @@
 //             <Label size="$4" htmlFor={id}>
 //               全选
 //             </Label>
-//           </XStack>
+//           </HStack>
 //           <Button width={80} size="$3" color="white" bg={theme.$accent10?.get()} br={50} onPress={handleDelete}>删除</Button>
-//         </XStack>
+//         </HStack>
 //       )}
 //     </>
 //   )

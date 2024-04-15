@@ -50,7 +50,7 @@ export function HomeScreen(): React.ReactNode {
         renderTabBar={props => (
           <View
             position="relative"
-            h={30}
+            h={28}
             mx="$4"
             mb="$2"
             alignItems="center"

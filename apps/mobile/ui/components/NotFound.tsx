@@ -1,7 +1,7 @@
 import { Link } from 'expo-router'
 import { StyleSheet } from 'react-native'
 
-import { Text, View } from '@/ui'
+import { Text, View } from '@gluestack-ui/themed'
 
 interface Props {
   title: string

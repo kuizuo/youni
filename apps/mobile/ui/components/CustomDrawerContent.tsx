@@ -4,11 +4,13 @@ import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button, Divider, HStack, Icon, Text, VStack } from '@gluestack-ui/themed'
+import { Button, Divider, HStack, Icon, Text, VStack, useToken } from '@gluestack-ui/themed'
 import { useDrawerOpen } from '@/atoms/drawer'
 
 export default function CustomDrawerContent() {
   const router = useRouter()
+  const bgColor = useToken('colors', 'backgroundLight950')
+
   const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useDrawerOpen()
 
@@ -50,9 +52,7 @@ export default function CustomDrawerContent() {
       contentContainerStyle={{
         flexGrow: 1,
       }}
-    // style={{
-    //   backgroundColor: theme.backgroundColor?.get(),
-    // }}
+      style={{ backgroundColor: bgColor }}
     >
       {/* <DrawerItemList {...props} /> */}
 

@@ -3,7 +3,7 @@ import Animated, { useSharedValue } from 'react-native-reanimated'
 import { DynamicList } from './components/DynamicList'
 import { SelectCampusButton } from './components/SelectCampusButton'
 import { useCurrentCampus } from '@/atoms/campus'
-import { Image, SizableText, View, XStack, YStack } from '@/ui'
+import { HStack, Image, MyView, Text, VStack } from '@/ui'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
 import { NavBar } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
@@ -24,7 +24,7 @@ export function CampusScreen() {
     return (<FullscreenSpinner />)
 
   return (
-    <YStack fullscreen flex={1} bg="$background">
+    <VStack fullscreen flex={1} bg="$background">
       <NavBar
         left={(
           <CampusTitle campus={data as unknown as Campus}></CampusTitle>)}
@@ -39,13 +39,13 @@ export function CampusScreen() {
       </View>
       <GridNav />
 
-    </YStack>
+    </VStack>
   )
 }
 
 function CampusTitle({ campus }: { campus?: Campus }) {
   if (!campus)
-    return <SizableText>请选择校区</SizableText>
+    return <Text>请选择校区</Text>
 
   return (
     <View flexDirection="row" gap="$2" ai="center">
@@ -57,7 +57,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
         resizeMode="contain"
       />
       {/* <School /> */}
-      <SizableText className="text-lg">{campus.name}</SizableText>
+      <Text size="lg">{campus.name}</Text>
     </View>
   )
 }

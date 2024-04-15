@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FollowerList } from './FollowerList'
-import { SizableText, View, useWindowDimensions } from '@/ui'
+import { MyView, Text, useWindowDimensions } from '@/ui'
 import { NavButton } from '@/ui/components/NavButton'
 
 export function FollowerScreen() {
@@ -36,7 +36,7 @@ export function FollowerScreen() {
   const FollowersList = memo(FollowerList)
 
   return (
-    <View className={`flex-1 relative bg-background`} style={{ paddingTop: top }}>
+    <View className="flex-1 relative bg-background" style={{ paddingTop: top }}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -69,16 +69,16 @@ export function FollowerScreen() {
                     const active = TABS[index]!.key === route.key
 
                     return (
-                      <SizableText
+                      <Text
                         opacity={active ? 1 : 0.5}
-                        className="text-base"
+                        size="md"
                         onPress={() => {
                           const index = TABS.findIndex(tab => tab.key === route.key)
                           setIndex(index)
                         }}
                       >
                         {route.title}
-                      </SizableText>
+                      </Text>
                     )
                   }}
                 />

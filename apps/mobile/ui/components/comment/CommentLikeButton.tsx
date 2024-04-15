@@ -5,7 +5,7 @@ import type { CommentItem } from '@server/modules/comment/comment'
 import { trpc } from '@/utils/trpc'
 import { Like } from '@/ui/icons/like'
 import type { SizeTokens } from '@/ui'
-import { SizableText, XStack, useTheme } from '@/ui'
+import { HStack, Text, useTheme } from '@/ui'
 
 export interface Props {
   item: CommentItem
@@ -45,7 +45,7 @@ export function CommentLikeButton({ item, size = 16 }: Props) {
   })
 
   return (
-    <XStack gap="$1.5" ai="center">
+    <HStack gap="$1.5" ai="center">
       <TouchableOpacity onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
           <Like
@@ -55,9 +55,9 @@ export function CommentLikeButton({ item, size = 16 }: Props) {
           />
         </Animated.View>
       </TouchableOpacity>
-      <SizableText fontSize={size} color="gray">
+      <Text fontSize={size} color="gray">
         {likedCount || ' '}
-      </SizableText>
-    </XStack>
+      </Text>
+    </HStack>
   )
 }

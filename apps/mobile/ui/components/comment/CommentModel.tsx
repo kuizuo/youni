@@ -1,12 +1,13 @@
 import { Keyboard } from 'react-native'
-import React, { ElementRef, useEffect, useRef, useState } from 'react'
+import type { ElementRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { CommentRefType } from '@server/modules/comment/comment.constant'
 import type { NoteItem } from '@server/modules/note/note'
 import { useSetAtom } from 'jotai'
 import type { CommentItem } from '@server/modules/comment/comment'
 import { newCommentsAtom, useCommentModalOpen, useParentComment } from '@/atoms/comment'
 import { trpc } from '@/utils/trpc'
-import { Button, Input, View, XStack, useToastController } from '@/ui'
+import { Button, HStack, Input, MyView, useToastController } from '@/ui'
 
 interface Props {
   item: NoteItem
@@ -50,7 +51,7 @@ export function CommentModel({ item }: Props) {
 
   return (
     <View height="$5" p="$3" bg="$background">
-      <XStack flex={1} gap="$2">
+      <HStack flex={1} gap="$2">
         <Input
           ref={inputRef}
           flex={1}
@@ -63,7 +64,7 @@ export function CommentModel({ item }: Props) {
           autoFocus={open}
         />
         <Button size="$2" onPress={handleComment}>发送</Button>
-      </XStack>
+      </HStack>
     </View>
   )
 }

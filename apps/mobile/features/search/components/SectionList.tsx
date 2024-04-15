@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { RESET } from 'jotai/utils'
 import { Trash } from 'lucide-react-native'
 import { searchHistoryAtom } from '@/atoms/searchHistroy'
-import { Text, View } from '@/ui'
+import { Text, View } from '@gluestack-ui/themed'
 import { NAV_BAR_HEIGHT } from '@/ui/components/NavBar'
 import { confirm } from '@/utils/confirm'
 
@@ -43,7 +43,7 @@ export function SectionList({
               </Text>
               <Trash
                 color="$gray9"
-                size="$1"
+                size="sm"
                 onPress={async () => {
                   try {
                     await confirm('确认清除搜索历史吗')

@@ -2,18 +2,28 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useActionSheet } from '@expo/react-native-action-sheet'
 import * as ImagePicker from 'expo-image-picker'
 import { PermissionStatus } from 'expo-image-picker'
-import { CheckCircle, ChevronRight, Circle, Hash, MapPin, Plus, Search } from 'lucide-react-native'
+import { Plus } from 'lucide-react-native'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native'
 import type { SubmitHandler } from 'react-hook-form'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'expo-router'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import type { ListRenderItem } from '@shopify/flash-list'
-import { FlashList } from '@shopify/flash-list'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import type { NoteTag } from '@youni/database'
+import { useToken } from '@gluestack-style/react'
+import {
+  Button,
+  Divider,
+  HStack,
+  Input,
+  ScrollView,
+  Textarea,
+  TextareaInput,
+  Toast,
+  ToastTitle,
+  View,
+  useToast,
+} from '@gluestack-ui/themed'
 import { TagSheet } from './components/TagSheet'
-import { Button, Image, Input, ListItem, ScrollView, Separator, Sheet, SizableText, TextArea, View, XStack, YStack, getTokens, useToastController } from '@/ui'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 import FormControl from '@/ui/components/FormControl'
@@ -21,7 +31,6 @@ import { client } from '@/utils/http/client'
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { selectTagsAtom, tagSheetOpenAtom } from '@/atoms/create'
-
 
 interface IFormInput {
   title: string
@@ -34,15 +43,15 @@ interface IFormInput {
 export function CreateScreen() {
   const window = useWindowDimensions()
   const router = useRouter()
-  const toast = useToastController()
+  const toast = useToast()
   const { showActionSheetWithOptions } = useActionSheet()
 
-  const gap = getTokens().space.$2
-  const padding = getTokens().space.$4
+  const gap = useToken('space', '2')
+  const padding = useToken('space', '4')
 
   const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([])
   const imageLength = useMemo(() => photos.length, [photos])
-  const imageWidth = (window.width - (gap.val + padding.val) * 2) / 3
+  const imageWidth = (window.width - (gap + padding) * 2) / 3
 
   const {
     control,
@@ -102,7 +111,7 @@ export function CreateScreen() {
       ...data,
     })
 
-    toast.show('发布成功')
+    // toast.show('发布成功')
     router.push(`/note/${result.id}`)
   }
 
@@ -123,7 +132,16 @@ export function CreateScreen() {
           setPhotos(prev => [...prev, ...result.assets])
       }
       else {
-        toast.show('需要授权相册才可发布图文')
+        toast.show({
+          placement: 'bottom right',
+          render: ({ id }) => {
+            return (
+              <Toast nativeID={id} variant="accent" action="warning">
+                <ToastTitle>需要授权相册才可发布图文</ToastTitle>
+              </Toast>
+            )
+          },
+        })
       }
     }
 
@@ -157,33 +175,33 @@ export function CreateScreen() {
         horizontal
         maxHeight={imageWidth}
         showsHorizontalScrollIndicator={false}
-        mx={-padding.val}
-        px={padding.val}
+        mx={-padding}
+        px={padding}
         mb="$2"
       >
-        <XStack ai="center" gap="$2">
+        <HStack ai="center" gap="$2">
           {photos?.map((asset, index) => (
             <Image source={asset} key={asset.assetId} br="$4" width={imageWidth} height={imageWidth} bg="$color2" jc="center" ai="center" onPress={() => handlePressImage(index)} />
           ))}
 
           {
-          imageLength < 9 && (
-            <View br="$4" width={imageWidth} height={imageWidth} bg="$color2" jc="center" ai="center" onPress={pickImageAsync}>
-              <Plus color="$color11" />
-            </View>
-          )
-        }
-        </XStack>
+            imageLength < 9 && (
+              <View br="$4" width={imageWidth} height={imageWidth} bg="$color2" jc="center" ai="center" onPress={pickImageAsync}>
+                <Plus color="$color11" />
+              </View>
+            )
+          }
+        </HStack>
       </ScrollView>
     )
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View flex={1}>
       <NavBar
         left={<NavButton.Back />}
         right={(
-          <Button size="$2" onPress={handleSubmit(onSubmit)}>
+          <Button size="md" onPress={handleSubmit(onSubmit)}>
             发布
           </Button>
         )}
@@ -205,16 +223,24 @@ export function CreateScreen() {
           rules={{ required: true }}
           render={({ field: { value, onChange, onBlur } }) => (
             <Input
-              size="$2"
-              className="text-base"
-              bbw={1}
-              bbc="$borderColor"
-              placeholder="标题"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              unstyled
-            />
+              variant="outline"
+              size="md"
+              isDisabled={false}
+              isInvalid={false}
+              isReadOnly={false}
+            >
+              <InputField
+                placeholder="标题"
+                size="md"
+                size="md"
+                bbw={1}
+                bbc="$borderColor"
+                placeholder="标题"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            </Input>
           )}
         />
 
@@ -222,39 +248,40 @@ export function CreateScreen() {
           control={control}
           name="content"
           render={({ field: { value, onChange, onBlur } }) => (
-            <TextArea
+            <Textarea
               height={150}
               mb="$4"
-              multiline
-              numberOfLines={4}
-              placeholder="添加正文"
-              textAlign="left"
-              textAlignVertical="top"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              unstyled
-            />
+            >
+              <TextareaInput
+                numberOfLines={4}
+                textAlign="left"
+                textAlignVertical="top"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="添加正文"
+              />
+            </Textarea>
           )}
         />
       </View>
 
-      <Separator mx={padding} />
-      <View flex={1}>
+      <Divider mx={padding} />
+      {/* <View flex={1}>
         <ListItem hoverTheme pressTheme icon={Hash} iconAfter={ChevronRight} onPress={() => setTagSheetOpen(true)}>添加话题</ListItem>
         {selectTags && (
           <>
-            <XStack columnGap="$2" mx={padding.val} flexWrap="wrap">
+            <HStack columnGap="$2" mx={padding} flexWrap="wrap">
               {selectTags.map(name => (
-                <SizableText key={name} color="$blue8" onPress={() => setSelectTags(prev => prev.filter(t => t !== name))}>
+                <Text key={name} color="$blue8" onPress={() => setSelectTags(prev => prev.filter(t => t !== name))}>
                   {`#${name}`}
-                </SizableText>
+                </Text>
               ))}
-            </XStack>
+            </HStack>
           </>
         )}
         <ListItem hoverTheme pressTheme icon={MapPin} iconAfter={ChevronRight} onPress={() => router.push('/create/map')}>{location || '我的位置'}</ListItem>
-      </View>
+      </View> */}
 
       {tagSheetOpen && <TagSheet />}
     </View>

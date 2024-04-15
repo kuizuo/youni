@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react-native'
 import type { NoteItem } from '@server/modules/note/note'
 import { useSheetOpen } from '@/atoms/sheet'
-import { Button, ScrollView, Separator, Sheet, XStack } from '@/ui'
+import { Button, HStack, ScrollView, Divider, Sheet } from '@/ui'
 
 interface Props {
   item: NoteItem
@@ -36,11 +36,11 @@ export function NoteSheet({ item }: Props): React.ReactNode {
             p="$4"
             br="$4"
           >
-            <XStack gap="$4">
-              <ChevronDown size="$1" />
-            </XStack>
+            <HStack gap="$4">
+              <ChevronDown size="sm" />
+            </HStack>
           </ScrollView>
-          <Separator />
+          <Divider />
 
         </Sheet.Frame>
       </Sheet>

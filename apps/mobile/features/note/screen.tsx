@@ -2,11 +2,11 @@ import React, { lazy, useEffect } from 'react'
 import { Link, useLocalSearchParams } from 'expo-router'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
+import { Divider, HStack, Heading, ScrollView, Text, View } from '@gluestack-ui/themed'
 import { NoteHeader } from './components/NoteHeader'
 import { NoteFooter } from './components/NoteFooter'
 import { NoteDetailPlaceholder } from './components/NoteDetailPlaceholder'
 import { trpc } from '@/utils/trpc'
-import { H5, Paragraph, ScrollView, Separator, Text, View, XStack } from '@/ui'
 import { formatTime } from '@/utils/date'
 
 import { useCurrentNote } from '@/atoms/comment'
@@ -41,23 +41,22 @@ export function NoteScreen(): React.ReactNode {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View flex={1}>
       <NoteHeader item={data as NoteItem} user={data.user} />
       <ScrollView
-        position="relative"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       >
         <ImageCarousel data={data?.images.map(image => image.src)} />
 
-        <View className="px-3 mt-3 gap-2">
-          <H5>{data?.title}</H5>
+        <View px="$3" mt="$3" gap="$2">
+          <Heading size="md">{data?.title}</Heading>
 
-          <Paragraph size="$2">
+          <Text size="sm">
             {data?.content}
-          </Paragraph>
+          </Text>
 
-          <View className="flex-row mb-4 flex-warp gap-x-1 gap-y-2 ">
+          <HStack flexWrap="wrap" rowGap="$1" columnGap="$2">
             {data?.tags.map(tag => (
               <Link key={tag.name} href={`/tag/${tag.name}`} asChild>
                 <Text color="$blue8">
@@ -66,22 +65,22 @@ export function NoteScreen(): React.ReactNode {
               </Link>
             ),
             )}
-          </View>
+          </HStack>
 
-          <Text fontSize="$1" color="gray">
+          <Text size="sm" color="gray">
             {formatTime(data?.publishTime)}
           </Text>
 
-          <Separator my={15} />
+          <Divider my={15} />
 
-          <Text fontSize="$3" color="gray">
+          <Text size="md" color="gray">
             {`共 ${data.interact.commentCount} 条评论`}
           </Text>
 
-          <Comments />
+          {/* <Comments /> */}
         </View>
       </ScrollView>
-      <NoteFooter item={data as unknown as NoteItem} />
+      {/* <NoteFooter item={data as unknown as NoteItem} /> */}
     </View>
   )
 }

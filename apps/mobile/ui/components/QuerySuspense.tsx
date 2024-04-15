@@ -5,9 +5,8 @@ import type { ComponentType, FC, ReactNode } from 'react'
 import { Fragment, Suspense } from 'react'
 import type { ErrorBoundaryProps, FallbackProps } from 'react-error-boundary'
 import { ErrorBoundary } from 'react-error-boundary'
-import { Button } from '@gluestack-ui/themed'
+import { Button, Text, View } from '@gluestack-ui/themed'
 import { LoadingIndicator } from './LoadingIndicator'
-import { Text, View } from '@/ui'
 
 export function FallbackComponent({
   error,

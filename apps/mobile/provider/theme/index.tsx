@@ -11,9 +11,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProviderOg value={themeValue}>
       <StatusBar style={colorScheme} />
-      <View flex={1}>
-        {children}
-      </View>
+      {children}
     </ThemeProviderOg>
   )
 }

@@ -63,4 +63,5 @@ export function Text({ children, className, style, ...props }: TextProps) {
   )
 }
 
+remapProps(View, { className: 'style' })
 remapProps(Text, { className: 'style' })

@@ -1,4 +1,4 @@
-import { ListItem, ScrollView, View, YGroup } from '@/ui'
+import { ListItem, MyView, ScrollView, YGroup } from '@/ui'
 
 export function DarkModeSettingScreen() {
   return (

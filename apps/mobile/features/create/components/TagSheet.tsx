@@ -5,7 +5,7 @@ import type { ListRenderItem } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { NoteTag } from '@youni/database'
-import { Button, Input, Separator, Sheet, SizableText, Spinner, View, XStack } from '@/ui'
+import { Button, Divider, HStack, Input, MyView, Sheet, Spinner, Text } from '@/ui'
 
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
@@ -66,7 +66,7 @@ export const TagSheet = memo(() => {
       />
       <Sheet.Handle />
       <Sheet.Frame p="$4" jc="center" ai="center" gap="$5">
-        <XStack
+        <HStack
           width="100%"
           ai="center"
           bg="$gray3"
@@ -74,7 +74,7 @@ export const TagSheet = memo(() => {
           py="$2.5"
           gap="$2"
         >
-          <Search size="$1" />
+          <Search size="sm" />
           <Input
             placeholder="搜索"
             onChangeText={(text) => {
@@ -87,7 +87,7 @@ export const TagSheet = memo(() => {
             unstyled
           >
           </Input>
-        </XStack>
+        </HStack>
 
         <View flex={1} width="100%">
           <FlashList
@@ -122,7 +122,7 @@ export const TagSheet = memo(() => {
           >
           </FlashList>
         </View>
-        <Separator />
+        <Divider />
       </Sheet.Frame>
     </Sheet>
   )
@@ -139,9 +139,9 @@ const TagItem = memo(({ item }: { item: NoteTag }) => {
   }
   return (
     <View flexDirection="row" width="100%" jc="space-between" onPress={handleSelect}>
-      <SizableText flex={1} className="text-base">
+      <Text flex={1} size="md">
         {`# ${item.name}`}
-      </SizableText>
+      </Text>
       {
               selectTags.includes(item.name) ? <CheckCircle color="gray" /> : <Circle color="gray" />
             }

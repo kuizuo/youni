@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { TouchableOpacity } from 'react-native'
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import type { NoteItem } from '@server/modules/note/note'
-import { Like } from '@/ui/icons/like'
+import { HStack, Text } from '@gluestack-ui/themed'
+import { Heart } from 'lucide-react-native'
 import { trpc } from '@/utils/trpc'
-import { Text, View } from '@/ui'
 
 export interface Props {
   item: NoteItem
@@ -45,19 +45,19 @@ export function NoteLikeButton({ item, size = 18, color = 'gray', placeholder }:
   })
 
   return (
-    <View className="flex-row gap-2 items-center">
+    <HStack alignItems="center" gap="$1">
       <TouchableOpacity onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
-          <Like
+          <Heart
             fill={liked ? 'red' : 'transparent'}
             color={liked ? 'red' : color}
             size={size}
           />
         </Animated.View>
       </TouchableOpacity>
-      <Text className="text-base">
-        {likedCount || placeholder || ' '}
+      <Text color="$secondary500">
+        {likedCount || placeholder }
       </Text>
-    </View>
+    </HStack>
   )
 }

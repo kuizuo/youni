@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
+import { Text } from '@gluestack-ui/themed'
 import { CustomDialog } from '../CustomDialog'
-import { Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 
 interface Props {
@@ -28,14 +28,10 @@ export function UserFollowButton({ userId, isFollowing: initState }: Props) {
   }
 
   return (
-    <>
-      <CustomDialog title="确认不再关注?" onOk={handleUnFollow}>
-        <View className="flex-row rounded-full overflow-hidden bg-primary py-4">
-          <Text className="text-base" onPress={isFollowing ? () => null : handleFollow}>
-            {isFollowing ? '取关' : '关注'}
-          </Text>
-        </View>
-      </CustomDialog>
-    </>
+    <CustomDialog title="确认不再关注?" onOk={handleUnFollow}>
+      <Text size="md" onPress={isFollowing ? () => null : handleFollow}>
+        {isFollowing ? '取关' : '关注'}
+      </Text>
+    </CustomDialog>
   )
 }

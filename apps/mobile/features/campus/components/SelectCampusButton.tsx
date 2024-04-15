@@ -2,7 +2,7 @@ import { ArrowLeftRight, Search } from 'lucide-react-native'
 import type { Campus } from '@youni/database'
 import { useState } from 'react'
 import { BlurView } from 'expo-blur'
-import { Adapt, Button, Input, Popover, SizableText, View, XStack, YStack } from '@/ui'
+import { Adapt, Button, HStack, Input, MyView, Popover, Text, VStack } from '@/ui'
 import { useCurrentCampus } from '@/atoms/campus'
 import { trpc } from '@/utils/trpc'
 
@@ -66,8 +66,8 @@ export function SelectCampusButton() {
       >
         <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
 
-        <YStack gap="$3">
-          <XStack ai="center" gap="$3">
+        <VStack gap="$3">
+          <HStack ai="center" gap="$3">
             <Input
               flex={1}
               size="$3"
@@ -75,30 +75,30 @@ export function SelectCampusButton() {
               onChangeText={text => setSearchText(text)}
               onSubmitEditing={() => handleSearch(searchText)}
             />
-            <Search size="$1" onPress={() => handleSearch(searchText)}></Search>
-          </XStack>
+            <Search size="sm" onPress={() => handleSearch(searchText)}></Search>
+          </HStack>
 
-          <YStack gap="$2">
+          <VStack gap="$2">
             {(data && data.length > 0)
               ? data?.map(campus => (
-                <SizableText
+                <Text
                   key={campus.id}
-                  className="text-base"
+                  size="md"
                   pressStyle={{
                     backgroundColor: '$gray4',
                   }}
                   onPress={() => handleSelectCampus(campus as Campus)}
                 >
                   {campus.name}
-                </SizableText>
+                </Text>
               ))
               : (
-                <SizableText className="text-base" textAlign="center">
+                <Text size="md" textAlign="center">
                   未能搜索到相关学校～
-                </SizableText>
+                </Text>
                 )}
-          </YStack>
-        </YStack>
+          </VStack>
+        </VStack>
       </Popover.Content>
     </Popover>
 

@@ -110,6 +110,16 @@ const config = createConfig({
       borderDark950: '#171717',
     },
   },
+  components: {
+    ...defaultConfig.components,
+  },
+  aliases: {
+    ...defaultConfig.aliases,
+    jc: 'justifyContent',
+    ai: 'alignItems',
+    fd: 'flexDirection',
+    br: 'borderRadius',
+  },
 } as const)
 
 export { config }
@@ -123,6 +133,6 @@ type Components = typeof defaultConfig.components
 declare module '@gluestack-style/react' {
   // interface UIConfig extends ConfigType {}
 
-  interface ICustomConfig extends ConfigType {}
-  interface ICustomComponents extends Components {}
+  interface ICustomConfig extends ConfigType { }
+  interface ICustomComponents extends Components { }
 }

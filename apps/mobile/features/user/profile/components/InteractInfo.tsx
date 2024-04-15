@@ -2,19 +2,16 @@ import { MessageCircle, Settings } from 'lucide-react-native'
 import { Link } from 'expo-router'
 import type { UserInfo } from '@server/modules/user/user'
 import { BlurView } from 'expo-blur'
-import { Button, View, useTheme } from '@/ui'
+import { HStack, Icon, Text, View } from '@gluestack-ui/themed'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useAuth } from '@/utils/auth'
-import { Text } from '@/components/ui/text'
-import { HStack } from '@/components/ui/hstack'
 
 interface Props {
   user: UserInfo
 }
 
 export function InteractInfo({ user }: Props): React.ReactNode {
-  const theme = useTheme()
   const { data } = trpc.interact.state.useQuery({ id: user.id })
 
   const { currentUser } = useAuth()
@@ -25,8 +22,8 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         intensity={20}
         className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
       >
-        <Link href="/profile/edit" asChild>
-          <Text color="gray" fontSize={12} unstyled>
+        <Link href="/user/profile/edit" asChild>
+          <Text color="$secondary500" fontSize={12}>
             编辑资料
           </Text>
         </Link>
@@ -41,7 +38,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
       >
         <Link href="/setting/" asChild>
-          <Button color="gray" icon={<Settings size="$1" />} unstyled />
+          <Icon as={Settings} />
         </Link>
       </BlurView>
     )
@@ -54,14 +51,14 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
       >
         <Link href={`/chat/${user.id}`} asChild>
-          <MessageCircle size="$1" />
+          <MessageCircle size="xs" />
         </Link>
       </BlurView>
     )
   }
 
   return (
-    <View className="flex-row bg-background gap-4 mx-4 mb-3 items-center">
+    <HStack gap="$4" mx="$4" mb="$3" alignContent="center">
       <Link
         href={{
           pathname: '/user/[id]/follower',
@@ -69,9 +66,9 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         }}
         asChild
       >
-        <HStack space="$2">
+        <HStack gap="$1">
           <Text>{data?.followingCount}</Text>
-          <Text fontSize="$2">
+          <Text size="xs">
             关注
           </Text>
         </HStack>
@@ -83,21 +80,21 @@ export function InteractInfo({ user }: Props): React.ReactNode {
         }}
         asChild
       >
-        <HStack space="$2" ai="center">
+        <HStack gap="$1" alignContent="center">
           <Text>{data?.followerCount}</Text>
-          <Text fontSize="$2">
+          <Text size="xs">
             粉丝
           </Text>
         </HStack>
       </Link>
-      <HStack space="$2" ai="center">
+      <HStack gap="$1" alignContent="center">
         <Text>{data?.likesCount}</Text>
-        <Text fontSize="$2">
+        <Text size="xs">
           获赞
         </Text>
       </HStack>
 
-      <HStack flex={1} jc="flex-end" gap="$3">
+      <HStack flex={1} justifyContent="flex-end" gap="$3">
         {
           user.id === currentUser?.id
             ? (
@@ -114,6 +111,6 @@ export function InteractInfo({ user }: Props): React.ReactNode {
               )
         }
       </HStack>
-    </View>
+    </HStack>
   )
 }

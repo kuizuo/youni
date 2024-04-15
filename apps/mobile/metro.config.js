@@ -6,8 +6,11 @@ const { withNativeWind } = require('nativewind/metro')
 
 const config = getDefaultConfig(__dirname)
 
-module.exports = withMonorepoPaths(config)
-
+module.exports = withMonorepoPaths(
+  withNativeWind(config, {
+    input: './global.css',
+  }),
+)
 /**
  * Add the monorepo paths to the Metro config.
  * This allows Metro to resolve modules from the monorepo.

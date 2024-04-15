@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useWindowDimensions } from 'react-native'
 import type { TabsContentProps } from '@/ui'
-import { SizableText, Spinner, Tabs, View } from '@/ui'
+import { MyView, Spinner, Tabs, Text } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { FallbackComponent, QuerySuspense } from '@/ui/components/QuerySuspense'
 import { EmptyResult } from '@/ui/components/EmptyResult'
@@ -48,10 +48,10 @@ export function SearchResult({ searchText }: { searchText: string }) {
     >
       <Tabs.List>
         <Tabs.Tab flex={1} value="note" br={0}>
-          <SizableText>笔记</SizableText>
+          <Text>笔记</Text>
         </Tabs.Tab>
         <Tabs.Tab flex={1} value="user" br={0}>
-          <SizableText>用户</SizableText>
+          <Text>用户</Text>
         </Tabs.Tab>
       </Tabs.List>
 

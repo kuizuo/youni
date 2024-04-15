@@ -1,4 +1,4 @@
-import { View } from '@/ui'
+import { View } from '@gluestack-ui/themed'
 
 export function GeneralSettingScreen() {
   return (

@@ -1,33 +1,34 @@
 import { useState } from 'react'
-import { Platform } from 'react-native'
+import { Platform, useWindowDimensions } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { useRoute } from '@react-navigation/native'
 import { ArrowUpRightFromSquare } from 'lucide-react-native'
-import Animated, { Extrapolation, interpolate, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue } from 'react-native-reanimated'
+import Animated, { Extrapolation, interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { MaterialTabBar, Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
+import { Avatar, AvatarImage, HStack, Image, Text, View, useToken } from '@gluestack-ui/themed'
 import { InteractInfo } from './components/InteractInfo'
 import { Navs } from './components/Nav'
 import { UserNote } from './components/UserNote'
 import { UserCollection } from './components/UserCollection'
 import { UserLiked } from './components/UserLiked'
-import { Avatar, Image, Text, View, XStack, YStack, useTheme, useWindowDimensions } from '@/ui'
 import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
-import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
-import { NavButton } from '@/ui/components/NavButton'
+import { NavBar, NavButton, useNavBarHeight } from '@/ui/components/NavBar'
 
 const TAB_BAR_HEIGHT = 32
 const TAB_VIEW_MARGIN_TOP = -1
 
 const VERTICAL_SPACING = 12
 const ROOT_HORIZONTAL_PADDING = 12
-const AVATAR_SIZE_VALUE = 48
+const AVATAR_SIZE_VALUE = 60
 const BANNER_BOTTOM_HEIGHT_ADDITION = AVATAR_SIZE_VALUE
 
 export function ProfileScreen() {
-  const theme = useTheme()
+  const primaryColor = useToken('colors', 'primary500')
+  const bgColor = useToken('colors', 'backgroundDark950')
+
   const { id: userId } = useLocalSearchParams<{ id: string }>()
 
   const window = useWindowDimensions()
@@ -129,7 +130,7 @@ export function ProfileScreen() {
     })
 
     return (
-      <View className="relative z-1">
+      <View position="relative" zIndex={1}>
         {/* 顶部背景 */}
         <Animated.View className="absolute inset-0" style={[bannerImageStyle]}>
           <Animated.View
@@ -143,7 +144,6 @@ export function ProfileScreen() {
 
               <Image
                 source={require('../../../assets/images/profile-background.png')}
-                className="h-full"
                 style={[
                   { width },
                   Platform.OS === 'web' && { height: bannerHeight.value },
@@ -156,29 +156,26 @@ export function ProfileScreen() {
         {/* 导航条 */}
         <NavBar
           left={route.name !== 'me'
-            ? <NavButton.Back color="white" />
-            : <NavButton.Menu color="white" size="$1" />}
-          right={<ArrowUpRightFromSquare size="$1" color="white" />}
+            ? <NavButton.Back size="xl" />
+            : <NavButton.Menu size="xl" />}
+          right={<ArrowUpRightFromSquare size="xl" />}
         >
           <Animated.View style={[animatedNavBarStyle]}>
-            <XStack flex={1} jc="space-between">
-              <View fd="row" gap="$2.5" ai="center" bg="transport">
-                <Avatar circular size="$2">
-                  <Avatar.Image
-                    // @ts-expect-error
+            <HStack flex={1} justifyContent="space-between">
+              <View flexDirection="row" gap="$2.5" alignContent="center" bg="transport">
+                <Avatar borderRadius="$full" size="sm">
+                  <AvatarImage
                     source={{
                       uri: data?.avatar,
-                      width: '100%',
-                      height: '100%',
                     }}
                   />
-                  <Avatar.Fallback />
+
                 </Avatar>
-                <Text className="text-base opacity-70">
+                <Text size="md">
                   {data?.nickname}
                 </Text>
               </View>
-            </XStack>
+            </HStack>
           </Animated.View>
         </NavBar>
 
@@ -194,20 +191,17 @@ export function ProfileScreen() {
               profileContainerTranslationStyle,
             ]}
           >
-            <Avatar circular size="$8">
-              <Avatar.Image
-                width="100%"
-                height="100%"
-                // @ts-expect-error
+            <Avatar borderRadius="$full" size="xl">
+              <AvatarImage
                 source={{
                   uri: data?.avatar,
                 }}
               />
-              <Avatar.Fallback />
+
             </Avatar>
-            <View className="flex-1">
-              <View className="flex-row mb-2 items-center gap-2">
-                <Text className="text-lg">
+            <View flex={1}>
+              <View mb="$2" gap="$2" alignContent="center">
+                <Text size="lg">
                   {data.nickname}
                 </Text>
                 {data.gender
@@ -220,7 +214,7 @@ export function ProfileScreen() {
                     )
                   : <></>}
               </View>
-              <Text className="text-lg">{' '}</Text>
+              <Text size="md">{' '}</Text>
             </View>
           </Animated.View>
         </Animated.View>
@@ -248,10 +242,10 @@ export function ProfileScreen() {
     const [data, { isLoading, refetch, isRefetching }] = trpc.user.byId.useSuspenseQuery({ id: userId }, {})
 
     return (
-      <View className="bg-background" mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
-        <View className={`pt-[${AVATAR_SIZE_VALUE}px]`} pointerEvents="none" />
+      <View mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
+        <View pt={AVATAR_SIZE_VALUE} pointerEvents="none" />
         {/* 基本信息 */}
-        <View className="px-4 mb-3 gap-4">
+        <View px="$4" mb="$3">
           <Text>{data.desc ?? '暂无简介'}</Text>
         </View>
 
@@ -264,7 +258,7 @@ export function ProfileScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View flex={1}>
       <NavBarComponent />
 
       <Tabs.Container
@@ -285,12 +279,10 @@ export function ProfileScreen() {
         renderTabBar={props => (
           <MaterialTabBar
             {...props}
-            // indicatorStyle={tw`bg-primary`}
-            activeColor={theme.$color?.get()}
-            labelStyle={{
-              color: theme.$color?.get(),
-            }}
-            // tabStyle={tw`bg-${theme.$background?.get()}`}
+            indicatorStyle={{ backgroundColor: primaryColor }}
+            activeColor={primaryColor}
+            // labelStyle={{ color: primaryColor }}
+            tabStyle={bgColor}
           />
         )}
       >

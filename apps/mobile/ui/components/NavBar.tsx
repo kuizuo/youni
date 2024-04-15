@@ -2,14 +2,14 @@ import type { ReactNode } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { ViewStyle } from 'react-native'
 import { Platform } from 'react-native'
-import { Text, View } from '@gluestack-ui/themed'
+import { HStack, Text, View } from '@gluestack-ui/themed'
 
-// import { Text, View } from '@/ui'
+export { NavButton } from './NavButton'
 
 export const NAV_BAR_HEIGHT = 48
 
 interface Props {
-  className: string
+  className?: string
   children?: ReactNode
   left?: ReactNode
   right?: ReactNode
@@ -18,7 +18,6 @@ interface Props {
 }
 
 export function NavBar({
-  className,
   children,
   hideSafeTop,
   left,
@@ -28,37 +27,41 @@ export function NavBar({
   const safeTop = useNavBarSafeTop(hideSafeTop)
 
   return (
-    <View
-      // className={`${className} relative flex-row items-center px-2 gap-2 pb-2.5`}
+    <HStack
+      position="relative"
+      mx="$3"
+      py="$2"
+      alignItems="center"
+      gap="$2"
       style={{
-        paddingTop: safeTop || 8,
+        paddingTop: safeTop || 0,
         ...style,
       }}
     >
       {left && (
-        <View className="min-w-2 flex-row justify-start items-center">
+        <HStack minWidth="$2" justifyContent="flex-start" alignContent="center">
           {left}
-        </View>
+        </HStack>
       )}
 
-      <View className="flex-1 flex-row items-center">
+      <HStack flex={1} alignContent="center">
         {typeof children === 'string'
           ? (
-            <Text className="text-center" numberOfLines={1}>
+            <Text textAlign="center" numberOfLines={1}>
               {children}
             </Text>
             )
           : (
               children
             )}
-      </View>
+      </HStack>
 
       {right && (
-        <View className="min-w-2 flex-row justify-start items-center">
+        <HStack minWidth="$2" justifyContent="flex-start" alignContent="center">
           {right}
-        </View>
+        </HStack>
       )}
-    </View>
+    </HStack>
   )
 }
 

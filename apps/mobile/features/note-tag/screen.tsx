@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Separator, Text, View } from '@/ui'
+import { MyText, MyView, Divider } from '@/ui'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
@@ -28,7 +28,7 @@ export default function NoteTagScreen() {
   )
 
   return (
-    <View className="flex-1 bg-background">
+    <View flex={1}>
       <NavBar left={<NavButton.Back />} right={<></>} />
       <View className="flex-row pt-3 pb-2 px-4 gap-3">
         <View className="flex-row gap-2">
@@ -43,7 +43,7 @@ export default function NoteTagScreen() {
         </View>
       </View>
 
-      <Separator mb="$3" />
+      <Divider mb="$3" />
 
       {/* TODO: 最热/最新 */}
       <NoteList

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { vars } from 'nativewind'
 import type { ColorTokens, SizeTokens } from '../..'
-import { Button, Text, View } from '../..'
+import { Button, MyText, MyView } from '../..'
 import { Pressable } from '../MyComponent'
 import { trpc } from '@/utils/trpc'
 
@@ -49,7 +49,7 @@ export function NoteCollectButton({
         unstyled
       >
       </Button>
-      <Text className="text-base" style={{ color }}>
+      <Text size="md" style={{ color }}>
         {collectedCount || placeholder || '收藏'}
       </Text>
     </Pressable>

@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router'
+import { HStack, Image, Pressable, Text, View } from '@gluestack-ui/themed'
 import { NotificationItem } from './components/NotificationItem'
-import { Image, Text, View } from '@/ui'
 import { trpc } from '@/utils/trpc'
 
 export function NotificationScreen() {
@@ -16,17 +16,17 @@ export function NotificationScreen() {
         headerShadowVisible: false,
       }}
       />
-      <View className="flex-1 bg-background">
-        <View className="flex-row p-4 justify-center items-center gap-2">
-          <View
+      <View>
+        <HStack className="flex-row p-4 justify-center items-center gap-2">
+          <Pressable
             className="relative flex-1 justify-center items-center gap-2"
             onPress={() => router.push('/notification/like')}
           >
             <Image width={60} height={60} source={require('@/assets/images/heart.png')}></Image>
 
             <Text className="text-md">赞</Text>
-          </View>
-          <View
+          </Pressable>
+          <Pressable
             className="relative flex-1 justify-center items-center gap-2"
             onPress={() => router.push('/notification/comment')}
           >
@@ -40,8 +40,8 @@ export function NotificationScreen() {
               )
             }
             <Text className="text-md">评论</Text>
-          </View>
-          <View
+          </Pressable>
+          <Pressable
             className="relative flex-1 justify-center items-center gap-2"
             onPress={() => router.push('/notification/follow')}
           >
@@ -55,8 +55,8 @@ export function NotificationScreen() {
               )
             }
             <Text className="text-md">新增关注</Text>
-          </View>
-        </View>
+          </Pressable>
+        </HStack>
 
         <View>
           {/* <NotificationItem

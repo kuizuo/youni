@@ -1,7 +1,7 @@
 import { Trash } from 'lucide-react-native'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Button, Text, View } from '@/ui'
+import { Button, View } from '@gluestack-ui/themed'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
@@ -29,7 +29,7 @@ export function HistoryScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View flex={1}>
       <NavBar
         left={<NavButton.Back />}
         right={(
@@ -43,7 +43,7 @@ export function HistoryScreen() {
           </CustomDialog>
         )}
       >
-        <Text className="flex-1 text-center">浏览记录</Text>
+        <Text flex={1} textAlign="center">浏览记录</Text>
       </NavBar>
       <NoteList
         data={flatedData as unknown as NoteItem[]}

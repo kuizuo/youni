@@ -5,7 +5,7 @@ import { useAtom, useAtomValue } from 'jotai'
 import { CommentLikeButton } from './CommentLikeButton'
 import { CommentButton } from './CommentButton'
 import { trpc } from '@/utils/trpc'
-import { Avatar, Separator, SizableText, Spinner, Text, View, XStack, YStack, useTheme } from '@/ui'
+import { Avatar, Divider, HStack, MyText, MyView, Spinner, Text, VStack, useTheme } from '@/ui'
 import { formatTime } from '@/utils/date'
 import { newCommentsAtom, useCurrentNote } from '@/atoms/comment'
 import { useAuth } from '@/utils/auth'
@@ -64,9 +64,9 @@ export function CommentList() {
           )
         })
       }
-      <Separator />
+      <Divider />
       <View my="$2" flex={1} jc="center" ai="center">
-        <SizableText color="gray" size="$1">没有更多了</SizableText>
+        <Text color="gray" size="sm">没有更多了</Text>
       </View>
     </>
   )
@@ -74,9 +74,9 @@ export function CommentList() {
 
 const CommentListItem = memo(({ comment }: { comment: CommentItem }) => {
   return (
-    <YStack>
+    <VStack>
       <Comment comment={comment} />
-    </YStack>
+    </VStack>
   )
 })
 
@@ -112,25 +112,25 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
 
     if (comment.interact.commentCount > 1 && comment.children.length === 1) {
       return (
-        <SizableText size="$2" color="#1e40af" onPress={loadMore}>
+        <Text size="$2" color="#1e40af" onPress={loadMore}>
           {`展开 ${comment.interact.commentCount - 1} 条评论`}
-        </SizableText>
+        </Text>
       )
     }
 
     if (hasNextPage) {
       return (
-        <SizableText size="$2" color="#1e40af" onPress={loadMore}>
+        <Text size="$2" color="#1e40af" onPress={loadMore}>
           展开更多
-        </SizableText>
+        </Text>
       )
     }
   }
 
   return (
-    <XStack gap="$2.5" ai="center" my="$2">
-      <Avatar circular size="$2.5" alignSelf="flex-start">
-        <Avatar.Image
+    <HStack gap="$2.5" ai="center" my="$2">
+      <Avatar borderRadius="$full" size="$2.5" alignSelf="flex-start">
+        <AvatarImage
           // @ts-expect-error
           source={
             {
@@ -140,12 +140,12 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
             }
           }
         />
-        <Avatar.Fallback />
+        
       </Avatar>
-      <YStack flex={1}>
-        <XStack ai="center">
-          <YStack gap="$1">
-            <XStack gap="$2">
+      <VStack flex={1}>
+        <HStack ai="center">
+          <VStack gap="$1">
+            <HStack gap="$2">
               <Text fontSize={15} color="gray" marginTop="$-1">
                 {comment.user.nickname}
               </Text>
@@ -163,28 +163,28 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
                   </View>
                 )
               }
-            </XStack>
+            </HStack>
             <Text>
               {comment.content}
             </Text>
-          </YStack>
-        </XStack>
+          </VStack>
+        </HStack>
 
-        <XStack ai="center" marginTop="$2">
+        <HStack ai="center" marginTop="$2">
           <Text color="gray" fontSize={12}>
             {formatTime(comment.createdAt)}
           </Text>
-          <XStack flex={1} gap="$2.5" jc="flex-end" ai="center">
+          <HStack flex={1} gap="$2.5" jc="flex-end" ai="center">
             <CommentButton item={comment} />
             <CommentLikeButton
               item={comment}
             />
-          </XStack>
-        </XStack>
+          </HStack>
+        </HStack>
 
         {
           comment?.children?.length > 0 && (
-            <YStack marginTop="$2" gap="$2">
+            <VStack marginTop="$2" gap="$2">
               {/* 新增评论 */}
               {
                 newComments.filter(c => c.parentId).map(comment =>
@@ -197,14 +197,14 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
                 ))
               }
               {/* 更多评论 */}
-              <XStack>
+              <HStack>
                 <MoreButton />
-              </XStack>
-            </YStack>
+              </HStack>
+            </VStack>
           )
         }
-      </YStack>
-    </XStack>
+      </VStack>
+    </HStack>
   )
 })
 

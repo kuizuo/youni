@@ -1,16 +1,15 @@
-wimport { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ChevronRight } from 'lucide-react-native'
-import { Button, ListItem, ScrollView, Separator, SizableText, Text, View, YGroup } from '@/ui'
+import { Button, Divider, ListItem, MyText, MyView, ScrollView, Text, YGroup } from '@/ui'
 import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
 import { removeToken } from '@/utils/auth/utils'
-import { useAuth } from '@/utils/auth/hooks/useAuth'
 
 export function SettingScreen() {
   const router = useRouter()
   const { bottom } = useSafeAreaInsets()
-  const { isSignined } = useAuth()
+  const { isLogged } = useAuth()
 
   const renderItem = ({ item }: { item: string }) => (
     <YGroup.Item>
@@ -27,7 +26,7 @@ export function SettingScreen() {
   return (
     <View flex={1} bg="$background">
       <ScrollView bg="$gray2">
-        <YGroup alignSelf="center" size="$4" br={0} mt="$4" separator={<Separator />} unstyled>
+        <YGroup alignSelf="center" size="$4" br={0} mt="$4" Divider={<Divider />} unstyled>
           <YGroup.Item>
             <ListItem
               pressTheme
@@ -48,7 +47,7 @@ export function SettingScreen() {
           </YGroup.Item>
         </YGroup>
 
-        <YGroup alignSelf="center" size="$4" br={0} mt="$4" separator={<Separator />}>
+        <YGroup alignSelf="center" size="$4" br={0} mt="$4" Divider={<Divider />}>
           <YGroup.Item>
             <ListItem pressTheme hoverTheme title="通用设置" iconAfter={ChevronRight}onPress={() => router.push('/setting/general')} />
           </YGroup.Item>
@@ -57,7 +56,7 @@ export function SettingScreen() {
           </YGroup.Item>
         </YGroup>
 
-        <YGroup alignSelf="center" size="$4" br={0} mt="$4" separator={<Separator />}>
+        <YGroup alignSelf="center" size="$4" br={0} mt="$4" Divider={<Divider />}>
           <YGroup.Item>
             <ListItem pressTheme hoverTheme title="用户协议" iconAfter={ChevronRight} />
           </YGroup.Item>
@@ -73,7 +72,7 @@ export function SettingScreen() {
         </YGroup>
 
         <View mt="$4" pb={bottom}>
-          {isSignined
+          {isLogged
             ? (
               <LogOutItem />
               )
