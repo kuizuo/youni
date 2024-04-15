@@ -25,7 +25,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 
   const signOut = () => {
     removeToken()
-    router.replace('/sign-in')
+    router.replace('/login')
   }
 
   return (

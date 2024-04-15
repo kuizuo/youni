@@ -7,7 +7,7 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated from 'react-native-reanimated'
 import { Tabs } from 'react-native-collapsible-tab-view'
-import { Spinner } from '@/ui'
+import { Spinner } from "@gluestack-ui/themed"
 import { trpc } from '@/utils/trpc'
 import { NoteListItem } from '@/ui/components/note/NoteListItem'
 import { EmptyResult } from '@/ui/components/EmptyResult'

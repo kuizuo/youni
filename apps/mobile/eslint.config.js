@@ -11,6 +11,7 @@ module.exports = antfu(
       'react/display-name': 'off',
       'ts/no-require-imports': 'off',
       'node/prefer-global/process': 'off',
+      'prefer-regex-literals': 'off',
     },
     ignores: [
       './ui/themes/*.ts',

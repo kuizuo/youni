@@ -20,7 +20,7 @@ export function useUser() {
   })
 
   if (error)
-    router.replace('/sign-in')
+    router.replace('/login')
 
   const logOut = async () => {
     await client.post('/api/account/logout')

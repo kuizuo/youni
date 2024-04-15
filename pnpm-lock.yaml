@@ -178,22 +178,16 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(react@18.2.0)
       '@gluestack-style/react':
-        specifier: ^1.0.52
+        specifier: latest
         version: 1.0.52
-      '@gluestack-ui/avatar':
-        specifier: latest
-        version: 0.1.16(react-dom@18.2.0)(react-native@0.73.5)(react@18.2.0)
       '@gluestack-ui/config':
-        specifier: ^1.1.18
-        version: 1.1.18(@gluestack-style/react@1.0.52)(@gluestack-ui/themed@1.1.22)
-      '@gluestack-ui/nativewind-utils':
         specifier: latest
-        version: 1.0.7(@babel/core@7.24.0)(react-native-reanimated@3.6.3)(react-native-safe-area-context@4.8.2)(react-native-svg@15.0.0)(react-native@0.73.5)(react@18.2.0)(tailwindcss@3.4.3)
+        version: 1.1.18(@gluestack-style/react@1.0.52)(@gluestack-ui/themed@1.1.22)
       '@gluestack-ui/overlay':
         specifier: latest
         version: 0.1.14(react-dom@18.2.0)(react-native@0.73.5)(react@18.2.0)
       '@gluestack-ui/themed':
-        specifier: ^1.1.22
+        specifier: latest
         version: 1.1.22(@gluestack-style/react@1.0.52)(@types/react-native@0.73.0)(nativewind@4.0.36)(react-dom@18.2.0)(react-native-svg@15.0.0)(react-native-web@0.19.10)(react-native@0.73.5)(react@18.2.0)
       '@gluestack-ui/toast':
         specifier: latest
@@ -5431,24 +5425,6 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
       - react-native
-    dev: false
-
-  /@gluestack-ui/nativewind-utils@1.0.7(@babel/core@7.24.0)(react-native-reanimated@3.6.3)(react-native-safe-area-context@4.8.2)(react-native-svg@15.0.0)(react-native@0.73.5)(react@18.2.0)(tailwindcss@3.4.3):
-    resolution: {integrity: sha512-UJ2PkMebrIe0cCSajdXYrIbucc2ZutuWZel6b66Rk3+Z85cfDTDkRtX3Drutlzg5H1hhQf419BMsWFmUNmVLTQ==}
-    peerDependencies:
-      react: '>=16'
-    dependencies:
-      nativewind: 4.0.36(@babel/core@7.24.0)(react-native-reanimated@3.6.3)(react-native-safe-area-context@4.8.2)(react-native-svg@15.0.0)(react-native@0.73.5)(react@18.2.0)(tailwindcss@3.4.3)
-      react: 18.2.0
-      tailwind-variants: 0.1.20(tailwindcss@3.4.3)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - react-native
-      - react-native-reanimated
-      - react-native-safe-area-context
-      - react-native-svg
-      - supports-color
-      - tailwindcss
     dev: false
 
   /@gluestack-ui/overlay@0.1.14(react-dom@18.2.0)(react-native@0.73.5)(react@18.2.0):
@@ -29721,20 +29697,6 @@ packages:
   /tablesort@5.3.0:
     resolution: {integrity: sha512-WkfcZBHsp47gVH9CBHG0ZXopriG01IA87arGrchvIe868d4RiXVvoYPS1zMq9IdW05kBs5iGsqxTABqLyWonbg==}
     dev: true
-
-  /tailwind-merge@1.14.0:
-    resolution: {integrity: sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==}
-    dev: false
-
-  /tailwind-variants@0.1.20(tailwindcss@3.4.3):
-    resolution: {integrity: sha512-AMh7x313t/V+eTySKB0Dal08RHY7ggYK0MSn/ad8wKWOrDUIzyiWNayRUm2PIJ4VRkvRnfNuyRuKbLV3EN+ewQ==}
-    engines: {node: '>=16.x', pnpm: '>=7.x'}
-    peerDependencies:
-      tailwindcss: '*'
-    dependencies:
-      tailwind-merge: 1.14.0
-      tailwindcss: 3.4.3
-    dev: false
 
   /tailwindcss@3.4.3:
     resolution: {integrity: sha512-U7sxQk/n397Bmx4JHbJx/iSOOv5G+II3f1kpLpY2QeUv5DcPdcTsYLlusZfq1NthHS1c1cZoyFmmkex1rzke0A==}

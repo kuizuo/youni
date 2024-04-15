@@ -1,11 +1,10 @@
 import { Tabs, useRouter } from 'expo-router'
-import { Avatar, Icon, Image, View, useToken } from '@gluestack-ui/themed'
-import { TouchableOpacity } from 'react-native'
-import { Home, Plus } from 'lucide-react-native'
+import { Avatar, AvatarFallbackText, AvatarImage, Pressable, View, useToken } from '@gluestack-ui/themed'
+import { Clover, Home, MessageCircleMore, Plus } from 'lucide-react-native'
 import { useUser } from '@/utils/auth/hooks/useUser'
-import { theme } from '@/utils/tw'
 
 export default function TabLayout() {
+  const primaryColor = useToken('colors', 'primary500')
   const { currentUser, isLoading } = useUser()
 
   if (isLoading)
@@ -19,21 +18,21 @@ export default function TabLayout() {
         tabBarStyle: {
           borderWidth: 0,
         },
-        // tabBarActiveTintColor: theme.colors.primary,
+        tabBarActiveTintColor: primaryColor,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: '首页',
-          tabBarIcon: ({ color, size }) => <Icon as={Home} color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="campus"
         options={{
           title: '校园',
-          tabBarIcon: ({ color, size }) => <Icon as={Home} color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <Clover color={color} size={24} />,
         }}
       />
       <Tabs.Screen
@@ -45,18 +44,14 @@ export default function TabLayout() {
         })}
         options={{
           title: '',
-          tabBarIcon: ({ size }) => {
-            return (
-              <PlusButton size={size} />
-            )
-          },
+          tabBarIcon: ({ size }) => <PlusButton size={size} />,
         }}
       />
       <Tabs.Screen
         name="notification"
         options={{
           title: '消息',
-          tabBarIcon: ({ color, size }) => <Icon as={Home} color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <MessageCircleMore color={color} size={size} />,
         }}
       />
       <Tabs.Screen
@@ -71,16 +66,15 @@ export default function TabLayout() {
           title: '我',
           tabBarIcon: ({ color, size }) => {
             return (
-              <View className={`b-1 b-[${color}] rounded-full`}>
-                <Avatar className="rounded-full" size={size}>
-                  <Image
+              <View borderWidth={1} borderColor={color} borderRadius="$full">
+                <Avatar h={size} w={size}>
+                  <AvatarFallbackText>{currentUser?.nickname}</AvatarFallbackText>
+                  {/* <AvatarImage
                     source={{
-                      uri: currentUser.avatar!,
-                      width: size,
-                      height: size,
+                      uri: currentUser?.avatar,
                     }}
-                    alt="your avatar"
-                  />
+                    alt="avatar"
+                  /> */}
                 </Avatar>
               </View>
             )
@@ -95,29 +89,24 @@ function PlusButton({ size }: { size: number }) {
   const router = useRouter()
   const { isSignined } = useUser()
 
-  // TODO: fixme
   return (
     <>
-      <TouchableOpacity
-        className="absolute bg-primary rounded-lg"
-        style={{
-          width: size + 24,
-          height: size + 14,
+      <Pressable
+        position="absolute"
+        bg="$primary500"
+        $hover-bg="$primary400"
+        rounded="$lg"
+        w={size + 24}
+        h={size + 14}
+        onPress={() => {
+          if (!isSignined) {
+            router.replace('/login')
+            return
+          }
+          router.push('/create/')
         }}
-      // pressStyle={{
-      //   scale: 1.1,
-      // }}
-      // onPress={() => {
-      //   if (!isSignined) {
-      //     router.replace('/sign-in')
-      //     return
-      //   }
-      //   router.push('/create/')
-      // }}
-
       />
       <View
-        className="absolute justify-center content-center"
         style={{
           height: size + 14,
         }}

@@ -4,7 +4,7 @@ import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button, Divider, HStack, Text, VStack, useTheme } from '@gluestack-ui/themed'
+import { Button, Divider, HStack, Text, VStack } from '@gluestack-ui/themed'
 import { useDrawerOpen } from '@/atoms/drawer'
 
 export default function CustomDrawerContent() {
@@ -15,12 +15,12 @@ export default function CustomDrawerContent() {
   const drawerItems: React.ComponentProps<typeof DrawerItem>[] = [
     {
       label: '创作中心',
-      icon: () => <Highlighter size="$1" />,
+      icon: () => <Highlighter size={24} />,
       onPress: () => handlePressItem(() => router.push('/(creator)/')),
     },
     {
       label: '浏览记录',
-      icon: () => <History size="$1" />,
+      icon: () => <History size={24} />,
       onPress: () => handlePressItem(() => router.push('/history/')),
     },
   ]
@@ -28,12 +28,12 @@ export default function CustomDrawerContent() {
   const bottomNav: { label: string, icon: JSX.Element, onPress: () => void }[] = [
     {
       label: '设置',
-      icon: <Settings size="$1" />,
+      icon: <Settings size={24} />,
       onPress: () => handlePressItem(() => router.push('/setting/')),
     },
     {
       label: '帮助与反馈',
-      icon: <BadgeHelp size="$1" />,
+      icon: <BadgeHelp size={24} />,
       onPress: () => { },
     },
     // { label: '扫一扫', onPress: ()=>{}},
@@ -91,7 +91,7 @@ export default function CustomDrawerContent() {
               flex={1}
               jc="center"
               ai="center"
-              space="$1"
+              space={24}
               onPress={onPress}
             >
               <BlurView

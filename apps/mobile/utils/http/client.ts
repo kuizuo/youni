@@ -36,7 +36,7 @@ client.interceptors.response.use(
       removeToken()
       const router = useRouter()
 
-      router.replace('/sign-in')
+      router.replace('/login')
     }
 
     const data: any = res.data || {}

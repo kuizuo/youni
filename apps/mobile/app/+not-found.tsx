@@ -1,7 +1,6 @@
+import { Button, Text, View } from '@gluestack-ui/themed'
 import { Stack, useRouter } from 'expo-router'
 import { StyleSheet } from 'react-native'
-
-import { Button, Text, View } from '@/ui'
 
 export default function NotFoundScreen() {
   const router = useRouter()
@@ -12,8 +11,8 @@ export default function NotFoundScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>页面不存在</Text>
 
-        <Button theme="blue" mt="$2" onPress={() => router.back()}>返回上一级</Button>
-        <Button theme="blue" mt="$2" onPress={() => router.replace('/')}>返回到首页</Button>
+        <Text mt="$2" onPress={() => router.back()}>返回上一级</Text>
+        <Text mt="$2" onPress={() => router.replace('/')}>返回到首页</Text>
       </View>
     </>
   )

@@ -1,15 +1,25 @@
 import { ChevronLeft, Menu, Search } from 'lucide-react-native'
 import type { LucideProps } from 'lucide-react-native'
 import { useRouter } from 'expo-router'
-
+import { Icon, useToken } from '@gluestack-ui/themed'
+import type { ViewStyle } from 'react-native'
 import { useDrawerOpen } from '@/atoms/drawer'
 
-function BackButton({ onPress, ...props }: LucideProps) {
+interface IconProps {
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xs' | undefined
+  color?: string
+  onPress?: (ev: any) => void
+  style: ViewStyle
+}
+
+function BackButton({ size = 'md', color, onPress, ...props }: IconProps) {
   const router = useRouter()
 
   return (
-    <ChevronLeft
-      size="$1.5"
+    <Icon
+      as={ChevronLeft}
+      size={size}
+      color={color}
       onPress={(ev) => {
         if (typeof onPress === 'function') {
           onPress(ev)
@@ -26,22 +36,36 @@ function BackButton({ onPress, ...props }: LucideProps) {
   )
 }
 
-function MenuButton(props: LucideProps) {
+function MenuButton({ size = 'md', color, ...props }: IconProps) {
   const [open, setOpen] = useDrawerOpen()
 
   return (
-    <Menu
-      size="$1"
+    <Icon
+      as={Menu}
+      size={size}
+      color={color}
       onPress={() => setOpen(true)}
       {...props}
     />
+    // <Menu
+    //   size={size}
+    //   color={color}
+    //   onPress={() => setOpen(true)}
+    //   {...props}
+    // />
   )
 }
 
-function SearchButton(props: LucideProps) {
+function SearchButton({ size = 'md', color, ...props }: IconProps) {
   const router = useRouter()
   return (
-    <Search size="$1" onPress={() => router.push('/search')} {...props} />
+    <Icon
+      as={Search}
+      size={size}
+      color={color}
+      onPress={() => router.push('/search')}
+      {...props}
+    />
   )
 }
 

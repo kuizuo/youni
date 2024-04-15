@@ -11,12 +11,12 @@ export function useAuthRedirect() {
     if (!token) {
       if (Platform.OS === 'web') {
         setImmediate(() => {
-          router.replace('/sign-in')
+          router.replace('/login')
         })
       }
       else {
         setTimeout(() => {
-          router.replace('/sign-in')
+          router.replace('/login')
         }, 1)
       }
     }

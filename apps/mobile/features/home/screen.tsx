@@ -2,12 +2,13 @@ import React, { useMemo, useState } from 'react'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useWindowDimensions } from 'react-native'
+import { Text, View, useToken } from '@gluestack-ui/themed'
 import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
-import { Text, View } from '@/ui'
 import { NavButton } from '@/ui/components/NavButton'
 
 export function HomeScreen(): React.ReactNode {
+  const primaryColor = useToken('colors', 'primary500')
   const { top } = useSafeAreaInsets()
 
   const [index, setIndex] = useState(0)
@@ -28,7 +29,7 @@ export function HomeScreen(): React.ReactNode {
   )
 
   return (
-    <View className="flex-1" style={{ paddingTop: top }}>
+    <View flex={1} pt={top}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -47,21 +48,31 @@ export function HomeScreen(): React.ReactNode {
           }
         }}
         renderTabBar={props => (
-          <View className="relative h-[30px] mx-4 mb-2 items-center">
-            <NavButton.Menu position="absolute" left={0} />
-            <NavButton.Search position="absolute" right={0} />
+          <View
+            position="relative"
+            h={30}
+            mx="$4"
+            mb="$2"
+            alignItems="center"
+          >
+            <NavButton.Menu style={{ position: 'absolute', left: 0 }} />
+            <NavButton.Search style={{ position: 'absolute', right: 0 }} />
 
             <TabBar
               {...props}
               style={{
-                flex: 1,
                 justifyContent: 'center',
                 backgroundColor: 'transparent',
               }}
               tabStyle={{
                 height: 50,
               }}
-              // indicatorStyle={tw`h-[2px] items-center w-1/2 bg-primary`}
+              indicatorStyle={{
+                height: 2,
+                width: '50%',
+                justifyContent: 'center',
+                backgroundColor: primaryColor,
+              }}
               indicatorContainerStyle={{
                 borderBottomWidth: 0,
               }}

@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { ViewStyle } from 'react-native'
 import { Platform } from 'react-native'
-import { Text, View } from '@/ui'
+import { Text, View } from '@gluestack-ui/themed'
+
+// import { Text, View } from '@/ui'
 
 export const NAV_BAR_HEIGHT = 48
 
@@ -27,7 +29,7 @@ export function NavBar({
 
   return (
     <View
-      className={`${className} relative flex-row items-center px-2 gap-2 pb-2.5`}
+      // className={`${className} relative flex-row items-center px-2 gap-2 pb-2.5`}
       style={{
         paddingTop: safeTop || 8,
         ...style,

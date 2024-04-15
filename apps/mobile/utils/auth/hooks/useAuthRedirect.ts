@@ -7,18 +7,18 @@ export function useAuthRedirect() {
   const router = useRouter()
   const { token } = useAuth()
 
-  useEffect(() => {
-    if (!token) {
-      if (Platform.OS === 'web') {
-        setImmediate(() => {
-          router.replace('/sign-in')
-        })
-      }
-      else {
-        setTimeout(() => {
-          router.replace('/sign-in')
-        }, 1)
-      }
-    }
-  }, [token])
+  // useEffect(() => {
+  //   if (!token) {
+  //     if (Platform.OS === 'web') {
+  //       setImmediate(() => {
+  //         router.replace('/login')
+  //       })
+  //     }
+  //     else {
+  //       setTimeout(() => {
+  //         router.replace('/login')
+  //       }, 1)
+  //     }
+  //   }
+  // }, [token])
 }

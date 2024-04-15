@@ -4,15 +4,9 @@ const path = require('node:path')
 const { getDefaultConfig } = require('expo/metro-config')
 const { withNativeWind } = require('nativewind/metro')
 
-const config = getDefaultConfig(__dirname, {
-  isCSSEnabled: true,
-})
+const config = getDefaultConfig(__dirname)
 
-module.exports = withMonorepoPaths(
-  withNativeWind(config, {
-    input: './global.css',
-  }),
-)
+module.exports = withMonorepoPaths(config)
 
 /**
  * Add the monorepo paths to the Metro config.
@@ -35,5 +29,7 @@ function withMonorepoPaths(config) {
     path.resolve(workspaceRoot, 'node_modules'),
   ]
 
+  // 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
+  config.resolver.disableHierarchicalLookup = true
   return config
 }

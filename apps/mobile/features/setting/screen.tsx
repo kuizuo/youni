@@ -80,7 +80,7 @@ export function SettingScreen() {
             : (
               <Button
                 onPress={() => {
-                  router.replace('/sign-in')
+                  router.replace('/login')
                 }}
                 br={0}
                 size="large"

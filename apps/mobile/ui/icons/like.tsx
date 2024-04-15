@@ -1,7 +1,22 @@
-import { createIcon } from '@gluestack-ui/themed'
+import { createIcon } from '@gluestack-ui/icon'
 import { Path } from 'react-native-svg'
+import { AsForwarder, styled } from '@gluestack-ui/themed'
+
+const StyledIcon: any = styled(
+  AsForwarder,
+  {},
+  {
+    ancestorStyle: ['_icon'],
+  },
+  {
+    propertyTokenMap: {
+      stroke: 'colors',
+    },
+  },
+)
 
 const LikeIcon = createIcon({
+  Root: StyledIcon,
   viewBox: '0 0 32 32',
   path: (
     <>
