@@ -37,8 +37,8 @@
 //     <>
 //       {isManageMode
 //       && (
-//         <HStack py="$2" pb={bottom || '$2'} mx="$3" gap="$3" jc="space-between" ai="center">
-//           <HStack flex={1} ai="center" gap="$3">
+//         <HStack py="$2" pb={bottom || '$2'} mx="$3" gap="$3" justifyContent="space-between" alignItems="center">
+//           <HStack flex={1} alignItems="center" gap="$3">
 //             <Checkbox
 //               id={id}
 //               size="$4"

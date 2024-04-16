@@ -2,8 +2,8 @@ import { useAtom } from 'jotai'
 import { useMemo } from 'react'
 import { RESET } from 'jotai/utils'
 import { Trash } from 'lucide-react-native'
-import { searchHistoryAtom } from '@/atoms/searchHistroy'
 import { Text, View } from '@gluestack-ui/themed'
+import { searchHistoryAtom } from '@/atoms/searchHistroy'
 import { NAV_BAR_HEIGHT } from '@/ui/components/NavBar'
 import { confirm } from '@/utils/confirm'
 
@@ -37,7 +37,7 @@ export function SectionList({
 
         return (
           <View flex={1} key={key}>
-            <View h={NAV_BAR_HEIGHT} mx="$3" fd="row" jc="space-between" ai="center">
+            <View h={NAV_BAR_HEIGHT} mx="$3" fd="row" justifyContent="space-between" alignItems="center">
               <Text color="$gray9">
                 {title}
               </Text>

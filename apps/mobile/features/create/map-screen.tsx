@@ -12,7 +12,7 @@ export function MapScreen() {
       <View fd="row" margin="$2" px="$2">
         <HStack
           flex={1}
-          ai="center"
+          alignItems="center"
           bg="$gray3"
           px="$2.5"
           py="$2.5"

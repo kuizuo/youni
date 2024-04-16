@@ -2,18 +2,20 @@ import React, { useState } from 'react'
 import { TouchableOpacity } from 'react-native'
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import type { CommentItem } from '@server/modules/comment/comment'
+import { HStack, Text } from '@gluestack-ui/themed'
+import { Heart } from 'lucide-react-native'
 import { trpc } from '@/utils/trpc'
+
 import { Like } from '@/ui/icons/like'
-import type { SizeTokens } from '@/ui'
-import { HStack, Text, useTheme } from '@/ui'
 
 export interface Props {
   item: CommentItem
-  size?: SizeTokens
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xs" | undefined
+  color?: string
+  placeholder?: string
 }
 
-export function CommentLikeButton({ item, size = 16 }: Props) {
-  const theme = useTheme()
+export function CommentLikeButton({ item, size = 16, color, placeholder }: Props) {
   const [liked, setLiked] = useState(item.interact?.liked)
   const [likedCount, setLikedCount] = useState(item.interact?.likedCount)
 
@@ -45,18 +47,18 @@ export function CommentLikeButton({ item, size = 16 }: Props) {
   })
 
   return (
-    <HStack gap="$1.5" ai="center">
+    <HStack gap="$1.5" alignItems="center">
       <TouchableOpacity onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
-          <Like
+          <Heart
             fill={liked ? 'red' : 'transparent'}
-            color={liked ? 'red' : 'gray'}
+            color={liked ? 'red' : color}
             size={size}
           />
         </Animated.View>
       </TouchableOpacity>
-      <Text fontSize={size} color="gray">
-        {likedCount || ' '}
+      <Text color="$secondary500">
+        {likedCount || placeholder}
       </Text>
     </HStack>
   )

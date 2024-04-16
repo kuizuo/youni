@@ -22,18 +22,6 @@ export function View({ children, className, ...props }: ViewProps) {
   )
 }
 
-export function Pressable({ children, className, ...props }: PressableProps) {
-  const defaultClass = ``
-  return (
-    <PressableOg
-      className={`${defaultClass} ${className}`}
-      {...props}
-    >
-      {children}
-    </PressableOg>
-  )
-}
-
 export function Text({ children, className, style, ...props }: TextProps) {
   return (
     <TextOg

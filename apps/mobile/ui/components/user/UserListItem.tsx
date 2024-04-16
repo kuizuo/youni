@@ -13,7 +13,7 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
   }
 
   return (
-    <HStack p="$3" gap="$3" height="$8" ai="center">
+    <HStack p="$3" gap="$3" height="$8" alignItems="center">
       <Avatar borderRadius="$full" size="lg" onPress={handleNavigateToUser}>
         <AvatarImage
           width="100%"

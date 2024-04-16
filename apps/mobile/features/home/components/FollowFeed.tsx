@@ -1,9 +1,8 @@
 import React, { memo, useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
-import { ScrollView } from '@gluestack-ui/themed'
+import { Heading, ScrollView, Text, View } from '@gluestack-ui/themed'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { Text, View } from '@gluestack-ui/themed'
 import { trpc } from '@/utils/trpc'
 import { UserNoteList } from '@/ui/components/user/UserNoteList'
 import { withQuerySuspense } from '@/ui/components/QuerySuspense'
@@ -44,8 +43,8 @@ const FollowFeed = memo(() => {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
       >
         <View className="items-center">
-          <Text size="md">还没有关注的用户</Text>
-          <Text className="text-xs">关注后，可在这里查看对方的最新动态</Text>
+          <Heading size="md">还没有关注的用户</Heading>
+          <Text size="sm">关注后，可在这里查看对方的最新动态</Text>
         </View>
         {/* 你可能认识的人 */}
       </ScrollView>

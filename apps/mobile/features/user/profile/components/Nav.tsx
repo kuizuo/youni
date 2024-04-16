@@ -3,8 +3,8 @@ import type { LucideProps } from 'lucide-react-native'
 import type { Href } from 'expo-router'
 import { Link } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Text, View, useToken } from '@gluestack-ui/themed'
-import { MyView } from '@/ui'
+import { Text, useToken } from '@gluestack-ui/themed'
+import { View } from '@/ui/components/Themed'
 
 export function Navs() {
   interface Item {
@@ -37,7 +37,7 @@ export function Navs() {
   ]
 
   return (
-    <MyView className="flex-row mx-4 mb-3 gap-2.5">
+    <View className="flex-row mx-4 mb-3 gap-2.5">
       {
         navItems.map(({ href, icon, text, desc }) => {
           return (
@@ -61,6 +61,6 @@ export function Navs() {
           )
         })
       }
-    </MyView>
+    </View>
   )
 }

@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { MaterialTabBar, Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
 import { Avatar, AvatarImage, HStack, Image, Text, View, useToken } from '@gluestack-ui/themed'
+import { useColorScheme } from 'nativewind'
 import { InteractInfo } from './components/InteractInfo'
 import { Navs } from './components/Nav'
 import { UserNote } from './components/UserNote'
@@ -26,8 +27,9 @@ const AVATAR_SIZE_VALUE = 60
 const BANNER_BOTTOM_HEIGHT_ADDITION = AVATAR_SIZE_VALUE
 
 export function ProfileScreen() {
+  const { colorScheme } = useColorScheme()
   const primaryColor = useToken('colors', 'primary500')
-  const bgColor = useToken('colors', 'backgroundDark950')
+  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight800' : 'backgroundLight200')
 
   const { id: userId } = useLocalSearchParams<{ id: string }>()
 
@@ -197,7 +199,6 @@ export function ProfileScreen() {
                   uri: data?.avatar,
                 }}
               />
-
             </Avatar>
             <View flex={1}>
               <View mb="$2" gap="$2" alignContent="center">

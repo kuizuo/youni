@@ -65,10 +65,10 @@ export const TagSheet = memo(() => {
         exitStyle={{ opacity: 0 }}
       />
       <Sheet.Handle />
-      <Sheet.Frame p="$4" jc="center" ai="center" gap="$5">
+      <Sheet.Frame p="$4" justifyContent="center" alignItems="center" gap="$5">
         <HStack
           width="100%"
-          ai="center"
+          alignItems="center"
           bg="$gray3"
           px="$2.5"
           py="$2.5"
@@ -138,7 +138,7 @@ const TagItem = memo(({ item }: { item: NoteTag }) => {
       setSelectTags(prev => [...prev, item.name])
   }
   return (
-    <View flexDirection="row" width="100%" jc="space-between" onPress={handleSelect}>
+    <View flexDirection="row" width="100%" justifyContent="space-between" onPress={handleSelect}>
       <Text flex={1} size="md">
         {`# ${item.name}`}
       </Text>

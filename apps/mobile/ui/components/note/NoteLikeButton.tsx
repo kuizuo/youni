@@ -1,19 +1,19 @@
 import React, { useState } from 'react'
-import { TouchableOpacity } from 'react-native'
+import { Pressable } from 'react-native'
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import type { NoteItem } from '@server/modules/note/note'
-import { HStack, Text } from '@gluestack-ui/themed'
+import { HStack, Icon, Text } from '@gluestack-ui/themed'
 import { Heart } from 'lucide-react-native'
 import { trpc } from '@/utils/trpc'
 
 export interface Props {
   item: NoteItem
-  size?: number
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xs' | undefined
   color?: string
   placeholder?: string
 }
 
-export function NoteLikeButton({ item, size = 18, color = 'gray', placeholder }: Props) {
+export function NoteLikeButton({ item, size = 'md', color = 'gray', placeholder }: Props) {
   const [liked, setLiked] = useState(item.interact.liked)
   const [likedCount, setLikedCount] = useState(item.interact.likedCount)
 
@@ -46,17 +46,18 @@ export function NoteLikeButton({ item, size = 18, color = 'gray', placeholder }:
 
   return (
     <HStack alignItems="center" gap="$1">
-      <TouchableOpacity onPress={handleLike}>
+      <Pressable onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
-          <Heart
+          <Icon
+            as={Heart}
             fill={liked ? 'red' : 'transparent'}
             color={liked ? 'red' : color}
             size={size}
           />
         </Animated.View>
-      </TouchableOpacity>
-      <Text color="$secondary500">
-        {likedCount || placeholder }
+      </Pressable>
+      <Text size="sm" color="$secondary500">
+        {likedCount || placeholder}
       </Text>
     </HStack>
   )

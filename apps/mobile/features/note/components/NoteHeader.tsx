@@ -24,13 +24,9 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
   return (
     <NavBar
       left={<NavButton.Back size="xl" />}
-      right={currentUser.id === user.id
+      right={currentUser?.id === user?.id
         ? <NoteMenu item={item} />
-        : (
-          <>
-            <NoteShareButton item={item} />
-          </>
-      )}
+        : <NoteShareButton item={item} />}
     >
       <Link href={`/user/${user.id}/profile`} asChild>
         <HStack flex={1} gap="$2" alignItems="center">

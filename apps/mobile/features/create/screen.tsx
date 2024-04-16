@@ -179,14 +179,14 @@ export function CreateScreen() {
         px={padding}
         mb="$2"
       >
-        <HStack ai="center" gap="$2">
+        <HStack alignItems="center" gap="$2">
           {photos?.map((asset, index) => (
-            <Image source={asset} key={asset.assetId} br="$4" width={imageWidth} height={imageWidth} bg="$color2" jc="center" ai="center" onPress={() => handlePressImage(index)} />
+            <Image source={asset} key={asset.assetId} br="$4" width={imageWidth} height={imageWidth} bg="$color2" justifyContent="center" alignItems="center" onPress={() => handlePressImage(index)} />
           ))}
 
           {
             imageLength < 9 && (
-              <View br="$4" width={imageWidth} height={imageWidth} bg="$color2" jc="center" ai="center" onPress={pickImageAsync}>
+              <View br="$4" width={imageWidth} height={imageWidth} bg="$color2" justifyContent="center" alignItems="center" onPress={pickImageAsync}>
                 <Plus color="$color11" />
               </View>
             )

@@ -50,9 +50,7 @@ export function FollowerList({ userId, type }: Props) {
         ListFooterComponent={(
           <SafeAreaView edges={['bottom']}>
             {isFetchingNextPage
-              ? (
-                <Spinner />
-                )
+              ? <Spinner />
               : null}
           </SafeAreaView>
         )}

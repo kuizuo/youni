@@ -1,12 +1,13 @@
 import type { NoteItem } from '@server/modules/note/note'
 import { PencilLine } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { KeyboardAvoidingView, Platform } from 'react-native'
+import { KeyboardAvoidingView, Platform, TextInput } from 'react-native'
+import { HStack, Input, InputField, Pressable, VStack, View } from '@gluestack-ui/themed'
 import { CommentModel } from '@/ui/components/comment/CommentModel'
 import { NoteCollectButton } from '@/ui/components/note/NoteCollectButton'
 import { NoteLikeButton } from '@/ui/components/note/NoteLikeButton'
-import { HStack, Input, MyView, VStack } from '@/ui'
 import { useCommentModalOpen, useParentComment } from '@/atoms/comment'
+import { NoteCommentButton } from '@/ui/components/note/NoteCommentButton'
 
 export function NoteFooter({ item }: { item: NoteItem }) {
   const { bottom } = useSafeAreaInsets()
@@ -23,29 +24,40 @@ export function NoteFooter({ item }: { item: NoteItem }) {
       {!open
         ? (
           <HStack py="$2" pb={bottom || '$2'} mx="$2" gap="$3">
-            <HStack flex={1} gap="$1" ai="center" bg="$gray3" px="$2.5" py="$1.5" br={50}>
-              <PencilLine size="sm" color="gray" />
-              <Input
-                flex={1}
-                size="$2"
-                placeholder="说点什么"
+            <HStack
+              flex={1}
+              gap="$1"
+              bg="$trueGray200"
+              px="$2"
+              py="$1"
+              alignItems="center"
+              borderRadius="$full"
+            >
+              <PencilLine color="gray" />
+
+              <Pressable
                 onPressIn={handleOpenCommentModal}
-                unstyled
-              />
+              >
+                <TextInput
+                  placeholder="说点什么吧"
+                />
+              </Pressable>
+
             </HStack>
             <HStack gap="$2">
-              <NoteLikeButton size={18} item={item} placeholder="喜欢" />
-              <NoteCollectButton size={18} item={item} />
+              <NoteLikeButton size="lg" item={item} placeholder="喜欢" />
+              <NoteCollectButton size="lg" item={item} />
+              <NoteCommentButton size="lg" item={item} />
             </HStack>
           </HStack>
           )
         : (
-          <VStack fullscreen>
-            <View
+          <VStack>
+            <Pressable
               flex={1}
               opacity={0.3}
               pointerEvents="none"
-              bg="$gray8"
+              bg="$secondary500"
               onPress={() => setOpen(false)}
             />
             <KeyboardAvoidingView

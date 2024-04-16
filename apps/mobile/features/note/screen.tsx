@@ -2,7 +2,7 @@ import React, { lazy, useEffect } from 'react'
 import { Link, useLocalSearchParams } from 'expo-router'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
-import { Divider, HStack, Heading, ScrollView, Text, View } from '@gluestack-ui/themed'
+import { Divider, HStack, Heading, LinkText, ScrollView, Text, View } from '@gluestack-ui/themed'
 import { NoteHeader } from './components/NoteHeader'
 import { NoteFooter } from './components/NoteFooter'
 import { NoteDetailPlaceholder } from './components/NoteDetailPlaceholder'
@@ -13,8 +13,10 @@ import { useCurrentNote } from '@/atoms/comment'
 import { NotFound } from '@/ui/components/NotFound'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
 
+// import { Comments } from '@/ui/components/comment/Comments'
+
 // @ts-expect-error
-const Comments = lazy(() => import('@/ui/components/comment/Comment'))
+const Comments = lazy(() => import('@/ui/components/comment/Comments'))
 
 export function NoteScreen(): React.ReactNode {
   const { id } = useLocalSearchParams<{ id: string, title: string, username: string, avatar: string }>()
@@ -59,28 +61,24 @@ export function NoteScreen(): React.ReactNode {
           <HStack flexWrap="wrap" rowGap="$1" columnGap="$2">
             {data?.tags.map(tag => (
               <Link key={tag.name} href={`/tag/${tag.name}`} asChild>
-                <Text color="$blue8">
+                <LinkText>
                   {`# ${tag.name}`}
-                </Text>
+                </LinkText>
               </Link>
             ),
             )}
           </HStack>
 
-          <Text size="sm" color="gray">
+          <Text size="sm" color="$secondary500">
             {formatTime(data?.publishTime)}
           </Text>
 
           <Divider my={15} />
 
-          <Text size="md" color="gray">
-            {`共 ${data.interact.commentCount} 条评论`}
-          </Text>
-
-          {/* <Comments /> */}
+          <Comments />
         </View>
       </ScrollView>
-      {/* <NoteFooter item={data as unknown as NoteItem} /> */}
+      <NoteFooter item={data as unknown as NoteItem} />
     </View>
   )
 }

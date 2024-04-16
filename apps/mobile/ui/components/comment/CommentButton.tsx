@@ -1,18 +1,17 @@
 import { MessageCircle } from 'lucide-react-native'
 import type { CommentItem } from '@server/modules/comment/comment'
 import { useState } from 'react'
-import type { SizeTokens } from '@/ui'
-import { Button, HStack, Text } from '@/ui'
+import { Icon, Pressable, Text } from '@gluestack-ui/themed'
 import { useCommentModalOpen, useParentComment } from '@/atoms/comment'
 
 export interface Props {
   item: CommentItem
-  size?: SizeTokens
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xs' | undefined
 }
 
 export function CommentButton({
   item,
-  size = 16,
+  size = 'md',
 }: Props) {
   const [commentCount, setCommentCount] = useState(item.interact?.commentCount || 0)
 
@@ -24,16 +23,15 @@ export function CommentButton({
   }
 
   return (
-    <HStack ai="center" gap="$1.5">
-      <Button
-        icon={<MessageCircle color="gray" size={size} />}
-        onPress={handleOpenCommentModal}
-        unstyled
-      >
-      </Button>
-      <Text fontSize={size} color="gray">
+    <Pressable flexDirection="row" alignItems="center" gap="$1.5" onPress={handleOpenCommentModal}>
+      <Icon
+        as={MessageCircle}
+        color="gray"
+        size={size}
+      />
+      <Text color="$secondary500">
         {commentCount || ''}
       </Text>
-    </HStack>
+    </Pressable>
   )
 }

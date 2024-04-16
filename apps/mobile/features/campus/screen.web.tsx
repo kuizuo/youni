@@ -48,7 +48,7 @@ function CampusTitle({ campus }: { campus?: Campus }) {
     return <Text>请选择校区</Text>
 
   return (
-    <View flexDirection="row" gap="$2" ai="center">
+    <View flexDirection="row" gap="$2" alignItems="center">
       <Image
         w={24}
         h={24}

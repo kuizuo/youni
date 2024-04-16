@@ -104,7 +104,8 @@ function PaginationItem(
 
   return (
     <View
-      bg="$backgroundLight800"
+      bg="$backgroundLight300"
+      $dark-bg="backgroundLight800"
       width={width}
       height={width}
       borderRadius="$full"

@@ -67,7 +67,7 @@ export function SelectCampusButton() {
         <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
 
         <VStack gap="$3">
-          <HStack ai="center" gap="$3">
+          <HStack alignItems="center" gap="$3">
             <Input
               flex={1}
               size="$3"

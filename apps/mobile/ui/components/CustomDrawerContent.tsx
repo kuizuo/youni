@@ -5,11 +5,13 @@ import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Button, Divider, HStack, Icon, Text, VStack, useToken } from '@gluestack-ui/themed'
+import { useColorScheme } from 'nativewind'
 import { useDrawerOpen } from '@/atoms/drawer'
 
 export default function CustomDrawerContent() {
   const router = useRouter()
-  const bgColor = useToken('colors', 'backgroundLight950')
+  const { colorScheme } = useColorScheme()
+  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight950' : 'backgroundLight0')
 
   const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useDrawerOpen()
@@ -89,8 +91,8 @@ export default function CustomDrawerContent() {
             <VStack
               key={label}
               flex={1}
-              jc="center"
-              ai="center"
+              justifyContent="center"
+              alignItems="center"
               space="lg"
               onPress={onPress}
             >

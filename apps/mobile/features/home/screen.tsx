@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useWindowDimensions } from 'react-native'
-import { Text, View, useToken } from '@gluestack-ui/themed'
+import { Pressable, Text, View, useToken } from '@gluestack-ui/themed'
 import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
 import { NavButton } from '@/ui/components/NavButton'
@@ -63,41 +63,40 @@ export function HomeScreen(): React.ReactNode {
             <NavButton.Menu style={{ position: 'absolute', left: 0 }} />
             <NavButton.Search style={{ position: 'absolute', right: 0 }} />
 
-            <TabBar
-              {...props}
-              style={{
-                flex: 1,
-                justifyContent: 'center',
-                backgroundColor: 'transparent',
-              }}
-              indicatorStyle={{
-                height: 2,
-                width: '50%',
-                justifyContent: 'center',
-                backgroundColor: primaryColor,
-              }}
-              indicatorContainerStyle={{
-                borderBottomWidth: 0,
-              }}
-              scrollEnabled
-              gap={16}
-              renderTabBarItem={(tabBarItemProps) => {
-                const { route } = tabBarItemProps
-                const active = TABS[index]!.key === route.key
+            <View flex={1}>
+              <TabBar
+                {...props}
+                style={{
+                  flex: 1,
+                  backgroundColor: 'transparent',
+                }}
+                indicatorStyle={{
+                  height: 2,
+                  width: '50%',
+                  justifyContent: 'center',
+                  backgroundColor: primaryColor,
+                }}
+                indicatorContainerStyle={{
+                  borderBottomWidth: 0,
+                }}
+                scrollEnabled
+                gap={16}
+                renderTabBarItem={(tabBarItemProps) => {
+                  const { route } = tabBarItemProps
 
-                return (
-                  <Text
-                    className={`text-base ${active ? 'opacity-100' : 'opacty-50'}`}
-                    onPress={() => {
-                      const index = TABS.findIndex(tab => tab.key === route.key)
-                      setIndex(index)
-                    }}
-                  >
-                    {route.title}
-                  </Text>
-                )
-              }}
-            />
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        const index = TABS.findIndex(tab => tab.key === route.key)
+                        setIndex(index)
+                      }}
+                    >
+                      <Text>{route.title}</Text>
+                    </Pressable>
+                  )
+                }}
+              />
+            </View>
           </View>
         )}
       >

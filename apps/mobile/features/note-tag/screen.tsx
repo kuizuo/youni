@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { MyText, MyView, Divider } from '@/ui'
+import { Divider, Text, View } from '@gluestack-ui/themed'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'

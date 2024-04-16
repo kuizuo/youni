@@ -1,33 +1,37 @@
 import { MessageCircle } from 'lucide-react-native'
 import type { NoteItem } from '@server/modules/note/note'
+import { HStack, Icon, Pressable, Text } from '@gluestack-ui/themed'
+import { useState } from 'react'
 
 export interface Props {
   item: NoteItem
-  size?: number
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xs' | undefined
   color?: string
+  placeholder?: string
+  onPress?: string
 }
 
 export function NoteCommentButton({
   item,
-  size = 16,
+  size = 'md',
   color = 'gray',
+  onPress,
+  placeholder,
 }: Props) {
+  const [commentCount, setCommentCount] = useState(item.interact.commentCount)
+
   return (
-    // <View className="items-center gap-1.5">
-    //   <Button
-    //     icon={(
-    //       <MessageCircle
-    //         color={color}
-    //         size={size}
-    //       />
-    //     )}
-    //     unstyled
-    //   >
-    //   </Button>
-    //   <Text className="text-base text-[${color}]">
-    //     评论
-    //   </Text>
-    // </View>
-    <></>
+    <HStack alignItems="center" gap="$1">
+      <Pressable onPress={onPress}>
+        <Icon
+          as={MessageCircle}
+          color={color}
+          size={size}
+        />
+      </Pressable>
+      <Text size="sm" color="$secondary500">
+        {commentCount || placeholder || '评论'}
+      </Text>
+    </HStack>
   )
 }
