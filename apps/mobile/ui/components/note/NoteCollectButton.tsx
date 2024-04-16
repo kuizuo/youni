@@ -1,16 +1,14 @@
 import { Star } from 'lucide-react-native'
 import { useState } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { vars } from 'nativewind'
-import type { ColorTokens, SizeTokens } from '../..'
-import { Button, MyText, MyView } from '../..'
-import { Pressable } from '../MyComponent'
+import { HStack, Text } from '@gluestack-ui/themed'
+import { TouchableOpacity } from '../Themed'
 import { trpc } from '@/utils/trpc'
 
 export interface Props {
   item: NoteItem
-  size?: SizeTokens
-  color?: ColorTokens
+  size?: number
+  color?: string
   placeholder?: string
 }
 
@@ -37,21 +35,18 @@ export function NoteCollectButton({
   }
 
   return (
-    <Pressable className="items-center gap-1.5" onPressOut={handleCollect}>
-      <Button
-        icon={(
-          <Star
-            fill={collected ? '#FDBC5F' : 'transparent'}
-            color={collected ? '#FDBC5F' : color}
-            size={size}
-          />
-        )}
-        unstyled
-      >
-      </Button>
+    <HStack alignItems="center" gap="$1">
+      <TouchableOpacity onPress={handleCollect}>
+        <Star
+          fill={collected ? '#FDBC5F' : 'transparent'}
+          color={collected ? '#FDBC5F' : color}
+          size={size}
+        />
+      </TouchableOpacity>
       <Text size="md" style={{ color }}>
         {collectedCount || placeholder || '收藏'}
       </Text>
-    </Pressable>
+    </HStack>
+
   )
 }

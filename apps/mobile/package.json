@@ -27,6 +27,7 @@
     "@gluestack-ui/overlay": "latest",
     "@gluestack-ui/themed": "latest",
     "@gluestack-ui/toast": "latest",
+    "@gorhom/bottom-sheet": "^4",
     "@hookform/resolvers": "^3.3.4",
     "@react-navigation/drawer": "^6.6.15",
     "@react-navigation/native": "^6.0.2",

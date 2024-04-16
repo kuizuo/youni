@@ -4,8 +4,8 @@ import { MasonryFlashList } from '@shopify/flash-list'
 import { useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { RefreshControl } from 'react-native-gesture-handler'
+import { Spinner, useMedia } from '@gluestack-ui/themed'
 import { NoteListItem } from './NoteListItem'
-import { Spinner } from "@gluestack-ui/themed"
 
 interface Props {
   data: NoteItem[]
@@ -24,6 +24,9 @@ export function NoteList({
   onEndReached,
   ListEmptyComponent,
 }: Props) {
+  const media = useMedia()
+
+  const numColumns = media.xl ? 5 : media.lg ? 4 : media.md ? 3 : 2
   const renderItem: MasonryListRenderItem<NoteItem> = useCallback(
     ({ item }) => <NoteListItem {...item}></NoteListItem>,
     [],
@@ -42,8 +45,7 @@ export function NoteList({
       onEndReached={onEndReached}
       keyExtractor={item => item.id}
       renderItem={renderItem}
-      // FIXME:
-      numColumns={2}
+      numColumns={numColumns}
       estimatedItemSize={200}
       ListFooterComponent={(
         <SafeAreaView edges={['bottom']}>

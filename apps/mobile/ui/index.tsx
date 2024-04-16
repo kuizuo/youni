@@ -1,1 +1,1 @@
-export { Text as MyText, View as MyView } from './components/MyComponent'
+export { Text, View } from './components/Themed'

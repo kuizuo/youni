@@ -1,19 +1,38 @@
 import { ArrowUpRightFromSquare, ChevronDown } from 'lucide-react-native'
 import type { NoteItem } from '@server/modules/note/note'
 import React, { useState } from 'react'
-import { Button, Divider, HStack, ScrollView, Sheet, Text } from '@/ui'
+import { Button, ButtonIcon, Text } from '@gluestack-ui/themed'
+import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { useModal } from '../modal'
 
 interface Props {
   item: NoteItem
 }
 
 export function NoteShareButton({ item }: Props) {
-  const [open, setOpen] = useState(false)
+  const modal = useModal()
+
+  // callbacks
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('handleSheetChanges', index)
+  }, [])
 
   return (
     <>
-      <Button size="sm" icon={<ArrowUpRightFromSquare size="sm" />} unstyled onPress={() => setOpen(true)}></Button>
-      <Sheet
+      <Button size="sm" onPress={() => modal.present()}>
+        <ButtonIcon as={ArrowUpRightFromSquare} />
+      </Button>
+      <BottomSheet
+        ref={modal.ref}
+        snapPoints={[50]}
+        onChange={handleSheetChanges}
+      >
+        <BottomSheetView style={{ flex: 1 }}>
+          <Text>Awesome 🎉</Text>
+        </BottomSheetView>
+      </BottomSheet>
+
+      {/* <Sheet
         forceRemoveScrollEnabled={open}
         modal
         open={open}
@@ -57,7 +76,7 @@ export function NoteShareButton({ item }: Props) {
             </HStack>
           </ScrollView>
         </Sheet.Frame>
-      </Sheet>
+      </Sheet> */}
     </>
   )
 }

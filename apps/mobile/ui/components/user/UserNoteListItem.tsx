@@ -21,7 +21,7 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
         <Card.Header>
           <HStack mx="$1" jc="space-between" ai="center">
             <UserAvatar item={item} />
-            <NoteShareButton item={item} />
+            {/* <NoteShareButton item={item} /> */}
           </HStack>
         </Card.Header>
         <Card.Background unstyled onPress={handlePressBackground}>

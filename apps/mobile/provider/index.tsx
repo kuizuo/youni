@@ -1,5 +1,6 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { SafeAreaProvider } from './safe-area'
 import { ThemeProvider } from './theme'
 import { JotaiProvider } from './jotai'
@@ -13,9 +14,11 @@ export function Provider({ children }: { children: React.ReactNode }) {
         <SafeAreaProvider>
           <ThemeProvider>
             <ActionSheetProvider>
-              <JotaiProvider>
-                <TRPCProvider>{children}</TRPCProvider>
-              </JotaiProvider>
+              <BottomSheetModalProvider>
+                <JotaiProvider>
+                  <TRPCProvider>{children}</TRPCProvider>
+                </JotaiProvider>
+              </BottomSheetModalProvider>
             </ActionSheetProvider>
           </ThemeProvider>
         </SafeAreaProvider>

@@ -1,12 +1,10 @@
 import { MessageCircle } from 'lucide-react-native'
 import type { NoteItem } from '@server/modules/note/note'
-import type { ColorTokens, SizeTokens } from '../..'
-import { Button, MyText, MyView } from '../..'
 
 export interface Props {
   item: NoteItem
-  size?: SizeTokens
-  color?: ColorTokens
+  size?: number
+  color?: string
 }
 
 export function NoteCommentButton({
@@ -15,20 +13,21 @@ export function NoteCommentButton({
   color = 'gray',
 }: Props) {
   return (
-    <View className="items-center gap-1.5">
-      <Button
-        icon={(
-          <MessageCircle
-            color={color}
-            size={size}
-          />
-        )}
-        unstyled
-      >
-      </Button>
-      <Text className="text-base text-[${color}]">
-        评论
-      </Text>
-    </View>
+    // <View className="items-center gap-1.5">
+    //   <Button
+    //     icon={(
+    //       <MessageCircle
+    //         color={color}
+    //         size={size}
+    //       />
+    //     )}
+    //     unstyled
+    //   >
+    //   </Button>
+    //   <Text className="text-base text-[${color}]">
+    //     评论
+    //   </Text>
+    // </View>
+    <></>
   )
 }

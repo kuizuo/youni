@@ -29,7 +29,7 @@ export function HomeScreen(): React.ReactNode {
   )
 
   return (
-    <View flex={1} pt={top}>
+    <View flex={1} pt={top} bg="$backgroundLight0">
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
