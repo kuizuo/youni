@@ -2,7 +2,7 @@ import Carousel from 'react-native-reanimated-carousel'
 import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useWindowDimensions } from 'react-native'
 import { HStack, Image, View, useToken } from '@gluestack-ui/themed'
-import { window } from '@/constant'
+import { window } from '@/constant/window'
 
 interface Props {
   data: string[]

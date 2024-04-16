@@ -29,7 +29,12 @@ export function HomeScreen(): React.ReactNode {
   )
 
   return (
-    <View flex={1} pt={top} bg="$backgroundLight0">
+    <View
+      flex={1}
+      pt={top}
+      bg="$backgroundLight0"
+      $dark-bg="$backgroundDark950"
+    >
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -50,7 +55,7 @@ export function HomeScreen(): React.ReactNode {
         renderTabBar={props => (
           <View
             position="relative"
-            h={28}
+            h={24}
             mx="$4"
             mb="$2"
             alignItems="center"
@@ -61,11 +66,9 @@ export function HomeScreen(): React.ReactNode {
             <TabBar
               {...props}
               style={{
+                flex: 1,
                 justifyContent: 'center',
                 backgroundColor: 'transparent',
-              }}
-              tabStyle={{
-                height: 50,
               }}
               indicatorStyle={{
                 height: 2,

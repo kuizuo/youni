@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   AlertDialog,
   AlertDialogBackdrop,
@@ -10,7 +10,6 @@ import {
   Button,
   ButtonGroup,
   ButtonText,
-  Center,
   CloseIcon,
   Heading,
   Icon,
@@ -19,6 +18,8 @@ import {
 
 interface Props {
   children: React.ReactNode
+  isOpen: boolean
+  onClose: () => void
   title: string
   content?: string
   cancelText?: string
@@ -28,29 +29,25 @@ interface Props {
 
 export function CustomDialog({
   children,
+  isOpen,
+  onClose,
   title,
   content,
   cancelText = '取消',
   okText = '确认',
   onOk,
 }: Props) {
-  const [showAlertDialog, setShowAlertDialog] = useState(false)
-
   return (
     <>
-      <Button size="xs" onPress={() => setShowAlertDialog(true)}>
-        {children}
-      </Button>
+      {children}
       <AlertDialog
-        isOpen={showAlertDialog}
-        onClose={() => {
-          setShowAlertDialog(false)
-        }}
+        isOpen={isOpen}
+        onClose={onClose}
       >
         <AlertDialogBackdrop />
         <AlertDialogContent>
           <AlertDialogHeader>
-            <Heading size="lg">{title}</Heading>
+            <Heading size="sm" color="$trueGray600">{title}</Heading>
             <AlertDialogCloseButton>
               <Icon as={CloseIcon} />
             </AlertDialogCloseButton>
@@ -65,10 +62,11 @@ export function CustomDialog({
           <AlertDialogFooter>
             <ButtonGroup space="lg">
               <Button
-                variant="outline"
+                variant="link"
                 action="secondary"
+                size="sm"
                 onPress={() => {
-                  setShowAlertDialog(false)
+                  onClose()
                 }}
               >
                 <ButtonText>{cancelText}</ButtonText>
@@ -76,11 +74,13 @@ export function CustomDialog({
               <Button
                 bg="$error600"
                 action="negative"
+                size="sm"
                 onPress={() => {
-                  setShowAlertDialog(false)
+                  onClose()
                   onOk()
                 }}
               >
+
                 <ButtonText>{okText}</ButtonText>
               </Button>
             </ButtonGroup>
@@ -89,4 +89,22 @@ export function CustomDialog({
       </AlertDialog>
     </>
   )
+}
+
+export function useDialog(defaultOpen = false) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
+  const openDialog = useCallback(() => {
+    setIsOpen(true)
+  }, [])
+
+  const closeDialog = useCallback(() => {
+    setIsOpen(false)
+  }, [])
+
+  return {
+    isOpen,
+    openDialog,
+    closeDialog,
+  }
 }

@@ -12,7 +12,7 @@ interface IconProps {
   style?: ViewStyle
 }
 
-function BackButton({ size = 'xl', color, onPress, ...props }: IconProps) {
+function BackButton({ size = 'lg', color, onPress, ...props }: IconProps) {
   const router = useRouter()
 
   return (
@@ -36,7 +36,7 @@ function BackButton({ size = 'xl', color, onPress, ...props }: IconProps) {
   )
 }
 
-function MenuButton({ size = 'xl', color, ...props }: IconProps) {
+function MenuButton({ size = 'lg', color, ...props }: IconProps) {
   const [open, setOpen] = useDrawerOpen()
 
   return (
@@ -56,7 +56,7 @@ function MenuButton({ size = 'xl', color, ...props }: IconProps) {
   )
 }
 
-function SearchButton({ size = 'xl', color, ...props }: IconProps) {
+function SearchButton({ size = 'lg', color, ...props }: IconProps) {
   const router = useRouter()
   return (
     <Icon

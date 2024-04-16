@@ -59,7 +59,14 @@ export function NoteListItem(item: NoteItem): ReactNode {
         { flex: 1 },
       ]}
     >
-      <Card p="$0" m="$1" borderRadius={6} maxWidth={360} variant="filled">
+      <Card
+        p="$0"
+        m="$1"
+        borderRadius={6}
+        maxWidth={360}
+        variant="filled"
+        $dark-bg="$backgroundDarkMuted"
+      >
         <Image
           source={{ uri: item.cover.src }}
           h={200}

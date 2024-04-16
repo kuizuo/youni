@@ -23,7 +23,7 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
 
   return (
     <NavBar
-      left={<NavButton.Back />}
+      left={<NavButton.Back size="xl" />}
       right={currentUser.id === user.id
         ? <NoteMenu item={item} />
         : (

@@ -38,6 +38,8 @@ import { Pressable } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Path, Svg } from 'react-native-svg'
 
+import { useToken } from '@gluestack-ui/themed'
+import { useColorScheme } from 'nativewind'
 import { Text, View } from '@/ui/components/Themed'
 
 type ModalProps = BottomSheetModalProps & {
@@ -73,6 +75,9 @@ export const CustomModal = React.forwardRef(
     }: ModalProps,
     ref: ModalRef,
   ) => {
+    const { colorScheme } = useColorScheme()
+    const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight950' : 'backgroundLight0')
+
     const detachedProps = React.useMemo(
       () => getDetachedProps(detached),
       [detached],
@@ -88,7 +93,6 @@ export const CustomModal = React.forwardRef(
     const renderHandleComponent = React.useCallback(
       () => (
         <>
-          <View className="mb-8 mt-2 h-1 w-12 self-center rounded-lg bg-gray-400 dark:bg-gray-700" />
           <ModalHeader title={title} dismiss={modal.dismiss} />
         </>
       ),
@@ -104,6 +108,9 @@ export const CustomModal = React.forwardRef(
         snapPoints={snapPoints}
         backdropComponent={props.backdropComponent || renderBackdrop}
         handleComponent={renderHandleComponent}
+        backgroundStyle={{
+          backgroundColor: bgColor,
+        }}
       />
     )
   },
@@ -154,21 +161,23 @@ function getDetachedProps(detached: boolean) {
 /**
  * ModalHeader
  */
-
 const ModalHeader = React.memo(({ title, dismiss }: ModalHeaderProps) => {
   return (
     <>
-      {title && (
-        <View className="flex-row px-2 py-4">
-          <View className="h-[24px] w-[24px]" />
-          <View className="flex-1">
-            <Text className="text-center text-[16px] font-bold text-[#26313D] dark:text-white">
-              {title}
-            </Text>
-          </View>
-        </View>
-      )}
-      <CloseButton close={dismiss} />
+      {title
+        ? (
+          <>
+            <View className="flex-row px-2 py-4 items-center">
+              <View className="flex-1">
+                <Text className="text-center text-[16px] font-bold text-[#26313D]">
+                  {title}
+                </Text>
+              </View>
+              <CloseButton close={dismiss} />
+            </View>
+          </>
+          )
+        : <View className="mb-8 mt-2 h-1 w-12 self-center rounded-lg bg-gray-400 dark:bg-gray-700" />}
     </>
   )
 })
@@ -177,17 +186,16 @@ function CloseButton({ close }: { close: () => void }) {
   return (
     <Pressable
       onPress={close}
-      className="absolute right-3 top-3 h-[24px] w-[24px] items-center justify-center "
+      className=" absolute right-3 top-3 h-[24px] w-[24px] items-center justify-center"
       hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       accessibilityLabel="close modal"
       accessibilityRole="button"
       accessibilityHint="closes the modal"
     >
       <Svg
-        className="fill-neutral-300 dark:fill-white"
         width={24}
         height={24}
-        fill="none"
+        fill="gray"
         viewBox="0 0 24 24"
       >
         <Path d="M18.707 6.707a1 1 0 0 0-1.414-1.414L12 10.586 6.707 5.293a1 1 0 0 0-1.414 1.414L10.586 12l-5.293 5.293a1 1 0 1 0 1.414 1.414L12 13.414l5.293 5.293a1 1 0 0 0 1.414-1.414L13.414 12l5.293-5.293Z" />

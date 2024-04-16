@@ -13,7 +13,7 @@ export function NoteMenu({ item }: Props) {
   return (
     <>
       <Button size="sm" icon={<Menu size="sm" />} unstyled onPress={() => setOpen(true)} />
-      <Sheet
+      {/* <Sheet
         forceRemoveScrollEnabled={open}
         modal
         open={open}
@@ -65,7 +65,7 @@ export function NoteMenu({ item }: Props) {
             </HStack>
           </ScrollView>
         </Sheet.Frame>
-      </Sheet>
+      </Sheet> */}
     </>
   )
 }

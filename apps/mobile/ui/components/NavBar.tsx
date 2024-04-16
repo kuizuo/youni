@@ -32,7 +32,7 @@ export function NavBar({
       mx="$3"
       py="$2"
       alignItems="center"
-      gap="$2"
+      gap="$2.5"
       style={{
         paddingTop: safeTop || 0,
         ...style,
@@ -57,7 +57,7 @@ export function NavBar({
       </HStack>
 
       {right && (
-        <HStack minWidth="$2" justifyContent="flex-start" alignContent="center">
+        <HStack minWidth="$2" justifyContent="flex-end" alignContent="center">
           {right}
         </HStack>
       )}

@@ -173,18 +173,6 @@ module.exports = {
           dark: '#181719',
         },
       },
-      fontFamily: {
-        heading: undefined,
-        body: undefined,
-        mono: undefined,
-      },
-      fontWeight: {
-        hairline: '100',
-        extraBlack: '950',
-      },
-      fontSize: {
-        '2xs': '10px',
-      },
     },
     plugins: [],
   },
