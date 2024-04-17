@@ -90,7 +90,7 @@ export function CommentBox({
           placement: 'bottom',
           render: ({ id }) => {
             return (
-              <Toast nativeID={id} variant="accent" action="error">
+              <Toast nativeID={id} variant="accent" action="suceess">
                 <ToastTitle>发送成功</ToastTitle>
               </Toast>
             )
@@ -123,17 +123,14 @@ export function CommentBox({
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       () => {
-        if (Platform.OS === 'android')
-          setKeyboardVisible(true)
+        setKeyboardVisible(true)
       },
     )
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        if (Platform.OS === 'android') {
-          setKeyboardVisible(false)
-          setOpen(false)
-        }
+        setOpen(false)
+        setKeyboardVisible(false)
       },
     )
 
@@ -145,6 +142,7 @@ export function CommentBox({
 
   return (
     <>
+      {/* FIXME:  */}
       <Pressable
         onPress={handleCancel}
         className="bg-opacity-10 absolute inset-0 z-20"
@@ -156,7 +154,6 @@ export function CommentBox({
       >
         <View
           className="p-4 flex-row items-center rounded-t-[16px] overflow-hidden"
-          pb={bottom}
           bg="$backgroundLight200"
           $dark-bg="$backgroundDark200"
         >

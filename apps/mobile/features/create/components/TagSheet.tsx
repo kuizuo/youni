@@ -1,150 +1,157 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckCircle, Circle, Search } from 'lucide-react-native'
 import { useAtom } from 'jotai'
 import type { ListRenderItem } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { NoteTag } from '@youni/database'
-import { Button, Divider, HStack, Input, View, Sheet, Spinner, Text } from '@gluestack-ui/themed'
+import {
+  Button,
+  ButtonText,
+  Divider,
+  Input,
+  InputIcon,
+  InputSlot,
+  Pressable,
+  Spinner,
+  Text,
+  View,
+} from '@gluestack-ui/themed'
+import { BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet'
+import type { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
-import { selectTagsAtom, tagSheetOpenAtom } from '@/atoms/create'
+import { useTags } from '@/atoms/create'
+import { CustomModal, useModal } from '@/ui/components/CustomModal'
 
-export const TagSheet = memo(() => {
-  const [open, setOpen] = useAtom(tagSheetOpenAtom)
+interface Props { }
 
-  const [searchText, setSearchText] = useState<string>('')
+export const TagSheet = React.forwardRef<BottomSheetModal, Props>(
+  (_, ref) => {
+    const [searchText, setSearchText] = useState<string>('')
 
-  const [selectTags, setSelectTags] = useAtom(selectTagsAtom)
+    const [selectTags, setSelectTags] = useTags()
 
-  const [data, { refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.noteTag.search.useSuspenseInfiniteQuery({
-    name: searchText,
-    limit: 10,
-  }, {
-    getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
-  })
+    const [data, { refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.noteTag.search.useSuspenseInfiniteQuery({
+      name: searchText,
+      limit: 10,
+    }, {
+      getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+    })
 
-  const handleSearch = (text: string) => {
-    refetch()
-  }
+    const handleSearch = (text: string) => {
+      refetch()
+    }
 
-  const flatedData = useMemo(
-    () => data.pages.map(page => page.items).flat() as unknown as NoteTag[],
-    [data.pages],
-  )
+    const flatedData = useMemo(
+      () => data.pages.map(page => page.items).flat() as unknown as NoteTag[],
+      [data.pages],
+    )
 
-  const renderItem: ListRenderItem<NoteTag> = useCallback(
-    ({ item }) => (
-      <TagItem item={item} />
-    ),
-    [data],
-  )
+    const renderItem: ListRenderItem<NoteTag> = useCallback(
+      ({ item }) => (
+        <TagItem item={item} setSelectTags={setSelectTags} />
+      ),
+      [data],
+    )
 
-  const handleAddTag = () => {
-    setSelectTags(prev => [...prev, searchText])
-    setSearchText('')
-  }
+    const handleAddTag = () => {
+      setSelectTags(prev => [...prev, searchText])
+      setSearchText('')
+    }
 
-  return (
-    <Sheet
-      modal
-      open={open}
-      onOpenChange={setOpen}
-      snapPoints={[50]}
-      snapPointsMode="percent"
-      dismissOnSnapToBottom
-      dismissOnOverlayPress
-      position={0}
-      zIndex={100_000}
-      animation="medium"
-    >
-      <Sheet.Overlay
-        animation="lazy"
-        enterStyle={{ opacity: 50 }}
-        exitStyle={{ opacity: 0 }}
-      />
-      <Sheet.Handle />
-      <Sheet.Frame p="$4" justifyContent="center" alignItems="center" gap="$5">
-        <HStack
-          width="100%"
-          alignItems="center"
-          bg="$gray3"
-          px="$2.5"
-          py="$2.5"
-          gap="$2"
-        >
-          <Search size="sm" />
-          <Input
-            placeholder="搜索"
-            onChangeText={(text) => {
-              if (text !== searchText)
-                setSearchText(text.trim())
-            }}
-            textAlignVertical="center"
-            onSubmitEditing={() => handleSearch(searchText)}
-            autoFocus={open}
-            unstyled
-          >
+    return (
+      <CustomModal
+        ref={ref}
+        snapPoints={[260]}
+      >
+        <View flex={1} alignItems="center" p="$4">
+          <Input width="$full" variant="rounded" size="sm" mb="$2">
+            <InputSlot pl="$3">
+              <InputIcon as={Search} />
+            </InputSlot>
+            <BottomSheetTextInput
+              className="px-2"
+              placeholder="搜索"
+              onChangeText={(text) => {
+                if (text !== searchText)
+                  setSearchText(text.trim())
+              }}
+              textAlignVertical="center"
+              onSubmitEditing={() => handleSearch(searchText)}
+              autoFocus={true}
+            />
           </Input>
-        </HStack>
 
-        <View flex={1} width="100%">
-          <FlashList
-            data={flatedData}
-            renderItem={renderItem}
-            onEndReached={() => {
-              if (hasNextPage)
-                fetchNextPage()
-            }}
-            style={{
-              flex: 1,
-              width: '100%',
-            }}
-            estimatedItemSize={300}
-            ListFooterComponent={(
-              <SafeAreaView edges={['bottom']}>
-                {isFetchingNextPage
-                  ? (
-                    <Spinner />
-                    )
-                  : null}
-              </SafeAreaView>
-            )}
-            ListEmptyComponent={(
-              <>
-                <EmptyResult title={`没有关于[${searchText}]的话题`} />
-                <Button width="" onPress={handleAddTag}>
-                  添加该话题
-                </Button>
-              </>
-            )}
-          >
-          </FlashList>
+          <View flex={1} width="100%">
+            <FlashList
+              data={flatedData}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+              onEndReached={() => {
+                if (hasNextPage)
+                  fetchNextPage()
+              }}
+              className="flex-1 w-full"
+              estimatedItemSize={300}
+              ListFooterComponent={(
+                <SafeAreaView edges={['bottom']}>
+                  {isFetchingNextPage
+                    ? (
+                      <Spinner />
+                      )
+                    : null}
+                </SafeAreaView>
+              )}
+              ListEmptyComponent={(
+                <>
+                  <EmptyResult title={`没有关于[${searchText}]的话题`} />
+                  <Button onPress={handleAddTag}>
+                    <ButtonText>添加该话题</ButtonText>
+                  </Button>
+                </>
+              )}
+            >
+            </FlashList>
+          </View>
         </View>
-        <Divider />
-      </Sheet.Frame>
-    </Sheet>
-  )
-})
+      </CustomModal>
+    )
+  },
+)
 
-const TagItem = memo(({ item }: { item: NoteTag }) => {
-  const [selectTags, setSelectTags] = useAtom(selectTagsAtom)
+function TagItem({
+  item,
+  setSelectTags,
+}: {
+  item: NoteTag
+  setSelectTags: (prev: any) => void
+}) {
+  // FIXME: 无法触发组件渲染, 暂且将父组件方法传入
+  const [selectTags, _setSelectTags] = useTags()
 
   const handleSelect = () => {
-    if (selectTags.includes(item.name))
+    if (selectTags.includes(item.name)) {
       setSelectTags(prev => prev.filter(tag => tag !== item.name))
-    else
+      _setSelectTags(prev => prev.filter(tag => tag !== item.name))
+    }
+    else {
       setSelectTags(prev => [...prev, item.name])
+      _setSelectTags(prev => [...prev, item.name])
+    }
   }
+
   return (
-    <View flexDirection="row" width="100%" justifyContent="space-between" onPress={handleSelect}>
-      <Text flex={1} size="md">
-        {`# ${item.name}`}
-      </Text>
-      {
-              selectTags.includes(item.name) ? <CheckCircle color="gray" /> : <Circle color="gray" />
-            }
-    </View>
+    <Pressable onPress={handleSelect}>
+      <View flexDirection="row" width="100%" justifyContent="space-between" py="$0.5">
+        <Text flex={1} size="md">
+          {`# ${item.name}`}
+        </Text>
+        {
+          selectTags.includes(item.name) ? <CheckCircle color="gray" /> : <Circle color="gray" />
+        }
+      </View>
+    </Pressable>
   )
-})
+}

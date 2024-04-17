@@ -177,7 +177,7 @@ const ModalHeader = React.memo(({ title, dismiss }: ModalHeaderProps) => {
             </View>
           </>
           )
-        : <View className="mb-8 mt-2 h-1 w-12 self-center rounded-lg bg-gray-400 dark:bg-gray-700" />}
+        : <View className="mb-2 mt-2 h-1 w-12 self-center rounded-lg bg-gray-400 dark:bg-gray-700" />}
     </>
   )
 })

@@ -15,13 +15,18 @@ import {
   Divider,
   HStack,
   Heading,
+  Icon,
+  Pressable,
   Spinner,
   Text,
   VStack,
   View,
 } from '@gluestack-ui/themed'
+import { Ellipsis } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useActionSheet } from '@expo/react-native-action-sheet'
 import { EmptyResult } from '../EmptyResult'
+import type { NoteItem } from '../../../../server/src/modules/note/note'
 import { CommentLikeButton } from './CommentLikeButton'
 import { CommentButton } from './CommentButton'
 import { trpc } from '@/utils/trpc'
@@ -29,8 +34,12 @@ import { formatTime } from '@/utils/date'
 import { useCurrentNote } from '@/atoms/comment'
 import { useAuth } from '@/utils/auth'
 
-export default function Comments() {
-  const [note, _] = useCurrentNote()
+export default function Comments({
+  note,
+}: {
+  note: NoteItem
+}) {
+  // const [note, _] = useCurrentNote()
 
   const ref = useRef<FlashList<CommentItem>>(null)
 
@@ -68,6 +77,7 @@ export default function Comments() {
             fetchNextPage()
         }}
         onEndReachedThreshold={0.3}
+        estimatedItemSize={500}
         ListHeaderComponent={(
           <View className="flex-row justify-between items-center">
             <Text size="sm" color="gray">
@@ -106,6 +116,8 @@ export default function Comments() {
 
 const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
   const [note, _] = useCurrentNote()
+
+  const { showActionSheetWithOptions } = useActionSheet()
 
   const { currentUser } = useAuth()
 
@@ -149,21 +161,63 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
     }
   }
 
-  return (
-    <HStack gap="$2.5" alignItems="center" my="$2">
-      <Avatar borderRadius="$full" size="sm" alignSelf="flex-start">
-        <AvatarImage
-          source={{
-            uri: comment.user.avatar,
-          }}
-        />
+  const handleLongPress = () => {
+    if (currentUser?.id === comment.user.id) {
+      return showActionSheetWithOptions({
+        options: ['删除', '取消'],
+        cancelButtonIndex: 1,
+        destructiveButtonIndex: 0,
+      }, async (selectedIndex) => {
+        if (selectedIndex === 0) {
+          await trpc.comment.delete.mutate({
+            commentId: comment.id,
+          })
+        }
+      })
+    }
 
-      </Avatar>
-      <VStack flex={1}>
-        <HStack alignItems="center">
-          <VStack gap="$1">
-            <HStack gap="$2" mt="$1" alignItems="center">
-              <Heading size="sm">
+    // TODO:
+    const options = ['举报', '屏蔽', '分享', '复制', '取消']
+
+    const destructiveButtonIndex = options.indexOf('举报')
+    const cancelButtonIndex = options.indexOf('取消')
+
+    showActionSheetWithOptions({
+      options,
+      destructiveButtonIndex,
+      cancelButtonIndex,
+    }, async (selectedIndex) => {
+      switch (selectedIndex) {
+        case destructiveButtonIndex:
+          //
+
+          break
+        case cancelButtonIndex:
+        // Canceled
+      }
+    })
+  }
+
+  return (
+    <Pressable
+      delayLongPress={300}
+      onLongPress={handleLongPress}
+      style={({ pressed }) => [
+        { flex: 1, backgroundColor: pressed ? 'red' : 'transport' },
+      ]}
+    >
+      <HStack gap="$2.5" my="$2" alignItems="center">
+        <Avatar borderRadius="$full" size="sm" alignSelf="flex-start">
+          <AvatarImage
+            source={{
+              uri: comment.user.avatar,
+            }}
+          />
+        </Avatar>
+        <VStack flex={1}>
+          <HStack flex={1} mt="$1" justifyContent="space-between" alignItems="center">
+            <HStack flex={1} gap="$2">
+              <Heading size="xs">
                 {comment.user.nickname}
               </Heading>
               {
@@ -181,37 +235,41 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
                 )
               }
             </HStack>
-            <Text size="sm">
-              {comment.content}
-            </Text>
-          </VStack>
-        </HStack>
-
-        <HStack alignItems="center" marginTop="$1">
-          <Text size="sm" color="$secondary500">
-            {formatTime(comment.createdAt)}
-          </Text>
-          <HStack flex={1} gap="$2.5" justifyContent="flex-end" alignItems="center">
-            <CommentButton item={comment} />
-            <CommentLikeButton
-              item={comment}
-            />
+            <Pressable className="flex-1 absolute right-2" onPress={handleLongPress}>
+              <Icon as={Ellipsis} size="sm" color="gray" />
+            </Pressable>
           </HStack>
-        </HStack>
 
-        {
-          comment?.children?.length > 0 && (
-            <VStack mt="$2" gap="$2">
-              {
-                comment.children.map(child => (
-                  <Comment key={child.id} comment={child as unknown as CommentItem} />
-                ))
-              }
-              <MoreCommentButton />
-            </VStack>
-          )
-        }
-      </VStack>
-    </HStack>
+          <Text size="sm">
+            {comment.content}
+          </Text>
+
+          <View className="flex-row mt-1 items-center">
+            <Text size="xs" color="$secondary500">
+              {formatTime(comment.createdAt)}
+            </Text>
+            <HStack flex={1} gap="$2.5" justifyContent="flex-end" alignItems="center">
+              <CommentButton item={comment} />
+              <CommentLikeButton
+                item={comment}
+              />
+            </HStack>
+          </View>
+
+          {
+            comment?.children?.length > 0 && (
+              <VStack mt="$2" gap="$2">
+                {
+                  comment.children.map(child => (
+                    <Comment key={child.id} comment={child as unknown as CommentItem} />
+                  ))
+                }
+                <MoreCommentButton />
+              </VStack>
+            )
+          }
+        </VStack>
+      </HStack>
+    </Pressable>
   )
 })

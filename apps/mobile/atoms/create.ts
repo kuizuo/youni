@@ -1,4 +1,7 @@
-import { atom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 
-export const tagSheetOpenAtom = atom(false)
 export const selectTagsAtom = atom<string[]>([])
+
+export function useTags() {
+  return [...useAtom(selectTagsAtom)] as const
+}

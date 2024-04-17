@@ -32,3 +32,5 @@ export function Text({ children, className, style, ...props }: TextProps) {
     </TextOg>
   )
 }
+
+export const MyView = View

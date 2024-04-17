@@ -15,7 +15,12 @@ export interface Props {
   placeholder?: string
 }
 
-export function CommentLikeButton({ item, size = 'md', color, placeholder }: Props) {
+export function CommentLikeButton({
+  item,
+  size = 'md',
+  color = 'gray',
+  placeholder,
+}: Props) {
   const [liked, setLiked] = useState(item.interact?.liked)
   const [likedCount, setLikedCount] = useState(item.interact?.likedCount)
 

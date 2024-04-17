@@ -1,4 +1,4 @@
-import React, { lazy, useEffect } from 'react'
+import React, { lazy, useLayoutEffect } from 'react'
 import { Link, useLocalSearchParams } from 'expo-router'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
@@ -24,7 +24,7 @@ export function NoteScreen(): React.ReactNode {
 
   const { data, isLoading, isRefetching, refetch } = trpc.note.byId.useQuery({ id })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (data)
       setCurrentNote(data as NoteItem)
   }, [data, setCurrentNote])
@@ -75,7 +75,7 @@ export function NoteScreen(): React.ReactNode {
 
           <Divider my={15} />
 
-          {!isLoading && <Comments />}
+          {!isLoading && <Comments note={data} />}
         </View>
       </ScrollView>
       <NoteFooter item={data as unknown as NoteItem} onOk={refetch} />

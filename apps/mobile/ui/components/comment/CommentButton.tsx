@@ -7,11 +7,14 @@ import { useCommentBoxOpen, useParentComment } from '@/atoms/comment'
 export interface Props {
   item: CommentItem
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xs' | undefined
+  color?: string
+  placeholder?: string
 }
 
 export function CommentButton({
   item,
   size = 'md',
+  color = 'gray',
 }: Props) {
   const [commentCount, setCommentCount] = useState(item.interact?.commentCount || 0)
 
@@ -26,7 +29,7 @@ export function CommentButton({
     <Pressable flexDirection="row" alignItems="center" gap="$1.5" onPress={handleOpenCommentModal}>
       <Icon
         as={MessageCircle}
-        color="gray"
+        color={color}
         size={size}
       />
       <Text color="$secondary500">
