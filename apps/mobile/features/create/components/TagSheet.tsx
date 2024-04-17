@@ -5,7 +5,7 @@ import type { ListRenderItem } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { NoteTag } from '@youni/database'
-import { Button, Divider, HStack, Input, MyView, Sheet, Spinner, Text } from '@/ui'
+import { Button, Divider, HStack, Input, View, Sheet, Spinner, Text } from '@gluestack-ui/themed'
 
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'

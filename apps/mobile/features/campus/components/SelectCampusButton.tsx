@@ -2,7 +2,7 @@ import { ArrowLeftRight, Search } from 'lucide-react-native'
 import type { Campus } from '@youni/database'
 import { useState } from 'react'
 import { BlurView } from 'expo-blur'
-import { Adapt, Button, HStack, Input, MyView, Popover, Text, VStack } from '@/ui'
+import { Adapt, Button, HStack, Input, View, Popover, Text, VStack } from '@gluestack-ui/themed'
 import { useCurrentCampus } from '@/atoms/campus'
 import { trpc } from '@/utils/trpc'
 

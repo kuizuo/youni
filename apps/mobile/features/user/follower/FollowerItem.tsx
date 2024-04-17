@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router'
 import type { UserInfoWithFollow } from '@server/modules/interact/interact'
-import { Avatar, HStack, Text, VStack } from '@/ui'
+import { Avatar, HStack, Text, VStack } from '@gluestack-ui/themed'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { useAuth } from '@/utils/auth'
 

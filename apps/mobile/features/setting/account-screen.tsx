@@ -1,7 +1,6 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { View } from '@gluestack-ui/themed'
-import { ListItem, MyView, ScrollView, Divider, YGroup } from '@/ui'
+import { Divider, ListItem, ScrollView, View, YGroup } from '@gluestack-ui/themed'
 
 export function AccountSettingScreen() {
   const router = useRouter()

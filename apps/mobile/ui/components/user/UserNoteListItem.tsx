@@ -1,12 +1,12 @@
 import type { NoteItem } from '@server/modules/note/note'
 import { Link, useRouter } from 'expo-router'
+import { Avatar, Card, HStack, Heading, Text, VStack } from '@gluestack-ui/themed'
 import { NoteLikeButton } from '../note/NoteLikeButton'
 import { NoteCollectButton } from '../note/NoteCollectButton'
 import { NoteShareButton } from '../note/NoteShareButton'
 import { NoteCommentButton } from '../note/NoteCommentButton'
 import { ImageCarousel } from '../ImageCarousel'
 import { formatTime } from '@/utils/date'
-import { Avatar, Card, HStack, Paragraph, Text, VStack } from '@/ui'
 
 export function UserNoteListItem(item: NoteItem): React.ReactNode {
   const router = useRouter()
@@ -39,9 +39,9 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
         </Card.Background>
         <Card.Footer p="$2.5">
           <VStack width="100%" gap="$2">
-            <Paragraph size="md" numberOfLines={2} ellipsizeMode="tail">
+            <Heading size="md" numberOfLines={2} ellipsizeMode="tail">
               {item.title}
-            </Paragraph>
+            </Heading>
             <HStack gap="$2.5" alignItems="center">
               <HStack flex={1} justifyContent="flex-end" alignItems="center" gap="$2.5">
                 <NoteLikeButton size={20} color="$gray10" item={item} placeholder="喜欢" />

@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
 import type { UserInfoWithFollow } from '@server/modules/interact/interact'
+import { Avatar, AvatarImage, HStack, Pressable, Text, VStack, View } from '@gluestack-ui/themed'
 import { UserFollowButton } from './UserFollowButton'
-import { Avatar, HStack, Text, VStack } from '@/ui'
 import { useAuth } from '@/utils/auth'
 
 export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
@@ -13,30 +13,34 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
   }
 
   return (
-    <HStack p="$3" gap="$3" height="$8" alignItems="center">
-      <Avatar borderRadius="$full" size="lg" onPress={handleNavigateToUser}>
-        <AvatarImage
-          width="100%"
-          height="100%"
-          source={{
-            uri: item.avatar,
-          }}
-        />
+    <Pressable onPress={handleNavigateToUser}>
+      <HStack p="$3" gap="$3" alignItems="center">
+        <Avatar borderRadius="$full" size="lg">
+          <AvatarImage
+            source={{
+              uri: item.avatar,
+            }}
+          />
 
-      </Avatar>
-      <VStack flex={1} onPress={handleNavigateToUser}>
-        <HStack gap="$2">
-          <Text size="$4">
-            {item.nickname}
+        </Avatar>
+
+        <VStack flex={1}>
+          <HStack gap="$2">
+            <Text size="md">
+              {item.nickname}
+            </Text>
+          </HStack>
+
+          <Text size="sm" color="gray">
+            {item.desc}
+            {/* TODO: 笔记 · 1 | 粉丝 · 1 */}
           </Text>
-        </HStack>
+        </VStack>
 
-        <Text size="sm" color="gray">
-          {item.desc}
-          {/* TODO: 笔记 · 1 | 粉丝 · 1 */}
-        </Text>
-      </VStack>
-      {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.isFollowing} userId={item.id} />}
-    </HStack>
+        <View>
+          {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.isFollowing} userId={item.id} />}
+        </View>
+      </HStack>
+    </Pressable>
   )
 }

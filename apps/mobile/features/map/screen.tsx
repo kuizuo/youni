@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react-native'
-import { HStack, Input, MyView, VStack } from '@/ui'
+import { HStack, Input, View, VStack } from '@gluestack-ui/themed'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 
@@ -9,7 +9,7 @@ export function MapScreen() {
       <NavBar left={<NavButton.Back />}>
         位置
       </NavBar>
-      <View fd="row" margin="$2" px="$2">
+      <View flexDirection="row" margin="$2" px="$2">
         <HStack
           flex={1}
           alignItems="center"

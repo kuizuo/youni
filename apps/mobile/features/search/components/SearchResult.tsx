@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useWindowDimensions } from 'react-native'
-import type { TabsContentProps } from '@/ui'
-import { MyView, Spinner, Tabs, Text } from '@/ui'
+import {
+  Spinner,
+  Text,
+  View,
+  useToken,
+} from '@gluestack-ui/themed'
+import { TabBar, TabView } from 'react-native-tab-view'
+import { useColorScheme } from 'nativewind'
 import { trpc } from '@/utils/trpc'
 import { FallbackComponent, QuerySuspense } from '@/ui/components/QuerySuspense'
 import { EmptyResult } from '@/ui/components/EmptyResult'
@@ -9,59 +15,57 @@ import { NoteList } from '@/ui/components/note/NoteList'
 import { UserList } from '@/ui/components/user/UserList'
 
 export function SearchResult({ searchText }: { searchText: string }) {
+  const { colorScheme } = useColorScheme()
+  const primaryColor = useToken('colors', 'primary500')
+  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundDark100' : 'backgroundLight100')
+
   const window = useWindowDimensions()
   const [searchType, setSearchType] = useState<'note' | 'user'>('note')
 
-  const TabsContent = (props: TabsContentProps) => {
-    return (
-      <Tabs.Content
-        backgroundColor="$background"
-        padding="$2"
-        alignItems="center"
-        justifyContent="center"
-        flex={1}
-        borderColor="$background"
-        borderTopLeftRadius={0}
-        borderTopRightRadius={0}
-        borderWidth="$2"
-        {...props}
-      >
-        <View style={{ width: window.width - 10, height: '100%' }}>
-          {props.children}
-        </View>
-      </Tabs.Content>
-    )
-  }
+  const [index, setIndex] = useState(0)
+
+  const TABS = useMemo(
+    () => [
+      {
+        key: 'note',
+        title: '笔记',
+      },
+      {
+        key: 'user',
+        title: '用户',
+      },
+    ],
+    [],
+  )
 
   return (
-    <Tabs
-      orientation="horizontal"
-      flexDirection="column"
-      width={window.width}
-      height="100%"
-      borderRadius="$4"
-      borderWidth="$0.25"
-      overflow="hidden"
-      borderColor="$borderColor"
-      defaultValue={searchType}
-      onValueChange={value => setSearchType(value as any)}
-    >
-      <Tabs.List>
-        <Tabs.Tab flex={1} value="note" br={0}>
-          <Text>笔记</Text>
-        </Tabs.Tab>
-        <Tabs.Tab flex={1} value="user" br={0}>
-          <Text>用户</Text>
-        </Tabs.Tab>
-      </Tabs.List>
+    <TabView
+      navigationState={{ index, routes: TABS }}
+      onIndexChange={setIndex}
+      initialLayout={{ width: window.width }}
+      renderScene={({ route }) => {
+        switch (route.key) {
+          case 'note':
+            return <SearchNoteList searchText={searchText} />
+          case 'user':
+            return <SearchUserList searchText={searchText} />
+          default:
+            return null
+        }
+      }}
+      renderTabBar={(props) => {
+        return (
+          <TabBar
+            {...props}
+            tabStyle={{ width: window.width / TABS.length }}
+            labelStyle={{ color: 'black' }}
+            indicatorStyle={{ backgroundColor: primaryColor }}
+            style={{ backgroundColor: bgColor, marginBottom: 4 }}
+          />
+        )
+      }}
+    />
 
-      <TabsContent value="note">
-        {searchType === 'note' && <SearchNoteList searchText={searchText} />}
-      </TabsContent>
-      <TabsContent value="user">
-        {searchType === 'user' && <SearchUserList searchText={searchText} />}
-      </TabsContent>
-    </Tabs>
   )
 }
 

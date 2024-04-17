@@ -1,4 +1,4 @@
-import { ListItem, MyView, ScrollView, YGroup } from '@/ui'
+import { ListItem, View, ScrollView, YGroup } from '@gluestack-ui/themed'
 
 export function DarkModeSettingScreen() {
   return (

@@ -3,7 +3,7 @@
 // import { useId } from 'react'
 // import { useAtom } from 'jotai'
 // import { trpc } from '@/utils/trpc'
-// import { Button, Checkbox, Label, HStack, useTheme } from '@/ui'
+// import { Button, Checkbox, Label, HStack, useTheme } from '@gluestack-ui/themed'
 // import { historyStateAtoms } from '@/atoms/history'
 
 // export function HistoryFooter() {

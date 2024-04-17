@@ -1,7 +1,7 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ChevronRight } from 'lucide-react-native'
-import { Button, Divider, ListItem, MyText, MyView, ScrollView, Text, YGroup } from '@/ui'
+import { Button, Divider, ListItem, MyText, View, ScrollView, Text, YGroup } from '@gluestack-ui/themed'
 import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
 import { removeToken } from '@/utils/auth/utils'

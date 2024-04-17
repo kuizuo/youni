@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FollowerList } from './FollowerList'
-import { MyView, Text, useWindowDimensions } from '@/ui'
+import { View, Text, useWindowDimensions } from '@gluestack-ui/themed'
 import { NavButton } from '@/ui/components/NavButton'
 
 export function FollowerScreen() {

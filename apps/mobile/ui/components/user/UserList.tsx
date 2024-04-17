@@ -4,8 +4,8 @@ import type { UserInfo } from '@server/modules/user/user'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useCallback } from 'react'
+import { Spinner } from '@gluestack-ui/themed'
 import { UserListItem } from './UserListItem'
-import { Spinner } from "@gluestack-ui/themed"
 
 interface Props {
   data: UserInfo[]

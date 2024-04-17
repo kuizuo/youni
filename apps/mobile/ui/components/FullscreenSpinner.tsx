@@ -1,4 +1,4 @@
-import { Spinner, VStack } from '@/ui'
+import { Spinner, VStack } from '@gluestack-ui/themed'
 
 export function FullscreenSpinner() {
   return (

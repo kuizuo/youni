@@ -282,7 +282,7 @@ export function ProfileScreen() {
             {...props}
             indicatorStyle={{ backgroundColor: primaryColor }}
             activeColor={primaryColor}
-            // labelStyle={{ color: primaryColor }}
+            labelStyle={{ color: primaryColor }}
             tabStyle={bgColor}
           />
         )}

@@ -5,7 +5,7 @@ import type { UserInfoWithFollow } from '@server/modules/interact/interact'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FollowerListItem } from './FollowerItem'
-import { Spinner, VStack } from '@/ui'
+import { Spinner, VStack } from '@gluestack-ui/themed'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { trpc } from '@/utils/trpc'
 

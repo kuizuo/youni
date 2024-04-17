@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router'
-import { Text } from '@/ui'
+import { Text } from '@gluestack-ui/themed'
 
 export default function Screen() {
   const { id } = useLocalSearchParams()

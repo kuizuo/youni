@@ -1,7 +1,7 @@
 import React from 'react'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
-import { Avatar, Divider, Image, MyText, MyView } from '@/ui'
+import { Avatar, Divider, Image, MyText, View } from '@gluestack-ui/themed'
 import { formatTime } from '@/utils/date'
 
 export function MessageListItem(item: MessageItem): React.ReactNode {
