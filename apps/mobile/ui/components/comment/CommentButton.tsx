@@ -2,7 +2,7 @@ import { MessageCircle } from 'lucide-react-native'
 import type { CommentItem } from '@server/modules/comment/comment'
 import { useState } from 'react'
 import { Icon, Pressable, Text } from '@gluestack-ui/themed'
-import { useCommentModalOpen, useParentComment } from '@/atoms/comment'
+import { useCommentBoxOpen, useParentComment } from '@/atoms/comment'
 
 export interface Props {
   item: CommentItem
@@ -15,7 +15,7 @@ export function CommentButton({
 }: Props) {
   const [commentCount, setCommentCount] = useState(item.interact?.commentCount || 0)
 
-  const [open, setOpen] = useCommentModalOpen()
+  const [open, setOpen] = useCommentBoxOpen()
   const [_, setParentComment] = useParentComment()
   const handleOpenCommentModal = () => {
     setOpen(true)

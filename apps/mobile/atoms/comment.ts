@@ -2,10 +2,10 @@ import { atom, useAtom } from 'jotai'
 import type { CommentItem } from '@server/modules/comment/comment'
 import type { NoteItem } from '@server/modules/note/note'
 
-const commentModalOpenAtom = atom(false)
+const commentBoxOpenAtom = atom(false)
 
-export function useCommentModalOpen() {
-  return [...useAtom(commentModalOpenAtom)] as const
+export function useCommentBoxOpen() {
+  return [...useAtom(commentBoxOpenAtom)] as const
 }
 
 const parentCommentAtom = atom<CommentItem>({} as CommentItem)
