@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckCircle, Circle, Search } from 'lucide-react-native'
-import { useAtom } from 'jotai'
 import type { ListRenderItem } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -17,13 +16,13 @@ import {
   Text,
   View,
 } from '@gluestack-ui/themed'
-import { BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet'
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import type { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 import { trpc } from '@/utils/trpc'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { useTags } from '@/atoms/create'
-import { CustomModal, useModal } from '@/ui/components/CustomModal'
+import { CustomModal } from '@/ui/components/CustomModal'
 
 interface Props { }
 

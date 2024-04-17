@@ -7,7 +7,7 @@ import Animated, { Extrapolation, interpolate, useAnimatedReaction, useAnimatedS
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { MaterialTabBar, Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
-import { Avatar, AvatarImage, HStack, Image, Text, View, useToken } from '@gluestack-ui/themed'
+import { Avatar, AvatarImage, HStack, Icon, Image, Text, View, useToken } from '@gluestack-ui/themed'
 import { useColorScheme } from 'nativewind'
 import { InteractInfo } from './components/InteractInfo'
 import { Navs } from './components/Nav'
@@ -160,7 +160,7 @@ export function ProfileScreen() {
           left={route.name !== 'me'
             ? <NavButton.Back size="xl" />
             : <NavButton.Menu size="xl" />}
-          right={<ArrowUpRightFromSquare size="xl" />}
+          right={<Icon as={ArrowUpRightFromSquare} size="xl" />}
         >
           <Animated.View style={[animatedNavBarStyle]}>
             <HStack flex={1} justifyContent="space-between">

@@ -3,7 +3,8 @@ import type { LucideProps } from 'lucide-react-native'
 import type { Href } from 'expo-router'
 import { Link } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Text, useToken } from '@gluestack-ui/themed'
+import { Icon, Text, useToken } from '@gluestack-ui/themed'
+import { useColorScheme } from 'react-native'
 import { View } from '@/ui/components/Themed'
 
 export function Navs() {
@@ -14,23 +15,24 @@ export function Navs() {
     desc: string
   }
 
-  const textColor = useToken('colors', 'textLight300')
+  const colorScheme = useColorScheme()
+  const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark700' : 'textLight700')
   const navItems: Item[] = [
     {
       href: '/campus',
-      icon: <LifeBuoy size={16} color={textColor} />,
+      icon: <Icon as={LifeBuoy} size="md" color={textColor} />,
       text: '我的校园',
       desc: '校园动态',
     },
     {
       href: '/(creator)',
-      icon: <Highlighter size={16} color={textColor} />,
+      icon: <Icon as={Highlighter} size="md" color={textColor} />,
       text: '创作中心',
       desc: '创造属于你的世界',
     },
     {
       href: '/history/',
-      icon: <History size={16} color={textColor} />,
+      icon: <Icon as={History} size="md" color={textColor} />,
       text: '浏览记录',
       desc: '看过的笔记',
     },
@@ -47,7 +49,7 @@ export function Navs() {
               className="flex-1 rounded-md b-1 b-gray overflow-hidden px-3 py-2"
             >
               <Link href={href} asChild>
-                <View className="flex-row items-center mb-3 gap-1">
+                <View className="flex-row items-center mb-3 gap-1.5">
                   {icon}
                   <Text size="sm">
                     {text}

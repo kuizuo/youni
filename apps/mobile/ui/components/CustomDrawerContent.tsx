@@ -4,13 +4,15 @@ import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button, Divider, HStack, Icon, Text, VStack, useToken } from '@gluestack-ui/themed'
+import { Divider, HStack, Icon, Pressable, Text, VStack, useToken } from '@gluestack-ui/themed'
 import { useColorScheme } from 'nativewind'
 import { useDrawerOpen } from '@/atoms/drawer'
 
 export default function CustomDrawerContent() {
   const router = useRouter()
+
   const { colorScheme } = useColorScheme()
+  const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark700' : 'textLight700')
   const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight950' : 'backgroundLight0')
 
   const { bottom } = useSafeAreaInsets()
@@ -19,12 +21,12 @@ export default function CustomDrawerContent() {
   const drawerItems: React.ComponentProps<typeof DrawerItem>[] = [
     {
       label: '创作中心',
-      icon: () => <Highlighter size={24} />,
+      icon: () => <Icon as={Highlighter} size="md" color={textColor} />,
       onPress: () => handlePressItem(() => router.push('/(creator)/')),
     },
     {
       label: '浏览记录',
-      icon: () => <History size={24} />,
+      icon: () => <Icon as={History} size="md" color={textColor} />,
       onPress: () => handlePressItem(() => router.push('/history/')),
     },
   ]
@@ -32,12 +34,12 @@ export default function CustomDrawerContent() {
   const bottomNav: { label: string, icon: JSX.Element, onPress: () => void }[] = [
     {
       label: '设置',
-      icon: <Settings size={24} />,
+      icon: <Icon as={Settings} size="md" color={textColor} />,
       onPress: () => handlePressItem(() => router.push('/setting/')),
     },
     {
       label: '帮助与反馈',
-      icon: <BadgeHelp size={24} />,
+      icon: <Icon as={BadgeHelp} size="md" color={textColor} />,
       onPress: () => { },
     },
     // { label: '扫一扫', onPress: ()=>{}},
@@ -88,12 +90,12 @@ export default function CustomDrawerContent() {
           gap="$4"
         >
           {bottomNav.map(({ label, icon, onPress }) => (
-            <VStack
+            <Pressable
               key={label}
               flex={1}
               justifyContent="center"
               alignItems="center"
-              space="lg"
+              gap="$1.5"
               onPress={onPress}
             >
               <BlurView
@@ -110,10 +112,10 @@ export default function CustomDrawerContent() {
               >
                 {icon}
               </BlurView>
-              <Text className="flex-1 text-center text-xs">
+              <Text flex={1} textAlign="center" size="sm">
                 {label}
               </Text>
-            </VStack>
+            </Pressable>
           ))}
         </HStack>
       </VStack>
