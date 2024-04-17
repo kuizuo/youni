@@ -1,5 +1,4 @@
-import { Heading, Text } from '@gluestack-ui/themed'
-import { View } from '@gluestack-ui/themed'
+import { Heading, Text, View } from '@gluestack-ui/themed'
 
 interface Props {
   title: string | undefined
@@ -15,7 +14,7 @@ export function EmptyResult({
   return (
     <View className="flex-1 justify-center items-center p-6 gap-3">
       {image}
-      <Heading size="md">{title}</Heading>
+      <Heading size="md" color="$secondary600">{title}</Heading>
       {subTitle && <Text>{subTitle}</Text>}
     </View>
   )

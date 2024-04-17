@@ -1,13 +1,13 @@
 import React from 'react'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
-import { Avatar, Divider, Image, MyText, View } from '@gluestack-ui/themed'
+import { Avatar, AvatarImage, Divider, HStack, Image, Pressable, Text, View } from '@gluestack-ui/themed'
 import { formatTime } from '@/utils/date'
 
 export function MessageListItem(item: MessageItem): React.ReactNode {
   const router = useRouter()
 
-  const MessageTitle = () => {
+  const MessageTitle = (item: MessageItem) => {
     const actionMap = {
       Like: {
         Note: '赞了你的笔记',
@@ -31,22 +31,23 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
     return (
       <Text>
         <Link href={`/user/${item.sender.id}/profile`} asChild>
-          <Text className="text-base mt-2">
+          <Text mt="$2" size="md">
             {item.sender.nickname}
           </Text>
         </Link>
 
-        <View w="$0.75" />
+        <View w="$1" />
 
-        <Text className="text-base text-gray-500">
+        <Text size="sm" color="$secondary600">
           {actionString}
         </Text>
 
-        <View w="$0.75" />
+        <View w="$1" />
         {(item.sourceId && item.sourceType === 'Note') && (
           <Link href={`/note/${item.sourceId}`} asChild>
             <Text
-              className="flex-warp text-base"
+              flexWrap="wrap"
+              size="sm"
               numberOfLines={2}
             >
               {truncatedTitle}
@@ -63,30 +64,26 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
 
   return (
     <>
-      <View className="flex-row items-center p-3 gap-3">
-        <Avatar borderRadius="$full" size="$4" onPress={handleNavigateToUser}>
-          <AvatarImage
-            // @ts-expect-error
-            source={{
-              uri: item.sender.avatar,
-              width: '100%',
-              height: '100%',
-            }}
-          />
-
-        </Avatar>
+      <HStack px="$3" py="$1.5" alignItems="center" gap="$3">
+        <Pressable onPress={handleNavigateToUser}>
+          <Avatar borderRadius="$full" size="md">
+            <AvatarImage
+              source={{ uri: item.sender.avatar }}
+            />
+          </Avatar>
+        </Pressable>
         <View flex={1}>
-          <MessageTitle></MessageTitle>
+          <MessageTitle {...item} />
 
           {item.content && <Text>{item.content}</Text>}
 
-          <Text className="text-sm text-gray">
+          <Text color="$secendory500" size="sm">
             {formatTime(item.createdAt)}
           </Text>
         </View>
         {item.source.image && (
           <Image
-            br="$2"
+            borderRadius={8}
             source={{
               uri: item.source.image.src,
               width: 50,
@@ -94,7 +91,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
             }}
           />
         )}
-      </View>
+      </HStack>
       <Divider />
     </>
   )

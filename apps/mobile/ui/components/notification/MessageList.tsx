@@ -3,8 +3,8 @@ import { FlashList } from '@shopify/flash-list'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Spinner } from '@gluestack-ui/themed'
 import { MessageListItem } from './MessageListItem'
-import { Spinner } from "@gluestack-ui/themed"
 
 interface Props {
   data: MessageItem[]

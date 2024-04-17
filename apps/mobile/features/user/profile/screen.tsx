@@ -208,7 +208,7 @@ export function ProfileScreen() {
                 {data.gender
                   ? (
                     <Image
-                      source={data.gender === 1 ? require('@/assets/icons/male.png') : require('@/assets/icons/female.png')}
+                      source={data.gender === 1 ? require('./assets/icons/male.png') : require('./assets/icons/female.png')}
                       width={20}
                       height={20}
                     />
