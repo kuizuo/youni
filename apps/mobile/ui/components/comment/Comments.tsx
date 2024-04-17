@@ -4,7 +4,6 @@ import { CommentRefType } from '@server/modules/comment/comment.constant'
 import { useAtom, useAtomValue } from 'jotai'
 import type { ListRenderItem } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
-import { RefreshControl } from 'react-native-gesture-handler'
 import {
   Avatar,
   AvatarImage,
@@ -27,7 +26,7 @@ import { CommentLikeButton } from './CommentLikeButton'
 import { CommentButton } from './CommentButton'
 import { trpc } from '@/utils/trpc'
 import { formatTime } from '@/utils/date'
-import { newCommentsAtom, useCurrentNote } from '@/atoms/comment'
+import { useCurrentNote } from '@/atoms/comment'
 import { useAuth } from '@/utils/auth'
 
 export default function Comments() {
@@ -35,7 +34,7 @@ export default function Comments() {
 
   const ref = useRef<FlashList<CommentItem>>(null)
 
-  const [data, { hasNextPage, fetchNextPage, isFetchingNextPage }] = trpc.comment.page.useSuspenseInfiniteQuery({
+  const [data, { isRefetching, refetch, hasNextPage, fetchNextPage, isFetchingNextPage }] = trpc.comment.page.useSuspenseInfiniteQuery({
     itemId: note.id,
     itemType: 'Note' as CommentRefType.Note,
   }, { getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor })
@@ -56,26 +55,12 @@ export default function Comments() {
     [note.id],
   )
 
-  // useEffect(() => {
-  //   // 组件销毁自动清空新增评论
-  //   return () => {
-  //     setComments([])
-  //   }
-  // }, [])
-
   return (
     <>
       <FlashList
         ref={ref}
         data={flatedData}
         removeClippedSubviews={false}
-        // refreshControl={
-        //   <RefreshControl
-        //     refreshing={isRefetchingByUser}
-        //     onRefresh={refetchByUser}
-        //     progressViewOffset={navbarHeight}
-        //   />
-        // }
         renderItem={renderItem}
         ItemSeparatorComponent={Divider}
         onEndReached={() => {
@@ -114,7 +99,6 @@ export default function Comments() {
                 )}
           </SafeAreaView>
         )}
-        ListEmptyComponent={<EmptyResult title="目前还没有回复" />}
       />
     </>
   )

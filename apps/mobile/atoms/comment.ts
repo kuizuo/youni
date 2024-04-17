@@ -19,5 +19,3 @@ const currentNote = atom<NoteItem>({} as NoteItem)
 export function useCurrentNote() {
   return [...useAtom(currentNote)] as const
 }
-
-export const newCommentsAtom = atom<CommentItem[]>([] as CommentItem[])

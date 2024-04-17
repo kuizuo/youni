@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { CommentRefType } from '@server/modules/comment/comment.constant'
 import type { NoteItem } from '@server/modules/note/note'
 import { Button, ButtonText, HStack, Pressable, Toast, ToastTitle, VStack, View, useToast } from '@gluestack-ui/themed'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useCommentBoxOpen, useParentComment } from '@/atoms/comment'
 import { trpc } from '@/utils/trpc'
 
@@ -27,6 +28,7 @@ export function CommentBox({
   onSuccess,
   onCancel,
 }: Props) {
+  const { bottom } = useSafeAreaInsets()
   const { isLoading, mutateAsync: comment } = trpc.comment.create.useMutation()
 
   const [open, setOpen] = useCommentBoxOpen()
@@ -121,31 +123,32 @@ export function CommentBox({
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       () => {
-        setKeyboardVisible(true)
+        if (Platform.OS === 'android')
+          setKeyboardVisible(true)
       },
     )
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        setKeyboardVisible(false)
-        setOpen(false)
+        if (Platform.OS === 'android') {
+          setKeyboardVisible(false)
+          setOpen(false)
+        }
       },
     )
 
     return () => {
-      keyboardDidHideListener.remove()
       keyboardDidShowListener.remove()
+      keyboardDidHideListener.remove()
     }
   }, [])
 
   return (
     <>
       <Pressable
-        pointerEvents="none"
         onPress={handleCancel}
-      >
-        <View flex={1} className="absolute inset-0 z-100" bg="$secondary500" />
-      </Pressable>
+        className="bg-opacity-10 absolute inset-0 z-20"
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -153,13 +156,14 @@ export function CommentBox({
       >
         <View
           className="p-4 flex-row items-center rounded-t-[16px] overflow-hidden"
+          pb={bottom}
           bg="$backgroundLight200"
           $dark-bg="$backgroundDark200"
         >
           <HStack flex={1} alignItems="center" gap="$2">
             <TextInput
               ref={inputRef}
-              className="flex-1 py-1 px-3 rounded-md bg-gray-300"
+              className="flex-1 py-2 px-3 rounded-md bg-gray-300"
               multiline
               placeholder={placeholder}
               defaultValue={content}

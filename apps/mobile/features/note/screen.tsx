@@ -43,7 +43,7 @@ export function NoteScreen(): React.ReactNode {
   }
 
   return (
-    <View flex={1} position="relative">
+    <View className="flex-1">
       <NoteHeader item={data as NoteItem} user={data.user} />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -75,10 +75,10 @@ export function NoteScreen(): React.ReactNode {
 
           <Divider my={15} />
 
-          <Comments />
+          {!isLoading && <Comments />}
         </View>
       </ScrollView>
-      <NoteFooter item={data as unknown as NoteItem} />
+      <NoteFooter item={data as unknown as NoteItem} onOk={refetch} />
     </View>
   )
 }

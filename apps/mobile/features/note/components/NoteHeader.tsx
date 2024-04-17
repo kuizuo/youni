@@ -22,27 +22,29 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
   const { data: isFollowing } = trpc.interact.isFollowing.useQuery({ id: user.id! }, { enabled: !!user.id })
 
   return (
-    <NavBar
-      left={<NavButton.Back size="xl" />}
-      right={currentUser?.id === user?.id
-        ? <NoteMenu item={item} />
-        : <NoteShareButton item={item} />}
-    >
-      <Link href={`/user/${user.id}/profile`} asChild>
-        <HStack flex={1} gap="$2" alignItems="center">
-          <Avatar size="sm" borderRadius="$full">
-            <AvatarImage
-              source={{
-                uri: user.avatar,
-              }}
-            />
-          </Avatar>
-          <Text>
-            {user.nickname}
-          </Text>
-        </HStack>
-      </Link>
-      {currentUser?.id !== user?.id && <UserFollowButton userId={user.id} isFollowing={isFollowing!} />}
-    </NavBar>
+    <View className="top-0 inset-x-0">
+      <NavBar
+        left={<NavButton.Back size="xl" />}
+        right={currentUser?.id === user?.id
+          ? <NoteMenu item={item} />
+          : <NoteShareButton item={item} />}
+      >
+        <Link href={`/user/${user.id}/profile`} asChild>
+          <HStack flex={1} gap="$2" alignItems="center">
+            <Avatar size="sm" borderRadius="$full">
+              <AvatarImage
+                source={{
+                  uri: user.avatar,
+                }}
+              />
+            </Avatar>
+            <Text>
+              {user.nickname}
+            </Text>
+          </HStack>
+        </Link>
+        {currentUser?.id !== user?.id && <UserFollowButton userId={user.id} isFollowing={isFollowing!} />}
+      </NavBar>
+    </View>
   )
 }

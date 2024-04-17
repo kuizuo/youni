@@ -28,7 +28,7 @@ export class UserNotePagerDto extends createZodDto(basePagerSchema.extend({
 })) { }
 
 export class NoteSearchDto extends createZodDto(basePagerSchema.extend({
-  keyword: z.string().min(1, { message: '关键字不能为空' }),
+  keyword: z.string(), // .min(1, { message: '关键字不能为空' }),
   sortBy: z.string().optional(),
   sortOrder: z.string()
     .or(z.enum(['asc', 'desc']))

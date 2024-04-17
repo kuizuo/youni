@@ -15,7 +15,7 @@ export function SearchScreen() {
   const [isSearched, setIsSearched] = useState(false)
 
   const trimedSearchText = searchText.trim()
-
+  132
   const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom)
 
   const inputRef = useRef<ElementRef<typeof TextInput>>(null)
@@ -37,6 +37,7 @@ export function SearchScreen() {
     },
     [setSearchHistory],
   )
+
   function SearchBar() {
     return (
       <View
@@ -48,13 +49,13 @@ export function SearchScreen() {
         <TextInput
           ref={inputRef}
           className="flex-1 text-md"
-          value={searchText}
+          defaultValue={searchText}
           onChangeText={(text) => {
             if (text !== searchText)
               setSearchText(text)
             // setIsSearched(true)
           }}
-          onSubmitEditing={() => handleSubmit(searchText)}
+          // onSubmitEditing={() => handleSubmit(searchText)}
         >
         </TextInput>
       </View>

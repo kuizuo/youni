@@ -1,14 +1,15 @@
 import type { NoteItem } from '@server/modules/note/note'
 import { PencilLine } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { HStack, Pressable, Text } from '@gluestack-ui/themed'
+import { HStack, Pressable, Text, VStack, View } from '@gluestack-ui/themed'
+import { useEffect } from 'react'
 import { CommentBox } from '@/ui/components/comment/CommentBox'
 import { NoteCollectButton } from '@/ui/components/note/NoteCollectButton'
 import { NoteLikeButton } from '@/ui/components/note/NoteLikeButton'
 import { useCommentBoxOpen, useParentComment } from '@/atoms/comment'
 import { NoteCommentButton } from '@/ui/components/note/NoteCommentButton'
 
-export function NoteFooter({ item }: { item: NoteItem }) {
+export function NoteFooter({ item, onOk }: { item: NoteItem, onOk?: () => void }) {
   const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useCommentBoxOpen()
   const [_, setParentComment] = useParentComment()
@@ -19,15 +20,19 @@ export function NoteFooter({ item }: { item: NoteItem }) {
   }
 
   const onSuccess = () => {
-    // 刷新
+    onOk?.()
   }
+
+  useEffect(() => {
+    return () => {
+      setOpen(false)
+    }
+  }, [])
 
   return (
     <>
       {open
-        ? (
-          <CommentBox item={item} onSuccess={onSuccess} />
-          )
+        ? (<CommentBox item={item} onSuccess={onSuccess} />)
         : (
           <HStack py="$2" pb={bottom || '$2'} mx="$2" gap="$3">
             <HStack
