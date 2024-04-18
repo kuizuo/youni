@@ -37,7 +37,7 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
             w={imageWidth}
             h={imageHeight}
             source={{ uri: item }}
-            resizeMode="center"
+            resizeMode="cover"
             alt="image"
           />
         )}

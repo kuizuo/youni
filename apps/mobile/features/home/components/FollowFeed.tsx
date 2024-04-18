@@ -32,18 +32,14 @@ const FollowFeed = memo(() => {
     [followFeedData.pages],
   )
 
-  const handleRefresh = () => {
-    refetch()
-  }
-
   const EmptyUserFollowing = () => {
     return (
       <ScrollView
         marginTop="$4"
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       >
         <View className="items-center">
-          <Heading size="md">还没有关注的用户</Heading>
+          <Heading size="md" mb="$2">还没有关注的用户</Heading>
           <Text size="sm">关注后，可在这里查看对方的最新动态</Text>
         </View>
         {/* 你可能认识的人 */}
@@ -60,7 +56,7 @@ const FollowFeed = memo(() => {
             <UserNoteList
               data={flatedData}
               isRefreshing={isRefetching}
-              onRefresh={handleRefresh}
+              onRefresh={refetch}
               onEndReached={() => {
                 if (hasNextPage)
                   fetchNextPage()

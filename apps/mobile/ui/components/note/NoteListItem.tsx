@@ -36,9 +36,7 @@ export function NoteListItem(item: NoteItem): ReactNode {
         <HStack gap="$2" alignItems="center">
           <Avatar size="xs" borderRadius="$full" overflow="hidden">
             <AvatarImage
-              source={{
-                uri: user.avatar!,
-              }}
+              source={{ uri: user.avatar! }}
             />
           </Avatar>
           <Text size="xs" opacity={70}>

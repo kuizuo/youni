@@ -23,8 +23,8 @@ export function UserNoteList({
     <FlashList
       data={data}
       renderItem={({ item }) => <UserNoteListItem {...item}></UserNoteListItem>}
-      keyExtractor={item => item.id}
       refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+      keyExtractor={item => item.id}
       onEndReached={onEndReached}
       estimatedItemSize={200}
       ListEmptyComponent={ListEmptyComponent}
