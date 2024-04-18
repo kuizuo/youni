@@ -39,6 +39,7 @@ export function NoteFooter({ item, onOk }: { item: NoteItem, onOk?: () => void }
               flex={1}
               gap="$1"
               bg="$trueGray200"
+              $dark-bg="$backgroundDark800"
               px="$2"
               py="$1"
               alignItems="center"

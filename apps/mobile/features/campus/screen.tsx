@@ -100,6 +100,8 @@ export function CampusScreen() {
                     h={TAB_BAR_HEIGHT}
                     p="$3"
                     py="$2"
+                    bg="$backgroundLight0"
+                    $dark-bg="$backgroundDark950"
                   >
                     <Text size="sm">{tabNames}</Text>
                   </View>

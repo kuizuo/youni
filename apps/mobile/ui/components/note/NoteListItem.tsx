@@ -7,6 +7,7 @@ import type { GestureResponderEvent } from 'react-native'
 import { useModal } from '../CustomModal'
 import { NoteSheet } from './NoteSheet'
 import { NoteLikeButton } from './NoteLikeButton'
+import { NoteBadge } from './NoteBadge'
 
 export function NoteListItem(item: NoteItem): ReactNode {
   const router = useRouter()
@@ -86,7 +87,13 @@ export function NoteListItem(item: NoteItem): ReactNode {
           </Heading>
           <Box flexDirection="row" alignItems="center" justifyContent="space-between">
             <UserAvatar user={item.user} />
-            <NoteLikeButton item={item} />
+            {
+              item.state === 'Published'
+                ? <NoteLikeButton item={item} />
+                : (
+                  <NoteBadge state={item.state} />
+                  )
+            }
           </Box>
         </View>
 

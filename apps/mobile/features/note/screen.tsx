@@ -43,7 +43,7 @@ export function NoteScreen(): React.ReactNode {
   }
 
   return (
-    <View className="flex-1">
+    <View flex={1}>
       <NoteHeader item={data as NoteItem} user={data.user} />
       <ScrollView
         showsVerticalScrollIndicator={false}

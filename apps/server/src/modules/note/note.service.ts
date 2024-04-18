@@ -128,14 +128,14 @@ export class NoteService {
 
   async update(id: string, dto: NoteUpdateDto) {
     const { images, tags, ...data } = dto
-
     return this.prisma.note.update({
       where: { id },
       data: {
         ...data,
-        images,
-        cover: images![0],
-        publishTime: new Date(),
+        ...(images && {
+          images,
+          cover: images![0],
+        }),
         ...(tags && {
           tags: {
             connectOrCreate: tags.map(tag => ({

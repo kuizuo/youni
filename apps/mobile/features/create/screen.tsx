@@ -125,12 +125,14 @@ export function CreateScreen() {
       src: image.url,
     })))
 
-    setValue('tags', selectTags)
+    // setValue('tags', selectTags)
     // setValue('location', location)
 
     try {
       const result = await mutateAsync({
         ..._data,
+        tags: selectTags,
+        images: getValues('images'),
         state: 'Audit',
       })
 
@@ -144,8 +146,7 @@ export function CreateScreen() {
           )
         },
       })
-      // FIXME: 仅作者可见 处于审核状态
-      // router.push(`/note/${result.id}`)
+      router.replace(`/note/${result.id}`)
     }
     catch (error) {
       toast.show({

@@ -70,7 +70,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           const { input, ctx: { user } } = opt
           const { id } = input
 
-          const note = await this.notePublicService.getNoteById(id)
+          const note = await this.notePublicService.getNoteById(id, user.id)
 
           if (note) {
             scheduleManager.schedule(async () => {
@@ -125,7 +125,7 @@ export class NoteTrpcRouter implements OnModuleInit {
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          const { items, meta } = await this.notePublicService.getNotesByUserId(input)
+          const { items, meta } = await this.notePublicService.getNotesByUserId(input, user.id)
 
           await this.notePublicService.appendInteractInfo(items as unknown as Note[], user.id)
 
@@ -197,7 +197,7 @@ export class NoteTrpcRouter implements OnModuleInit {
           return this.noteService.create(input, user.id)
         }),
       update: procedureAuth
-        .input(NoteInputSchema.extend({ id: z.string() }))
+        .input(NoteInputSchema.partial().extend({ id: z.string() }))
         .meta({ model: 'Note', action: Action.Update })
         .mutation(async (opt) => {
           const { input } = opt

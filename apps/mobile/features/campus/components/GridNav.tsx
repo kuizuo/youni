@@ -55,7 +55,12 @@ export function GridNav() {
   //   return <></>
 
   return (
-    <View mx="$4" py="$4">
+    <View
+      px="$4"
+      py="$4"
+      bg="$backgroundLight0"
+      $dark-bg="$backgroundDark950"
+    >
       <FlatList
         data={itemData}
         numColumns={4}

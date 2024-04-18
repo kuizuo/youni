@@ -112,7 +112,7 @@ const handleUpdate = async (fields: API.NoteItem) => {
   try {
     await updateNote(fields.id!, {
       value: fields.value,
-      status: fields.status,
+      state: fields.state,
     });
     hide();
 
@@ -352,7 +352,7 @@ const TableList: React.FC = () => {
           colProps={{
             span: 6,
           }}
-          name="status"
+          name="state"
         />
       </ModalForm> */}
 
@@ -365,7 +365,7 @@ const TableList: React.FC = () => {
         onOpenChange={handleUpdateModalOpen}
         initialValues={{
           value: currentRow?.title,
-          status: currentRow?.state,
+          state: currentRow?.state,
         }}
         onFinish={async (value) => {
           const success = await handleUpdate({ id: currentRow?.id, ...value });
@@ -403,7 +403,7 @@ const TableList: React.FC = () => {
           colProps={{
             span: 24,
           }}
-          name="status"
+          name="state"
           valueEnum={stateValueEnum}
         />
       </ModalForm>

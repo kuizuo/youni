@@ -32,24 +32,25 @@ export class NoteController {
   @Post()
   @Policy({ model: 'Note', action: Action.Create })
   async create(@Body() dto: NoteDto, @AuthUser() user: IAuthUser) {
-    await this.noteService.create(dto, user.id)
+    return await this.noteService.create(dto, user.id)
   }
 
   @Put(':id')
   @Policy({ model: 'Note', action: Action.Update })
   async update(@Param() { id }: IdDto, @Body() dto: NoteUpdateDto) {
-    await this.noteService.update(id, dto)
+    console.log(dto)
+    return await this.noteService.update(id, dto)
   }
 
   @Delete(':id')
   @Policy({ model: 'Note', action: Action.Delete })
   async delete(@Param() { id }: IdDto) {
-    await this.noteService.delete(id)
+    return await this.noteService.delete(id)
   }
 
   @Delete()
   async batchDelete(@Body() dto: BatchDeleteDto, @AuthUser() user: IAuthUser) {
     const { ids } = dto
-    await this.noteService.batchDelete(ids, user.id)
+    return await this.noteService.batchDelete(ids, user.id)
   }
 }

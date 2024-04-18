@@ -10,6 +10,7 @@ import { NoteMenu } from '@/ui/components/note/NoteMenu'
 import { NavBar } from '@/ui/components/NavBar'
 import { NoteShareButton } from '@/ui/components/note/NoteShareButton'
 import { NavButton } from '@/ui/components/NavButton'
+import { NoteBadge } from '@/ui/components/note/NoteBadge'
 
 interface Props {
   user: Pick<UserInfo, 'id' | 'nickname' | 'avatar'>
@@ -40,6 +41,9 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
             <Text>
               {user.nickname}
             </Text>
+            {
+              item.state !== 'Published' && <NoteBadge state={item.state} />
+            }
           </HStack>
         </Link>
         {currentUser?.id !== user?.id && <UserFollowButton userId={user.id} isFollowing={isFollowing!} />}
