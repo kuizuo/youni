@@ -29,7 +29,7 @@ export function NavBar({
   return (
     <HStack
       position="relative"
-      mx="$3"
+      px="$3"
       py="$2"
       alignItems="center"
       gap="$2.5"

@@ -30,14 +30,14 @@ export function ImageCarousel({ data, width, height, showProgress = true }: Prop
         pagingEnabled={false}
         overscrollEnabled={false}
         autoPlay={false}
-        onProgressChange={(_, absoluteProgress) =>
-          (progressValue.value = absoluteProgress)}
+        onProgressChange={(_, absoluteProgress) => (progressValue.value = absoluteProgress)}
         data={data}
         renderItem={({ item }) => (
           <Image
             w={imageWidth}
             h={imageHeight}
             source={{ uri: item }}
+            resizeMode="center"
             alt="image"
           />
         )}

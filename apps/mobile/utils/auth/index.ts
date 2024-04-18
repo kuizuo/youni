@@ -6,6 +6,7 @@ import type { LoginResult } from '@server/modules/auth/auth.model'
 import { client } from '../http/client'
 import { getToken, setToken } from './utils'
 import { atomWithMMKV } from '@/provider/jotai/store'
+import { useCurrentCampus } from '@/atoms/campus'
 
 export interface Credentials {
   username: string
@@ -19,6 +20,7 @@ export function useAuth() {
   const router = useRouter()
 
   const store = useStore()
+  const [currentCampus, setCurrentCampus] = useCurrentCampus()
   const [isLogged] = useAtom(isLoggedAtom)
   const [user] = useAtom(userAtom)
 
@@ -35,9 +37,11 @@ export function useAuth() {
     setToken(data.authToken)
 
     // set user info
-
     const userInfo = await client.get('/api/account/profile') as UserProfile
     store.set(userAtom, userInfo)
+
+    if (userInfo.campusId)
+      setCurrentCampus({ id: userInfo?.campusId } as any)
 
     return data
   }

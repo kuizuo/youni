@@ -2,29 +2,27 @@ import type { Campus } from '@youni/database'
 import { Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
 import { useState } from 'react'
 import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
-import { Platform, useWindowDimensions } from 'react-native'
-import { Image, Text, View } from '@gluestack-ui/themed'
+import { Platform, useColorScheme, useWindowDimensions } from 'react-native'
+import { Text, View, useToken } from '@gluestack-ui/themed'
 import { DynamicList } from './components/DynamicList'
 import { SelectCampusButton } from './components/SelectCampusButton'
+import { GridNav } from './components/GridNav'
+import { CampusTitle } from './components/CampusTitle'
 import { useCurrentCampus } from '@/atoms/campus'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
-import { useAuth } from '@/utils/auth'
 import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
 
 export function CampusScreen() {
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
 
-  const { data, isLoading } = trpc.campus.byId.useQuery({ id: currentCampus.id }, {
-    enabled: !!currentCampus.id,
+  const { data, isLoading } = trpc.campus.byId.useQuery({ id: currentCampus?.id }, {
+    enabled: !!currentCampus?.id,
   })
 
-  // useEffect(() => {
-  //   setCurrentCampus({
-  //     id: '35618370883588004',
-  //   })
-  // }, [])
+  const colorScheme = useColorScheme()
+  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundDark950' : 'backgroundLight0')
 
   const window = useWindowDimensions()
   const [headerHeight, setHeaderHeight] = useState(0)
@@ -52,93 +50,73 @@ export function CampusScreen() {
       },
       [Y],
     )
+
     return (
       <>
-        <ImageCarousel data={data?.carousels.map(image => image.src)} height={150} showProgress={false} />
+        {data?.carousels.length > 0 && (
+          <ImageCarousel data={data?.carousels.map(image => image.src)} height={150} showProgress={false} />
+        )}
         <GridNav />
       </>
     )
   }
 
   return (
-    <View flex={1}>
+    <View
+      flex={1}
+      bg="$backgroundLight0"
+      $dark-bg="$backgroundDark950"
+    >
       <NavBar
         left={(<CampusTitle campus={data as unknown as Campus}></CampusTitle>)}
         right={(<SelectCampusButton></SelectCampusButton>)}
-        className="z-1 bg-background"
+        style={{ zIndex: 1, backgroundColor: bgColor }}
       >
       </NavBar>
-
-      <Tabs.Container
-        allowHeaderOverscroll
-        headerHeight={headerHeight}
-        revealHeaderOnScroll={false}
-        lazy
-        snapThreshold={0.5}
-        headerContainerStyle={{ shadowOpacity: 0 }}
-        renderHeader={props => (
-          <View
-            onLayout={ev => setHeaderHeight(ev.nativeEvent.layout.height)}
-            pointerEvents="box-none"
-          >
-            <CampusHeader />
-          </View>
-        )}
-        renderTabBar={(props) => {
-          // eslint-disable-next-line react/prop-types
-          const { tabNames } = props
-          return (
-            <View
-              {...props}
-              h={TAB_BAR_HEIGHT}
-              p="$3"
-              py="$2"
+      {
+        currentCampus?.id
+          ? (
+            <Tabs.Container
+              allowHeaderOverscroll
+              headerHeight={headerHeight}
+              revealHeaderOnScroll={false}
+              lazy
+              snapThreshold={0.5}
+              headerContainerStyle={{ shadowOpacity: 0 }}
+              renderHeader={props => (
+                <View
+                  onLayout={ev => setHeaderHeight(ev.nativeEvent.layout.height)}
+                  pointerEvents="box-none"
+                >
+                  <CampusHeader />
+                </View>
+              )}
+              renderTabBar={(props) => {
+                // eslint-disable-next-line react/prop-types
+                const { tabNames } = props
+                return (
+                  <View
+                    {...props}
+                    h={TAB_BAR_HEIGHT}
+                    p="$3"
+                    py="$2"
+                  >
+                    <Text size="sm">{tabNames}</Text>
+                  </View>
+                )
+              }}
             >
-              <Text>{tabNames}</Text>
-            </View>
-          )
-        }}
-      >
 
-        <Tabs.Tab name="动态广场">
-          <DynamicList contentContainerStyle={contentContainerStyle} />
-        </Tabs.Tab>
-      </Tabs.Container>
+              <Tabs.Tab name="动态广场">
+                <DynamicList contentContainerStyle={contentContainerStyle} />
+              </Tabs.Tab>
+            </Tabs.Container>
+            ) : (
+              <View justifyContent="center" alignItems="center">
+                <Text textAlign="center">请选择要查看的校区</Text>
+              </View>
+            )
+      }
     </View>
   )
-}
-
-function CampusTitle({ campus }: { campus?: Campus }) {
-  if (!campus)
-    return <Text>请选择校区</Text>
-
-  return (
-    <View className="flex-row items-center gap-2">
-      <Image
-        w={24}
-        h={24}
-        source={{ uri: campus.logo }}
-      />
-      {/* <School /> */}
-      <Text size="lg">{campus.name}</Text>
-    </View>
-  )
-}
-
-function GridNav() {
-  const { currentUser } = useAuth()
-  const [currentCampus, setCurrentCampus] = useCurrentCampus()
-
-  // TODO: 当所选校区与用户所在校区一致显示
-  if (currentUser?.campusId === currentCampus.id) {
-    return (
-      <>
-        {/* 我的课表 */}
-        {/* 我的 GPA */}
-        {/* 校区公众号 */}
-      </>
-    )
-  }
-
-  return <></>
 }
