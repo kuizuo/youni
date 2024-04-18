@@ -57,7 +57,7 @@ export function NavBar({
       </HStack>
 
       {right && (
-        <HStack minWidth="$5" justifyContent="flex-end" alignContent="center">
+        <HStack minWidth="$2" justifyContent="flex-end" alignContent="center">
           {right}
         </HStack>
       )}

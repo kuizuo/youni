@@ -7,7 +7,7 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Animated from 'react-native-reanimated'
 import { Tabs } from 'react-native-collapsible-tab-view'
-import { Spinner } from '@gluestack-ui/themed'
+import { Spinner, useMedia } from '@gluestack-ui/themed'
 import { trpc } from '@/utils/trpc'
 import { useAuth } from '@/utils/auth'
 import { NoteListItem } from '@/ui/components/note/NoteListItem'
@@ -21,6 +21,8 @@ interface Props {
 }
 
 export function NoteList({ userId, contentContainerStyle }: Props) {
+  const media = useMedia()
+  const numColumns = media.xl ? 5 : media.lg ? 4 : media.md ? 3 : 2
   const { currentUser } = useAuth()
 
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.userCollectNotes.useSuspenseInfiniteQuery(
@@ -60,8 +62,7 @@ export function NoteList({ userId, contentContainerStyle }: Props) {
           fetchNextPage()
       }}
       renderItem={renderItem}
-      // FIXME:
-      numColumns={2}
+      numColumns={numColumns}
       estimatedItemSize={200}
       ListFooterComponent={(
         <SafeAreaView edges={['bottom']}>

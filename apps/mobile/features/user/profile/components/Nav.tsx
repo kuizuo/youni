@@ -1,37 +1,38 @@
 import { Highlighter, History, LifeBuoy } from 'lucide-react-native'
 import type { LucideProps } from 'lucide-react-native'
-import type { Href } from 'expo-router'
-import { Link } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Icon, Text, useToken } from '@gluestack-ui/themed'
+import { Icon, Pressable, Text, View, useToken } from '@gluestack-ui/themed'
 import { useColorScheme } from 'react-native'
-import { View } from '@/ui/components/Themed'
 
 export function Navs() {
   interface Item {
-    href: Href<string>
     icon: React.ReactElement<LucideProps>
     text: string
     desc: string
+    onPress: () => void
   }
+
+  const router = useRouter()
 
   const colorScheme = useColorScheme()
   const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark700' : 'textLight700')
+
   const navItems: Item[] = [
     {
-      href: '/campus',
+      onPress: () => router.push('/campus'),
       icon: <Icon as={LifeBuoy} size="md" color={textColor} />,
       text: '我的校园',
       desc: '校园动态',
     },
     {
-      href: '/(creator)',
+      onPress: () => router.push('/(creator)'),
       icon: <Icon as={Highlighter} size="md" color={textColor} />,
       text: '创作中心',
-      desc: '创造属于你的世界',
+      desc: '创造你的世界',
     },
     {
-      href: '/history/',
+      onPress: () => router.push('/history/'),
       icon: <Icon as={History} size="md" color={textColor} />,
       text: '浏览记录',
       desc: '看过的笔记',
@@ -39,26 +40,31 @@ export function Navs() {
   ]
 
   return (
-    <View className="flex-row mx-4 mb-3 gap-2.5">
+    <View className="flex-row mx-4 mb-3 gap-3">
       {
-        navItems.map(({ href, icon, text, desc }) => {
+        navItems.map(({ text, icon, desc, onPress }) => {
           return (
             <BlurView
-              key={href}
-              intensity={60}
-              className="flex-1 rounded-md b-1 b-gray overflow-hidden px-3 py-2"
+              key={text}
+              className="flex-1 rounded-md border-gray-300 overflow-hidden px-3 py-2"
+              style={{
+                borderWidth: 1,
+              }}
             >
-              <Link href={href} asChild>
-                <View className="flex-row items-center mb-3 gap-1.5">
+              <Pressable onPress={onPress}>
+                <View
+                  className="flex-row items-center gap-1"
+                >
                   {icon}
                   <Text size="sm">
                     {text}
                   </Text>
                 </View>
-              </Link>
-              <Text size="xs">
-                {desc}
-              </Text>
+                <Text size="xs" color="$secondary500">
+                  {desc}
+                </Text>
+              </Pressable>
+
             </BlurView>
           )
         })

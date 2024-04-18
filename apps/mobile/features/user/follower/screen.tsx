@@ -2,14 +2,17 @@ import React, { memo, useMemo, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Text, View, useToken } from '@gluestack-ui/themed'
+import { useWindowDimensions } from 'react-native'
 import { FollowerList } from './FollowerList'
-import { View, Text, useWindowDimensions } from '@gluestack-ui/themed'
 import { NavButton } from '@/ui/components/NavButton'
 
 export function FollowerScreen() {
+  const primaryColor = useToken('colors', 'primary500')
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
 
   const { top } = useSafeAreaInsets()
+
   const [index, setIndex] = useState(type === 'following' ? 0 : 1)
 
   const { width: windowWidth } = useWindowDimensions()
@@ -36,7 +39,7 @@ export function FollowerScreen() {
   const FollowersList = memo(FollowerList)
 
   return (
-    <View className="flex-1 relative bg-background" style={{ paddingTop: top }}>
+    <View flex={1} position="relative" pt={top}>
       <TabView
         navigationState={{ index, routes: TABS }}
         onIndexChange={setIndex}
@@ -47,45 +50,46 @@ export function FollowerScreen() {
           route.key === 'following'
             ? <FollowingList userId={id} type="following"></FollowingList>
             : <FollowersList userId={id} type="followers"></FollowersList>}
-        renderTabBar={(props) => {
-          return (
-            <>
-              <View className="relative px-4 h-[28px] items-center">
-                <NavButton.Back position="absolute" left={0} marginLeft="$3" />
+        renderTabBar={props => (
+          <View className="relative mx-4 px-4 h-[24px] items-center">
+            <NavButton.Back style={{ position: 'absolute', left: 0 }} />
 
-                <TabBar
-                  {...props}
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                  }}
-                  tabStyle={{ height: 50 }}
-                  // indicatorStyle={tw`h-[2px] w-1/2 bg-primary items-center`}
-                  scrollEnabled
-                  gap={16}
-                  renderTabBarItem={(tabBarItemProps) => {
-                    const { route } = tabBarItemProps
-                    const active = TABS[index]!.key === route.key
+            <TabBar
+              {...props}
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                backgroundColor: 'transparent',
+              }}
+              tabStyle={{ height: 50 }}
+              indicatorStyle={{
+                height: 2,
+                width: '50%',
+                justifyContent: 'center',
+                backgroundColor: primaryColor,
+              }}
+              scrollEnabled
+              gap={16}
+              renderTabBarItem={(tabBarItemProps) => {
+                const { route } = tabBarItemProps
+                const active = TABS[index]!.key === route.key
 
-                    return (
-                      <Text
-                        opacity={active ? 1 : 0.5}
-                        size="md"
-                        onPress={() => {
-                          const index = TABS.findIndex(tab => tab.key === route.key)
-                          setIndex(index)
-                        }}
-                      >
-                        {route.title}
-                      </Text>
-                    )
-                  }}
-                />
-              </View>
-            </>
-          )
-        }}
+                return (
+                  <Text
+                    opacity={active ? 1 : 0.5}
+                    size="md"
+                    onPress={() => {
+                      const index = TABS.findIndex(tab => tab.key === route.key)
+                      setIndex(index)
+                    }}
+                  >
+                    {route.title}
+                  </Text>
+                )
+              }}
+            />
+          </View>
+        )}
       >
       </TabView>
     </View>

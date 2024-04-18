@@ -246,7 +246,7 @@ export function ProfileScreen() {
       <View mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
         <View pt={AVATAR_SIZE_VALUE} pointerEvents="none" />
         {/* 基本信息 */}
-        <View px="$4" mb="$3">
+        <View px="$4" mb="$2">
           <Text>{data.desc ?? '暂无简介'}</Text>
         </View>
 

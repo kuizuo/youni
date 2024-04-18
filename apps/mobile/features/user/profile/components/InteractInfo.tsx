@@ -1,8 +1,8 @@
 import { MessageCircle, Settings } from 'lucide-react-native'
-import { Link } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 import type { UserInfo } from '@server/modules/user/user'
-import { BlurView } from 'expo-blur'
-import { HStack, Icon, Text, View } from '@gluestack-ui/themed'
+import { HStack, Icon, Pressable, Text, View, useToken } from '@gluestack-ui/themed'
+import { useColorScheme } from 'nativewind'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useAuth } from '@/utils/auth'
@@ -11,90 +11,98 @@ interface Props {
   user: UserInfo
 }
 
-export function InteractInfo({ user }: Props): React.ReactNode {
+export function InteractInfo({ user }: Props) {
+  const router = useRouter()
+  const { colorScheme } = useColorScheme()
+  const borderColor = useToken('colors', colorScheme === 'dark' ? 'borderDark300' : 'backgroundLight300')
+
   const { data } = trpc.interact.state.useQuery({ id: user.id })
 
   const { currentUser } = useAuth()
 
   const EditProfileButton = () => {
     return (
-      <BlurView
-        intensity={20}
-        className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
+      <View
+        className="justify-center rounded-full overflow-hidden px-4 py-2"
+        borderWidth={1}
+        borderColor={borderColor}
       >
-        <Link href="/user/profile/edit" asChild>
-          <Text color="$secondary500" fontSize={12}>
+        <Pressable onPress={() => router.push('/user/profile/edit')}>
+          <Text color="$secondary500" fontSize="$xs">
             编辑资料
           </Text>
-        </Link>
-      </BlurView>
+        </Pressable>
+      </View>
     )
   }
 
   const SettingButton = () => {
     return (
-      <BlurView
-        intensity={20}
-        className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
+      <View
+        className="justify-center rounded-full overflow-hidde px-2 py-2"
+        borderRadius="$full"
+        borderWidth={1}
+        borderColor={borderColor}
       >
-        <Link href="/setting/" asChild>
-          <Icon as={Settings} />
-        </Link>
-      </BlurView>
+        <Pressable onPress={() => router.push('/setting/')}>
+          <Icon as={Settings} size="sm" color="$secondary500" />
+        </Pressable>
+      </View>
     )
   }
 
   const ChatButton = () => {
     return (
-      <BlurView
-        intensity={20}
-        className="justify-center rounded-full overflow-hidden b-1 b-gray-1 px-8 py-2"
+      <View
+        className="justify-center rounded-full overflow-hidden px-2 py-2"
+        borderWidth={1}
+        borderColor={borderColor}
       >
-        <Link href={`/chat/${user.id}`} asChild>
-          <MessageCircle size="xs" />
-        </Link>
-      </BlurView>
+        <Pressable onPress={() => router.push(`/chat/${user.id}`)}>
+          <Icon as={MessageCircle} size="sm" color="$secondary500" />
+        </Pressable>
+      </View>
     )
   }
 
   return (
-    <HStack gap="$4" mx="$4" mb="$3" alignContent="center">
-      <Link
-        href={{
+    <HStack gap="$4" mx="$4" mb="$3" alignItems="center">
+      <Pressable
+        flexDirection="row"
+        gap="$1"
+        onPress={() => router.push({
           pathname: '/user/[id]/follower',
           params: { id: user.id, type: 'following', title: user.nickname },
-        }}
-        asChild
+        })}
       >
-        <HStack gap="$1">
-          <Text>{data?.followingCount}</Text>
-          <Text size="xs">
-            关注
-          </Text>
-        </HStack>
-      </Link>
-      <Link
-        href={{
+        <Text>{data?.followingCount}</Text>
+        <Text size="sm">
+          关注
+        </Text>
+      </Pressable>
+      <Pressable
+        flexDirection="row"
+        gap="$1"
+        alignItems="center"
+        onPress={() => router.push({
           pathname: '/user/[id]/follower',
           params: { id: user.id, type: 'followers', title: user.nickname },
-        }}
-        asChild
+        })}
       >
-        <HStack gap="$1" alignContent="center">
-          <Text>{data?.followerCount}</Text>
-          <Text size="xs">
-            粉丝
-          </Text>
-        </HStack>
-      </Link>
-      <HStack gap="$1" alignContent="center">
+        <Text>{data?.followerCount}</Text>
+        <Text size="sm">
+          粉丝
+        </Text>
+      </Pressable>
+
+      <HStack gap="$1" alignItems="center">
         <Text>{data?.likesCount}</Text>
-        <Text size="xs">
+        <Text size="sm">
           获赞
         </Text>
       </HStack>
 
-      <HStack flex={1} justifyContent="flex-end" gap="$3">
+      <HStack flex={1} justifyContent="flex-end" alignItems="center" gap="$3">
         {
           user.id === currentUser?.id
             ? (
@@ -105,7 +113,7 @@ export function InteractInfo({ user }: Props): React.ReactNode {
               )
             : (
               <>
-                <UserFollowButton userId={user.id} isFollowing={data?.isFollowing} />
+                <UserFollowButton userId={user.id} isFollowing={data?.isFollowing || false} />
                 <ChatButton />
               </>
               )

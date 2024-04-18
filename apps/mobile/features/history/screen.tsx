@@ -1,15 +1,17 @@
 import { Trash } from 'lucide-react-native'
 import { useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Button, View } from '@gluestack-ui/themed'
+import { Box, Button, ButtonIcon, Text, View } from '@gluestack-ui/themed'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
-import { CustomDialog } from '@/ui/components/CustomDialog'
+import { CustomDialog, useDialog } from '@/ui/components/CustomDialog'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 
 export function HistoryScreen() {
+  const { isOpen, openDialog, closeDialog } = useDialog()
+
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.history.list.useSuspenseInfiniteQuery({
     limit: 10,
   }, {
@@ -33,18 +35,21 @@ export function HistoryScreen() {
       <NavBar
         left={<NavButton.Back />}
         right={(
-          <CustomDialog title="确认清空浏览记录?" onOk={handleClear}>
-            <Button
-              size="$2"
-              br={50}
-              icon={<Trash />}
-            >
+          <CustomDialog
+            title="确认清空浏览记录?"
+            isOpen={isOpen}
+            onClose={closeDialog}
+            onOk={handleClear}
+          >
+            <Button size="md" borderRadius="$full" variant="link">
+              <ButtonIcon as={Trash} />
             </Button>
           </CustomDialog>
         )}
       >
         <Text flex={1} textAlign="center">浏览记录</Text>
       </NavBar>
+
       <NoteList
         data={flatedData as unknown as NoteItem[]}
         isRefreshing={isRefetching}
