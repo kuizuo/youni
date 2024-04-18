@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router'
-import { HStack, Image, Pressable, Text, View } from '@gluestack-ui/themed'
+import { Badge, BadgeText, Button, ButtonText, HStack, Image, Pressable, Text, VStack, View } from '@gluestack-ui/themed'
 import { NotificationItem } from './components/NotificationItem'
 import { trpc } from '@/utils/trpc'
 
@@ -29,9 +29,28 @@ export function NotificationScreen() {
             gap="$2"
             onPress={() => router.push('/notification/like')}
           >
-            <Image width={60} height={60} source={require('./assets/images/heart.png')} />
-
-            <Text size="md">赞</Text>
+            <VStack>
+              <Image width={60} height={60} source={require('./assets/images/heart.png')} />
+              {
+                data?.count.like > 0 && (
+                  <Badge
+                    position="absolute"
+                    h={22}
+                    w={22}
+                    bg="$red600"
+                    borderRadius="$full"
+                    zIndex={1}
+                    variant="solid"
+                    alignSelf="flex-end"
+                  >
+                    <BadgeText color="$white">
+                      {data?.count.like}
+                    </BadgeText>
+                  </Badge>
+                )
+              }
+            </VStack>
+            <Text size="sm">赞</Text>
           </Pressable>
           <Pressable
             flex={1}
@@ -40,16 +59,28 @@ export function NotificationScreen() {
             gap="$2"
             onPress={() => router.push('/notification/comment')}
           >
-            <Image width={60} height={60} source={require('./assets/images/message.png')} />
-            {
-              data?.count.comment > 0 && (
-                <Text position="absolute" top={0} right={20}>
-                  {data?.count.comment}
-                  {' '}
-                </Text>
-              )
-            }
-            <Text size="md">评论</Text>
+            <VStack>
+              <Image width={60} height={60} source={require('./assets/images/message.png')} />
+              {
+                data?.count.comment > 0 && (
+                  <Badge
+                    position="absolute"
+                    h={22}
+                    w={22}
+                    bg="$red600"
+                    borderRadius="$full"
+                    zIndex={1}
+                    variant="solid"
+                    alignSelf="flex-end"
+                  >
+                    <BadgeText color="$white">
+                      {data?.count.comment}
+                    </BadgeText>
+                  </Badge>
+                )
+              }
+            </VStack>
+            <Text size="sm">评论</Text>
           </Pressable>
           <Pressable
             flex={1}
@@ -58,16 +89,29 @@ export function NotificationScreen() {
             gap="$2"
             onPress={() => router.push('/notification/follow')}
           >
-            <Image width={60} height={60} source={require('./assets/images/follow.png')} />
-            {
-              data?.count.follow > 0 && (
-                <Text position="absolute" top={0} right={20}>
-                  {data?.count.follow}
-                  {' '}
-                </Text>
-              )
-            }
-            <Text size="md">新增关注</Text>
+            <VStack>
+              <Image width={60} height={60} source={require('./assets/images/follow.png')} />
+              {
+                data?.count.follow > 0 && (
+                  <Badge
+                    position="absolute"
+                    h={22}
+                    w={22}
+                    bg="$red600"
+                    borderRadius="$full"
+                    zIndex={1}
+                    variant="solid"
+                    alignSelf="flex-end"
+                  >
+                    <BadgeText color="$white">
+                      {data?.count.follow}
+                    </BadgeText>
+                  </Badge>
+                )
+              }
+            </VStack>
+
+            <Text size="sm">新增关注</Text>
           </Pressable>
         </HStack>
 

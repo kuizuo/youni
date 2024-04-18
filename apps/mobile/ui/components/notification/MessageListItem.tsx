@@ -27,7 +27,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
 
     const actionString = actionMap[item.action][item.sourceType]
 
-    const truncatedTitle = item.source.title.length > 16 ? `${item.source.title.slice(0, 16)}...` : item.source.title
+    const truncatedTitle = item.source.title?.length > 16 ? `${item.source.title.slice(0, 16)}...` : item.source.title
     return (
       <Text>
         <Link href={`/user/${item.sender.id}/profile`} asChild>

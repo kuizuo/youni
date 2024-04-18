@@ -1,5 +1,5 @@
 import { Redirect, Tabs, useRouter } from 'expo-router'
-import { Avatar, AvatarFallbackText, AvatarImage, Pressable, View, useToken } from '@gluestack-ui/themed'
+import { Avatar, AvatarFallbackText, AvatarImage, Badge, BadgeText, Pressable, View, useToken } from '@gluestack-ui/themed'
 import { Clover, Home, MessageCircleMore, Plus } from 'lucide-react-native'
 import { useAuth } from '@/utils/auth'
 
@@ -52,7 +52,33 @@ export default function TabLayout() {
         name="notification"
         options={{
           title: '消息',
-          tabBarIcon: ({ color, size }) => <MessageCircleMore color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => {
+            return (
+              <View position="relative" flexDirection="row" gap="$1.5">
+                <MessageCircleMore color={color} size={size} />
+                {
+                  false && (
+                    <Badge
+                      position="absolute"
+                      top={-4}
+                      right={-4}
+                      h={16}
+                      w={16}
+                      bg="$red600"
+                      borderRadius="$full"
+                      zIndex={1}
+                      variant="solid"
+                      alignSelf="flex-end"
+                    >
+                      <BadgeText color="$white">
+                        1
+                      </BadgeText>
+                    </Badge>
+                  )
+                }
+              </View>
+            )
+          },
         }}
       />
       <Tabs.Screen
