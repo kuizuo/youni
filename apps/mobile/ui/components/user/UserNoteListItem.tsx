@@ -36,6 +36,7 @@ export function UserNoteListItem(item: NoteItem): React.ReactNode {
             style={{
               width: '100%',
             }}
+            alt="image"
             resizeMode="cover"
           />
         </Pressable>
@@ -65,6 +66,7 @@ function UserAvatar({ item }: { item: NoteItem }): React.ReactNode {
           <AvatarImage
             source={{ uri: item.user.avatar }}
             resizeMode="contain"
+            alt="avatar"
           />
         </Avatar>
         <HStack alignItems="center" gap="$1.5">

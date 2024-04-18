@@ -35,6 +35,9 @@ export function NavBar({
       gap="$2.5"
       style={{
         paddingTop: safeTop || 0,
+        marginTop: Platform.select({
+          web: 8,
+        }),
         ...style,
       }}
     >

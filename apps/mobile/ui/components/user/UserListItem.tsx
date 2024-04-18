@@ -17,9 +17,8 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
       <HStack p="$3" gap="$3" alignItems="center">
         <Avatar borderRadius="$full" size="lg" overflow="hidden">
           <AvatarImage
-            source={{
-              uri: item.avatar,
-            }}
+            source={{ uri: item.avatar }}
+            alt="avatar"
           />
 
         </Avatar>

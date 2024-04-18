@@ -27,6 +27,7 @@ export function NoteList({
   const media = useMedia()
 
   const numColumns = media.xl ? 5 : media.lg ? 4 : media.md ? 3 : 2
+
   const renderItem: MasonryListRenderItem<NoteItem> = useCallback(
     ({ item }) => <NoteListItem {...item}></NoteListItem>,
     [],

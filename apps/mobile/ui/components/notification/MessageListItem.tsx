@@ -69,6 +69,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
           <Avatar borderRadius="$full" size="md" overflow="hidden">
             <AvatarImage
               source={{ uri: item.sender.avatar }}
+              alt="avatar"
             />
           </Avatar>
         </Pressable>
@@ -89,6 +90,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
               width: 50,
               height: 50,
             }}
+            alt="image"
           />
         )}
       </HStack>

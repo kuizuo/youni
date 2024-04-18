@@ -37,6 +37,7 @@ export function NoteListItem(item: NoteItem): ReactNode {
           <Avatar size="xs" borderRadius="$full" overflow="hidden">
             <AvatarImage
               source={{ uri: user.avatar! }}
+              alt="avatar"
             />
           </Avatar>
           <Text size="xs" opacity={70}>
@@ -70,6 +71,7 @@ export function NoteListItem(item: NoteItem): ReactNode {
           w="$full"
           borderTopLeftRadius={6}
           borderTopRightRadius={6}
+          alt="image"
         />
         <View p="$2">
           <Heading
