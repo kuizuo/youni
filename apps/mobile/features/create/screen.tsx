@@ -321,12 +321,11 @@ export function CreateScreen() {
       <Divider mx={padding} />
       <View flex={1}>
         <ListItem
+          title="添加话题"
           icon={Hash}
           iconAfter={ChevronRight}
           onPress={() => modal.present()}
-        >
-          添加话题
-        </ListItem>
+        />
         {selectTags.length > 0 && (
           <>
             <HStack columnGap="$2" mx={padding} flexWrap="wrap">
@@ -339,12 +338,11 @@ export function CreateScreen() {
           </>
         )}
         <ListItem
+          title={location || '我的位置'}
           icon={MapPin}
           iconAfter={ChevronRight}
           onPress={() => router.push('/create/map')}
-        >
-          {location || '我的位置'}
-        </ListItem>
+        />
       </View>
 
       <TagSheet ref={modal.ref} />

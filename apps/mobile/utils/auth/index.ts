@@ -4,7 +4,7 @@ import type { UserProfile } from '@server/modules/user/user'
 import { useRouter } from 'expo-router'
 import type { LoginResult } from '@server/modules/auth/auth.model'
 import { client } from '../http/client'
-import { getToken, setToken } from './utils'
+import { getToken, removeToken, setToken } from './utils'
 import { atomWithMMKV } from '@/provider/jotai/store'
 import { useCurrentCampus } from '@/atoms/campus'
 
@@ -71,5 +71,10 @@ export function useAuth() {
     login: useMutation({
       mutationFn: login,
     }),
+    logout: () => {
+      store.set(isLoggedAtom, false)
+      store.set(userAtom, null)
+      removeToken()
+    },
   }
 }

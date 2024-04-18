@@ -61,9 +61,9 @@ export function NoteScreen(): React.ReactNode {
           <HStack flexWrap="wrap" rowGap="$1" columnGap="$2">
             {data?.tags.map(tag => (
               <Link key={tag.name} href={`/tag/${tag.name}`} asChild>
-                <LinkText>
-                  {`# ${tag.name}`}
-                </LinkText>
+                <Text color="$lightBlue600">
+                  {`#${tag.name}`}
+                </Text>
               </Link>
             ),
             )}

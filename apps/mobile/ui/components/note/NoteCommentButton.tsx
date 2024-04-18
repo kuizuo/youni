@@ -8,7 +8,7 @@ export interface Props {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xs' | undefined
   color?: string
   placeholder?: string
-  onPress?: string
+  onPress?: () => void
 }
 
 export function NoteCommentButton({

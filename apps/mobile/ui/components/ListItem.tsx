@@ -2,25 +2,25 @@ import { HStack, Icon, Pressable, Text } from '@gluestack-ui/themed'
 import type { LucideIcon } from 'lucide-react-native'
 
 interface Props {
+  title: string
   icon?: LucideIcon
   iconAfter?: LucideIcon
-  children: React.ReactNode
   onPress?: () => void
 }
 
-export function ListItem({ icon, iconAfter, children, onPress, ...props }: Props) {
+export function ListItem({ title, icon, iconAfter, onPress, ...props }: Props) {
   return (
     <Pressable onPress={onPress}>
       <HStack
         alignItems="center"
         px="$4"
-        py="$2"
+        py="$2.5"
         borderRadius="$md"
         gap="$2"
         {...props}
       >
         {icon && <Icon as={icon} size="md" />}
-        <Text flex={1}>{children}</Text>
+        <Text flex={1}>{title}</Text>
         {iconAfter && <Icon as={iconAfter} size="md" />}
       </HStack>
     </Pressable>

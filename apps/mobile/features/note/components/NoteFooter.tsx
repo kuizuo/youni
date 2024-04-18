@@ -58,7 +58,7 @@ export function NoteFooter({ item, onOk }: { item: NoteItem, onOk?: () => void }
             <HStack gap="$2">
               <NoteLikeButton size="lg" item={item} placeholder="喜欢" />
               <NoteCollectButton size="lg" item={item} />
-              <NoteCommentButton size="lg" item={item} />
+              <NoteCommentButton size="lg" item={item} onPress={() => setOpen(true)} />
             </HStack>
           </HStack>
           )}

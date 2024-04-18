@@ -1,10 +1,11 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ChevronRight } from 'lucide-react-native'
-import { Button, Divider, ListItem, MyText, View, ScrollView, Text, YGroup } from '@gluestack-ui/themed'
+import { Button, ButtonText, Divider, ScrollView, View } from '@gluestack-ui/themed'
 import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
-import { removeToken } from '@/utils/auth/utils'
+import { ListItem } from '@/ui/components/ListItem'
+import { ListGroup } from '@/ui/components/ListGroup'
 
 export function SettingScreen() {
   const router = useRouter()
@@ -12,66 +13,46 @@ export function SettingScreen() {
   const { isLogged } = useAuth()
 
   const renderItem = ({ item }: { item: string }) => (
-    <YGroup.Item>
-      <ListItem
-        pressTheme
-        hoverTheme
-        title="账号与安全"
-        iconAfter={ChevronRight}
-        onPress={() => router.push('/setting/account')}
-      />
-    </YGroup.Item>
+    <></>
   )
 
   return (
-    <View flex={1} bg="$background">
-      <ScrollView bg="$gray2">
-        <YGroup alignSelf="center" size="$4" br={0} mt="$4" Divider={<Divider />} unstyled>
-          <YGroup.Item>
-            <ListItem
-              pressTheme
-              hoverTheme
-              title="账号与安全"
-              iconAfter={ChevronRight}
-              onPress={() => router.push('/setting/account')}
-            />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem
-              pressTheme
-              hoverTheme
-              title="深色模式"
-              iconAfter={ChevronRight}
-              onPress={() => router.push('/setting/dark-mode')}
-            />
-          </YGroup.Item>
-        </YGroup>
+    <View
+      flex={1}
+      bg="$backgroundLight0"
+      $dark-bg="$backgroundDark950"
+    >
 
-        <YGroup alignSelf="center" size="$4" br={0} mt="$4" Divider={<Divider />}>
-          <YGroup.Item>
-            <ListItem pressTheme hoverTheme title="通用设置" iconAfter={ChevronRight}onPress={() => router.push('/setting/general')} />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem pressTheme hoverTheme title="通知设置"iconAfter={ChevronRight} />
-          </YGroup.Item>
-        </YGroup>
+      <ScrollView
+        bg="$backgroundLight200"
+      >
 
-        <YGroup alignSelf="center" size="$4" br={0} mt="$4" Divider={<Divider />}>
-          <YGroup.Item>
-            <ListItem pressTheme hoverTheme title="用户协议" iconAfter={ChevronRight} />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem pressTheme hoverTheme title="隐私政策" iconAfter={ChevronRight} />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem pressTheme hoverTheme title="个人信息收集清单" iconAfter={ChevronRight} />
-          </YGroup.Item>
-          <YGroup.Item>
-            <ListItem pressTheme hoverTheme title="第三方信息共享清单" iconAfter={ChevronRight} />
-          </YGroup.Item>
-        </YGroup>
+        <ListGroup mt="$4" bg="$backgroundLight0" divider={<Divider />}>
+          <ListItem
+            title="账号与安全"
+            iconAfter={ChevronRight}
+            onPress={() => router.push('/setting/account')}
+          />
+          <ListItem
+            title="深色模式"
+            iconAfter={ChevronRight}
+            onPress={() => router.push('/setting/dark-mode')}
+          />
+        </ListGroup>
 
-        <View mt="$4" pb={bottom}>
+        <ListGroup mt="$4" bg="$backgroundLight0" divider={<Divider />}>
+          <ListItem title="通用设置" iconAfter={ChevronRight} onPress={() => router.push('/setting/general')} />
+          <ListItem title="通知设置" iconAfter={ChevronRight} />
+        </ListGroup>
+
+        <ListGroup mt="$4" bg="$backgroundLight0" divider={<Divider />}>
+          <ListItem title="用户协议" iconAfter={ChevronRight} />
+          <ListItem title="隐私政策" iconAfter={ChevronRight} />
+          <ListItem title="个人信息收集清单" iconAfter={ChevronRight} />
+          <ListItem title="第三方信息共享清单" iconAfter={ChevronRight} />
+        </ListGroup>
+
+        <ListGroup mt="$4" bg="$backgroundLight0">
           {isLogged
             ? (
               <LogOutItem />
@@ -81,25 +62,23 @@ export function SettingScreen() {
                 onPress={() => {
                   router.replace('/login')
                 }}
-                br={0}
-                size="large"
+                size="lg"
               >
-                登录
+                <ButtonText>登录</ButtonText>
               </Button>
               )}
-        </View>
+        </ListGroup>
       </ScrollView>
-
     </View>
   )
 }
 
 function LogOutItem() {
-  const { signOut } = useAuth()
+  const { logout } = useAuth()
 
   const { isLoading, mutateAsync } = trpc.auth.logout.useMutation()
 
-  async function logout() {
+  async function handleLogout() {
     try {
       if (isLoading)
         return
@@ -109,13 +88,13 @@ function LogOutItem() {
       // empty
     }
     finally {
-      signOut()
+      logout()
     }
   }
 
   return (
-    <Button onPress={logout} br={0} backgroundColor="$background">
-      退出登录
+    <Button onPress={handleLogout} bg="$backgroundLight0">
+      <ButtonText color="$textColor0">退出登录</ButtonText>
     </Button>
   )
 }

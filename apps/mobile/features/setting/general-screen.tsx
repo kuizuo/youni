@@ -2,7 +2,7 @@ import { View } from '@gluestack-ui/themed'
 
 export function GeneralSettingScreen() {
   return (
-    <View flex={1} bg="$background">
+    <View flex={1}>
 
     </View>
   )
