@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Platform, useWindowDimensions } from 'react-native'
+import { Platform, StyleSheet, useWindowDimensions } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { useRoute } from '@react-navigation/native'
 import { ArrowUpRightFromSquare } from 'lucide-react-native'
@@ -29,6 +29,7 @@ const BANNER_BOTTOM_HEIGHT_ADDITION = AVATAR_SIZE_VALUE
 export function ProfileScreen() {
   const { colorScheme } = useColorScheme()
   const primaryColor = useToken('colors', 'primary500')
+  const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark800' : 'textLight800')
   const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight800' : 'backgroundLight200')
 
   const { id: userId } = useLocalSearchParams<{ id: string }>()
@@ -134,20 +135,23 @@ export function ProfileScreen() {
     return (
       <View position="relative" zIndex={1}>
         {/* 顶部背景 */}
-        <Animated.View className="absolute inset-0" style={[bannerImageStyle]}>
+        <Animated.View style={[StyleSheet.absoluteFill, bannerImageStyle]}>
           <Animated.View
             onLayout={e => (bannerHeight.value = e.nativeEvent.layout.height)}
             style={animatedScaleStyle}
           >
             <View style={{ marginBottom: -BANNER_BOTTOM_HEIGHT_ADDITION }}>
-              <Animated.View className="absolute inset-0 z-1" style={[blurStyle]}>
-                <BlurView className="absolute inset-0" intensity={50} />
+              <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 1 }, blurStyle]}>
+                <BlurView intensity={50} />
               </Animated.View>
 
               <Image
-                source={require('../../../assets/images/profile-background.png')}
+                source={require('./assets/images/profile-background.png')}
                 style={[
-                  { width },
+                  {
+                    width,
+                    height: '100%',
+                  },
                   Platform.OS === 'web' && { height: bannerHeight.value },
                 ]}
               />
@@ -158,20 +162,19 @@ export function ProfileScreen() {
         {/* 导航条 */}
         <NavBar
           left={route.name !== 'me'
-            ? <NavButton.Back size="xl" />
-            : <NavButton.Menu size="xl" />}
-          right={<Icon as={ArrowUpRightFromSquare} size="xl" />}
+            ? <NavButton.Back size="xl" color="$backgroundLight200" />
+            : <NavButton.Menu size="xl" color="$backgroundLight200" />}
+          right={<Icon as={ArrowUpRightFromSquare} size="xl" color="$backgroundLight200" />}
         >
           <Animated.View style={[animatedNavBarStyle]}>
             <HStack flex={1} justifyContent="space-between">
-              <View flexDirection="row" gap="$2.5" alignContent="center" bg="transport">
+              <View flexDirection="row" gap="$2.5" alignItems="center">
                 <Avatar borderRadius="$full" size="sm">
                   <AvatarImage
                     source={{
                       uri: data?.avatar,
                     }}
                   />
-
                 </Avatar>
                 <Text size="md">
                   {data?.nickname}
@@ -184,7 +187,7 @@ export function ProfileScreen() {
         {/* 用户头像 */}
         <Animated.View className="px-2" style={[rootProfileRowZIndexStyle]}>
           <Animated.View
-            className="absolute left-3 right-3 flex flex-row justify-between items-end gap-3"
+            className="absolute left-3 right-3 flex-1 flex-row justify-between items-end gap-3"
             style={[
               {
                 left: Math.max(left, ROOT_HORIZONTAL_PADDING),
@@ -195,13 +198,11 @@ export function ProfileScreen() {
           >
             <Avatar borderRadius="$full" size="xl">
               <AvatarImage
-                source={{
-                  uri: data?.avatar,
-                }}
+                source={{ uri: data?.avatar }}
               />
             </Avatar>
             <View flex={1}>
-              <View mb="$2" gap="$2" alignContent="center">
+              <View mb="$2" gap="$2">
                 <Text size="lg">
                   {data.nickname}
                 </Text>
@@ -244,7 +245,7 @@ export function ProfileScreen() {
 
     return (
       <View mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
-        <View pt={AVATAR_SIZE_VALUE} pointerEvents="none" />
+        <View pt={AVATAR_SIZE_VALUE / 2} pointerEvents="none" />
         {/* 基本信息 */}
         <View px="$4" mb="$2">
           <Text>{data.desc ?? '暂无简介'}</Text>
@@ -280,10 +281,18 @@ export function ProfileScreen() {
         renderTabBar={props => (
           <MaterialTabBar
             {...props}
+            scrollEnabled
             indicatorStyle={{ backgroundColor: primaryColor }}
-            activeColor={primaryColor}
-            labelStyle={{ color: primaryColor }}
-            tabStyle={bgColor}
+            labelStyle={{
+              textAlign: 'center',
+              paddingVertical: 4,
+              color: textColor,
+              width: (window.width - 4 * 2 * 3) / 3,
+            }}
+            tabStyle={{
+              paddingVertical: 4,
+            }}
+            style={{ backgroundColor: bgColor }}
           />
         )}
       >

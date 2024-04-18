@@ -16,6 +16,7 @@ export function Navs() {
   const router = useRouter()
 
   const colorScheme = useColorScheme()
+  const borderColor = useToken('colors', colorScheme === 'dark' ? 'borderDark300' : 'backgroundLight300')
   const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark700' : 'textLight700')
 
   const navItems: Item[] = [
@@ -46,9 +47,10 @@ export function Navs() {
           return (
             <BlurView
               key={text}
-              className="flex-1 rounded-md border-gray-300 overflow-hidden px-3 py-2"
+              className="flex-1 rounded-md overflow-hidden px-3 py-2"
               style={{
                 borderWidth: 1,
+                borderColor,
               }}
             >
               <Pressable onPress={onPress}>

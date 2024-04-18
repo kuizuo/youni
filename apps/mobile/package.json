@@ -65,7 +65,7 @@
     "react-error-boundary": "^4.0.13",
     "react-hook-form": "^7.50.1",
     "react-native": "0.73.5",
-    "react-native-collapsible-tab-view": "^6.2.1",
+    "react-native-collapsible-tab-view": "^7.0.1",
     "react-native-css-interop": "^0.0.34",
     "react-native-drawer-layout": "^3.2.2",
     "react-native-flash-message": "^0.4.2",
