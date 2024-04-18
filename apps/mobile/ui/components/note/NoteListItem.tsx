@@ -34,7 +34,7 @@ export function NoteListItem(item: NoteItem): ReactNode {
     return (
       <Pressable onPress={goToUser}>
         <HStack gap="$2" alignItems="center">
-          <Avatar size="xs" borderRadius="$full">
+          <Avatar size="xs" borderRadius="$full" overflow="hidden">
             <AvatarImage
               source={{
                 uri: user.avatar!,

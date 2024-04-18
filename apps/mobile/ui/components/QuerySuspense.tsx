@@ -5,20 +5,22 @@ import type { ComponentType, FC, ReactNode } from 'react'
 import { Fragment, Suspense } from 'react'
 import type { ErrorBoundaryProps, FallbackProps } from 'react-error-boundary'
 import { ErrorBoundary } from 'react-error-boundary'
-import { Button, Text, View } from '@gluestack-ui/themed'
+import { Button, ButtonText, Text, View } from '@gluestack-ui/themed'
+import { useRouter } from 'expo-router'
 import { LoadingIndicator } from './LoadingIndicator'
 
 export function FallbackComponent({
   error,
   resetErrorBoundary,
 }: FallbackProps) {
+  const router = useRouter()
   const message
     = isObjectLike(error) && isString(error.message) && !!error.message
       ? error.message
       : null
 
   return (
-    <View>
+    <View flex={1} gap="$2">
       {message
         ? (
           <Fragment>
@@ -45,9 +47,16 @@ export function FallbackComponent({
           )}
       <Button
         onPress={resetErrorBoundary}
-        size="lg"
+        size="md"
       >
-        <Text>重试</Text>
+        <ButtonText>重试</ButtonText>
+      </Button>
+
+      <Button
+        onPress={() => router.replace('/login')}
+        size="md"
+      >
+        <ButtonText>重新登录</ButtonText>
       </Button>
     </View>
   )
@@ -107,7 +116,7 @@ export function QuerySuspense<P = void>({
                     )
                   : (
                       loading ?? <LoadingIndicator />
-                    )
+            )
             }
           >
             {children}

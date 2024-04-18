@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AppRouter } from '@server/shared/trpc/trpc.instance'
+import type { AppRouter } from '@server/shared/trpc/trpc.instance'
 import { createTRPCReact } from '@trpc/react-query'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'

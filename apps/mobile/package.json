@@ -25,7 +25,7 @@
     "@gluestack-style/react": "latest",
     "@gluestack-ui/config": "latest",
     "@gluestack-ui/overlay": "latest",
-    "@gluestack-ui/themed": "latest",
+    "@gluestack-ui/themed": "1.1.22",
     "@gluestack-ui/toast": "latest",
     "@gorhom/bottom-sheet": "^4",
     "@hookform/resolvers": "^3.3.4",

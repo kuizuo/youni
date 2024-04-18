@@ -169,7 +169,7 @@ export function ProfileScreen() {
           <Animated.View style={[animatedNavBarStyle]}>
             <HStack flex={1} justifyContent="space-between">
               <View flexDirection="row" gap="$2.5" alignItems="center">
-                <Avatar borderRadius="$full" size="sm">
+                <Avatar borderRadius="$full" overflow="hidden" size="sm">
                   <AvatarImage
                     source={{
                       uri: data?.avatar,
@@ -196,7 +196,7 @@ export function ProfileScreen() {
               profileContainerTranslationStyle,
             ]}
           >
-            <Avatar borderRadius="$full" size="xl">
+            <Avatar size="xl" overflow="hidden" borderRadius="$full">
               <AvatarImage
                 source={{ uri: data?.avatar }}
               />
@@ -288,9 +288,6 @@ export function ProfileScreen() {
               paddingVertical: 4,
               color: textColor,
               width: (window.width - 4 * 2 * 3) / 3,
-            }}
-            tabStyle={{
-              paddingVertical: 4,
             }}
             style={{ backgroundColor: bgColor }}
           />

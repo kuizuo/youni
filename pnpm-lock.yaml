@@ -187,7 +187,7 @@ importers:
         specifier: latest
         version: 0.1.14(react-dom@18.2.0)(react-native@0.73.5)(react@18.2.0)
       '@gluestack-ui/themed':
-        specifier: latest
+        specifier: 1.1.22
         version: 1.1.22(@gluestack-style/react@1.0.52)(@types/react-native@0.73.0)(nativewind@4.0.36)(react-dom@18.2.0)(react-native-svg@15.0.0)(react-native-web@0.19.10)(react-native@0.73.5)(react@18.2.0)
       '@gluestack-ui/toast':
         specifier: latest

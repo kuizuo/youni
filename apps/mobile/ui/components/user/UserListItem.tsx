@@ -15,7 +15,7 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
   return (
     <Pressable onPress={handleNavigateToUser}>
       <HStack p="$3" gap="$3" alignItems="center">
-        <Avatar borderRadius="$full" size="lg">
+        <Avatar borderRadius="$full" size="lg" overflow="hidden">
           <AvatarImage
             source={{
               uri: item.avatar,

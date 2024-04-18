@@ -8,7 +8,7 @@ export default function TabLayout() {
 
   const { isLogged, currentUser } = useAuth()
 
-  if (!isLogged)
+  if (!isLogged || !currentUser)
     return <Redirect href="/login" />
 
   return (
@@ -67,13 +67,11 @@ export default function TabLayout() {
           title: '我',
           tabBarIcon: ({ color, size }) => {
             return (
-              <View borderWidth={1} borderColor={color} borderRadius="$full">
-                <Avatar h={size} w={size}>
+              <View borderWidth={2} borderColor={color} borderRadius="$full">
+                <Avatar h={size} w={size} borderRadius="$full" overflow="hidden">
                   <AvatarFallbackText>{currentUser.nickname}</AvatarFallbackText>
                   <AvatarImage
-                    source={{
-                      uri: currentUser.avatar,
-                    }}
+                    source={{ uri: currentUser.avatar }}
                     alt="avatar"
                   />
                 </Avatar>

@@ -66,7 +66,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
     <>
       <HStack px="$3" py="$1.5" alignItems="center" gap="$3">
         <Pressable onPress={handleNavigateToUser}>
-          <Avatar borderRadius="$full" size="md">
+          <Avatar borderRadius="$full" size="md" overflow="hidden">
             <AvatarImage
               source={{ uri: item.sender.avatar }}
             />

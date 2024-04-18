@@ -30,26 +30,26 @@ export function SettingScreen() {
         <ListGroup mt="$4" bg="$backgroundLight0" divider={<Divider />}>
           <ListItem
             title="账号与安全"
-            iconAfter={ChevronRight}
+            right={<Icon as={ChevronRight} size="md" />}
             onPress={() => router.push('/setting/account')}
           />
           <ListItem
             title="深色模式"
-            iconAfter={ChevronRight}
+            right={<Icon as={ChevronRight} size="md" />}
             onPress={() => router.push('/setting/dark-mode')}
           />
         </ListGroup>
 
         <ListGroup mt="$4" bg="$backgroundLight0" divider={<Divider />}>
-          <ListItem title="通用设置" iconAfter={ChevronRight} onPress={() => router.push('/setting/general')} />
-          <ListItem title="通知设置" iconAfter={ChevronRight} />
+          <ListItem title="通用设置" right={<Icon as={ChevronRight} size="md" />} onPress={() => router.push('/setting/general')} />
+          <ListItem title="通知设置" right={<Icon as={ChevronRight} size="md" />} />
         </ListGroup>
 
         <ListGroup mt="$4" bg="$backgroundLight0" divider={<Divider />}>
-          <ListItem title="用户协议" iconAfter={ChevronRight} />
-          <ListItem title="隐私政策" iconAfter={ChevronRight} />
-          <ListItem title="个人信息收集清单" iconAfter={ChevronRight} />
-          <ListItem title="第三方信息共享清单" iconAfter={ChevronRight} />
+          <ListItem title="用户协议" right={<Icon as={ChevronRight} size="md" />} />
+          <ListItem title="隐私政策" right={<Icon as={ChevronRight} size="md" />} />
+          <ListItem title="个人信息收集清单" right={<Icon as={ChevronRight} size="md" />} />
+          <ListItem title="第三方信息共享清单" right={<Icon as={ChevronRight} size="md" />} />
         </ListGroup>
 
         <ListGroup mt="$4" bg="$backgroundLight0">

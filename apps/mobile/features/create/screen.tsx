@@ -323,7 +323,7 @@ export function CreateScreen() {
         <ListItem
           title="添加话题"
           icon={Hash}
-          iconAfter={ChevronRight}
+          right={<Icon as={ChevronRight} size="md" />}
           onPress={() => modal.present()}
         />
         {selectTags.length > 0 && (
@@ -340,7 +340,7 @@ export function CreateScreen() {
         <ListItem
           title={location || '我的位置'}
           icon={MapPin}
-          iconAfter={ChevronRight}
+          right={<Icon as={ChevronRight} size="md" />}
           onPress={() => router.push('/create/map')}
         />
       </View>

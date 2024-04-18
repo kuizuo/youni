@@ -15,7 +15,7 @@ export function FollowerListItem(item: UserInfoWithFollow): React.ReactElement {
   return (
     <HStack p="$3" gap="$3" alignItems="center">
       <Pressable onPress={handleNavigateToUser}>
-        <Avatar borderRadius="$full" size="lg">
+        <Avatar borderRadius="$full" size="lg" overflow="hidden">
           <AvatarImage
             source={{
               uri: item.avatar,

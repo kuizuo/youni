@@ -40,7 +40,7 @@ export function useAuth() {
     const userInfo = await client.get('/api/account/profile') as UserProfile
     store.set(userAtom, userInfo)
 
-    if (userInfo.campusId)
+    if (userInfo?.campusId)
       setCurrentCampus({ id: userInfo?.campusId } as any)
 
     return data

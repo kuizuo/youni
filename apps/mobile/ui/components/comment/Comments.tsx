@@ -207,7 +207,7 @@ const Comment = memo(function Comment({ comment }: { comment: CommentItem }) {
       ]}
     >
       <HStack gap="$2.5" my="$2" alignItems="center">
-        <Avatar borderRadius="$full" size="sm" alignSelf="flex-start">
+        <Avatar borderRadius="$full" size="sm" alignSelf="flex-start" overflow="hidden">
           <AvatarImage
             source={{
               uri: comment.user.avatar,

@@ -60,7 +60,7 @@ function UserAvatar({ item }: { item: NoteItem }): React.ReactNode {
   return (
     <Link href={`/user/${item.user.id}/profile`} asChild>
       <HStack gap="$2.5" alignItems="center">
-        <Avatar borderRadius="$full" size="$2">
+        <Avatar borderRadius="$full" size="$2" overflow="hidden">
           <AvatarImage
             width="100%"
             height="100%"

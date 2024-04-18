@@ -72,7 +72,7 @@ function UserAvatar({ item }: { item: NoteItem }): React.ReactNode {
   return (
     <Link href={`/user/${item.user.id}/profile`} asChild>
       <HStack gap="$2.5" alignItems="center">
-        <Avatar borderRadius="$full" size="sm" bg="white">
+        <Avatar borderRadius="$full" size="sm" bg="white" overflow="hidden">
           <AvatarImage
             source={{ uri: item.user.avatar }}
             resizeMode="contain"
