@@ -1,11 +1,19 @@
 import { Stack, useRouter } from 'expo-router'
 import { Badge, BadgeText, Button, ButtonText, HStack, Image, Pressable, Text, VStack, View } from '@gluestack-ui/themed'
+import { useEffect } from 'react'
+import { useRoute } from '@react-navigation/native'
 import { NotificationItem } from './components/NotificationItem'
 import { trpc } from '@/utils/trpc'
 
 export function NotificationScreen() {
-  const [data] = trpc.notification.count.useSuspenseQuery()
+  const [data, { refetch }] = trpc.notification.count.useSuspenseQuery()
   const router = useRouter()
+
+  const route = useRoute()
+
+  useEffect(() => {
+    refetch()
+  }, [route.name])
 
   return (
     <>
@@ -30,7 +38,7 @@ export function NotificationScreen() {
             onPress={() => router.push('/notification/like')}
           >
             <VStack>
-              <Image width={60} height={60} source={require('./assets/images/heart.png')} />
+              <Image width={60} height={60} source={require('./assets/images/heart.png')} alt="image" />
               {
                 data?.count.like > 0 && (
                   <Badge
@@ -60,7 +68,7 @@ export function NotificationScreen() {
             onPress={() => router.push('/notification/comment')}
           >
             <VStack>
-              <Image width={60} height={60} source={require('./assets/images/message.png')} />
+              <Image width={60} height={60} source={require('./assets/images/message.png')} alt="image" />
               {
                 data?.count.comment > 0 && (
                   <Badge
@@ -90,7 +98,7 @@ export function NotificationScreen() {
             onPress={() => router.push('/notification/follow')}
           >
             <VStack>
-              <Image width={60} height={60} source={require('./assets/images/follow.png')} />
+              <Image width={60} height={60} source={require('./assets/images/follow.png')} alt="image" />
               {
                 data?.count.follow > 0 && (
                   <Badge

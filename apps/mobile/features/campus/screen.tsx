@@ -22,7 +22,7 @@ export function CampusScreen() {
   })
 
   const colorScheme = useColorScheme()
-  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundDark950' : 'backgroundLight0')
+  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundDark950' : 'backgroundLight100')
 
   const window = useWindowDimensions()
   const [headerHeight, setHeaderHeight] = useState(0)

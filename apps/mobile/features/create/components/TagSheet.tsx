@@ -71,15 +71,15 @@ export const TagSheet = React.forwardRef<BottomSheetModal, Props>(
               <InputIcon as={Search} />
             </InputSlot>
             <BottomSheetTextInput
-              className="px-2"
               placeholder="搜索"
               onChangeText={(text) => {
                 if (text !== searchText)
                   setSearchText(text.trim())
               }}
-              textAlignVertical="center"
+              verticalAlign="center"
               onSubmitEditing={() => handleSearch(searchText)}
               autoFocus={true}
+              style={{ paddingHorizontal: 2 }}
             />
           </Input>
 

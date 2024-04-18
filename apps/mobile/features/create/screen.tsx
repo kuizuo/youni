@@ -1,18 +1,21 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import { useActionSheet } from '@expo/react-native-action-sheet'
 import * as ImagePicker from 'expo-image-picker'
 import { PermissionStatus } from 'expo-image-picker'
-import { ChevronRight, Hash, MapPin, Plus } from 'lucide-react-native'
+import { AlertTriangle, ChevronRight, Hash, MapPin, Plus } from 'lucide-react-native'
 import { KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native'
-import type { SubmitHandler } from 'react-hook-form'
-import { useForm } from 'react-hook-form'
+import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { useRouter } from 'expo-router'
-import { atom, useAtom, useSetAtom } from 'jotai'
 import { useToken } from '@gluestack-style/react'
 import {
   Button,
   ButtonText,
   Divider,
+  FormControl,
+  FormControlError,
+  FormControlErrorIcon,
+  FormControlErrorText,
+  FormControlHelper,
   HStack,
   Icon,
   Image,
@@ -28,49 +31,63 @@ import {
   View,
   useToast,
 } from '@gluestack-ui/themed'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { TagSheet } from './components/TagSheet'
 import { ListItem } from '@/ui/components/ListItem'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
-import FormControl from '@/ui/components/FormControl'
 import { client } from '@/utils/http/client'
 import { trpc } from '@/utils/trpc'
-import { EmptyResult } from '@/ui/components/EmptyResult'
 import { useTags } from '@/atoms/create'
 import { useModal } from '@/ui/components/CustomModal'
 
-interface IFormInput {
-  title: string
-  content: string
-  tags: string[]
-  images: { src: string, width?: number, height?: number }[]
-  location: string
-}
+const createNoteSchema = z.object({
+  title: z.string().min(1, '标题不能为空'),
+  content: z.string(),
+  tags: z.array(z.string({})).optional(),
+  images: z.array(z.object({
+    src: z.string(),
+    uri: z.string().optional(),
+    fileName: z.string().optional(),
+    mimeType: z.string().optional(),
+  }))
+    .min(1, '至少需要上传一张图片')
+    .max(9, '最多上传 9 张图片'),
+  location: z.string().optional(),
+})
+
+type CreateNoteSchemaType = z.infer<typeof createNoteSchema>
 
 export function CreateScreen() {
   const window = useWindowDimensions()
   const router = useRouter()
   const toast = useToast()
-  const { showActionSheetWithOptions } = useActionSheet()
 
   const gap = useToken('space', '2')
   const padding = useToken('space', '4')
+  const { showActionSheetWithOptions } = useActionSheet()
+  const modal = useModal()
 
-  const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([])
-  const imageLength = useMemo(() => photos.length, [photos])
   const imageWidth = (window.width - (gap + padding) * 2) / 3
 
+  const [selectTags, setSelectTags] = useTags()
+  const [location, setLocation] = useState<string>('')
   const {
     control,
+    formState: { errors },
     handleSubmit,
     setValue,
     getValues,
-    formState: { errors },
-  } = useForm<IFormInput>()
+    reset,
+  } = useForm<CreateNoteSchemaType>({
+    resolver: zodResolver(createNoteSchema),
+  })
 
-  const modal = useModal()
-
-  const [selectTags, setSelectTags] = useTags()
+  const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
+    control,
+    name: 'images',
+  })
 
   // FIXME:
   useEffect(() => {
@@ -79,15 +96,12 @@ export function CreateScreen() {
     }
   }, [])
 
-  const [location, setLocation] = useState<string>('')
-
   const { mutateAsync } = trpc.note.create.useMutation()
 
   const uploadImage = async (images: ImagePicker.ImagePickerAsset[]) => {
     const formData = new FormData()
 
     images.forEach((image, index) => {
-      // @ts-expect-error
       formData.append(`file${index}`, {
         type: image.mimeType,
         name: image.fileName,
@@ -95,29 +109,29 @@ export function CreateScreen() {
       })
     })
 
-    const { data } = await client.post('/api/files/upload/multiple?type=photo', formData, {
+    const data = await client.post('/api/files/upload/multiple?type=photo', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    })
+    }) as { url: string, name: string }[]
 
-    return data as { url: string, name: string }[]
+    return data
   }
 
-  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    const imagesData = await uploadImage(photos)
+  const onSubmit = async (_data: CreateNoteSchemaType) => {
+    const imagesData = await uploadImage(_data.images)
+
+    setValue('images', imagesData.map((image, i) => ({
+      src: image.url,
+    })))
 
     setValue('tags', selectTags)
     // setValue('location', location)
-    setValue('images', imagesData.map((image, i) => ({
-      src: image.url,
-      width: photos[i]?.width,
-      height: photos[i]?.height,
-    })))
 
     try {
       const result = await mutateAsync({
-        ...data,
+        ..._data,
+        state: 'Audit',
       })
 
       toast.show({
@@ -130,7 +144,8 @@ export function CreateScreen() {
           )
         },
       })
-      router.push(`/note/${result.id}`)
+      // FIXME: 仅作者可见 处于审核状态
+      // router.push(`/note/${result.id}`)
     }
     catch (error) {
       toast.show({
@@ -146,106 +161,63 @@ export function CreateScreen() {
     }
   }
 
-  function ImageViewer() {
-    const pickImageAsync = async () => {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+  const pickImageAsync = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
-      if (status === PermissionStatus.GRANTED) {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images, // 只允许选择图片
-          allowsEditing: false,
-          allowsMultipleSelection: true,
-          selectionLimit: 9 - imageLength,
-          quality: 1,
-        })
+    if (status === PermissionStatus.GRANTED) {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // 只允许选择图片
+        allowsEditing: false,
+        allowsMultipleSelection: true,
+        selectionLimit: 9 - imageFields.length,
+        quality: 1,
+      })
 
-        if (!result.canceled)
-          setPhotos(prev => [...prev, ...result.assets])
-      }
-      else {
-        toast.show({
-          placement: 'bottom right',
-          render: ({ id }) => {
-            return (
-              <Toast nativeID={id} variant="accent" action="warning">
-                <ToastTitle>需要授权相册才可发布图文</ToastTitle>
-              </Toast>
-            )
-          },
-        })
+      if (!result.canceled) {
+        appendImage(result.assets.map(asset => ({
+          src: asset.uri,
+          uri: asset.uri,
+          fileName: asset.fileName,
+          mimeType: asset.type,
+          // width: asset?.width,
+          // height: asset?.height,
+        })))
       }
     }
-
-    const handlePressImage = (index: number) => {
-      const options = ['删除', '取消']
-
-      const destructiveButtonIndex = options.indexOf('删除')
-      const cancelButtonIndex = options.indexOf('取消')
-
-      showActionSheetWithOptions({
-        options,
-        destructiveButtonIndex,
-        cancelButtonIndex,
-      }, async (selectedIndex) => {
-        switch (selectedIndex) {
-          case destructiveButtonIndex:
-            // eslint-disable-next-line no-case-declarations
-            const newPhotos = [...photos]
-            newPhotos.splice(index, 1)
-            setPhotos(newPhotos)
-
-            break
-          case cancelButtonIndex:
-          // Canceled
-        }
+    else {
+      toast.show({
+        placement: 'bottom right',
+        render: ({ id }) => {
+          return (
+            <Toast nativeID={id} variant="accent" action="warning">
+              <ToastTitle>需要授权相册才可发布图文</ToastTitle>
+            </Toast>
+          )
+        },
       })
     }
+  }
 
-    return (
-      <ScrollView
-        horizontal
-        maxHeight={imageWidth}
-        showsHorizontalScrollIndicator={false}
-        mx={-padding}
-        px={padding}
-        mb="$2"
-      >
-        <HStack alignItems="center" gap="$2">
-          {photos?.map((asset, index) => (
-            <Pressable
-              key={asset.assetId}
-              onPress={() => handlePressImage(index)}
-            >
-              <Image
-                source={asset}
-                width={imageWidth}
-                height={imageWidth}
-                className="rounded-xl"
-                bg="$backgroundDark300"
-                justifyContent="center"
-                alignItems="center"
-                alt="image"
-              />
-            </Pressable>
-          ))}
-          {
-            imageLength < 9 && (
-              <Pressable
-                borderRadius="$xl"
-                width={imageWidth}
-                height={imageWidth}
-                bg="$backgroundLight200"
-                justifyContent="center"
-                alignItems="center"
-                onPress={pickImageAsync}
-              >
-                <Icon as={Plus} size="xl" color="$textLight400" />
-              </Pressable>
-            )
-          }
-        </HStack>
-      </ScrollView>
-    )
+  const handlePressImage = (index: number) => {
+    const options = ['删除', '取消']
+
+    const destructiveButtonIndex = options.indexOf('删除')
+    const cancelButtonIndex = options.indexOf('取消')
+
+    showActionSheetWithOptions({
+      options,
+      destructiveButtonIndex,
+      cancelButtonIndex,
+    }, async (selectedIndex) => {
+      switch (selectedIndex) {
+        case destructiveButtonIndex:
+          removeImage(index)
+
+          break
+        case cancelButtonIndex:
+        // Canceled
+      }
+    })
   }
 
   return (
@@ -260,65 +232,143 @@ export function CreateScreen() {
       />
 
       <View
-        flex={1}
         minWidth={300}
-        gap="$2"
+        gap="$1"
         px={padding}
       >
-        <KeyboardAvoidingView>
-          <ImageViewer></ImageViewer>
-        </KeyboardAvoidingView>
+        <FormControl
+          isInvalid={(!!errors.images) && !!errors.images}
+          isRequired={true}
+        >
+          <ScrollView
+            horizontal
+            maxHeight={imageWidth}
+            showsHorizontalScrollIndicator={false}
+            mx={-padding}
+            px={padding}
+            mb="$2"
+          >
+            <HStack alignItems="center" gap="$2">
+              {imageFields?.map((field, index) => (
+                <Pressable
+                  key={field.id}
+                  onPress={() => handlePressImage(index)}
+                >
+                  <Image
+                    source={field.src}
+                    width={imageWidth}
+                    height={imageWidth}
+                    bg="$backgroundDark300"
+                    borderRadius="$xl"
+                    justifyContent="center"
+                    alignItems="center"
+                    alt="image"
+                  />
+                </Pressable>
+              ))}
+              {
+                imageFields.length < 9 && (
+                  <Pressable
+                    borderRadius="$xl"
+                    width={imageWidth}
+                    height={imageWidth}
+                    bg="$backgroundLight200"
+                    justifyContent="center"
+                    alignItems="center"
+                    onPress={pickImageAsync}
+                  >
+                    <Icon as={Plus} size="xl" color="$textLight400" />
+                  </Pressable>
+                )
+              }
+            </HStack>
+          </ScrollView>
+          <FormControlError>
+            <FormControlErrorIcon as={AlertTriangle} size="md" />
+            <FormControlErrorText>
+              {errors?.images?.message}
+            </FormControlErrorText>
+          </FormControlError>
+        </FormControl>
 
         <FormControl
-          control={control}
-          name="title"
-          rules={{ required: true }}
-          render={({ field: { value, onChange, onBlur } }) => (
-            <Input
-              variant="underlined"
-              size="md"
-              isDisabled={false}
-              isInvalid={false}
-              isReadOnly={false}
-            >
-              <InputField
-                placeholder="标题"
+          isInvalid={(!!errors.title) && !!errors.title}
+          isRequired={true}
+        >
+          <Controller
+            name="title"
+            defaultValue=""
+            control={control}
+            rules={{
+              validate: async (value) => {
+                try {
+                  await createNoteSchema.parseAsync({ title: value })
+                  return true
+                }
+                catch (error: any) {
+                  return error.message
+                }
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                variant="underlined"
                 size="md"
-                borderBottomWidth={1}
-                borderBottomColor="$borderLight200"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-              />
-            </Input>
-          )}
-        />
+                isDisabled={false}
+                isInvalid={false}
+                isReadOnly={false}
+              >
+                <InputField
+                  placeholder="标题"
+                  size="md"
+                  borderBottomWidth={1}
+                  borderBottomColor="$borderLight200"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  fontSize="$sm"
+                  type="text"
+                  returnKeyType="done"
+                />
+              </Input>
+            )}
+          />
+          <FormControlError>
+            <FormControlErrorIcon as={AlertTriangle} size="md" />
+            <FormControlErrorText>
+              {errors?.title?.message}
+            </FormControlErrorText>
+          </FormControlError>
+        </FormControl>
 
-        <FormControl
-          control={control}
-          name="content"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <Textarea
-              height={300}
-              borderWidth={0}
-            >
-              <TextareaInput
-                fontSize={14}
-                numberOfLines={4}
-                p="$0"
-                textAlign="left"
-                placeholder="添加正文"
-                textAlignVertical="top"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-              />
-            </Textarea>
-          )}
-        />
+        <FormControl>
+          <Controller
+            name="content"
+            defaultValue=""
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Textarea
+                h="$40"
+                borderWidth={0}
+              >
+                <TextareaInput
+                  fontSize={14}
+                  numberOfLines={10}
+                  p="$0"
+                  textAlign="left"
+                  placeholder="添加正文"
+                  verticalAlign="top"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                />
+              </Textarea>
+            )}
+          />
+        </FormControl>
       </View>
 
-      <Divider mx={padding} />
+      <Divider />
       <View flex={1}>
         <ListItem
           title="添加话题"
@@ -345,7 +395,7 @@ export function CreateScreen() {
         />
       </View>
 
-      <TagSheet ref={modal.ref} />
+      {/* <TagSheet ref={modal.ref} /> */}
     </View>
   )
 }

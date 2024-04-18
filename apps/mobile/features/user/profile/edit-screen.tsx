@@ -19,9 +19,8 @@ export function EditProfileScreen() {
         <Center p="$4" bg="$backgroundLight0">
           <Avatar borderRadius="$full" overflow="hidden" size="xl">
             <AvatarImage
-              source={{
-                uri: currentUser.avatar,
-              }}
+              source={{ uri: currentUser.avatar }}
+              alt="avatar"
             />
           </Avatar>
         </Center>

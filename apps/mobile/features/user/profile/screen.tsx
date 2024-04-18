@@ -154,6 +154,7 @@ export function ProfileScreen() {
                   },
                   Platform.OS === 'web' && { height: bannerHeight.value },
                 ]}
+                alt="image"
               />
             </View>
           </Animated.View>
@@ -171,9 +172,8 @@ export function ProfileScreen() {
               <View flexDirection="row" gap="$2.5" alignItems="center">
                 <Avatar borderRadius="$full" overflow="hidden" size="sm">
                   <AvatarImage
-                    source={{
-                      uri: data?.avatar,
-                    }}
+                    source={{ uri: data?.avatar }}
+                    alt="avatar"
                   />
                 </Avatar>
                 <Text size="md">
@@ -199,6 +199,7 @@ export function ProfileScreen() {
             <Avatar size="xl" overflow="hidden" borderRadius="$full">
               <AvatarImage
                 source={{ uri: data?.avatar }}
+                alt="avatar"
               />
             </Avatar>
             <View flex={1}>
@@ -212,6 +213,7 @@ export function ProfileScreen() {
                       source={data.gender === 1 ? require('./assets/icons/male.png') : require('./assets/icons/female.png')}
                       width={20}
                       height={20}
+                      alt="image"
                     />
                     )
                   : <></>}

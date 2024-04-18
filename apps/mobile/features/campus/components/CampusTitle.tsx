@@ -12,6 +12,7 @@ export function CampusTitle({ campus }: { campus?: Campus }) {
         h={24}
         source={{ uri: campus.logo }}
         resizeMode="contain"
+        alt="image"
       />
       <Text size="lg">{campus.name}</Text>
     </View>

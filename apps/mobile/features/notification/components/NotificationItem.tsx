@@ -16,6 +16,7 @@ export function NotificationItem({ title, desc, image, onPress }: Props): ReactN
         width={60}
         height={60}
         source={image}
+        alt="image"
       />
       <VStack flex={1}>
         <Text size="md">

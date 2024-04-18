@@ -75,7 +75,7 @@ export function SelectCampusButton() {
                   if (text !== searchText)
                     setSearchText(text.trim())
                 }}
-                textAlignVertical="center"
+                verticalAlign="middle"
                 onSubmitEditing={() => handleSearch(searchText)}
                 autoFocus={true}
               />

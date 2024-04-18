@@ -20,7 +20,7 @@ export function MapScreen() {
           br={50}
         >
           <Search size="sm" />
-          <Input placeholder="搜索" textAlignVertical="center" unstyled></Input>
+          <Input placeholder="搜索" verticalAlign="center" unstyled></Input>
         </HStack>
       </View>
 

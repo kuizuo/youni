@@ -24,20 +24,18 @@ function HomeFeed() {
   )
 
   return (
-    <View flex={1}>
-      <NoteList
-        data={flatedData}
-        isRefreshing={isRefetching}
-        onRefresh={() => refetch()}
-        onEndReached={() => {
-          if (hasNextPage)
-            fetchNextPage()
-        }}
-        ListEmptyComponent={
-          <EmptyResult title="没有更多了" />
+    <NoteList
+      data={flatedData}
+      isRefreshing={isRefetching}
+      onRefresh={refetch}
+      onEndReached={() => {
+        if (hasNextPage)
+          fetchNextPage()
+      }}
+      ListEmptyComponent={
+        <EmptyResult title="没有更多了" />
         }
-      />
-    </View>
+    />
   )
 }
 

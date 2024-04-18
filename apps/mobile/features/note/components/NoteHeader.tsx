@@ -33,9 +33,8 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
           <HStack flex={1} gap="$2" alignItems="center">
             <Avatar size="sm" borderRadius="$full" overflow="hidden">
               <AvatarImage
-                source={{
-                  uri: user.avatar,
-                }}
+                source={{ uri: user.avatar }}
+                alt="avatar"
               />
             </Avatar>
             <Text>

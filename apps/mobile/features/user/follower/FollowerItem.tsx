@@ -17,9 +17,8 @@ export function FollowerListItem(item: UserInfoWithFollow): React.ReactElement {
       <Pressable onPress={handleNavigateToUser}>
         <Avatar borderRadius="$full" size="lg" overflow="hidden">
           <AvatarImage
-            source={{
-              uri: item.avatar,
-            }}
+            source={{ uri: item.avatar }}
+            alt="avatar"
           />
         </Avatar>
       </Pressable>

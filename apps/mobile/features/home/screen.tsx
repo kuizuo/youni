@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useWindowDimensions } from 'react-native'
+import { Platform, useWindowDimensions } from 'react-native'
 import { Pressable, Text, View, useToken } from '@gluestack-ui/themed'
 import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
@@ -59,6 +59,11 @@ export function HomeScreen(): React.ReactNode {
             mx="$4"
             mb="$2"
             alignItems="center"
+            style={{
+              marginTop: Platform.select({
+                web: 8,
+              }),
+            }}
           >
             <NavButton.Menu style={{ position: 'absolute', left: 0 }} />
             <NavButton.Search style={{ position: 'absolute', right: 0 }} />

@@ -17,6 +17,7 @@ export function Item({ item }: { item: ItemProp }) {
         w="$12"
         h="$12"
         source={item.image}
+        alt="image"
       >
       </Image>
       <Text size="sm">
