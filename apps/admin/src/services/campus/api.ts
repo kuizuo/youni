@@ -13,7 +13,7 @@ export async function queryCampus(
   const result = await request<IBaseResponse<API.CampusList>>('/api/campus/page', {
     method: 'GET',
     params: {
-      // ...params,
+      ...params,
       page: params.current,
       limit: params.pageSize
     },

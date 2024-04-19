@@ -56,7 +56,7 @@ const handleRemove = async (selectedRows: API.TopicItem[]) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Delete failed, please try again');
+    message.error('删除失败');
     return false;
   }
 };
@@ -95,22 +95,40 @@ const TableList: React.FC = () => {
       title: '浏览量',
       dataIndex: 'viewCount',
       sorter: true,
+      hideInSearch: true,
     },
     {
       title: '图文数量',
       dataIndex: '_count.note',
       width: 160,
       sorter: true,
+      hideInSearch: true,
       render: (dom, entity) => {
         return (<span>{entity._count.notes}</span>)
       },
     },
     {
       title: '创建时间',
-      sorter: true,
+      key: 'showTime',
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      width: 180,
+      sorter: true,
+      hideInSearch: true,
+      width: 180
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createdAt',
+      valueType: 'dateRange',
+      hideInTable: true,
+      search: {
+        transform: (value) => {
+          return {
+            startTime: value[0],
+            endTime: value[1],
+          };
+        },
+      },
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,

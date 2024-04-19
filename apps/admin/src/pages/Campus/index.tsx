@@ -41,7 +41,6 @@ const handleUpdate = async (fields: API.CampusItem) => {
     return true;
   } catch (error) {
     hide();
-    message.error('更新失败');
     return false;
   }
 };
@@ -57,7 +56,7 @@ const handleRemove = async (selectedRows: API.CampusItem[]) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Delete failed, please try again');
+    message.error('删除失败');
     return false;
   }
 };
@@ -129,6 +128,7 @@ const TableList: React.FC = () => {
       sorter: true,
       dataIndex: 'createdAt',
       valueType: 'dateTime',
+      hideInSearch: true,
       width: 180,
     },
     {
@@ -276,6 +276,7 @@ const TableList: React.FC = () => {
         grid
         open={updateModalOpen}
         onOpenChange={handleUpdateModalOpen}
+        modalProps={{ destroyOnClose: true }}
         initialValues={{
           logo: currentRow?.logo,
           name: currentRow?.name,

@@ -13,9 +13,9 @@ export async function queryNote(
   const result = await request<IBaseResponse<API.NoteList>>('/api/notes/page', {
     method: 'GET',
     params: {
-      // ...params,
+      ...params,
       page: params.current,
-      limit: params.pageSize
+      limit: params.pageSize,
     },
     ...(options || {}),
   });

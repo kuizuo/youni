@@ -13,7 +13,7 @@ export async function queryTopic(
   const result = await request<IBaseResponse<API.TopicList>>('/api/note-tags/page', {
     method: 'GET',
     params: {
-      // ...params,
+      ...params,
       page: params.current,
       limit: params.pageSize
     },

@@ -109,7 +109,6 @@ export class NoteTrpcRouter implements OnModuleInit {
         .input(NoteSearchDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
-          const { keyword } = input
 
           const { items, meta } = await this.notePublicService.search(input, user.id)
 

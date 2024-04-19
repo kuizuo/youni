@@ -13,7 +13,7 @@ export async function queryUser(
   const result = await request<IBaseResponse<API.UserList>>('/api/users/page', {
     method: 'GET',
     params: {
-      // ...params,
+      ...params,
       page: params.current,
       limit: params.pageSize
     },

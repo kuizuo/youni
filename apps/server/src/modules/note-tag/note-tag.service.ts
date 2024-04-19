@@ -24,7 +24,7 @@ export class NoteTagService {
     const { page, limit, name, sortBy, sortOrder = 'desc' } = dto
     const [items, meta] = await this.prisma.noteTag.paginate({
       where: {
-        name: { contains: name },
+        ...(name && { name: { contains: name } }),
       },
       select: {
         id: true,
@@ -71,8 +71,8 @@ export class NoteTagService {
     const promises = items.map(async (item) => {
       const viewCount = await this.viewService.count(InteractType.NoteTag, item.id)
 
-      // FIXME:
-      ; (item as any).viewCount = viewCount
+        // FIXME:
+        ; (item as any).viewCount = viewCount
     })
 
     await Promise.all(promises)

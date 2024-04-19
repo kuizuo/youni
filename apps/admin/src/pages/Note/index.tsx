@@ -134,7 +134,7 @@ const handleRemove = async (selectedRows: API.NoteItem[]) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Delete failed, please try again');
+    message.error('删除失败');
     return false;
   }
 };
@@ -228,15 +228,38 @@ const TableList: React.FC = () => {
     },
     {
       title: '创建时间',
-      sorter: true,
+      key: 'showTime',
       dataIndex: 'createdAt',
       valueType: 'dateTime',
-      width: 180,
+      sorter: true,
+      hideInSearch: true,
+      width: 180
     },
+    {
+      title: '创建时间',
+      dataIndex: 'createdAt',
+      valueType: 'dateRange',
+      hideInTable: true,
+      search: {
+        transform: (value) => {
+          return {
+            startTime: value[0],
+            endTime: value[1],
+          };
+        },
+      },
+    },
+    // {
+    //   title: '备注',
+    //   dataIndex: 'remark',
+    //   width: 150,
+    // },
     {
       title: '创建者',
       dataIndex: 'user.nickname',
       width: 150,
+      hideInSearch: true,
+      hideInTable: true,
       render: (dom, entity) => {
         return (<span>{entity.user.nickname}</span>)
       },
@@ -268,6 +291,7 @@ const TableList: React.FC = () => {
         search={{
           labelWidth: 120,
         }}
+        cardBordered
         // toolBarRender={() => [
         //   <Button
         //     type="primary"

@@ -21,15 +21,35 @@ export class NoteDto extends createZodDto(NoteInputSchema) { }
 
 export class NoteUpdateDto extends createZodDto(NoteInputSchema.partial()) { }
 
-export class NotePagerDto extends createZodDto(basePagerSchema.extend({
-})) { }
+export class NotePagerDto extends createZodDto(basePagerSchema.merge(
+  NoteInputSchema
+    .pick({
+      title: true,
+      tags: true,
+      state: true,
+    })
+    .extend({
+      tags: z.string().optional(),
+      startTime: z.string().optional()
+        .refine(val => !val || !Number.isNaN(Date.parse(val)), {
+          message: 'Invalid date format for startTime',
+        })
+        .transform(val => val ? new Date(val) : undefined),
+      endTime: z.string().optional()
+        .refine(val => !val || !Number.isNaN(Date.parse(val)), {
+          message: 'Invalid date format for endTime',
+        })
+        .transform(val => val ? new Date(val) : undefined),
+    })
+    .partial(),
+)) { }
 
 export class UserNotePagerDto extends createZodDto(basePagerSchema.extend({
   userId: SnowflakeIdSchema,
 })) { }
 
 export class NoteSearchDto extends createZodDto(basePagerSchema.extend({
-  keyword: z.string(), // .min(1, { message: '关键字不能为空' }),
+  keyword: z.string().optional(), // .min(1, { message: '关键字不能为空' }),
   sortBy: z.string().default('createdAt'),
   sortOrder: z.string()
     .or(z.enum(['asc', 'desc']))

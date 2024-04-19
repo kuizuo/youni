@@ -17,7 +17,7 @@ export async function queryTodo(
   const result = await request<IBaseResponse<API.TodoList>>('/api/todos', {
     method: 'GET',
     params: {
-      // ...params,
+      ...params,
       page: params.current,
       limit: params.pageSize
     },

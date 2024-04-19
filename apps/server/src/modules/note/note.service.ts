@@ -19,9 +19,28 @@ export class NoteService {
   constructor(private readonly campusService: CampusService) { }
 
   async paginate(dto: NotePagerDto, userId: string) {
-    const { page, limit } = dto
+    const {
+      page,
+      limit,
+      title,
+      tags,
+      state,
+      startTime,
+      endTime,
+    } = dto
 
     const [items, meta] = await this.prisma.note.paginate({
+      where: {
+        ...(title && { title: { contains: title } }),
+        ...(tags && { tags: { some: { name: tags } } }),
+        ...(state && { state }),
+        ...((startTime && endTime) && {
+          createdAt: {
+            gte: startTime,
+            lte: endTime,
+          },
+        }),
+      },
       include: {
         tags: true,
         user: {

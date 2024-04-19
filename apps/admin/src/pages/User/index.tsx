@@ -68,7 +68,7 @@ const handleRemove = async (selectedRows: API.UserItem[]) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Delete failed, please try again');
+    message.error('删除失败');
     return false;
   }
 };
