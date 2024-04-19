@@ -56,7 +56,9 @@ export class HistoryService {
     if (history) {
       await this.prisma.history.update({
         where: { id: history.id },
-        data: { visitedAt: new Date() },
+        data: {
+          visitedAt: new Date(),
+        },
       })
     }
     else {

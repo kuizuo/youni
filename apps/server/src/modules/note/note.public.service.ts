@@ -153,14 +153,23 @@ export class NotePublicService {
   }
 
   async getNotesByIds(ids: string[]) {
-    return await this.prisma.note.findMany({
+    const items = await this.prisma.note.findMany({
       where: {
         id: { in: ids },
+        state: NoteState.Published,
       },
       select: {
         ...NoteSelect,
       },
     })
+
+    // 创建一个映射，以便快速通过 id 访问笔记
+    const notesById = new Map(items.map(note => [note.id, note]))
+
+    // 根据原始 ids 数组的顺序来排序笔记
+    const sortedNotes = ids.map(id => notesById.get(id)).filter(note => note !== undefined)
+
+    return sortedNotes
   }
 
   async getNotesByTag(dto: NoteByTagDto) {

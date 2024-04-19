@@ -39,7 +39,7 @@ export class HistoryTrpcRouter implements OnModuleInit {
 
           const { items, meta } = await this.historyService.paginate(input, user.id)
 
-          const noteIds = items.filter(item => item.noteId).map(item => item.noteId!)
+          const noteIds = [...new Set(items.filter(item => item.noteId).map(item => item.noteId!))]
 
           const notes = await this.noteService.getNotesByIds(noteIds)
 
