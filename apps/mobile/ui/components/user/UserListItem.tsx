@@ -19,8 +19,8 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
           <AvatarImage
             source={{ uri: item.avatar }}
             alt="avatar"
+            resizeMode="contain"
           />
-
         </Avatar>
 
         <VStack flex={1}>
@@ -30,14 +30,18 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
             </Text>
           </HStack>
 
-          <Text size="sm" color="gray">
-            {item.desc}
-            {/* TODO: 笔记 · 1 | 粉丝 · 1 */}
+          <Text size="sm" color="$secondary500">
+            {[
+              item.interact.noteCount ? `笔记 · ${item.interact.noteCount}` : null,
+              item.interact.followerCount ? `粉丝 · ${item.interact.followerCount}` : null,
+            ]
+              .filter(Boolean)
+              .join(' | ') || item.desc}
           </Text>
         </VStack>
 
         <View>
-          {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.isFollowing} userId={item.id} />}
+          {currentUser?.id !== item.id && <UserFollowButton isFollowing={item.interact?.isFollowing} userId={item.id} />}
         </View>
       </HStack>
     </Pressable>

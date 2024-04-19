@@ -4,6 +4,9 @@ import { useRouter } from 'expo-router'
 import { BlurView } from 'expo-blur'
 import { Icon, Pressable, Text, View, useToken } from '@gluestack-ui/themed'
 import { useColorScheme } from 'react-native'
+import type { Campus } from '@youni/database'
+import { useAuth } from '@/utils/auth'
+import { useCurrentCampus } from '@/atoms/campus'
 
 export function Navs() {
   interface Item {
@@ -14,6 +17,8 @@ export function Navs() {
   }
 
   const router = useRouter()
+  const [currentCampus, setCurrentCampus] = useCurrentCampus()
+  const { currentUser } = useAuth()
 
   const colorScheme = useColorScheme()
   const borderColor = useToken('colors', colorScheme === 'dark' ? 'borderDark300' : 'backgroundLight300')
@@ -21,7 +26,15 @@ export function Navs() {
 
   const navItems: Item[] = [
     {
-      onPress: () => router.push('/campus'),
+      onPress: () => {
+        setCurrentCampus({
+          id: currentUser.campus!.id,
+        } as Campus)
+        router.push({
+          pathname: '/campus',
+          // params: { id: currentUser.campus!.id },
+        })
+      },
       icon: <Icon as={LifeBuoy} size="md" color={textColor} />,
       text: '我的校园',
       desc: '校园动态',

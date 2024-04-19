@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import { Search } from 'lucide-react-native'
 import { useAtom } from 'jotai'
 import { TextInput } from 'react-native'
-import { Icon, Input, Text, View } from '@gluestack-ui/themed'
+import { Icon, Input, Pressable, Text, View } from '@gluestack-ui/themed'
 import { SectionList } from './components/SectionList'
 import { SearchResult } from './components/SearchResult'
 import { NavBar } from '@/ui/components/NavBar'
@@ -15,7 +15,7 @@ export function SearchScreen() {
   const [isSearched, setIsSearched] = useState(false)
 
   const trimedSearchText = searchText.trim()
-  132
+  const [placeholder] = useState('搜索你所感兴趣的')
   const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom)
 
   const inputRef = useRef<ElementRef<typeof TextInput>>(null)
@@ -38,37 +38,41 @@ export function SearchScreen() {
     [setSearchHistory],
   )
 
-  function SearchBar() {
-    return (
-      <View
-        className="flex-row flex-1 gap-1 items-center px-2.5 py-2 rounded-full"
-        bg="$backgroundLight200"
-        $dark-bg="$backgroundDark200"
-      >
-        <Icon as={Search} size="md" />
-        <TextInput
-          ref={inputRef}
-          className="flex-1 text-md"
-          defaultValue={searchText}
-          onChangeText={(text) => {
-            if (text !== searchText)
-              setSearchText(text)
-            // setIsSearched(true)
-          }}
-          // onSubmitEditing={() => handleSubmit(searchText)}
-        >
-        </TextInput>
-      </View>
-    )
-  }
-
   return (
     <View flex={1}>
       <NavBar
         left={<NavButton.Back />}
-        right={<Text size="sm" color="gray" onPress={() => handleSubmit(trimedSearchText)}>搜索</Text>}
+        right={(
+          <Pressable onPress={() => handleSubmit(trimedSearchText)}>
+            <Text size="sm" color="$secondary600">搜索</Text>
+          </Pressable>
+        )}
       >
-        <SearchBar />
+        <View
+          flex={1}
+          flexDirection="row"
+          gap="$1"
+          alignItems="center"
+          px="$2.5"
+          py="$2"
+          borderRadius="$full"
+          bg="$backgroundLight200"
+          $dark-bg="$backgroundDark200"
+        >
+          <Icon as={Search} size="md" />
+          <TextInput
+            ref={inputRef}
+            value={searchText}
+            placeholder={placeholder}
+            onChangeText={(text) => {
+              if (text !== searchText)
+                setSearchText(text)
+              // setIsSearched(true)
+            }}
+            onSubmitEditing={() => handleSubmit(searchText)}
+          >
+          </TextInput>
+        </View>
       </NavBar>
 
       {!isSearched

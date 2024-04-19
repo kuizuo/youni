@@ -9,7 +9,7 @@ import { resourceNotFoundWrapper } from 'src/utils/prisma.util'
 import { InteractType } from '../interact/interact.constant'
 import { ViewService } from '../interact/services/view.service'
 
-import { NoteTagDto, NoteTagPagerDto } from './note-tag.dto'
+import { NoteTagDto, NoteTagPagerDto, NoteTagSearchDto } from './note-tag.dto'
 
 @Injectable()
 export class NoteTagService {
@@ -44,8 +44,8 @@ export class NoteTagService {
     const promises = items.map(async (item) => {
       const viewCount = await this.viewService.count(InteractType.NoteTag, item.id)
 
-      // FIXME:
-      ;(item as any).viewCount = viewCount
+        // FIXME:
+        ; (item as any).viewCount = viewCount
     })
 
     await Promise.all(promises)
@@ -56,12 +56,12 @@ export class NoteTagService {
     }
   }
 
-  async search(dto: NoteTagPagerDto, userId?: string) {
-    const { cursor, limit, name, sortBy, sortOrder = 'desc' } = dto
+  async search(dto: NoteTagSearchDto, userId?: string) {
+    const { cursor, limit, keyword, sortBy, sortOrder = 'desc' } = dto
 
     const [items, meta] = await this.prisma.noteTag.paginate({
       where: {
-        name: { contains: name },
+        name: { contains: keyword },
       },
       orderBy: {
         [sortBy]: sortOrder,

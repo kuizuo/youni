@@ -15,3 +15,11 @@ export class NoteTagUpdateDto extends createZodDto(NoteTagInputSchema.partial())
 export class NoteTagPagerDto extends createZodDto(basePagerSchema.extend({
   name: z.string().optional(),
 })) {}
+
+export class NoteTagSearchDto extends createZodDto(basePagerSchema.extend({
+  keyword: z.string(), // .min(1, { message: '关键字不能为空' }),
+  sortBy: z.string().default('createdAt'),
+  sortOrder: z.string()
+    .or(z.enum(['asc', 'desc']))
+    .optional(),
+})) { }

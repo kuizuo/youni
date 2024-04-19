@@ -19,6 +19,7 @@ export function FollowerListItem(item: UserInfoWithFollow): React.ReactElement {
           <AvatarImage
             source={{ uri: item.avatar }}
             alt="avatar"
+            resizeMode="contain"
           />
         </Avatar>
       </Pressable>

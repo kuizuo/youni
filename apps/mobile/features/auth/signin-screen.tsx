@@ -77,7 +77,7 @@ function SignInForm() {
 
   const router = useRouter()
   const toast = useToast()
-  const { login: { mutateAsync: loginApi } } = useAuth()
+  const { login: { isLoading, mutateAsync: loginApi } } = useAuth()
 
   const onSubmit = async (_data: SignInSchemaType) => {
     try {
@@ -252,8 +252,11 @@ function SignInForm() {
         size="lg"
         mt="$5"
         onPress={handleSubmit(onSubmit)}
+        disabled={isLoading}
       >
-        <ButtonText fontSize="$sm"> 登录</ButtonText>
+        <ButtonText fontSize="$sm">
+          {isLoading ? '登录中' : '登录'}
+        </ButtonText>
       </Button>
     </>
   )

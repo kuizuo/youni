@@ -349,4 +349,13 @@ export class NotePublicService {
 
     return items.map(item => item.id)
   }
+
+  async getCountByUserId(userId: string) {
+    return await this.prisma.note.count({
+      where: {
+        userId,
+        state: NoteState.Published,
+      },
+    })
+  }
 }

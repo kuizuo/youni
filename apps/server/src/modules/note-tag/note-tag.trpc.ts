@@ -9,7 +9,7 @@ import { z } from 'zod'
 
 import { Action } from '../casl/ability.class'
 
-import { NoteTagInputSchema, NoteTagPagerDto } from './note-tag.dto'
+import { NoteTagInputSchema, NoteTagPagerDto, NoteTagSearchDto } from './note-tag.dto'
 import { NoteTagService } from './note-tag.service'
 
 @TRPCRouter()
@@ -38,7 +38,7 @@ export class NoteTagTrpcRouter implements OnModuleInit {
           return this.noteTagService.paginate(input, user.id)
         }),
       search: procedureAuth
-        .input(NoteTagPagerDto.schema)
+        .input(NoteTagSearchDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 

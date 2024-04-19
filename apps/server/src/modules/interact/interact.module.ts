@@ -1,5 +1,5 @@
 import { BullModule } from '@nestjs/bull'
-import { Module, Provider } from '@nestjs/common'
+import { Module, Provider, forwardRef } from '@nestjs/common'
 
 import { UserModule } from '../user/user.module'
 
@@ -24,7 +24,7 @@ const providers: Provider[] = [
 
 @Module({
   imports: [
-    UserModule,
+    forwardRef(() => UserModule),
     BullModule.registerQueue(
       {
         name: INTERACT_QUEUE,

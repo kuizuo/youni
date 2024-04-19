@@ -7,8 +7,12 @@ import { ErrorCodeEnum } from '@server/constants/error-code.constant'
 import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/database/prisma.extension'
 
 import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
-import { Role } from '@youni/database'
+import { Role, User } from '@youni/database'
 import Redis from 'ioredis'
+
+import { FollowService } from '../interact/services/follow.service'
+
+import { NotePublicService } from '../note/note.public.service'
 
 import { UserSearchDto } from './dto/search.dto'
 import { UserSelect } from './user.constant'
@@ -20,7 +24,8 @@ export class UserPublicService {
     private readonly redis: Redis,
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
-
+    private readonly noteService: NotePublicService,
+    private readonly followService: FollowService,
   ) { }
 
   async getUserById(id: string) {
@@ -76,5 +81,22 @@ export class UserPublicService {
       items,
       meta,
     }
+  }
+
+  async appendInteractInfo(items: User | User[], userId: string) {
+    if (!Array.isArray(items))
+      items = [items]
+
+    const followerCounts = await Promise.all(items.map(item => this.followService.getFollowerCount(item.id)))
+    const noteCounts = await Promise.all(items.map(item => this.noteService.getCountByUserId(item.id)))
+    const isFollowings = await Promise.all(items.map(item => this.followService.isUserFollowing(item.id, userId)))
+
+    items.forEach((item, index) => {
+      (item as any).interact = {
+        followerCount: followerCounts[index],
+        noteCount: noteCounts[index],
+        isFollowing: isFollowings[index],
+      }
+    })
   }
 }

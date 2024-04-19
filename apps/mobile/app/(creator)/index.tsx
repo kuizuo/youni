@@ -1,9 +1,9 @@
-import { Text } from '@gluestack-ui/themed'
+import { Center, Text } from '@gluestack-ui/themed'
 
 export default () => {
   return (
     <>
-      <Text>Box</Text>
+      <Center><Text>创作中心页面</Text></Center>
     </>
   )
 }

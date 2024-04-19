@@ -1,4 +1,4 @@
-import { Module, Provider } from '@nestjs/common'
+import { Module, Provider, forwardRef } from '@nestjs/common'
 
 import { InteractModule } from '../interact/interact.module'
 import { UserModule } from '../user/user.module'
@@ -17,7 +17,7 @@ const providers: Provider[] = [
 @Module({
   imports: [
     InteractModule,
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   controllers: [CommentController],
   providers,

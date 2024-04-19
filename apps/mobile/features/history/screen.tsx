@@ -31,7 +31,11 @@ export function HistoryScreen() {
   }
 
   return (
-    <View flex={1}>
+    <View
+      flex={1}
+      bg="$backgroundLight0"
+      $dark-bg="$backgroundDark950"
+    >
       <NavBar
         left={<NavButton.Back />}
         right={(
@@ -50,18 +54,20 @@ export function HistoryScreen() {
         <Text flex={1} textAlign="center">浏览记录</Text>
       </NavBar>
 
-      <NoteList
-        data={flatedData as unknown as NoteItem[]}
-        isRefreshing={isRefetching}
-        isFetchingNextPage={isFetchingNextPage}
-        onRefresh={() => refetch()}
-        onEndReached={() => {
-          if (hasNextPage)
-            fetchNextPage()
-        }}
-        ListEmptyComponent={<EmptyResult title="没有任何浏览记录" />}
-      >
-      </NoteList>
+      <View flex={1}>
+        <NoteList
+          data={flatedData as unknown as NoteItem[]}
+          isRefreshing={isRefetching}
+          isFetchingNextPage={isFetchingNextPage}
+          onRefresh={() => refetch()}
+          onEndReached={() => {
+            if (hasNextPage)
+              fetchNextPage()
+          }}
+          ListEmptyComponent={<EmptyResult title="没有任何浏览记录" />}
+        >
+        </NoteList>
+      </View>
       {/* <HistoryFooter /> */}
     </View>
   )

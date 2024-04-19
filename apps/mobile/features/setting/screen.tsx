@@ -1,7 +1,7 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { ChevronRight } from 'lucide-react-native'
-import { Button, ButtonText, Divider, ScrollView, View } from '@gluestack-ui/themed'
+import { Button, ButtonText, Divider, Icon, ScrollView, View } from '@gluestack-ui/themed'
 import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
 import { ListItem } from '@/ui/components/ListItem'
@@ -22,7 +22,6 @@ export function SettingScreen() {
       bg="$backgroundLight0"
       $dark-bg="$backgroundDark950"
     >
-
       <ScrollView
         bg="$backgroundLight200"
       >

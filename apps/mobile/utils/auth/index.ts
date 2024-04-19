@@ -75,6 +75,8 @@ export function useAuth() {
       store.set(isLoggedAtom, false)
       store.set(userAtom, null)
       removeToken()
+
+      router.replace('/login')
     },
   }
 }

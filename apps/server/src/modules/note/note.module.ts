@@ -24,11 +24,11 @@ const providers: Provider[] = [
 
 @Module({
   imports: [
+    forwardRef(() => UserModule),
     forwardRef(() => HistoryModule),
     forwardRef(() => CommentModule),
     InteractModule,
     CollectionModule,
-    UserModule,
     CampusModule,
   ],
   controllers: [NoteController],

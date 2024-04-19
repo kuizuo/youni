@@ -59,7 +59,7 @@ export function ProfileScreen() {
     - navBarHeight
     + headerHeight
     + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
-    // paddingTop: headerHeight ? headerHeight + TAB_BAR_HEIGHT : 0,
+    paddingTop: (headerHeight ? headerHeight + TAB_BAR_HEIGHT : TAB_BAR_HEIGHT) + VERTICAL_SPACING / 2,
   }
 
   const [data] = trpc.user.byId.useSuspenseQuery({ id: userId })
@@ -211,10 +211,11 @@ export function ProfileScreen() {
               <AvatarImage
                 source={{ uri: data?.avatar }}
                 alt="avatar"
+                resizeMode="contain"
               />
             </Avatar>
             <View flex={1}>
-              <HStack alignItems="center" mb="$2" gap="$2">
+              <HStack alignItems="center" mb="$3" gap="$2">
                 <Text size="lg">
                   {data.nickname}
                 </Text>

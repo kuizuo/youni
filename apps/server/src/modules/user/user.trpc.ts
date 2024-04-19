@@ -40,7 +40,14 @@ export class UserTrpcRouter implements OnModuleInit {
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          return await this.userPublicService.search(input)
+          const { items, meta } = await this.userPublicService.search(input)
+
+          await this.userPublicService.appendInteractInfo(items, user.id)
+
+          return {
+            items,
+            meta,
+          }
         }),
       profile: procedureAuth.query(async (opt) => {
         const { ctx: { user } } = opt

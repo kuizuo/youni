@@ -13,6 +13,7 @@ import { FallbackComponent, QuerySuspense } from '@/ui/components/QuerySuspense'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { UserList } from '@/ui/components/user/UserList'
+import { TopicList } from '@/ui/components/topic/TopicList'
 
 export function SearchResult({ searchText }: { searchText: string }) {
   const { colorScheme } = useColorScheme()
@@ -31,6 +32,10 @@ export function SearchResult({ searchText }: { searchText: string }) {
         title: '笔记',
       },
       {
+        key: 'topic',
+        title: '话题',
+      },
+      {
         key: 'user',
         title: '用户',
       },
@@ -47,6 +52,8 @@ export function SearchResult({ searchText }: { searchText: string }) {
         switch (route.key) {
           case 'note':
             return <SearchNoteList searchText={searchText} />
+          case 'topic':
+            return <SearchTopicList searchText={searchText} />
           case 'user':
             return <SearchUserList searchText={searchText} />
           default:
@@ -102,6 +109,43 @@ function SearchNoteList({ searchText }: { searchText: string }) {
         ListEmptyComponent={<EmptyResult title="没有搜索到相关结果" />}
       >
       </NoteList>
+    </QuerySuspense>
+  )
+}
+
+function SearchTopicList({ searchText }: { searchText: string }) {
+  const [data, { isRefetching, isFetchingNextPage, hasNextPage, refetch, fetchNextPage }] = trpc.noteTag.search.useSuspenseInfiniteQuery({
+    keyword: searchText,
+    limit: 10,
+  }, {
+    getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,
+  })
+
+  const flatedData = useMemo(
+    () => data.pages.map(page => page.items).flat() as unknown as any[],
+    [data.pages],
+  )
+  return (
+    <QuerySuspense
+      loading={<Spinner />}
+      fallbackRender={fallbackProps => (
+        <View>
+          <FallbackComponent {...fallbackProps} />
+        </View>
+      )}
+    >
+      <TopicList
+        data={flatedData}
+        isRefreshing={isRefetching}
+        isFetchingNextPage={isFetchingNextPage}
+        onRefresh={() => refetch()}
+        onEndReached={() => {
+          if (hasNextPage)
+            fetchNextPage()
+        }}
+        ListEmptyComponent={<EmptyResult title="没有搜索到相关结果" />}
+      >
+      </TopicList>
     </QuerySuspense>
   )
 }
