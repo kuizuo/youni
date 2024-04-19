@@ -42,6 +42,7 @@ import { client } from '@/utils/http/client'
 import { trpc } from '@/utils/trpc'
 import { useTags } from '@/atoms/create'
 import { useModal } from '@/ui/components/CustomModal'
+import { useAuth } from '@/utils/auth'
 
 const createNoteSchema = z.object({
   title: z.string().min(1, '标题不能为空'),
@@ -65,6 +66,7 @@ export function CreateScreen() {
   const window = useWindowDimensions()
   const router = useRouter()
   const toast = useToast()
+  const { currentUser } = useAuth()
 
   const gap = useToken('space', '2')
   const padding = useToken('space', '4')
@@ -374,19 +376,23 @@ export function CreateScreen() {
 
       <Divider />
       <View flex={1}>
-        <FormControl>
-          <Controller
-            name="isAppendCampus"
-            defaultValue={false}
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <HStack px="$4" gap="$2" alignItems="center">
-                <Text size="sm">发布到本校区</Text>
-                <Switch size="sm" isChecked={value} onChange={onChange} />
-              </HStack>
-            )}
-          />
-        </FormControl>
+        {
+          currentUser.campusId && (
+            <FormControl>
+              <Controller
+                name="isAppendCampus"
+                defaultValue={false}
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <HStack px="$4" gap="$2" alignItems="center">
+                    <Text size="sm">发布到本校区</Text>
+                    <Switch size="sm" isChecked={value} onChange={onChange} />
+                  </HStack>
+                )}
+              />
+            </FormControl>
+          )
+        }
 
         <ListItem
           title="添加话题"

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Platform, StyleSheet, useWindowDimensions } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useRoute } from '@react-navigation/native'
 import { ArrowUpRightFromSquare } from 'lucide-react-native'
 import Animated, { Extrapolation, interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
@@ -15,6 +15,7 @@ import {
   HStack,
   Icon,
   Image,
+  Pressable,
   Text,
   View,
   useToken,
@@ -38,6 +39,7 @@ const AVATAR_SIZE_VALUE = 60
 const BANNER_BOTTOM_HEIGHT_ADDITION = AVATAR_SIZE_VALUE
 
 export function ProfileScreen() {
+  const router = useRouter()
   const { colorScheme } = useColorScheme()
   const primaryColor = useToken('colors', 'primary500')
   const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark800' : 'textLight800')
@@ -238,14 +240,20 @@ export function ProfileScreen() {
                   : <></>}
               </HStack>
 
-              <HStack>
+              <HStack mb="$2">
                 {data.campus
                   ? (
                     <Badge size="md" variant="solid" borderRadius="$none" action="info">
                       <BadgeText>{data.campus.name}</BadgeText>
                     </Badge>
                     )
-                  : <View mb="$6"></View>}
+                  : (
+                    <Pressable onPress={() => router.push('/user/certify')}>
+                      <Badge size="md" variant="solid" borderRadius="$none" action="muted">
+                        <BadgeText>未认证</BadgeText>
+                      </Badge>
+                    </Pressable>
+                    )}
               </HStack>
             </View>
           </Animated.View>

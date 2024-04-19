@@ -51,7 +51,7 @@ export default function NoteTagScreen() {
         </View>
       </HStack>
 
-      <HStack mx="$3" mb="$2" justifyContent="flex-end">
+      {/* <HStack mx="$3" mb="$2" justifyContent="flex-end">
         <ButtonGroup isAttached>
           <Button variant="outline" size="xs" borderColor="$backgroundLight300" borderRightWidth="$0" $dark-borderColor="$backgroundDark700">
             <ButtonText color="$textLight800" $dark-color="$textDark300">
@@ -64,12 +64,11 @@ export default function NoteTagScreen() {
             </ButtonText>
           </Button>
         </ButtonGroup>
-      </HStack>
+      </HStack> */}
 
       <Divider mb="$3" />
 
       <View flex={1}>
-
         <NoteList
           data={flatedData as unknown as NoteItem[]}
           isRefreshing={isRefetching}
