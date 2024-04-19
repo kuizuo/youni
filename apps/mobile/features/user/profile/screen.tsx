@@ -195,11 +195,18 @@ export function ProfileScreen() {
           </Animated.View>
         </NavBar>
 
-        {/* 用户头像 */}
+        {/* 用户头像以及昵称 */}
         <Animated.View className="px-2" style={[rootProfileRowZIndexStyle]}>
           <Animated.View
-            className="absolute left-3 right-3 flex-1 flex-row justify-between items-end gap-3"
             style={[
+              {
+                position: 'absolute',
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                gap: 6,
+              },
               {
                 left: Math.max(left, ROOT_HORIZONTAL_PADDING),
                 right: Math.max(right, ROOT_HORIZONTAL_PADDING),
@@ -238,7 +245,7 @@ export function ProfileScreen() {
                       <BadgeText>{data.campus.name}</BadgeText>
                     </Badge>
                     )
-                  : <></>}
+                  : <View mb="$6"></View>}
               </HStack>
             </View>
           </Animated.View>

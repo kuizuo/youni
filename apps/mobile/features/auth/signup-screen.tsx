@@ -32,7 +32,7 @@ import {
   VStack,
   useToast,
 } from '@gluestack-ui/themed'
-import { Link } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 
 import { Controller, useForm } from 'react-hook-form'
 
@@ -46,28 +46,20 @@ import GuestLayout from '../../layouts/GuestLayout'
 import { GoogleIcon, QQIcon, WechatIcon } from './assets/Icons/Social'
 import { NavButton } from '@/ui/components/NavButton'
 
+import { useAuth } from '@/utils/auth'
+
 const signUpSchema = z.object({
-  email: z.string().min(1, 'Email is required').email(),
+  email: z.string().min(1, '邮箱必填').email({ message: '请输入正确的邮箱地址' }),
   password: z
     .string()
-    .min(6, 'Must be at least 8 characters in length')
-    .regex(new RegExp('.*[A-Z].*'), 'One uppercase character')
-    .regex(new RegExp('.*[a-z].*'), 'One lowercase character')
-    .regex(new RegExp('.*\\d.*'), 'One number')
-    .regex(
-      new RegExp('.*[`~<>?,./!@#$%^&*()\\-_+="\'|{}\\[\\];:\\\\].*'),
-      'One special character',
-    ),
+    .min(6, '密码至少需要6个字符')
+    .regex(new RegExp('.*[A-Za-z].*'), '至少包含一个字母')
+    .regex(new RegExp('.*\\d.*'), '至少包含一个数字'),
   confirmpassword: z
     .string()
-    .min(6, 'Must be at least 8 characters in length')
-    .regex(new RegExp('.*[A-Z].*'), 'One uppercase character')
-    .regex(new RegExp('.*[a-z].*'), 'One lowercase character')
-    .regex(new RegExp('.*\\d.*'), 'One number')
-    .regex(
-      new RegExp('.*[`~<>?,./!@#$%^&*()\\-_+="\'|{}\\[\\];:\\\\].*'),
-      'One special character',
-    ),
+    .min(6, '确认密码至少需要6个字符')
+    .regex(new RegExp('.*[A-Za-z].*'), '至少包含一个字母')
+    .regex(new RegExp('.*\\d.*'), '至少包含一个数字'),
   rememberme: z.boolean().optional(),
 })
 type SignUpSchemaType = z.infer<typeof signUpSchema>
@@ -96,7 +88,7 @@ function MobileHeader() {
   return (
     <VStack px="$3" mt="$4.5" mb="$5" space="md">
       <HStack space="md" alignItems="center">
-        <NavButton.Back />
+        <NavButton.Back color="white" />
         <Text
           color="$textLight50"
           sx={{ _dark: { color: '$textDark50' } }}
@@ -125,6 +117,8 @@ function MobileHeader() {
   )
 }
 function SignUpForm() {
+  const router = useRouter()
+
   const {
     control,
     formState: { errors },
@@ -136,20 +130,47 @@ function SignUpForm() {
   const [isEmailFocused, setIsEmailFocused] = useState(false)
   const [pwMatched, setPwMatched] = useState(false)
   const toast = useToast()
-  const onSubmit = (_data: SignUpSchemaType) => {
+
+  const { register: { isLoading, mutateAsync: registerApi } } = useAuth()
+
+  const onSubmit = async (_data: SignUpSchemaType) => {
     if (_data.password === _data.confirmpassword) {
       setPwMatched(true)
+
+      try {
+        await registerApi({
+          username: _data.email,
+          password: _data.password,
+        })
+      }
+      catch (error) {
+        toast.show({
+          placement: 'top right',
+          render: ({ id }) => {
+            const toastId = `toast-${id}`
+
+            return (
+              <Toast nativeID={toastId} variant="accent" action="error">
+                <ToastTitle>{error.message}</ToastTitle>
+              </Toast>
+            )
+          },
+        })
+        return
+      }
+
       toast.show({
         placement: 'bottom right',
         render: ({ id }) => {
           return (
             <Toast nativeID={id} variant="accent" action="success">
-              <ToastTitle>Signed up successfully</ToastTitle>
+              <ToastTitle>注册成功</ToastTitle>
             </Toast>
           )
         },
       })
       reset()
+      router.replace('/login')
     }
     else {
       toast.show({
@@ -378,6 +399,7 @@ function SignUpForm() {
         variant="solid"
         size="lg"
         mt="$5"
+        disabled={isLoading}
         onPress={handleSubmit(onSubmit)}
       >
         <ButtonText fontSize="$sm">注册</ButtonText>
@@ -455,17 +477,17 @@ function SignUpFormComponent() {
         >
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={WechatIcon} size="lg" />
+              <ButtonIcon as={WechatIcon} size="xl" />
             </Button>
           </Link>
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={QQIcon} size="lg" />
+              <ButtonIcon as={QQIcon} size="xl" />
             </Button>
           </Link>
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={GoogleIcon} size="lg" />
+              <ButtonIcon as={GoogleIcon} size="xl" />
             </Button>
           </Link>
         </HStack>

@@ -377,21 +377,21 @@ function Main() {
           mb="$9"
           justifyContent="center"
           alignItems="center"
-          space="lg"
+          space="xl"
         >
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={WechatIcon} size="lg" />
+              <ButtonIcon as={WechatIcon} size="xl" />
             </Button>
           </Link>
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={QQIcon} size="md" />
+              <ButtonIcon as={QQIcon} size="xl" />
             </Button>
           </Link>
           <Link href="#">
             <Button action="secondary" variant="link" onPress={() => { }}>
-              <ButtonIcon as={GoogleIcon} size="lg" />
+              <ButtonIcon as={GoogleIcon} size="xl" />
             </Button>
           </Link>
         </HStack>

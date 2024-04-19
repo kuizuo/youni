@@ -7,6 +7,7 @@ import { client } from '../http/client'
 import { getToken, removeToken, setToken } from './utils'
 import { atomWithMMKV } from '@/provider/jotai/store'
 import { useCurrentCampus } from '@/atoms/campus'
+import { searchHistoryAtom } from '@/atoms/searchHistroy'
 
 export interface Credentials {
   username: string
@@ -46,6 +47,17 @@ export function useAuth() {
     return data
   }
 
+  const register = async (_data: Credentials) => {
+    const { username, password } = _data
+    const data = await client.post('/api/auth/register', {
+      username,
+      password,
+      type: 'email',
+    }) as LoginResult
+
+    return data
+  }
+
   // const {
   //   data: currentUser,
   //   isLoading,
@@ -71,9 +83,13 @@ export function useAuth() {
     login: useMutation({
       mutationFn: login,
     }),
+    register: useMutation({
+      mutationFn: register,
+    }),
     logout: () => {
       store.set(isLoggedAtom, false)
       store.set(userAtom, null)
+      store.set(searchHistoryAtom, [])
       removeToken()
 
       router.replace('/login')
