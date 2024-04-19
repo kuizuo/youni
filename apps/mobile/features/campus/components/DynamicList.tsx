@@ -5,7 +5,7 @@ import type { NoteItem } from '@server/modules/note/note'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { ViewStyle } from 'react-native'
 import { Tabs } from 'react-native-collapsible-tab-view'
-import { Spinner } from '@gluestack-ui/themed'
+import { Spinner, View } from '@gluestack-ui/themed'
 import { DynamicListItem } from './DynamicListItem'
 import { useCurrentCampus } from '@/atoms/campus'
 import { trpc } from '@/utils/trpc'
@@ -37,29 +37,30 @@ export function DynamicListComp({ contentContainerStyle }: { contentContainerSty
   )
 
   return (
-    <FlashList
-      data={flatedData}
-      renderItem={renderItem}
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
-      onEndReached={() => {
-        if (hasNextPage)
-          fetchNextPage()
-      }}
-      contentContainerStyle={contentContainerStyle}
-      showsVerticalScrollIndicator={false}
-      estimatedItemSize={200}
-      ListFooterComponent={(
-        <SafeAreaView edges={['bottom']}>
-          {isFetchingNextPage
-            ? (
-              <Spinner />
-              )
-            : null}
-        </SafeAreaView>
-      )}
-      ListEmptyComponent={<EmptyResult title="暂无动态" />}
-    />
-
+    <View flex={1}>
+      <FlashList
+        data={flatedData}
+        renderItem={renderItem}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />}
+        onEndReached={() => {
+          if (hasNextPage)
+            fetchNextPage()
+        }}
+        contentContainerStyle={contentContainerStyle}
+        showsVerticalScrollIndicator={false}
+        estimatedItemSize={200}
+        ListFooterComponent={(
+          <SafeAreaView edges={['bottom']}>
+            {isFetchingNextPage
+              ? (
+                <Spinner />
+                )
+              : null}
+          </SafeAreaView>
+        )}
+        ListEmptyComponent={<EmptyResult title="暂无动态" />}
+      />
+    </View>
   )
 }
 

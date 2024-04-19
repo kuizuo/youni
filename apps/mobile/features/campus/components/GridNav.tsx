@@ -51,8 +51,8 @@ export function GridNav() {
     },
   ]
 
-  // if (currentUser.campusId !== currentCampus?.id)
-  //   return <></>
+  if (currentUser.campusId !== currentCampus?.id)
+    return <></>
 
   return (
     <View
@@ -66,6 +66,7 @@ export function GridNav() {
         numColumns={4}
         renderItem={Item}
         keyExtractor={item => item.title}
+        scrollEnabled={false}
       />
     </View>
   )

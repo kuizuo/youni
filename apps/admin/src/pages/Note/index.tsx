@@ -32,7 +32,6 @@ const stateValueEnum = {
   },
 }
 
-
 const TagList: React.FC<{
   value?: {
     key: string;
@@ -102,7 +101,7 @@ const handleAdd = async (fields: API.NoteItem) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Adding failed, please try again!');
+    message.error('添加失败!');
     return false;
   }
 };
@@ -120,7 +119,7 @@ const handleUpdate = async (fields: API.NoteItem) => {
     return true;
   } catch (error) {
     hide();
-    message.error('更新失败，请重新尝试');
+    message.error('更新失败');
     return false;
   }
 };
@@ -142,7 +141,6 @@ const handleRemove = async (selectedRows: API.NoteItem[]) => {
 };
 
 const TableList: React.FC = () => {
-
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
 
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
@@ -208,7 +206,6 @@ const TableList: React.FC = () => {
           <Typography.Paragraph ellipsis={{ rows: 2, tooltip: true }} >
             {entity.content}
           </Typography.Paragraph>
-
         );
       },
     },
@@ -379,7 +376,7 @@ const TableList: React.FC = () => {
         }}
       >
 
-        <ProFormItemRender
+        {/* <ProFormItemRender
           label="标签"
           name={'tag'}
           initialValue={currentRow?.tags}
@@ -396,7 +393,7 @@ const TableList: React.FC = () => {
             ))
 
           }}
-        </ProFormItemRender>
+        </ProFormItemRender> */}
 
         <ProFormSegmented
           label={"状态"}

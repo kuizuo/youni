@@ -135,7 +135,7 @@ export class NotePublicService {
   }
 
   async getNoteById(id: string, userId?: string) {
-    const item = await this.prisma.note.findUniqueOrThrow({
+    return await this.prisma.note.findUniqueOrThrow({
       where: {
         id,
         ...(userId ? { userId } : { state: 'Published' }),
@@ -146,7 +146,6 @@ export class NotePublicService {
     }).catch(resourceNotFoundWrapper(
       new BizException(ErrorCodeEnum.NoteNotFound),
     ))
-    return item
   }
 
   async getNotesByIds(ids: string[]) {

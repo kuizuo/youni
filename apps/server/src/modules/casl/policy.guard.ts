@@ -6,6 +6,10 @@ import { ExtendedPrismaClient, InjectPrismaClient } from '@server/shared/databas
 
 import { FastifyRequest } from 'fastify'
 
+import { BizException } from 'src/common/exceptions/biz.exception'
+
+import { ErrorCodeEnum } from 'src/constants/error-code.constant'
+
 import { AbilityService } from './casl.service'
 import { CHECK_POLICY_KEY, PolicyObject } from './policy.decortor'
 
@@ -16,7 +20,8 @@ export class PolicyGuard implements CanActivate {
     private abilityService: AbilityService,
     @InjectPrismaClient()
     private readonly prisma: ExtendedPrismaClient,
-  ) { }
+  ) {
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>()
@@ -33,7 +38,7 @@ export class PolicyGuard implements CanActivate {
 
     // 使用了 PolicyGuard 但没未其定义 policy 则不允许通过
     if (!policy)
-      return false
+      throw new BizException(ErrorCodeEnum.ResourceNotFound)
 
     const { action, model } = policy
 

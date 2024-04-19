@@ -10,7 +10,6 @@ export function generateMockUser(): UserDto {
     avatar: `https://picsum.photos/200/200`,
     password: 'mockPassword123',
     email: `mockuser_${id}@example.com`,
-    provider: 'Github',
     role: Role.User,
     yoId: id.slice(0, 10),
   }

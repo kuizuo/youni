@@ -37,7 +37,7 @@ export function CampusScreen() {
     + headerHeight
     + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0)
     - TAB_VIEW_MARGIN_TOP,
-    paddingTop: headerHeight ? headerHeight + TAB_BAR_HEIGHT : 0,
+    paddingTop: headerHeight ? headerHeight + TAB_BAR_HEIGHT : TAB_BAR_HEIGHT,
   }
 
   const CampusHeader = () => {
@@ -108,7 +108,6 @@ export function CampusScreen() {
                 )
               }}
             >
-
               <Tabs.Tab name="动态广场">
                 <DynamicList contentContainerStyle={contentContainerStyle} />
               </Tabs.Tab>

@@ -23,7 +23,7 @@ const handleAdd = async (fields: API.TopicItem) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Adding failed, please try again!');
+    message.error('添加失败!');
     return false;
   }
 };
@@ -40,7 +40,7 @@ const handleUpdate = async (fields: API.TopicItem) => {
     return true;
   } catch (error) {
     hide();
-    message.error('更新失败，请重新尝试');
+    message.error('更新失败');
     return false;
   }
 };

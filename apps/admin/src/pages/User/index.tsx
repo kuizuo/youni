@@ -1,4 +1,4 @@
-import { addCampus, removeCampus, queryCampus, updateCampus } from '@/services/campus/api';
+import { addUser, removeUser, queryUser, updateUser } from '@/services/user/api';
 import { getToken } from '@/utils/auth';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
@@ -7,33 +7,45 @@ import {
   ModalForm,
   PageContainer,
   ProDescriptions,
+  ProFormSegmented,
   ProFormText,
   ProFormUploadButton,
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
-import { Button, Drawer, Image, message } from 'antd';
+import { Button, Drawer, Image, message, Tag } from 'antd';
 import React, { useRef, useState } from 'react';
 
-const handleAdd = async (fields: API.CampusItem) => {
-  const hide = message.loading('正在添加');
+
+const statusValueEnum = {
+  0: {
+    text: '禁用',
+    status: 'Default',
+  },
+  1: {
+    text: '正常',
+    status: 'Processing',
+  },
+}
+
+const handleAdd = async (fields: API.UserItem) => {
+  const hide = message.loading('正在添加...');
   try {
-    await addCampus({ ...fields });
+    await addUser({ ...fields });
     hide();
     message.success('添加成功');
     return true;
   } catch (error) {
     hide();
-    message.error('Adding failed, please try again!');
     return false;
   }
 };
 
-const handleUpdate = async (fields: API.CampusItem) => {
-  const hide = message.loading('Configuring');
+const handleUpdate = async ({ id, ...fields }: API.UserItem) => {
+  const hide = message.loading('更新中...');
   try {
-    await updateCampus(fields.id!, {
-      name: fields.name,
+    await updateUser(id, {
+      ...fields
     });
     hide();
 
@@ -41,17 +53,16 @@ const handleUpdate = async (fields: API.CampusItem) => {
     return true;
   } catch (error) {
     hide();
-    message.error('更新失败，请重新尝试');
     return false;
   }
 };
 
-const handleRemove = async (selectedRows: API.CampusItem[]) => {
+const handleRemove = async (selectedRows: API.UserItem[]) => {
   console.log("🚀 ~ handleRemove ~ selectedRows:", selectedRows)
-  const hide = message.loading('正在删除');
+  const hide = message.loading('正在删除...');
   if (!selectedRows) return true;
   try {
-    await removeCampus(selectedRows.map((row) => row.id));
+    await removeUser(selectedRows.map((row) => row.id));
     hide();
     message.success('已成功删除，将很快刷新');
     return true;
@@ -63,37 +74,34 @@ const handleRemove = async (selectedRows: API.CampusItem[]) => {
 };
 
 const TableList: React.FC = () => {
-
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
-
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
-
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.CampusItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.CampusItem[]>([]);
+  const [currentRow, setCurrentRow] = useState<API.UserItem>();
+  const [selectedRowsState, setSelectedRows] = useState<API.UserItem[]>([]);
 
-  const columns: ProColumns<API.CampusItem>[] = [
+  const columns: ProColumns<API.UserItem>[] = [
     {
-      title: '校徽',
-      dataIndex: 'logo',
+      title: '头像',
+      dataIndex: 'avatar',
       hideInSearch: true,
       width: 80,
+      align: 'center',
       render: (dom, entity) => {
         return (
           <Image
             width={80}
-            src={entity.logo}
+            src={entity.avatar}
           />
-
         );
       },
     },
     {
-      title: '学校名',
-      dataIndex: 'name',
-      width: 200,
+      title: '昵称',
+      dataIndex: 'nickname',
+      width: 180,
       align: 'center',
       render: (dom, entity) => {
         return (
@@ -114,19 +122,32 @@ const TableList: React.FC = () => {
       hideInSearch: true,
       align: 'center',
     },
-    // {
-    //   title: '别名',
-    //   dataIndex: 'alias',
-    //   hideInSearch: true,
-    //   align: 'center',
-    // },
-    // {
-    //   title: '位置',
-    //   dataIndex: 'location',
-    // },
+    {
+      title: '性别',
+      dataIndex: 'gender',
+      width: 100,
+      align: 'center',
+      render: (dom, entity) => {
+        const gender = entity.gender === 0 ? '未知' : entity.gender === 1 ? '男' : '女';
+        const color = entity.gender === 0 ? 'default' : entity.gender === 1 ? 'blue' : 'pink';
+        return <Tag color={color} onClick={() => { }}>{gender}</Tag>
+      },
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      width: 100,
+      align: 'center',
+      render: (dom, entity) => {
+        const text = entity.status === 1 ? '正常' : '禁用'
+        const status = entity.status === 1 ? 'green' : 'red'
+        return <Tag color={status}>{text}</Tag>
+      },
+    },
     {
       title: '创建时间',
       sorter: true,
+      align: 'center',
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       width: 180,
@@ -140,8 +161,8 @@ const TableList: React.FC = () => {
         <a
           key="update"
           onClick={() => {
-            handleUpdateModalOpen(true);
             setCurrentRow(record);
+            handleUpdateModalOpen(true);
           }}
         >
           编辑
@@ -151,8 +172,8 @@ const TableList: React.FC = () => {
   ];
 
   return (
-    <PageContainer header={{ title: '校区管理' }} >
-      <ProTable<API.CampusItem, API.PageParams>
+    <PageContainer header={{ title: '用户管理' }} >
+      <ProTable<API.UserItem, API.PageParams>
         actionRef={actionRef}
         rowKey="id"
         search={{
@@ -169,7 +190,7 @@ const TableList: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        request={queryCampus}
+        request={queryUser}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
@@ -202,14 +223,14 @@ const TableList: React.FC = () => {
         </FooterToolbar>
       )}
       <ModalForm
-        title={'新建校区'}
+        title={'新建用户'}
         width="400px"
         layout="horizontal"
         grid
         open={createModalOpen}
         onOpenChange={handleModalOpen}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.CampusItem);
+          const success = await handleAdd(value as API.UserItem);
           if (success) {
             handleModalOpen(false);
             if (actionRef.current) {
@@ -218,48 +239,32 @@ const TableList: React.FC = () => {
           }
         }}
       >
-        <ProFormUploadButton
-          name="logo"
-          label="校徽"
-          max={1}
+        <ProFormText
           rules={[
             {
               required: true,
-              message: "校徽不能为空",
+              message: "用户名不能为空",
             },
           ]}
-          fieldProps={{
-            name: 'file',
-            listType: 'picture-card',
-            headers: {
-              'Authorization': getToken()
-            }
+          label={"用户名"}
+          colProps={{
+            span: 24,
           }}
-          action="/api/files/upload"
-          transform={(file) => {
-            return file?.[0].response.data.url
-          }}
+          name="username"
         />
         <ProFormText
           rules={[
             {
               required: true,
-              message: "校区的值不能为空",
+              message: "密码不能为空",
             },
           ]}
-          label={"校名"}
+          label={"密码"}
           colProps={{
             span: 24,
           }}
-          name="name"
+          name="password"
         />
-        {/* <ProFormText
-          label={"别名"}
-          colProps={{
-            span: 24,
-          }}
-          name="alias"
-        /> */}
         <ProFormText
           label={"描述"}
           colProps={{
@@ -270,18 +275,16 @@ const TableList: React.FC = () => {
       </ModalForm>
 
       <ModalForm
-        title={'更新校区'}
+        title={'更新用户'}
         width="400px"
         layout="horizontal"
         grid
+        initialValues={currentRow}
         open={updateModalOpen}
         onOpenChange={handleUpdateModalOpen}
-        initialValues={{
-          logo: currentRow?.logo,
-          name: currentRow?.name,
-          desc: currentRow?.desc,
-        }}
+        modalProps={{ destroyOnClose: true }}
         onFinish={async (value) => {
+          console.log(value)
           const success = await handleUpdate({ id: currentRow?.id, ...value });
           if (success) {
             handleUpdateModalOpen(false);
@@ -292,45 +295,19 @@ const TableList: React.FC = () => {
           }
         }}
       >
-        <ProFormUploadButton
-          name="logo"
-          label="校徽"
-          max={1}
-          fieldProps={{
-            name: 'file',
-            listType: 'picture-card',
-            headers: {
-              'Authorization': getToken()
-            }
-          }}
-          action="/api/files/upload"
-          convertValue={(value, field) => {
-            return [{ url: value }]
-          }}
-        // transform={(file) => {
-        //   return file?.[0].response.data.url
-        // }}
-        />
         <ProFormText
           rules={[
             {
               required: true,
-              message: "校区的值不能为空",
+              message: "昵称不能为空",
             },
           ]}
-          label={"校名"}
+          label={"昵称"}
           colProps={{
             span: 24,
           }}
-          name="name"
+          name="nickname"
         />
-        {/* <ProFormText
-          label={"别名"}
-          colProps={{
-            span: 24,
-          }}
-          name="alias"
-        /> */}
         <ProFormText
           label={"描述"}
           colProps={{
@@ -338,7 +315,14 @@ const TableList: React.FC = () => {
           }}
           name="desc"
         />
-
+        <ProFormSegmented
+          label={"状态"}
+          colProps={{
+            span: 24,
+          }}
+          name="status"
+          valueEnum={statusValueEnum}
+        />
       </ModalForm>
 
       <Drawer
@@ -350,17 +334,17 @@ const TableList: React.FC = () => {
         }}
         closable={false}
       >
-        {currentRow?.name && (
-          <ProDescriptions<API.CampusItem>
+        {currentRow?.nickname && (
+          <ProDescriptions<API.UserItem>
             column={1}
-            title={currentRow?.name}
+            title={currentRow?.nickname}
             request={async () => ({
               data: currentRow || {},
             })}
             params={{
-              id: currentRow?.name,
+              id: currentRow?.nickname,
             }}
-            columns={columns as ProDescriptionsItemProps<API.CampusItem>[]}
+            columns={columns as ProDescriptionsItemProps<API.UserItem>[]}
           />
         )}
       </Drawer>

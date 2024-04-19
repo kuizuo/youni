@@ -17,7 +17,7 @@ import { Role } from '../auth/auth.constant'
 import { UpdateProfileDto } from '../auth/dtos/account.dto'
 
 import { PasswordUpdateDto } from './dto/password.dto'
-import { UserDto, UserQueryDto } from './dto/user.dto'
+import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
 import { UserProfileSelect } from './user.constant'
 
 @Injectable()
@@ -98,11 +98,9 @@ export class UserService {
     })
   }
 
-  async create({
-    username,
-    password,
-    ...data
-  }: UserDto) {
+  async create(dto: UserDto) {
+    const { username, password, avatar, ...data } = dto
+
     const exist = await this.prisma.user.findFirst({ where: { username } })
     if (!isEmpty(exist))
       return exist
@@ -110,7 +108,9 @@ export class UserService {
     const user = await this.prisma.user.create({
       data: {
         username,
+        nickname: username,
         password: hashSync(password, 10),
+        avatar: avatar ?? `${this.appConfig.baseUrl}/static/avatar/default.png`,
         ...data,
         role: Role.User,
       },
@@ -121,9 +121,9 @@ export class UserService {
 
   async update(
     id: string,
-    { password, status, ...data }: Partial<UserDto>,
+    { password, status, ...data }: UserUpdateDto,
   ) {
-    await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       if (password)
         await this.forceUpdatePassword(id, password)
 
@@ -154,7 +154,7 @@ export class UserService {
       status,
     } = dto
 
-    return await this.prisma.user.paginate({
+    const [items, meta] = await this.prisma.user.paginate({
       where: {
         ...(keyword && { username: { contains: keyword } }),
         ...(keyword && { nickname: { contains: keyword } }),
@@ -166,6 +166,11 @@ export class UserService {
       limit,
       includePageCount: true,
     })
+
+    return {
+      items,
+      meta,
+    }
   }
 
   async register({ username, type, ...data }: RegisterDto) {

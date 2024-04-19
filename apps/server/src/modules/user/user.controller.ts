@@ -21,27 +21,30 @@ export class UserController {
     private readonly userService: UserService,
   ) {}
 
-  @Get()
+  @Get('page')
   @ApiOperation({ summary: '获取用户列表' })
-  @Policy({ action: Action.Read, model: 'User' })
+  @Policy({ model: 'User', action: Action.Manage })
   async list(@Query() dto: UserQueryDto) {
     return this.userService.paginate(dto)
   }
 
   @Get(':id')
   @ApiOperation({ summary: '查询用户' })
+  @Policy({ model: 'User', action: Action.Manage })
   async getUserById(@Param() { id }: IdDto) {
     return this.userService.getUserById(id)
   }
 
   @Post()
   @ApiOperation({ summary: '新增用户' })
+  @Policy({ model: 'User', action: Action.Manage })
   async create(@Body() dto: UserDto) {
     await this.userService.create(dto)
   }
 
   @Put(':id')
   @ApiOperation({ summary: '更新用户' })
+  @Policy({ model: 'User', action: Action.Manage })
   async update(@Param() { id }: IdDto, @Body() dto: UserUpdateDto) {
     await this.userService.update(id, dto)
     // await this.menuService.refreshPerms(id)
@@ -49,12 +52,14 @@ export class UserController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除用户' })
+  @Policy({ model: 'User', action: Action.Manage })
   async delete(@Param() { id }: IdDto) {
     await this.userService.delete([id])
   }
 
   @Post(':id/password')
   @ApiOperation({ summary: '更改用户密码' })
+  @Policy({ model: 'User', action: Action.Manage })
   async password(@Body() dto: UserPasswordDto) {
     await this.userService.forceUpdatePassword(dto.id, dto.password)
   }
