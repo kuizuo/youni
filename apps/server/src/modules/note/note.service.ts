@@ -196,4 +196,14 @@ export class NoteService {
 
     return items
   }
+
+  async batchDeleteWithAdmin(ids: string[]) {
+    const items = await this.prisma.note.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    })
+
+    return items
+  }
 }

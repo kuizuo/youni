@@ -52,11 +52,11 @@ const handleRemove = async (selectedRows: API.TopicItem[]) => {
   try {
     await removeTopic(selectedRows.map((row) => row.id));
     hide();
-    message.success('已成功删除，将很快刷新');
+    message.success('删除成功');
     return true;
   } catch (error) {
     hide();
-    message.error('删除失败');
+
     return false;
   }
 };

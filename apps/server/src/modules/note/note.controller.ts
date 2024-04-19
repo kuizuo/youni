@@ -49,8 +49,9 @@ export class NoteController {
   }
 
   @Delete()
+  @Policy({ model: 'Note', action: Action.Delete })
   async batchDelete(@Body() dto: BatchDeleteDto, @AuthUser() user: IAuthUser) {
     const { ids } = dto
-    return await this.noteService.batchDelete(ids, user.id)
+    return await this.noteService.batchDeleteWithAdmin(ids)
   }
 }

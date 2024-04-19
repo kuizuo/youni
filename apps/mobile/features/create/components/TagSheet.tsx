@@ -33,7 +33,7 @@ export const TagSheet = React.forwardRef<BottomSheetModal, Props>(
     const [selectTags, setSelectTags] = useTags()
 
     const [data, { refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.noteTag.search.useSuspenseInfiniteQuery({
-      name: searchText,
+      keyword: searchText,
       limit: 10,
     }, {
       getNextPageParam: lastPage => lastPage.meta.hasNextPage && lastPage.meta.endCursor,

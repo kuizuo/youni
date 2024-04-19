@@ -2,7 +2,7 @@ import { Highlighter, History, LifeBuoy } from 'lucide-react-native'
 import type { LucideProps } from 'lucide-react-native'
 import { useRouter } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Icon, Pressable, Text, View, useToken } from '@gluestack-ui/themed'
+import { Icon, Pressable, Text, Toast, ToastTitle, View, useToast, useToken } from '@gluestack-ui/themed'
 import { useColorScheme } from 'react-native'
 import type { Campus } from '@youni/database'
 import { useAuth } from '@/utils/auth'
@@ -19,6 +19,7 @@ export function Navs() {
   const router = useRouter()
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
   const { currentUser } = useAuth()
+  const toast = useToast()
 
   const colorScheme = useColorScheme()
   const borderColor = useToken('colors', colorScheme === 'dark' ? 'borderDark300' : 'backgroundLight300')
@@ -27,12 +28,25 @@ export function Navs() {
   const navItems: Item[] = [
     {
       onPress: () => {
-        setCurrentCampus({
-          id: currentUser.campus!.id,
-        } as Campus)
-        router.push({
-          pathname: '/campus',
-          // params: { id: currentUser.campus!.id },
+        if (currentUser.campusId) {
+          setCurrentCampus({
+            id: currentUser.campus!.id,
+          } as Campus)
+          router.push({
+            pathname: '/campus',
+            // params: { id: currentUser.campus!.id },
+          })
+        }
+
+        toast.show({
+          placement: 'bottom',
+          render: ({ id }) => {
+            return (
+              <Toast nativeID={id} variant="accent" action="warning">
+                <ToastTitle>请完成学生认证后查看</ToastTitle>
+              </Toast>
+            )
+          },
         })
       },
       icon: <Icon as={LifeBuoy} size="md" color={textColor} />,

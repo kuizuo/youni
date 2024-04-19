@@ -234,6 +234,9 @@ importers:
       expo-blur:
         specifier: ^12.9.2
         version: 12.9.2(expo@50.0.8)
+      expo-clipboard:
+        specifier: ^5.0.1
+        version: 5.0.1(expo@50.0.8)
       expo-constants:
         specifier: ^15.4.5
         version: 15.4.5(expo@50.0.8)
@@ -16943,6 +16946,14 @@ packages:
 
   /expo-blur@12.9.2(expo@50.0.8):
     resolution: {integrity: sha512-q+EIOkXw7OCE3VBTLRANsUIdMxtFWDTFpaMulJEXMwtxNQaCcAvzHZvwWP9dlI96FM4A6UdX2/slBNfNJzJcCQ==}
+    peerDependencies:
+      expo: '*'
+    dependencies:
+      expo: 50.0.8(@babel/core@7.24.0)(@react-native/babel-preset@0.73.21)
+    dev: false
+
+  /expo-clipboard@5.0.1(expo@50.0.8):
+    resolution: {integrity: sha512-JH853QJPr5W3h87If3aDTnMK+ESSIrwzU2TdfZrqZttVDY2pMIf/w37mVHHNYodXM4ATHXadtOkjKbAa0DWwUg==}
     peerDependencies:
       expo: '*'
     dependencies:

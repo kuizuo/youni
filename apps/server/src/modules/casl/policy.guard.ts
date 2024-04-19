@@ -38,7 +38,7 @@ export class PolicyGuard implements CanActivate {
 
     // 使用了 PolicyGuard 但没未其定义 policy 则不允许通过
     if (!policy)
-      throw new BizException(ErrorCodeEnum.ResourceNotFound)
+      throw new BizException(ErrorCodeEnum.NoPermission)
 
     const { action, model } = policy
 

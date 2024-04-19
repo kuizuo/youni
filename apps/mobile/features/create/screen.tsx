@@ -176,6 +176,7 @@ export function CreateScreen() {
         allowsMultipleSelection: true,
         selectionLimit: 9 - imageFields.length,
         quality: 1,
+        orderedSelection: true,
       })
 
       if (!result.canceled) {
@@ -250,6 +251,7 @@ export function CreateScreen() {
             horizontal
             maxHeight={imageWidth}
             showsHorizontalScrollIndicator={false}
+            scrollEnabled={imageFields.length !== 0}
             mx={-padding}
             px={padding}
             mb="$2"
@@ -265,9 +267,9 @@ export function CreateScreen() {
                     width={imageWidth}
                     height={imageWidth}
                     bg="$backgroundDark300"
-                    borderRadius="$xl"
                     justifyContent="center"
                     alignItems="center"
+                    borderRadius="$xl"
                     alt="image"
                   />
                 </Pressable>

@@ -97,7 +97,7 @@ export function NoteListItem(item: NoteItem): ReactNode {
           </Box>
         </View>
 
-        <NoteSheet ref={modal.ref} item={item} />
+        <NoteSheet ref={modal.ref} item={item} onClose={() => modal.dismiss()} />
       </Card>
     </Pressable>
 
