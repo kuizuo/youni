@@ -23,6 +23,10 @@ export function SearchScreen() {
   const handleSubmit = useCallback(
     (text: string) => {
       const trimedText = text.trim()
+
+      if (!trimedText)
+        return
+
       setIsSearched(true)
       setSearchText(trimedText)
 
@@ -54,7 +58,7 @@ export function SearchScreen() {
           gap="$1"
           alignItems="center"
           px="$2.5"
-          py="$2"
+          py="$2.5"
           borderRadius="$full"
           bg="$backgroundLight200"
           $dark-bg="$backgroundDark200"

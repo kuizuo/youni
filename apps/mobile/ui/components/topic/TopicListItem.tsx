@@ -3,30 +3,27 @@ import { Avatar, AvatarImage, HStack, Pressable, Text, VStack, View } from '@glu
 import type { NoteTag } from '@youni/database'
 import { useAuth } from '@/utils/auth'
 
-export function TopicListItem(item: NoteTag): React.ReactElement {
+export function TopicListItem(item: NoteTag & { viewCount: number }): React.ReactElement {
   const { currentUser } = useAuth()
   const router = useRouter()
 
   const handleNavigateToUser = () => {
-    router.push(`/user/${item.id}/profile`)
+    router.push(`/tag/${item.name}`)
   }
 
   return (
     <Pressable onPress={handleNavigateToUser}>
       <HStack p="$3" gap="$3" alignItems="center">
-        <VStack flex={1}>
-          <HStack gap="$2">
-            <Text size="md">
-              {/* {item.} */}
-            </Text>
-          </HStack>
-
-          <Text size="sm" color="gray">
-            浏览量
-            {/* TODO: 笔记 · 1 | 粉丝 · 1 */}
+        <HStack flex={1} gap="$2" justifyContent="space-between">
+          <Text size="md">
+            {item.name}
           </Text>
-        </VStack>
 
+          <Text size="sm" color="$secondary500">
+            {/* TODO: format value */}
+            {item?.viewCount && (`${item.viewCount} 浏览`)}
+          </Text>
+        </HStack>
       </HStack>
     </Pressable>
   )

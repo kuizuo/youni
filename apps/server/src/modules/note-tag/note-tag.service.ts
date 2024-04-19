@@ -68,6 +68,15 @@ export class NoteTagService {
       },
     }).withCursor({ limit, after: cursor })
 
+    const promises = items.map(async (item) => {
+      const viewCount = await this.viewService.count(InteractType.NoteTag, item.id)
+
+      // FIXME:
+      ; (item as any).viewCount = viewCount
+    })
+
+    await Promise.all(promises)
+
     return {
       items,
       meta,
