@@ -76,7 +76,7 @@ export const TagSheet = React.forwardRef<BottomSheetModal, Props>(
                 if (text !== searchText)
                   setSearchText(text.trim())
               }}
-              verticalAlign="center"
+              verticalAlign="middle"
               onSubmitEditing={() => handleSearch(searchText)}
               autoFocus={true}
               style={{ paddingHorizontal: 2 }}

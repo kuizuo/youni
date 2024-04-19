@@ -23,6 +23,7 @@ import {
   InputField,
   Pressable,
   ScrollView,
+  Switch,
   Text,
   Textarea,
   TextareaInput,
@@ -55,6 +56,7 @@ const createNoteSchema = z.object({
     .min(1, '至少需要上传一张图片')
     .max(9, '最多上传 9 张图片'),
   location: z.string().optional(),
+  isAppendCampus: z.boolean().optional(),
 })
 
 type CreateNoteSchemaType = z.infer<typeof createNoteSchema>
@@ -175,6 +177,7 @@ export function CreateScreen() {
       })
 
       if (!result.canceled) {
+        // @ts-expect-error
         appendImage(result.assets.map(asset => ({
           src: asset.uri,
           uri: asset.uri,
@@ -371,6 +374,20 @@ export function CreateScreen() {
 
       <Divider />
       <View flex={1}>
+        <FormControl>
+          <Controller
+            name="isAppendCampus"
+            defaultValue={false}
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <HStack px="$4" gap="$2" alignItems="center">
+                <Text size="sm">发布到本校区</Text>
+                <Switch size="sm" isChecked={value} onChange={onChange} />
+              </HStack>
+            )}
+          />
+        </FormControl>
+
         <ListItem
           title="添加话题"
           icon={Hash}
@@ -396,7 +413,7 @@ export function CreateScreen() {
         />
       </View>
 
-      {/* <TagSheet ref={modal.ref} /> */}
+      <TagSheet ref={modal.ref} />
     </View>
   )
 }

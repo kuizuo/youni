@@ -7,12 +7,16 @@ import { resourceNotFoundWrapper } from '@server/utils/prisma.util'
 
 import { ExtendedPrismaClient, InjectPrismaClient } from '../../shared/database/prisma.extension'
 
+import { CampusService } from '../campus/campus.service'
+
 import { NoteDto, NotePagerDto, NoteUpdateDto } from './note.dto'
 
 @Injectable()
 export class NoteService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
+
+  constructor(private readonly campusService: CampusService) { }
 
   async paginate(dto: NotePagerDto, userId: string) {
     const { page, limit } = dto
@@ -69,7 +73,7 @@ export class NoteService {
   }
 
   async create(dto: NoteDto, userId: string) {
-    const { images, tags, campusId, ...data } = dto
+    const { images, tags, isAppendCampus, ...data } = dto
 
     // await this.prisma.noteTag.createMany({
     //   data: tags.map(tag => ({
@@ -102,6 +106,8 @@ export class NoteService {
     //   })
     // }
 
+    const campusId = isAppendCampus ? (await this.campusService.getCampusByUserId(userId))?.id : null
+
     return this.prisma.note.create({
       data: {
         ...data,
@@ -109,7 +115,7 @@ export class NoteService {
         images,
         cover: images![0],
         publishTime: new Date(),
-        campusId: campusId || null,
+        campusId,
         tags: {
           connectOrCreate: tags.map(tag => ({
             where: {

@@ -106,12 +106,11 @@ const handleAdd = async (fields: API.NoteItem) => {
   }
 };
 
-const handleUpdate = async (fields: API.NoteItem) => {
+const handleUpdate = async ({ id, ...fields }: API.NoteItem) => {
   const hide = message.loading('Configuring');
   try {
-    await updateNote(fields.id!, {
-      value: fields.value,
-      state: fields.state,
+    await updateNote(id, {
+      ...fields
     });
     hide();
 
@@ -142,9 +141,7 @@ const handleRemove = async (selectedRows: API.NoteItem[]) => {
 
 const TableList: React.FC = () => {
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
-
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
-
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
@@ -360,6 +357,7 @@ const TableList: React.FC = () => {
         grid
         open={updateModalOpen}
         onOpenChange={handleUpdateModalOpen}
+        modalProps={{ destroyOnClose: true }}
         initialValues={{
           value: currentRow?.title,
           state: currentRow?.state,

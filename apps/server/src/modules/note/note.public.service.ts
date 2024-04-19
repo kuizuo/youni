@@ -135,10 +135,9 @@ export class NotePublicService {
   }
 
   async getNoteById(id: string, userId?: string) {
-    return await this.prisma.note.findUniqueOrThrow({
+    const item = await this.prisma.note.findUniqueOrThrow({
       where: {
         id,
-        ...(userId ? { userId } : { state: 'Published' }),
       },
       select: {
         ...NoteSelect,
@@ -146,6 +145,11 @@ export class NotePublicService {
     }).catch(resourceNotFoundWrapper(
       new BizException(ErrorCodeEnum.NoteNotFound),
     ))
+
+    if (item.userId === userId || item.state === NoteState.Published)
+      return item
+
+    throw new BizException(ErrorCodeEnum.NoteNotFound)
   }
 
   async getNotesByIds(ids: string[]) {
@@ -160,7 +164,7 @@ export class NotePublicService {
   }
 
   async getNotesByTag(dto: NoteByTagDto) {
-    const { tag, cursor, limit, sortBy, sortOrder = 'desc' } = dto
+    const { tag, cursor, limit, sortBy = 'createdAt', sortOrder = 'desc' } = dto
 
     const where: Prisma.NoteWhereInput = {
       state: NoteState.Published,
@@ -265,7 +269,7 @@ export class NotePublicService {
   }
 
   async getNotesByUserId(dto: UserNotePagerDto, userId: string) {
-    const { cursor, limit, userId: targetId } = dto
+    const { cursor, limit, userId: targetId, sortBy, sortOrder = 'desc' } = dto
 
     const isMe = targetId === userId
 
@@ -276,6 +280,9 @@ export class NotePublicService {
       },
       select: {
         ...NoteSelect,
+      },
+      orderBy: {
+        [sortBy]: sortOrder,
       },
     }).withCursor({
       limit,

@@ -1,5 +1,6 @@
 import { Module, Provider, forwardRef } from '@nestjs/common'
 
+import { CampusModule } from '../campus/campus.module'
 import { CollectionModule } from '../collection/collection.module'
 import { CommentModule } from '../comment/comment.module'
 import { HistoryModule } from '../history/history.module'
@@ -28,6 +29,7 @@ const providers: Provider[] = [
     InteractModule,
     CollectionModule,
     UserModule,
+    CampusModule,
   ],
   controllers: [NoteController],
   providers,

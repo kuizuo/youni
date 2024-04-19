@@ -7,7 +7,18 @@ import Animated, { Extrapolation, interpolate, useAnimatedReaction, useAnimatedS
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { MaterialTabBar, Tabs, useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
-import { Avatar, AvatarImage, HStack, Icon, Image, Text, View, useToken } from '@gluestack-ui/themed'
+import {
+  Avatar,
+  AvatarImage,
+  Badge,
+  BadgeText,
+  HStack,
+  Icon,
+  Image,
+  Text,
+  View,
+  useToken,
+} from '@gluestack-ui/themed'
 import { useColorScheme } from 'nativewind'
 import { InteractInfo } from './components/InteractInfo'
 import { Navs } from './components/Nav'
@@ -203,7 +214,7 @@ export function ProfileScreen() {
               />
             </Avatar>
             <View flex={1}>
-              <View mb="$2" gap="$2">
+              <HStack alignItems="center" mb="$2" gap="$2">
                 <Text size="lg">
                   {data.nickname}
                 </Text>
@@ -217,8 +228,17 @@ export function ProfileScreen() {
                     />
                     )
                   : <></>}
-              </View>
-              <Text size="md">{' '}</Text>
+              </HStack>
+
+              <HStack>
+                {data.campus
+                  ? (
+                    <Badge size="md" variant="solid" borderRadius="$none" action="info">
+                      <BadgeText>{data.campus.name}</BadgeText>
+                    </Badge>
+                    )
+                  : <></>}
+              </HStack>
             </View>
           </Animated.View>
         </Animated.View>

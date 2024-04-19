@@ -16,5 +16,12 @@ export const UserProfileSelect = {
   gender: true,
   yoId: true,
   campusId: true,
+  campus: {
+    select: {
+      id: true,
+      logo: true,
+      name: true,
+    },
+  },
   role: true,
 }

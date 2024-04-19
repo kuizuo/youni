@@ -2,13 +2,13 @@ import React, { lazy, useLayoutEffect } from 'react'
 import { Link, useLocalSearchParams } from 'expo-router'
 import type { NoteItem } from '@server/modules/note/note'
 import { RefreshControl } from 'react-native-gesture-handler'
-import { Divider, HStack, Heading, LinkText, ScrollView, Text, View } from '@gluestack-ui/themed'
+import { Divider, HStack, Heading, LinkText, ScrollView, Spinner, Text, View } from '@gluestack-ui/themed'
 import { NoteHeader } from './components/NoteHeader'
 import { NoteFooter } from './components/NoteFooter'
 import { NoteDetailPlaceholder } from './components/NoteDetailPlaceholder'
 import { trpc } from '@/utils/trpc'
 import { formatTime } from '@/utils/date'
-
+import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
 import { useCurrentNote } from '@/atoms/comment'
 import { NotFound } from '@/ui/components/NotFound'
 import { ImageCarousel } from '@/ui/components/ImageCarousel'
@@ -30,7 +30,7 @@ export function NoteScreen(): React.ReactNode {
   }, [data, setCurrentNote])
 
   if (isLoading)
-    return <></>
+    return <FullscreenSpinner></FullscreenSpinner>
   // return <NoteDetailPlaceholder></NoteDetailPlaceholder>
 
   if (!data) {
@@ -75,7 +75,7 @@ export function NoteScreen(): React.ReactNode {
 
           <Divider my={15} />
 
-          {!isLoading && <Comments note={data} />}
+          {(!isLoading || !isRefetching) && <Comments note={data} />}
         </View>
       </ScrollView>
       <NoteFooter item={data as unknown as NoteItem} onOk={refetch} />

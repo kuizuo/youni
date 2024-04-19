@@ -82,4 +82,18 @@ export class CampusService {
 
     return items
   }
+
+  async getCampusByUserId(userId: string) {
+    const campus = await this.prisma.campus.findFirst({
+      where: {
+        users: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+    })
+
+    return campus
+  }
 }

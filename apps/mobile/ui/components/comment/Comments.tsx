@@ -39,8 +39,6 @@ export default function Comments({
 }: {
   note: NoteItem
 }) {
-  // const [note, _] = useCurrentNote()
-
   const ref = useRef<FlashList<CommentItem>>(null)
 
   const [data, { isRefetching, refetch, hasNextPage, fetchNextPage, isFetchingNextPage }] = trpc.comment.page.useSuspenseInfiniteQuery({

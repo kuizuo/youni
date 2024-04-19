@@ -13,6 +13,7 @@ export const NoteInputSchema = NoteOptionalDefaultsSchema
     publishTime: z.coerce.date().optional().nullable(),
     tags: z.string().array().default([]),
     campusId: SnowflakeIdSchema.optional(),
+    isAppendCampus: z.boolean().optional(),
   })
   .omit(defaultSchemaOmit)
 
