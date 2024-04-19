@@ -1,7 +1,7 @@
 import { Stack, useRouter } from 'expo-router'
 import { Badge, BadgeText, Button, ButtonText, HStack, Image, Pressable, Text, VStack, View } from '@gluestack-ui/themed'
-import { useEffect } from 'react'
-import { useRoute } from '@react-navigation/native'
+import { useCallback } from 'react'
+import { useFocusEffect, useRoute } from '@react-navigation/native'
 import { NotificationItem } from './components/NotificationItem'
 import { trpc } from '@/utils/trpc'
 
@@ -9,11 +9,14 @@ export function NotificationScreen() {
   const [data, { refetch }] = trpc.notification.count.useSuspenseQuery()
   const router = useRouter()
 
-  const route = useRoute()
-
-  useEffect(() => {
-    refetch()
-  }, [route.name])
+  // 每次进入该页面自动刷新消息数量
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+      return () => {
+      }
+    }, []),
+  )
 
   return (
     <>
