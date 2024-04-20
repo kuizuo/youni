@@ -16,7 +16,7 @@ export function TopicListItem(item: NoteTag & { viewCount: number }): React.Reac
       <HStack p="$3" gap="$3" alignItems="center">
         <HStack flex={1} gap="$2" justifyContent="space-between">
           <Text size="md">
-            {item.name}
+            # {item.name}
           </Text>
 
           <Text size="sm" color="$secondary500">

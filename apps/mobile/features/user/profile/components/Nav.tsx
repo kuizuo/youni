@@ -36,6 +36,7 @@ export function Navs() {
             pathname: '/campus',
             // params: { id: currentUser.campus!.id },
           })
+          return
         }
 
         toast.show({
