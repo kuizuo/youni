@@ -9,10 +9,10 @@ import { resourceNotFoundWrapper } from 'src/utils/prisma.util'
 import { InteractType } from '../interact/interact.constant'
 import { ViewService } from '../interact/services/view.service'
 
-import { NoteTagDto, NoteTagPagerDto, NoteTagSearchDto } from './note-tag.dto'
+import { TagDto, TagPagerDto, TagSearchDto } from './tag.dto'
 
 @Injectable()
-export class NoteTagService {
+export class TagService {
   @InjectPrismaClient()
   private prisma: ExtendedPrismaClient
 
@@ -20,9 +20,9 @@ export class NoteTagService {
     private readonly viewService: ViewService,
   ) { }
 
-  async paginate(dto: NoteTagPagerDto, userId?: string) {
+  async paginate(dto: TagPagerDto, userId?: string) {
     const { page, limit, name, sortBy, sortOrder = 'desc' } = dto
-    const [items, meta] = await this.prisma.noteTag.paginate({
+    const [items, meta] = await this.prisma.tag.paginate({
       where: {
         ...(name && { name: { contains: name } }),
       },
@@ -42,7 +42,7 @@ export class NoteTagService {
     }).withPages({ page, limit, includePageCount: true })
 
     const promises = items.map(async (item) => {
-      const viewCount = await this.viewService.count(InteractType.NoteTag, item.id)
+      const viewCount = await this.viewService.count(InteractType.Tag, item.id)
 
         // FIXME:
         ; (item as any).viewCount = viewCount
@@ -56,10 +56,10 @@ export class NoteTagService {
     }
   }
 
-  async search(dto: NoteTagSearchDto, userId?: string) {
+  async search(dto: TagSearchDto, userId?: string) {
     const { cursor, limit, keyword, sortBy, sortOrder = 'desc' } = dto
 
-    const [items, meta] = await this.prisma.noteTag.paginate({
+    const [items, meta] = await this.prisma.tag.paginate({
       where: {
         name: { contains: keyword },
       },
@@ -69,7 +69,7 @@ export class NoteTagService {
     }).withCursor({ limit, after: cursor })
 
     const promises = items.map(async (item) => {
-      const viewCount = await this.viewService.count(InteractType.NoteTag, item.id)
+      const viewCount = await this.viewService.count(InteractType.Tag, item.id)
 
         // FIXME:
         ; (item as any).viewCount = viewCount
@@ -83,8 +83,8 @@ export class NoteTagService {
     }
   }
 
-  async findOneById(id: string, userId: string) {
-    const noteTag = await this.prisma.noteTag.findUniqueOrThrow({
+  async findOne(id: string, userId: string) {
+    const tag = await this.prisma.tag.findUniqueOrThrow({
       where: {
         id,
       },
@@ -94,16 +94,16 @@ export class NoteTagService {
       ),
     )
 
-    const viewCount = await this.increaseViewCount(noteTag.id, userId)
+    const viewCount = await this.increaseViewCount(tag.id, userId)
 
     return {
-      ...noteTag,
+      ...tag,
       viewCount,
     }
   }
 
   async findOneByName(name: string, userId: string) {
-    const noteTag = await this.prisma.noteTag.findUniqueOrThrow({
+    const tag = await this.prisma.tag.findUniqueOrThrow({
       where: {
         name,
       },
@@ -113,24 +113,24 @@ export class NoteTagService {
       ),
     )
 
-    const viewCount = await this.increaseViewCount(noteTag.id, userId)
+    const viewCount = await this.increaseViewCount(tag.id, userId)
 
     return {
-      ...noteTag,
+      ...tag,
       viewCount,
     }
   }
 
   async increaseViewCount(id: string, userId: string) {
-    await this.viewService.increase(InteractType.NoteTag, id, userId)
+    await this.viewService.increase(InteractType.Tag, id, userId)
 
-    const viewCount = await this.viewService.count(InteractType.NoteTag, id)
+    const viewCount = await this.viewService.count(InteractType.Tag, id)
     return viewCount
   }
 
-  async create(dto: NoteTagDto) {
+  async create(dto: TagDto) {
     const { ...data } = dto
-    return this.prisma.noteTag.create({
+    return this.prisma.tag.create({
       data: {
         ...data,
       },
@@ -138,7 +138,7 @@ export class NoteTagService {
   }
 
   async delete(id: string) {
-    return this.prisma.noteTag.delete({
+    return this.prisma.tag.delete({
       where: {
         id,
       },
@@ -146,7 +146,7 @@ export class NoteTagService {
   }
 
   async batchDelete(ids: string[]) {
-    const items = await this.prisma.noteTag.deleteMany({
+    const items = await this.prisma.tag.deleteMany({
       where: {
         id: { in: ids },
       },

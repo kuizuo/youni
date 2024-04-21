@@ -9,17 +9,17 @@ import { z } from 'zod'
 
 import { Action } from '../casl/ability.class'
 
-import { NoteTagInputSchema, NoteTagPagerDto, NoteTagSearchDto } from './note-tag.dto'
-import { NoteTagService } from './note-tag.service'
+import { TagInputSchema, TagPagerDto, TagSearchDto } from './tag.dto'
+import { TagService } from './tag.service'
 
 @TRPCRouter()
 @Injectable()
-export class NoteTagTrpcRouter implements OnModuleInit {
+export class TagTrpcRouter implements OnModuleInit {
   private router: ReturnType<typeof this.createRouter>
 
   constructor(
     private readonly trpcService: TRPCService,
-    private readonly noteTagService: NoteTagService,
+    private readonly tagService: TagService,
   ) { }
 
   onModuleInit() {
@@ -28,21 +28,21 @@ export class NoteTagTrpcRouter implements OnModuleInit {
 
   private createRouter() {
     const procedureAuth = this.trpcService.procedureAuth
-    return defineTrpcRouter('noteTag', {
+    return defineTrpcRouter('tag', {
       list: procedureAuth
-        .input(NoteTagPagerDto.schema)
-        .meta({ model: 'NoteTag', action: Action.Manage })
+        .input(TagPagerDto.schema)
+        .meta({ model: 'Tag', action: Action.Manage })
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          return this.noteTagService.paginate(input, user.id)
+          return this.tagService.paginate(input, user.id)
         }),
       search: procedureAuth
-        .input(NoteTagSearchDto.schema)
+        .input(TagSearchDto.schema)
         .query(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          return this.noteTagService.search(input, user.id)
+          return this.tagService.search(input, user.id)
         }),
       byId: procedureAuth
         .input(IdDto.schema)
@@ -50,7 +50,7 @@ export class NoteTagTrpcRouter implements OnModuleInit {
           const { input, ctx: { user } } = opt
           const { id } = input
 
-          return this.noteTagService.findOneById(id, user.id)
+          return this.tagService.findOne(id, user.id)
         }),
       byName: procedureAuth
         .input(z.object({
@@ -60,24 +60,24 @@ export class NoteTagTrpcRouter implements OnModuleInit {
           const { input, ctx: { user } } = opt
           const { name } = input
 
-          return this.noteTagService.findOneByName(name, user.id)
+          return this.tagService.findOneByName(name, user.id)
         }),
       create: procedureAuth
-        .input(NoteTagInputSchema)
-        .meta({ model: 'NoteTag', action: Action.Create })
+        .input(TagInputSchema)
+        .meta({ model: 'Tag', action: Action.Create })
         .mutation(async (opt) => {
           const { input, ctx: { user } } = opt
 
-          return this.noteTagService.create(input)
+          return this.tagService.create(input)
         }),
       delete: procedureAuth
         .input(IdDto.schema)
-        .meta({ model: 'NoteTag', action: Action.Delete })
+        .meta({ model: 'Tag', action: Action.Delete })
         .mutation(async (opt) => {
           const { input } = opt
           const { id } = input
 
-          return this.noteTagService.delete(id)
+          return this.tagService.delete(id)
         }),
     })
   }

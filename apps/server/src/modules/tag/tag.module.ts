@@ -2,13 +2,13 @@ import { Module, Provider } from '@nestjs/common'
 
 import { InteractModule } from '../interact/interact.module'
 
-import { NoteTagController } from './note-tag.controller'
-import { NoteTagService } from './note-tag.service'
-import { NoteTagTrpcRouter } from './note-tag.trpc'
+import { TagController } from './tag.controller'
+import { TagService } from './tag.service'
+import { TagTrpcRouter } from './tag.trpc'
 
 const providers: Provider[] = [
-  NoteTagService,
-  NoteTagTrpcRouter,
+  TagService,
+  TagTrpcRouter,
 ]
 
 @Module({
@@ -16,9 +16,9 @@ const providers: Provider[] = [
     InteractModule,
   ],
   controllers: [
-    NoteTagController,
+    TagController,
   ],
   providers,
   exports: [...providers],
 })
-export class NoteTagModule { }
+export class TagModule { }

@@ -97,7 +97,7 @@ model Note {
   state       NoteState
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @map("updated_at")
-  tags        NoteTag[]
+  tags        Tag[]
   collections Collection[]
   history     History[]
   user        User         @relation(fields: [userId], references: [id])
@@ -109,7 +109,7 @@ model Note {
   @@index([createdAt])
 }
 
-model NoteTag {
+model Tag {
   id        String   @id @default("")
   name      String   @unique() @db.VarChar(20)
   type      String

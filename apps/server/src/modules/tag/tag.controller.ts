@@ -8,43 +8,43 @@ import { Action } from '../casl/ability.class'
 import { Policy } from '../casl/policy.decortor'
 import { PolicyGuard } from '../casl/policy.guard'
 
-import { NoteTagDto, NoteTagPagerDto } from './note-tag.dto'
-import { NoteTagService } from './note-tag.service'
+import { TagDto, TagPagerDto } from './tag.dto'
+import { TagService } from './tag.service'
 
 @ApiTags('Business - 话题模块')
 @UseGuards(PolicyGuard)
-@Controller('note-tags')
-export class NoteTagController {
-  constructor(private readonly noteTagService: NoteTagService) { }
+@Controller('tags')
+export class TagController {
+  constructor(private readonly tagService: TagService) { }
 
   @Get('page')
   @Policy({ model: 'Note', action: Action.Manage })
-  async list(@Query() dto: NoteTagPagerDto, @AuthUser() user: IAuthUser) {
-    return this.noteTagService.paginate(dto, user.id)
+  async list(@Query() dto: TagPagerDto, @AuthUser() user: IAuthUser) {
+    return this.tagService.paginate(dto, user.id)
   }
 
   @Get(':id')
   @Policy({ model: 'Note', action: Action.Read })
   async findOne(@Param() { id }: IdDto, @AuthUser() user: IAuthUser) {
-    return this.noteTagService.findOneById(id, user.id)
+    return this.tagService.findOne(id, user.id)
   }
 
   @Post()
   @Policy({ model: 'Note', action: Action.Create })
-  async create(@Body() dto: NoteTagDto, @AuthUser() user: IAuthUser) {
-    await this.noteTagService.create(dto)
+  async create(@Body() dto: TagDto, @AuthUser() user: IAuthUser) {
+    await this.tagService.create(dto)
   }
 
   @Delete(':id')
   @Policy({ model: 'Note', action: Action.Delete })
   async delete(@Param() { id }: IdDto) {
-    await this.noteTagService.delete(id)
+    await this.tagService.delete(id)
   }
 
   @Delete()
   @Policy({ model: 'Note', action: Action.Delete })
   async batchDelete(@Body() dto: BatchDeleteDto) {
     const { ids } = dto
-    await this.noteTagService.batchDelete(ids)
+    await this.tagService.batchDelete(ids)
   }
 }

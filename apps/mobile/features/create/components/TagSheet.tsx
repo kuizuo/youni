@@ -3,7 +3,7 @@ import { CheckCircle, Circle, Search } from 'lucide-react-native'
 import type { ListRenderItem } from '@shopify/flash-list'
 import { FlashList } from '@shopify/flash-list'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import type { NoteTag } from '@youni/database'
+import type { TagItem as ITagItem } from '@server/modules/tag/tag'
 import {
   Button,
   ButtonText,
@@ -32,7 +32,7 @@ export const TagSheet = React.forwardRef<BottomSheetModal, Props>(
 
     const [selectTags, setSelectTags] = useTags()
 
-    const [data, { refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.noteTag.search.useSuspenseInfiniteQuery({
+    const [data, { refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.tag.search.useSuspenseInfiniteQuery({
       keyword: searchText,
       limit: 10,
     }, {
@@ -44,11 +44,11 @@ export const TagSheet = React.forwardRef<BottomSheetModal, Props>(
     }
 
     const flatedData = useMemo(
-      () => data.pages.map(page => page.items).flat() as unknown as NoteTag[],
+      () => data.pages.map(page => page.items).flat() as unknown as ITagItem[],
       [data.pages],
     )
 
-    const renderItem: ListRenderItem<NoteTag> = useCallback(
+    const renderItem: ListRenderItem<ITagItem> = useCallback(
       ({ item }) => (
         <TagItem item={item} setSelectTags={setSelectTags} />
       ),
@@ -124,7 +124,7 @@ function TagItem({
   item,
   setSelectTags,
 }: {
-  item: NoteTag
+  item: ITagItem
   setSelectTags: (prev: any) => void
 }) {
   // FIXME: 无法触发组件渲染, 暂且将父组件方法传入

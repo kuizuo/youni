@@ -15,36 +15,36 @@ import { CampusService } from './campus.service'
 @UseGuards(PolicyGuard)
 @Controller('campus')
 export class CampusController {
-  constructor(private readonly noteTagService: CampusService) { }
+  constructor(private readonly campusService: CampusService) { }
 
   @Get('page')
   @Policy({ model: 'Campus', action: Action.Manage })
   async list(@Query() dto: CampusPagerDto, @AuthUser() user: IAuthUser) {
-    return this.noteTagService.paginate(dto)
+    return this.campusService.paginate(dto)
   }
 
   @Get(':id')
   @Policy({ model: 'Campus', action: Action.Read })
   async findOne(@Param() { id }: IdDto, @AuthUser() user: IAuthUser) {
-    return this.noteTagService.findOne(id)
+    return this.campusService.findOne(id)
   }
 
   @Post()
   @Policy({ model: 'Campus', action: Action.Create })
   async create(@Body() dto: CampusDto, @AuthUser() user: IAuthUser) {
-    await this.noteTagService.create(dto)
+    await this.campusService.create(dto)
   }
 
   @Delete(':id')
   @Policy({ model: 'Campus', action: Action.Delete })
   async delete(@Param() { id }: IdDto) {
-    await this.noteTagService.delete(id)
+    await this.campusService.delete(id)
   }
 
   @Delete()
   @Policy({ model: 'Campus', action: Action.Delete })
   async batchDelete(@Body() dto: BatchDeleteDto) {
     const { ids } = dto
-    await this.noteTagService.batchDelete(ids)
+    await this.campusService.batchDelete(ids)
   }
 }

@@ -16,10 +16,10 @@ import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 
-export default function NoteTagScreen() {
+export function TagScreen() {
   const { name } = useLocalSearchParams<{ name: string }>()
 
-  const [noteTag] = trpc.noteTag.byName.useSuspenseQuery({ name })
+  const [noteTag] = trpc.tag.byName.useSuspenseQuery({ name })
 
   const [data, { isRefetching, refetch, isFetchingNextPage, hasNextPage, fetchNextPage }] = trpc.note.byTag.useSuspenseInfiniteQuery(
     {

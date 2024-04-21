@@ -114,7 +114,7 @@ function SearchNoteList({ searchText }: { searchText: string }) {
 }
 
 function SearchTopicList({ searchText }: { searchText: string }) {
-  const [data, { isRefetching, isFetchingNextPage, hasNextPage, refetch, fetchNextPage }] = trpc.noteTag.search.useSuspenseInfiniteQuery({
+  const [data, { isRefetching, isFetchingNextPage, hasNextPage, refetch, fetchNextPage }] = trpc.tag.search.useSuspenseInfiniteQuery({
     keyword: searchText,
     limit: 10,
   }, {

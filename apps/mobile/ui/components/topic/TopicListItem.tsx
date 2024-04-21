@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router'
-import { Avatar, AvatarImage, HStack, Pressable, Text, VStack, View } from '@gluestack-ui/themed'
-import type { NoteTag } from '@youni/database'
+import { HStack, Pressable, Text } from '@gluestack-ui/themed'
+import type { TagItem } from '@server/modules/tag/tag'
 import { useAuth } from '@/utils/auth'
 
-export function TopicListItem(item: NoteTag & { viewCount: number }): React.ReactElement {
+export function TopicListItem(item: TagItem & { viewCount: number }): React.ReactElement {
   const { currentUser } = useAuth()
   const router = useRouter()
 
@@ -16,7 +16,9 @@ export function TopicListItem(item: NoteTag & { viewCount: number }): React.Reac
       <HStack p="$3" gap="$3" alignItems="center">
         <HStack flex={1} gap="$2" justifyContent="space-between">
           <Text size="md">
-            # {item.name}
+            #
+            {' '}
+            {item.name}
           </Text>
 
           <Text size="sm" color="$secondary500">

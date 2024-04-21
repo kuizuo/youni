@@ -1,6 +1,6 @@
 export enum InteractType {
   Note = 'Note',
-  NoteTag = 'NoteTag',
+  Tag = 'Tag',
   Comment = 'Comment',
 }
 

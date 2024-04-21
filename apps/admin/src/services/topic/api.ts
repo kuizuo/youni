@@ -1,7 +1,7 @@
 import { request } from '@umijs/max';
 
 import { IBaseResponse } from '@server/common/model/response.model'
-import { NoteTagDto, NoteTagUpdateDto } from '@server/modules/note-tag/note-tag.dto';
+import { TagDto, TagUpdateDto } from '@server/modules/tag/tag.dto';
 
 export async function queryTopic(
   params: {
@@ -10,7 +10,7 @@ export async function queryTopic(
   },
   options?: { [key: string]: any },
 ) {
-  const result = await request<IBaseResponse<API.TopicList>>('/api/note-tags/page', {
+  const result = await request<IBaseResponse<API.TopicList>>('/api/tags/page', {
     method: 'GET',
     params: {
       ...params,
@@ -27,22 +27,22 @@ export async function queryTopic(
   }
 }
 
-export async function addTopic(data: NoteTagDto) {
-  return request<IBaseResponse<API.TopicItem>>(`/api/note-tags`, {
+export async function addTopic(data: TagDto) {
+  return request<IBaseResponse<API.TopicItem>>(`/api/tags`, {
     method: 'POST',
     data,
   });
 }
 
-export async function updateTopic(id: string, data: NoteTagUpdateDto) {
-  return request<IBaseResponse<API.TopicItem>>(`/api/note-tags/${id}`, {
+export async function updateTopic(id: string, data: TagUpdateDto) {
+  return request<IBaseResponse<API.TopicItem>>(`/api/tags/${id}`, {
     method: 'PUT',
     data,
   });
 }
 
 export async function removeTopic(ids: string[]) {
-  return request('/api/note-tags', {
+  return request('/api/tags', {
     method: 'DELETE',
     data: { ids },
   });

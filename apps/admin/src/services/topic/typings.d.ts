@@ -1,6 +1,6 @@
 declare namespace API {
-  type TopicList = import('@server/modules/note-tag/note-tag').NoteTagList
+  type TopicList = import('@server/modules/tag/tag').TagList
 
-  type TopicItem = import('@server/modules/note-tag/note-tag').NoteTagItem
+  type TopicItem = import('@server/modules/tag/tag').TagItem
 }
 

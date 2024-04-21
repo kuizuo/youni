@@ -23,8 +23,8 @@ import { HealthModule } from './modules/health/health.module'
 import { HistoryModule } from './modules/history/history.module'
 import { InteractModule } from './modules/interact/interact.module'
 import { NoteModule } from './modules/note/note.module'
-import { NoteTagModule } from './modules/note-tag/note-tag.module'
 import { NotificationModule } from './modules/notification/notification.module'
+import { TagModule } from './modules/tag/tag.module'
 import { UserModule } from './modules/user/user.module'
 import { CacheModule } from './shared/cache/cache.module'
 import { DatabaseModule } from './shared/database/database.module'
@@ -56,7 +56,7 @@ import { SocketModule } from './socket/socket.module'
 
     // biz
     NoteModule, // 笔记
-    NoteTagModule,
+    TagModule, // 标签
     CollectionModule, // 收藏
     HistoryModule, // 浏览历史
     CommentModule, // 评论

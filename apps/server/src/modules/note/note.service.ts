@@ -94,7 +94,7 @@ export class NoteService {
   async create(dto: NoteDto, userId: string) {
     const { images, tags, isAppendCampus, ...data } = dto
 
-    // await this.prisma.noteTag.createMany({
+    // await this.prisma.tag.createMany({
     //   data: tags.map(tag => ({
     //     name: tag,
     //     type: 'topic',
