@@ -18,9 +18,7 @@ import {
   Pressable,
   Text,
   View,
-  useToken,
 } from '@gluestack-ui/themed'
-import { useColorScheme } from 'nativewind'
 import { InteractInfo } from './components/InteractInfo'
 import { Navs } from './components/Nav'
 import { UserNote } from './components/UserNote'
@@ -29,6 +27,7 @@ import { UserLiked } from './components/UserLiked'
 import { useAuth } from '@/utils/auth'
 import { trpc } from '@/utils/trpc'
 import { NavBar, NavButton, useNavBarHeight } from '@/ui/components/NavBar'
+import { useColor } from '@/utils/theme'
 
 const TAB_BAR_HEIGHT = 32
 const TAB_VIEW_MARGIN_TOP = -1
@@ -40,15 +39,11 @@ const BANNER_BOTTOM_HEIGHT_ADDITION = AVATAR_SIZE_VALUE
 
 export function ProfileScreen() {
   const router = useRouter()
-  const { colorScheme } = useColorScheme()
-  const primaryColor = useToken('colors', 'primary500')
-  const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark800' : 'textLight800')
-  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight800' : 'backgroundLight200')
-
-  const { id: userId } = useLocalSearchParams<{ id: string }>()
-
   const window = useWindowDimensions()
   const route = useRoute()
+  const { primaryColor, textColor, bgColor } = useColor()
+
+  const { id: userId } = useLocalSearchParams<{ id: string }>()
 
   const [headerHeight, setHeaderHeight] = useState(0)
 

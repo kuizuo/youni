@@ -2,13 +2,14 @@ import React, { useMemo, useState } from 'react'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Platform, useWindowDimensions } from 'react-native'
-import { Pressable, Text, View, useToken } from '@gluestack-ui/themed'
+import { Pressable, Text, View } from '@gluestack-ui/themed'
 import FollowFeed from './components/FollowFeed'
 import HomeFeed from './components/HomeFeed'
 import { NavButton } from '@/ui/components/NavButton'
+import { useColor } from '@/utils/theme'
 
 export function HomeScreen(): React.ReactNode {
-  const primaryColor = useToken('colors', 'primary500')
+  const { primaryColor } = useColor()
   const { top } = useSafeAreaInsets()
 
   const [index, setIndex] = useState(0)

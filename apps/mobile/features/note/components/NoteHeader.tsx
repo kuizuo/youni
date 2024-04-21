@@ -1,8 +1,8 @@
 import type { UserInfo } from '@server/modules/user/user'
-import { Link } from 'expo-router'
 import React from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { Avatar, AvatarImage, HStack, Text, View } from '@gluestack-ui/themed'
+import { Avatar, AvatarImage, HStack, Pressable, Text, View } from '@gluestack-ui/themed'
+import { useRouter } from 'expo-router'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useAuth } from '@/utils/auth'
@@ -19,7 +19,7 @@ interface Props {
 
 export function NoteHeader({ user, item }: Props): React.ReactNode {
   const { currentUser } = useAuth()
-
+  const router = useRouter()
   const { data: isFollowing } = trpc.interact.isFollowing.useQuery({ id: user.id! }, { enabled: !!user.id })
 
   return (
@@ -30,7 +30,7 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
           ? <NoteMenu item={item} />
           : <NoteShareButton item={item} />}
       >
-        <Link href={`/user/${user.id}/profile`} asChild>
+        <Pressable onPress={() => router.push(`/user/${user.id}/profile`)}>
           <HStack flex={1} gap="$2" alignItems="center">
             <Avatar size="sm" borderRadius="$full" overflow="hidden">
               <AvatarImage
@@ -45,7 +45,7 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
               item.state !== 'Published' && <NoteBadge state={item.state} />
             }
           </HStack>
-        </Link>
+        </Pressable>
         {currentUser?.id !== user?.id && <UserFollowButton userId={user.id} isFollowing={isFollowing!} />}
       </NavBar>
     </View>

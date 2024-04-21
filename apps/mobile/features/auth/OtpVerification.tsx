@@ -125,7 +125,7 @@ function SideContainerWeb() {
   return (
     <Center
       flex={1}
-      bg="$primary500"
+      bg="$primary400"
       sx={{
         _dark: {
           bg: '$primary500',

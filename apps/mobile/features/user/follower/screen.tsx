@@ -6,9 +6,10 @@ import { Text, View, useToken } from '@gluestack-ui/themed'
 import { useWindowDimensions } from 'react-native'
 import { FollowerList } from './FollowerList'
 import { NavButton } from '@/ui/components/NavButton'
+import { useColor } from '@/utils/theme'
 
 export function FollowerScreen() {
-  const primaryColor = useToken('colors', 'primary500')
+  const { primaryColor } = useColor()
   const { id, type, title } = useLocalSearchParams<{ id: string, type: 'following' | 'followers', title?: string }>()
 
   const { top } = useSafeAreaInsets()

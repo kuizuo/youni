@@ -55,25 +55,23 @@ export function SectionList({
               </Pressable>
             </View>
             <View flexDirection="row" flexWrap="wrap" mx="$3" gap="$2.5">
-              {data.map((item, index) => {
-                return (
-                  <Pressable
-                    key={item}
-                    bg="$backgroundLight200"
-                    $dark-bg="$backgroundDark200"
-                    borderRadius="$md"
-                    px="$3"
-                    py="$2"
-                    onPress={() => {
-                      onPressItem(item)
-                    }}
-                  >
-                    <Text color="$secondary500">
-                      {item}
-                    </Text>
-                  </Pressable>
-                )
-              })}
+              {data.map((item, index) => (
+                <Pressable
+                  key={item}
+                  bg="$backgroundLight200"
+                  $dark-bg="$backgroundDark200"
+                  borderRadius="$md"
+                  px="$3"
+                  py="$2"
+                  onPress={() => {
+                    onPressItem(item)
+                  }}
+                >
+                  <Text color="$secondary500">
+                    {item}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
           </View>
         )

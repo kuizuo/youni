@@ -1,6 +1,5 @@
 import { memo, useMemo } from 'react'
 import type { NoteItem } from '@server/modules/note/note'
-import { View } from '@gluestack-ui/themed'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { trpc } from '@/utils/trpc'
 import { NoteList } from '@/ui/components/note/NoteList'

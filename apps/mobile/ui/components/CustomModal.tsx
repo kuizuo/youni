@@ -41,6 +41,7 @@ import { Path, Svg } from 'react-native-svg'
 import { useToken } from '@gluestack-ui/themed'
 import { useColorScheme } from 'nativewind'
 import { Text, View } from '@/ui/components/Themed'
+import { useColor } from '@/utils/theme'
 
 type ModalProps = BottomSheetModalProps & {
   title?: string
@@ -75,9 +76,7 @@ export const CustomModal = React.forwardRef(
     }: ModalProps,
     ref: ModalRef,
   ) => {
-    const { colorScheme } = useColorScheme()
-    const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight950' : 'backgroundLight0')
-
+    const { bgColor } = useColor()
     const detachedProps = React.useMemo(
       () => getDetachedProps(detached),
       [detached],

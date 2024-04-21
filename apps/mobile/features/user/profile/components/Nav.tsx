@@ -2,11 +2,11 @@ import { Highlighter, History, LifeBuoy } from 'lucide-react-native'
 import type { LucideProps } from 'lucide-react-native'
 import { useRouter } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Icon, Pressable, Text, Toast, ToastTitle, View, useToast, useToken } from '@gluestack-ui/themed'
-import { useColorScheme } from 'react-native'
+import { Icon, Pressable, Text, Toast, ToastTitle, View, useToast } from '@gluestack-ui/themed'
 import type { Campus } from '@youni/database'
 import { useAuth } from '@/utils/auth'
 import { useCurrentCampus } from '@/atoms/campus'
+import { useColor } from '@/utils/theme'
 
 export function Navs() {
   interface Item {
@@ -21,9 +21,7 @@ export function Navs() {
   const { currentUser } = useAuth()
   const toast = useToast()
 
-  const colorScheme = useColorScheme()
-  const borderColor = useToken('colors', colorScheme === 'dark' ? 'borderDark300' : 'backgroundLight300')
-  const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark700' : 'textLight700')
+  const { textColor, borderColor } = useColor()
 
   const navItems: Item[] = [
     {

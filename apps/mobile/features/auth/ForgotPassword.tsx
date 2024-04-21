@@ -188,7 +188,7 @@ export default function ForgotPassword() {
           '_dark': { bg: '$backgroundDark900' },
         }}
         flex={1}
-        bg="$primary500"
+        bg="$primary400"
       >
         <Box sx={{ '@md': { display: 'none' } }}>
           <Header />

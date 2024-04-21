@@ -6,6 +6,7 @@ import { useColorScheme } from 'nativewind'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useAuth } from '@/utils/auth'
+import { useColor } from '@/utils/theme'
 
 interface Props {
   user: UserInfo
@@ -13,8 +14,7 @@ interface Props {
 
 export function InteractInfo({ user }: Props) {
   const router = useRouter()
-  const { colorScheme } = useColorScheme()
-  const borderColor = useToken('colors', colorScheme === 'dark' ? 'borderDark300' : 'backgroundLight300')
+  const { borderColor } = useColor()
 
   const { data } = trpc.interact.state.useQuery({ id: user.id })
 

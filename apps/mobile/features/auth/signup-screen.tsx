@@ -66,7 +66,7 @@ type SignUpSchemaType = z.infer<typeof signUpSchema>
 function SideContainerWeb() {
   return (
     <Center
-      bg="$primary500"
+      bg="$primary400"
       flex={1}
       sx={{
         _dark: {

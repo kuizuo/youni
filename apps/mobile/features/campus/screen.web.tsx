@@ -1,8 +1,8 @@
 import type { Campus } from '@youni/database'
 import { useState } from 'react'
-import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
-import { Platform, useColorScheme, useWindowDimensions } from 'react-native'
-import { Image, Text, View, useToken } from '@gluestack-ui/themed'
+import { useSharedValue } from 'react-native-reanimated'
+import { Platform, useWindowDimensions } from 'react-native'
+import { Image, Text, View } from '@gluestack-ui/themed'
 import { DynamicList } from './components/DynamicList'
 import { SelectCampusButton } from './components/SelectCampusButton'
 import { GridNav } from './components/GridNav'
@@ -12,6 +12,7 @@ import { ImageCarousel } from '@/ui/components/ImageCarousel'
 import { NavBar, useNavBarHeight } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
 import { FullscreenSpinner } from '@/ui/components/FullscreenSpinner'
+import { useColor } from '@/utils/theme'
 
 export function CampusScreen() {
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
@@ -20,9 +21,7 @@ export function CampusScreen() {
     enabled: !!currentCampus?.id,
   })
 
-  const colorScheme = useColorScheme()
-  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundDark950' : 'backgroundLight0')
-
+  const { bgColor } = useColor()
   const window = useWindowDimensions()
   const [headerHeight, setHeaderHeight] = useState(0)
   const navBarHeight = useNavBarHeight()

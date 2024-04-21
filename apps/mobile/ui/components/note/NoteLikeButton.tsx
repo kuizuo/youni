@@ -24,6 +24,7 @@ export function NoteLikeButton({ item, size = 'md', color = 'gray', placeholder 
 
   const handleLike = async () => {
     scale.value = withSpring(1.2)
+
     runOnJS(toggleLike)()
   }
 

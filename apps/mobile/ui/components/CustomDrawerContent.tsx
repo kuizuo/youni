@@ -7,14 +7,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Divider, HStack, Icon, Pressable, Text, VStack, useToken } from '@gluestack-ui/themed'
 import { useColorScheme } from 'nativewind'
 import { useDrawerOpen } from '@/atoms/drawer'
+import { useColor } from '@/utils/theme'
 
 export default function CustomDrawerContent() {
   const router = useRouter()
 
-  const { colorScheme } = useColorScheme()
-  const textColor = useToken('colors', colorScheme === 'dark' ? 'textDark700' : 'textLight700')
-  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundLight950' : 'backgroundLight0')
-
+  const { textColor, bgColor } = useColor()
   const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useDrawerOpen()
 

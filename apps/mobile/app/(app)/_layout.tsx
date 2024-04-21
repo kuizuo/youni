@@ -1,11 +1,11 @@
 import { Redirect, Tabs, useRouter } from 'expo-router'
-import { Avatar, AvatarFallbackText, AvatarImage, Badge, BadgeText, Pressable, View, useToken } from '@gluestack-ui/themed'
+import { Avatar, AvatarFallbackText, AvatarImage, Badge, BadgeText, Pressable, View } from '@gluestack-ui/themed'
 import { Clover, Home, MessageCircleMore, Plus } from 'lucide-react-native'
 import { useAuth } from '@/utils/auth'
+import { useColor } from '@/utils/theme'
 
 export default function TabLayout() {
-  const primaryColor = useToken('colors', 'primary500')
-
+  const { primaryColor } = useColor()
   const { isLogged, currentUser } = useAuth()
 
   if (!isLogged || !currentUser)
@@ -118,7 +118,7 @@ function PlusButton({ size }: { size: number }) {
     <>
       <Pressable
         position="absolute"
-        bg="$primary500"
+        bg="$primary400"
         $hover-bg="$primary400"
         rounded="$lg"
         w={size + 24}

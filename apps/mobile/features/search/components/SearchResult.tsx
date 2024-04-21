@@ -2,23 +2,19 @@ import { useMemo, useState } from 'react'
 import { useWindowDimensions } from 'react-native'
 import {
   Spinner,
-  Text,
   View,
-  useToken,
 } from '@gluestack-ui/themed'
 import { TabBar, TabView } from 'react-native-tab-view'
-import { useColorScheme } from 'nativewind'
 import { trpc } from '@/utils/trpc'
 import { FallbackComponent, QuerySuspense } from '@/ui/components/QuerySuspense'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { NoteList } from '@/ui/components/note/NoteList'
 import { UserList } from '@/ui/components/user/UserList'
 import { TopicList } from '@/ui/components/topic/TopicList'
+import { useColor } from '@/utils/theme'
 
 export function SearchResult({ searchText }: { searchText: string }) {
-  const { colorScheme } = useColorScheme()
-  const primaryColor = useToken('colors', 'primary500')
-  const bgColor = useToken('colors', colorScheme === 'dark' ? 'backgroundDark100' : 'backgroundLight100')
+  const { primaryColor, bgColor } = useColor()
 
   const window = useWindowDimensions()
   const [searchType, setSearchType] = useState<'note' | 'user'>('note')
