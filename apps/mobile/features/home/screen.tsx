@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Platform, useWindowDimensions } from 'react-native'
@@ -8,7 +8,7 @@ import HomeFeed from './components/HomeFeed'
 import { NavButton } from '@/ui/components/NavButton'
 import { useColor } from '@/utils/theme'
 
-export function HomeScreen(): React.ReactNode {
+export function HomeScreen() {
   const { primaryColor } = useColor()
   const { top } = useSafeAreaInsets()
 
@@ -75,11 +75,11 @@ export function HomeScreen(): React.ReactNode {
                 style={{
                   flex: 1,
                   backgroundColor: 'transparent',
+                  shadowColor: 'transparent',
                 }}
                 indicatorStyle={{
                   height: 2,
                   width: '50%',
-                  justifyContent: 'center',
                   backgroundColor: primaryColor,
                 }}
                 indicatorContainerStyle={{

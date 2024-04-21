@@ -4,7 +4,7 @@ import { Search } from 'lucide-react-native'
 import { useAtom } from 'jotai'
 import { TextInput } from 'react-native'
 import { Icon, Input, Pressable, Text, View } from '@gluestack-ui/themed'
-import { SectionList } from './components/SectionList'
+import { SearchHome } from './components/SearchHome'
 import { SearchResult } from './components/SearchResult'
 import { NavBar } from '@/ui/components/NavBar'
 import { searchHistoryAtom } from '@/atoms/searchHistroy'
@@ -80,7 +80,7 @@ export function SearchScreen() {
       </NavBar>
 
       {!isSearched
-        ? (<SectionList onPressItem={item => handleSubmit(item)} />)
+        ? (<SearchHome onPressItem={item => handleSubmit(item)} />)
         : (<SearchResult searchText={trimedSearchText}></SearchResult>)}
     </View>
   )

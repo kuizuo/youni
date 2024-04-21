@@ -2,9 +2,9 @@ import React, { memo, useMemo, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { TabBar, TabView } from 'react-native-tab-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Text, View, useToken } from '@gluestack-ui/themed'
+import { Pressable, Text, View } from '@gluestack-ui/themed'
 import { useWindowDimensions } from 'react-native'
-import { FollowerList } from './FollowerList'
+import { FollowerList } from './components/FollowerList'
 import { NavButton } from '@/ui/components/NavButton'
 import { useColor } from '@/utils/theme'
 
@@ -58,15 +58,13 @@ export function FollowerScreen() {
             <TabBar
               {...props}
               style={{
-                flex: 1,
-                justifyContent: 'center',
                 backgroundColor: 'transparent',
+                shadowColor: 'transparent',
               }}
               tabStyle={{ height: 50 }}
               indicatorStyle={{
                 height: 2,
                 width: '50%',
-                justifyContent: 'center',
                 backgroundColor: primaryColor,
               }}
               scrollEnabled
@@ -76,16 +74,14 @@ export function FollowerScreen() {
                 const active = TABS[index]!.key === route.key
 
                 return (
-                  <Text
-                    opacity={active ? 1 : 0.5}
-                    size="md"
+                  <Pressable
                     onPress={() => {
                       const index = TABS.findIndex(tab => tab.key === route.key)
                       setIndex(index)
                     }}
                   >
-                    {route.title}
-                  </Text>
+                    <Text>{route.title}</Text>
+                  </Pressable>
                 )
               }}
             />

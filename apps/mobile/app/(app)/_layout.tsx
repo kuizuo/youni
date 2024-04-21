@@ -112,14 +112,15 @@ export default function TabLayout() {
 
 function PlusButton({ size }: { size: number }) {
   const router = useRouter()
+  const { primaryColor } = useColor()
   const { isLogged } = useAuth()
 
   return (
     <>
       <Pressable
         position="absolute"
-        bg="$primary400"
-        $hover-bg="$primary400"
+        bg={primaryColor}
+        $hover-bg="$primary600"
         rounded="$lg"
         w={size + 24}
         h={size + 14}

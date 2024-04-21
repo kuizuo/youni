@@ -4,10 +4,10 @@ import { FlashList } from '@shopify/flash-list'
 import type { UserInfoWithFollow } from '@server/modules/interact/interact'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Spinner, VStack } from '@gluestack-ui/themed'
-import { FollowerListItem } from './FollowerItem'
+import { Spinner, View } from '@gluestack-ui/themed'
 import { EmptyResult } from '@/ui/components/EmptyResult'
 import { trpc } from '@/utils/trpc'
+import { UserListItem } from '@/ui/components/user/UserListItem'
 
 interface Props {
   userId: string
@@ -31,12 +31,12 @@ export function FollowerList({ userId, type }: Props) {
   )
 
   const renderItem: ListRenderItem<UserInfoWithFollow> = useCallback(
-    ({ item }) => <FollowerListItem {...item}></FollowerListItem>,
+    ({ item }) => <UserListItem {...item}></UserListItem>,
     [],
   )
 
   return (
-    <VStack flex={1}>
+    <View flex={1}>
       <FlashList
         data={flatedData}
         renderItem={renderItem}
@@ -58,6 +58,6 @@ export function FollowerList({ userId, type }: Props) {
           <EmptyResult title={type === 'following' ? '你还没有关注任何人' : '你还没有粉丝'} />
         }
       />
-    </VStack>
+    </View>
   )
 }

@@ -23,7 +23,7 @@ export function UserListItem(item: UserInfoWithFollow): React.ReactElement {
           />
         </Avatar>
 
-        <VStack flex={1}>
+        <VStack flex={1} h="$full" justifyContent="space-around">
           <HStack gap="$2">
             <Text size="md">
               {item.nickname}

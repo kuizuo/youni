@@ -7,7 +7,7 @@ import { searchHistoryAtom } from '@/atoms/searchHistroy'
 import { NAV_BAR_HEIGHT } from '@/ui/components/NavBar'
 import { confirm } from '@/utils/confirm'
 
-export function SectionList({
+export function SearchHome({
   onPressItem,
 }: {
   onPressItem: (item: string) => void

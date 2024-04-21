@@ -9,6 +9,8 @@ import { TRPCService } from '@server/shared/trpc/trpc.service'
 
 import { getRedisKey } from '@server/utils/redis.util'
 
+import { User } from '@youni/database'
+
 import { UserPublicService } from '../user/user.public.service'
 
 import { InteractState } from './interact'
@@ -70,7 +72,7 @@ export class InteractTrpcRouter implements OnModuleInit {
           const commomIds = await this.followSerive.getCommonFollowingIds(id, user.id)
 
           const users = await this.userService.getUserByIds(ids)
-          // const usersNoteCount =
+          await this.userService.appendInteractInfo(users as User[], user.id)
 
           const items = users.map((user) => {
             return {

@@ -17,6 +17,7 @@ import {
   Image,
   Pressable,
   Text,
+  VStack,
   View,
 } from '@gluestack-ui/themed'
 import { InteractInfo } from './components/InteractInfo'
@@ -56,7 +57,7 @@ export function ProfileScreen() {
     - navBarHeight
     + headerHeight
     + (Platform.OS === 'android' ? TAB_BAR_HEIGHT : 0) - TAB_VIEW_MARGIN_TOP,
-    paddingTop: (headerHeight ? headerHeight + TAB_BAR_HEIGHT : TAB_BAR_HEIGHT) + VERTICAL_SPACING / 2,
+    // paddingTop: (headerHeight ? headerHeight + TAB_BAR_HEIGHT : TAB_BAR_HEIGHT) + VERTICAL_SPACING / 2,
   }
 
   const [data] = trpc.user.byId.useSuspenseQuery({ id: userId })
@@ -218,8 +219,8 @@ export function ProfileScreen() {
                 resizeMode="contain"
               />
             </Avatar>
-            <View flex={1}>
-              <HStack alignItems="center" mb="$3" gap="$2">
+            <VStack flex={1} ml="$2" h="$full" gap="$2">
+              <HStack alignItems="center" gap="$2" mt="$8">
                 <Text size="lg">
                   {data.nickname}
                 </Text>
@@ -235,7 +236,7 @@ export function ProfileScreen() {
                   : <></>}
               </HStack>
 
-              <HStack mb="$2">
+              <HStack>
                 {data.campus
                   ? (
                     <Badge size="md" variant="solid" borderRadius="$none" action="info">
@@ -250,7 +251,7 @@ export function ProfileScreen() {
                     </Pressable>
                     )}
               </HStack>
-            </View>
+            </VStack>
           </Animated.View>
         </Animated.View>
       </View>
