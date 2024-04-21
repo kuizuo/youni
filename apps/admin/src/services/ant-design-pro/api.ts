@@ -21,9 +21,9 @@ export async function outLogin(options?: { [key: string]: any }) {
   });
 }
 
-/** 登录接口 POST /api/auth/login/ */
+/** 登录接口 POST /api/auth/admin/login/ */
 export async function login(body: LoginDto, options?: { [key: string]: any }) {
-  return request<IBaseResponse<LoginResult>>('/api/auth/login', {
+  return request<IBaseResponse<LoginResult>>('/api/auth/admin/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

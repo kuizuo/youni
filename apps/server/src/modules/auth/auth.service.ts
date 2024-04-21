@@ -19,7 +19,7 @@ export class AuthService {
     private readonly redis: Redis,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
-  ) {}
+  ) { }
 
   async validateUser(credential: string, password: string, type: LoginType) {
     const user = type === 'account'

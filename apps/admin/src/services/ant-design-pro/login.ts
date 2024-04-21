@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 发送验证码 POST /api/login/captcha */
+/** 发送验证码 POST /api/auth/captcha */
 export async function getFakeCaptcha(
   params: {
     // query
@@ -11,7 +11,7 @@ export async function getFakeCaptcha(
   },
   options?: { [key: string]: any },
 ) {
-  return request<API.FakeCaptcha>('/api/login/captcha', {
+  return request<API.FakeCaptcha>('/api/auth/captcha', {
     method: 'GET',
     params: {
       ...params,

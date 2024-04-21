@@ -205,8 +205,9 @@ model Campus {
 // }
 
 enum Role {
-  Admin
-  User
+  Admin // 系统管理员
+  Manager // 校区管理员
+  User // 用户
 }
 
 enum NoteType {

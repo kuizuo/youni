@@ -9,6 +9,7 @@ import { isDev } from '@server/global/env'
 
 import { UserModule } from '../user/user.module'
 
+import { AuthAdminController } from './auth.admin.controller'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { AuthTrpcRouter } from './auth.trpc'
@@ -23,6 +24,7 @@ import { LocalStrategy } from './strategies/local.strategy'
 
 const controllers = [
   AuthController,
+  AuthAdminController,
   AccountController,
   EmailController,
   GoogleController,
