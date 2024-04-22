@@ -7,7 +7,7 @@ import { PasswordUpdateDto } from '@server/modules/user/dto/password.dto'
 
 import { UserService } from '../../user/user.service'
 import { AuthService } from '../auth.service'
-import { UpdateProfileDto } from '../dtos/account.dto'
+import { UpdateProfileDto } from '../../user/dto/account.dto'
 import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 
 @ApiTags('Account - 账户模块')

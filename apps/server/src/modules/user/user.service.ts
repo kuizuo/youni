@@ -14,7 +14,8 @@ import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 
 import { Role } from '../auth/auth.constant'
-import { UpdateProfileDto } from '../auth/dtos/account.dto'
+
+import { UpdateProfileDto } from './dto/account.dto'
 
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
@@ -56,13 +57,11 @@ export class UserService {
       .catch(resourceNotFoundWrapper(new BizException(ErrorCodeEnum.UserNotFound)))
   }
 
-  async updateProfile(userId: string, info: UpdateProfileDto) {
+  async updateProfile(dto: UpdateProfileDto, userId: string) {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        ...(info.nickname && { nickname: info.nickname }),
-        ...(info.avatar && { avatar: info.avatar }),
-        ...(info.phone && { phone: info.phone }),
+        ...dto,
       },
     })
 

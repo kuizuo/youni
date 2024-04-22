@@ -1,10 +1,9 @@
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer'
 import { BadgeHelp, Highlighter, History, Settings } from 'lucide-react-native'
-import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Divider, HStack, Icon, Pressable, Text, VStack, useToken } from '@gluestack-ui/themed'
+import { Box, Divider, HStack, Icon, Pressable, Text, VStack } from '@gluestack-ui/themed'
 import { useColorScheme } from 'nativewind'
 import { useDrawerOpen } from '@/atoms/drawer'
 import { useColor } from '@/utils/theme'
@@ -12,7 +11,7 @@ import { useColor } from '@/utils/theme'
 export default function CustomDrawerContent() {
   const router = useRouter()
 
-  const { textColor, bgColor } = useColor()
+  const { textColor, bgColor, borderColor } = useColor()
   const { bottom } = useSafeAreaInsets()
   const [open, setOpen] = useDrawerOpen()
 
@@ -82,7 +81,7 @@ export default function CustomDrawerContent() {
 
         <HStack
           position="absolute"
-          bottom={bottom}
+          bottom={bottom || '$4'}
           flex={1}
           mx="$4"
           gap="$4"
@@ -96,20 +95,14 @@ export default function CustomDrawerContent() {
               gap="$1.5"
               onPress={onPress}
             >
-              <BlurView
-                intensity={70}
-                style={{
-                  justifyContent: 'center',
-                  borderRadius: 50,
-                  overflow: 'hidden',
-                  borderWidth: 1,
-                  borderColor: '#f1f5f9',
-                  paddingHorizontal: 6,
-                  paddingVertical: 4,
-                }}
+              <Box
+                p="$2"
+                borderWidth={1}
+                borderColor={borderColor}
+                borderRadius="$full"
               >
                 {icon}
-              </BlurView>
+              </Box>
               <Text flex={1} textAlign="center" size="sm">
                 {label}
               </Text>

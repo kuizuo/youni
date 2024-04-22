@@ -27,7 +27,7 @@ export function InteractInfo({ user }: Props) {
         borderWidth={1}
         borderColor={borderColor}
       >
-        <Pressable onPress={() => router.push('/user/profile/edit')}>
+        <Pressable onPress={() => router.push('/user/edit-profile/')}>
           <Text color="$secondary500" fontSize="$xs">
             编辑资料
           </Text>

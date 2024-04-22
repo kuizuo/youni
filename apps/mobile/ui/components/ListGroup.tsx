@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import React from 'react'
 import { View } from '@gluestack-ui/themed'
+import { useColor } from '@/utils/theme'
 
 interface GroupProps {
   children: ReactNode
@@ -9,6 +10,7 @@ interface GroupProps {
 }
 
 export function ListGroup({ children, divider, ...props }: GroupProps) {
+  const { bgColor } = useColor()
   // 将 children 转换为数组
   const childArray = React.Children.toArray(children)
 
@@ -24,7 +26,7 @@ export function ListGroup({ children, divider, ...props }: GroupProps) {
   }, [])
 
   return (
-    <View {...props}>
+    <View bg="$backgroundLight0" $dark-bg="$backgroundDarkMuted" {...props}>
       {childrenWithDividers}
     </View>
   )

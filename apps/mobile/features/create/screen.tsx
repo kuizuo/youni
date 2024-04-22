@@ -38,11 +38,11 @@ import { TagSheet } from './components/TagSheet'
 import { ListItem } from '@/ui/components/ListItem'
 import { NavBar } from '@/ui/components/NavBar'
 import { NavButton } from '@/ui/components/NavButton'
-import { client } from '@/utils/http/client'
 import { trpc } from '@/utils/trpc'
 import { useTags } from '@/atoms/create'
 import { useModal } from '@/ui/components/CustomModal'
 import { useAuth } from '@/utils/auth'
+import { uploadImage } from '@/utils/upload'
 
 const createNoteSchema = z.object({
   title: z.string().min(1, '标题不能为空'),
@@ -102,28 +102,8 @@ export function CreateScreen() {
 
   const { mutateAsync } = trpc.note.create.useMutation()
 
-  const uploadImage = async (images: ImagePicker.ImagePickerAsset[]) => {
-    const formData = new FormData()
-
-    images.forEach((image, index) => {
-      formData.append(`file${index}`, {
-        type: image.mimeType,
-        name: image.fileName,
-        uri: Platform.OS === 'ios' ? image.uri.replace('file://', '') : image.uri,
-      })
-    })
-
-    const data = await client.post('/api/files/upload/multiple?type=photo', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }) as { url: string, name: string }[]
-
-    return data
-  }
-
   const onSubmit = async (_data: CreateNoteSchemaType) => {
-    const imagesData = await uploadImage(_data.images)
+    const imagesData = await uploadImage(_data.images, 'photo')
 
     setValue('images', imagesData.map((image, i) => ({
       src: image.url,
@@ -180,7 +160,6 @@ export function CreateScreen() {
       })
 
       if (!result.canceled) {
-        // @ts-expect-error
         appendImage(result.assets.map(asset => ({
           src: asset.uri,
           uri: asset.uri,
@@ -188,7 +167,7 @@ export function CreateScreen() {
           mimeType: asset.type,
           // width: asset?.width,
           // height: asset?.height,
-        })))
+        })) as unknown as ImagePicker.ImagePickerAsset[])
       }
     }
     else {

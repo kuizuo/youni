@@ -15,6 +15,7 @@ interface Props {
   right?: ReactNode
   hideSafeTop?: boolean
   style?: ViewStyle
+  [key: string]: any
 }
 
 export function NavBar({
@@ -23,6 +24,7 @@ export function NavBar({
   left,
   right,
   style,
+  ...props
 }: Props) {
   const safeTop = useNavBarSafeTop(hideSafeTop)
 
@@ -33,6 +35,7 @@ export function NavBar({
       py="$2"
       alignItems="center"
       gap="$2.5"
+      {...props}
       style={{
         paddingTop: safeTop || 0,
         marginTop: Platform.select({

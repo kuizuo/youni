@@ -7,10 +7,11 @@ export class UpdateProfileDto extends createZodDto(
   UserSchema.pick({
     nickname: true,
     avatar: true,
-    phone: true,
+    desc: true,
+    gender: true,
   }).partial(),
-) {}
+) { }
 
 export class ResetPasswordDto extends createZodDto(z.object({
   password: strongPasswordSchema,
-})) {}
+})) { }

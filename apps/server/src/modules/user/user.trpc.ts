@@ -5,6 +5,7 @@ import { TRPCRouter } from '@server/shared/trpc/trpc.decorator'
 import { defineTrpcRouter } from '@server/shared/trpc/trpc.helper'
 import { TRPCService } from '@server/shared/trpc/trpc.service'
 
+import { UpdateProfileDto } from './dto/account.dto'
 import { UserSearchDto } from './dto/search.dto'
 import { UserPublicService } from './user.public.service'
 import { UserService } from './user.service'
@@ -54,6 +55,13 @@ export class UserTrpcRouter implements OnModuleInit {
 
         return await this.userService.getProfile(user.id)
       }),
+      updateProfile: procedureAuth
+        .input(UpdateProfileDto.schema)
+        .mutation(async (opt) => {
+          const { input, ctx: { user } } = opt
+
+          return await this.userService.updateProfile(input, user.id)
+        }),
     })
   }
 }
