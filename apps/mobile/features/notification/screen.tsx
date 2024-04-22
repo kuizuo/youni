@@ -5,6 +5,13 @@ import { useFocusEffect, useRoute } from '@react-navigation/native'
 import { NotificationItem } from './components/NotificationItem'
 import { trpc } from '@/utils/trpc'
 
+interface ItemProps {
+  title: string
+  image: string
+  count: number
+  onPress: () => void
+}
+
 export function NotificationScreen() {
   const [data, { refetch }] = trpc.notification.count.useSuspenseQuery()
   const router = useRouter()
@@ -17,6 +24,68 @@ export function NotificationScreen() {
       }
     }, []),
   )
+
+  const items: ItemProps[] = [
+    {
+      title: '赞',
+      image: require('./assets/images/heart.png'),
+      count: data?.count.like,
+      onPress: () => router.push('/notification/like'),
+    },
+    {
+      title: '评论',
+      image: require('./assets/images/message.png'),
+      count: data?.count.comment,
+      onPress: () => router.push('/notification/comment'),
+    },
+    {
+      title: '新增关注',
+      image: require('./assets/images/follow.png'),
+      count: data?.count.follow,
+      onPress: () => router.push('/notification/follow'),
+    },
+
+  ]
+
+  function Item({
+    title,
+    onPress,
+    image,
+    count,
+  }: ItemProps) {
+    return (
+      <Pressable
+        flex={1}
+        position="relative"
+        alignItems="center"
+        gap="$2"
+        onPress={onPress}
+      >
+        <VStack>
+          <Image width={60} height={60} source={image} alt="image" />
+          {
+            count > 0 && (
+              <Badge
+                position="absolute"
+                h={22}
+                w={22}
+                bg="$red600"
+                borderRadius="$full"
+                zIndex={1}
+                variant="solid"
+                alignSelf="flex-end"
+              >
+                <BadgeText color="$white">
+                  {count}
+                </BadgeText>
+              </Badge>
+            )
+          }
+        </VStack>
+        <Text size="sm">{title}</Text>
+      </Pressable>
+    )
+  }
 
   return (
     <>
@@ -33,97 +102,9 @@ export function NotificationScreen() {
         $dark-bg="$backgroundDark950"
       >
         <HStack p="$4" gap="$2" justifyContent="space-between" alignItems="center">
-          <Pressable
-            flex={1}
-            position="relative"
-            alignItems="center"
-            gap="$2"
-            onPress={() => router.push('/notification/like')}
-          >
-            <VStack>
-              <Image width={60} height={60} source={require('./assets/images/heart.png')} alt="image" />
-              {
-                data?.count.like > 0 && (
-                  <Badge
-                    position="absolute"
-                    h={22}
-                    w={22}
-                    bg="$red600"
-                    borderRadius="$full"
-                    zIndex={1}
-                    variant="solid"
-                    alignSelf="flex-end"
-                  >
-                    <BadgeText color="$white">
-                      {data?.count.like}
-                    </BadgeText>
-                  </Badge>
-                )
-              }
-            </VStack>
-            <Text size="sm">赞</Text>
-          </Pressable>
-          <Pressable
-            flex={1}
-            position="relative"
-            alignItems="center"
-            gap="$2"
-            onPress={() => router.push('/notification/comment')}
-          >
-            <VStack>
-              <Image width={60} height={60} source={require('./assets/images/message.png')} alt="image" />
-              {
-                data?.count.comment > 0 && (
-                  <Badge
-                    position="absolute"
-                    h={22}
-                    w={22}
-                    bg="$red600"
-                    borderRadius="$full"
-                    zIndex={1}
-                    variant="solid"
-                    alignSelf="flex-end"
-                  >
-                    <BadgeText color="$white">
-                      {data?.count.comment}
-                    </BadgeText>
-                  </Badge>
-                )
-              }
-            </VStack>
-            <Text size="sm">评论</Text>
-          </Pressable>
-          <Pressable
-            flex={1}
-            position="relative"
-            alignItems="center"
-            gap="$2"
-            onPress={() => router.push('/notification/follow')}
-          >
-            <VStack>
-              <Image width={60} height={60} source={require('./assets/images/follow.png')} alt="image" />
-              {
-                data?.count.follow > 0 && (
-                  <Badge
-                    position="absolute"
-                    h={22}
-                    w={22}
-                    bg="$red600"
-                    borderRadius="$full"
-                    zIndex={1}
-                    variant="solid"
-                    alignSelf="flex-end"
-                  >
-                    <BadgeText color="$white">
-                      {data?.count.follow}
-                    </BadgeText>
-                  </Badge>
-                )
-              }
-            </VStack>
-
-            <Text size="sm">新增关注</Text>
-          </Pressable>
+          {
+            items.map(item => (<Item key={item.title} {...item} />))
+          }
         </HStack>
 
         <View>
@@ -147,7 +128,7 @@ export function NotificationScreen() {
           /> */}
           <NotificationItem
             title="系统通知"
-            image={require('./assets/images/message2.png')}
+            image={require('./assets/images/system.png')}
             desc=" "
             onPress={() => router.push('/notification/system')}
           />

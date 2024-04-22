@@ -3,6 +3,7 @@ import { Avatar, AvatarFallbackText, AvatarImage, Badge, BadgeText, Pressable, V
 import { Clover, Home, MessageCircleMore, Plus } from 'lucide-react-native'
 import { useAuth } from '@/utils/auth'
 import { useColor } from '@/utils/theme'
+import { trpc } from '@/utils/trpc'
 
 export default function TabLayout() {
   const { primaryColor } = useColor()
@@ -10,6 +11,8 @@ export default function TabLayout() {
 
   if (!isLogged || !currentUser)
     return <Redirect href="/login" />
+
+  const [count] = trpc.notification.count.useSuspenseQuery()
 
   return (
     <Tabs
@@ -57,24 +60,27 @@ export default function TabLayout() {
               <View position="relative" flexDirection="row" gap="$1.5">
                 <MessageCircleMore color={color} size={size} />
                 {
-                  false && (
-                    <Badge
-                      position="absolute"
-                      top={-4}
-                      right={-4}
-                      h={16}
-                      w={16}
-                      bg="$red600"
-                      borderRadius="$full"
-                      zIndex={1}
-                      variant="solid"
-                      alignSelf="flex-end"
-                    >
-                      <BadgeText color="$white">
-                        1
-                      </BadgeText>
-                    </Badge>
-                  )
+                  count.total
+                    ? (
+                      <Badge
+                        position="absolute"
+                        p="$0"
+                        top={-6}
+                        right={-6}
+                        h={20}
+                        w={20}
+                        bg="$red600"
+                        borderRadius="$full"
+                        zIndex={1}
+                        variant="solid"
+                        alignSelf="flex-end"
+                      >
+                        <BadgeText color="$white" fontSize={12}>
+                          {count.total}
+                        </BadgeText>
+                      </Badge>
+                      )
+                    : <></>
                 }
               </View>
             )

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { HStack, Image, Pressable, Text, VStack, View } from '@gluestack-ui/themed'
+import { Image, Pressable, Text, VStack } from '@gluestack-ui/themed'
 
 interface Props {
   title: string
@@ -10,7 +10,7 @@ interface Props {
 
 export function NotificationItem({ title, desc, image, onPress }: Props): ReactNode {
   return (
-    <Pressable flexDirection="row" p="$3" gap="$2" onPress={onPress}>
+    <Pressable flexDirection="row" p="$3" gap="$3" onPress={onPress}>
       <Image
         size="lg"
         width={60}
@@ -18,7 +18,7 @@ export function NotificationItem({ title, desc, image, onPress }: Props): ReactN
         source={image}
         alt="image"
       />
-      <VStack flex={1}>
+      <VStack flex={1} justifyContent="space-around">
         <Text size="md">
           {title}
         </Text>

@@ -2,6 +2,7 @@ import React from 'react'
 import type { MessageItem } from '@server/modules/notification/notification'
 import { Link, useRouter } from 'expo-router'
 import { Avatar, AvatarImage, Divider, HStack, Image, Pressable, Text, View } from '@gluestack-ui/themed'
+import { RectButton } from 'react-native-gesture-handler'
 import { formatTime } from '@/utils/date'
 
 export function MessageListItem(item: MessageItem): React.ReactNode {
@@ -31,7 +32,7 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
     return (
       <Text>
         <Link href={`/user/${item.sender.id}/profile`} asChild>
-          <Text mt="$2" size="md">
+          <Text size="md">
             {item.sender.nickname}
           </Text>
         </Link>
@@ -64,36 +65,39 @@ export function MessageListItem(item: MessageItem): React.ReactNode {
 
   return (
     <>
-      <HStack px="$3" py="$1.5" alignItems="center" gap="$3">
-        <Pressable onPress={handleNavigateToUser}>
-          <Avatar borderRadius="$full" size="md" overflow="hidden">
-            <AvatarImage
-              source={{ uri: item.sender.avatar }}
-              alt="avatar"
+      <RectButton>
+        <HStack px="$2.5" py="$1.5" alignItems="center" gap="$3">
+          <Pressable onPress={handleNavigateToUser}>
+            <Avatar borderRadius="$full" size="md" overflow="hidden">
+              <AvatarImage
+                source={{ uri: item.sender.avatar }}
+                alt="avatar"
+              />
+            </Avatar>
+          </Pressable>
+          <View flex={1}>
+            <MessageTitle {...item} />
+
+            {item.content && <Text>{item.content}</Text>}
+
+            <Text color="$secendory500" size="sm">
+              {formatTime(item.createdAt)}
+            </Text>
+          </View>
+          {item.source.image && (
+            <Image
+              borderRadius={8}
+              source={{
+                uri: item.source.image.src,
+                width: 50,
+                height: 50,
+              }}
+              alt="image"
             />
-          </Avatar>
-        </Pressable>
-        <View flex={1}>
-          <MessageTitle {...item} />
+          )}
 
-          {item.content && <Text>{item.content}</Text>}
-
-          <Text color="$secendory500" size="sm">
-            {formatTime(item.createdAt)}
-          </Text>
-        </View>
-        {item.source.image && (
-          <Image
-            borderRadius={8}
-            source={{
-              uri: item.source.image.src,
-              width: 50,
-              height: 50,
-            }}
-            alt="image"
-          />
-        )}
-      </HStack>
+        </HStack>
+      </RectButton>
       <Divider />
     </>
   )
