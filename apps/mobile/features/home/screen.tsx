@@ -69,7 +69,7 @@ export function HomeScreen() {
             <NavButton.Menu style={{ position: 'absolute', left: 0 }} />
             <NavButton.Search style={{ position: 'absolute', right: 0 }} />
 
-            <View flex={1}>
+            <View flex={1} width="$20">
               <TabBar
                 {...props}
                 style={{

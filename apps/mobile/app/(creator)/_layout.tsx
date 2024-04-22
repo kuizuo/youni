@@ -1,5 +1,4 @@
-import { Stack, useRouter } from 'expo-router'
-import { NavButton } from '@/ui/components/NavButton'
+import { Stack } from 'expo-router'
 
 export default function Layout() {
   return (
@@ -7,8 +6,7 @@ export default function Layout() {
       <Stack.Screen
         name="index"
         options={{
-          title: '创作中心',
-          headerLeft: () => <NavButton.Back />,
+          headerShown: false,
         }}
       />
     </Stack>

@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box, Divider, HStack, Icon, Pressable, Text, VStack } from '@gluestack-ui/themed'
-import { useColorScheme } from 'nativewind'
 import { useDrawerOpen } from '@/atoms/drawer'
 import { useColor } from '@/utils/theme'
 

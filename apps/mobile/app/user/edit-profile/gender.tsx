@@ -1,5 +1,5 @@
-import { EditNameScreen } from '@/features/user/edit-profile/edit-name-screen'
+import { EditGenderScreen } from '@/features/user/edit-profile/edit-gender-screen'
 
 export default () => {
-  return <EditNameScreen />
+  return <EditGenderScreen />
 }

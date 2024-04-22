@@ -1,8 +1,8 @@
 import { MessageCircle, Settings } from 'lucide-react-native'
-import { Link, useRouter } from 'expo-router'
+import { Link, useFocusEffect, useRouter } from 'expo-router'
 import type { UserInfo } from '@server/modules/user/user'
-import { HStack, Icon, Pressable, Text, View, useToken } from '@gluestack-ui/themed'
-import { useColorScheme } from 'nativewind'
+import { HStack, Icon, Pressable, Text, View } from '@gluestack-ui/themed'
+import { useCallback } from 'react'
 import { UserFollowButton } from '@/ui/components/user/UserFollowButton'
 import { trpc } from '@/utils/trpc'
 import { useAuth } from '@/utils/auth'
@@ -14,9 +14,17 @@ interface Props {
 
 export function InteractInfo({ user }: Props) {
   const router = useRouter()
-  const { borderColor } = useColor()
+  const { borderColor, bgColor } = useColor()
 
-  const { data } = trpc.interact.state.useQuery({ id: user.id })
+  const { data, refetch } = trpc.interact.state.useQuery({ id: user.id })
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+      return () => {
+      }
+    }, []),
+  )
 
   const { currentUser } = useAuth()
 
@@ -28,7 +36,7 @@ export function InteractInfo({ user }: Props) {
         borderColor={borderColor}
       >
         <Pressable onPress={() => router.push('/user/edit-profile/')}>
-          <Text color="$secondary500" fontSize="$xs">
+          <Text fontSize="$xs">
             编辑资料
           </Text>
         </Pressable>
@@ -45,7 +53,7 @@ export function InteractInfo({ user }: Props) {
         borderColor={borderColor}
       >
         <Pressable onPress={() => router.push('/setting/')}>
-          <Icon as={Settings} size="sm" color="$secondary500" />
+          <Icon as={Settings} size="sm" />
         </Pressable>
       </View>
     )
@@ -59,14 +67,14 @@ export function InteractInfo({ user }: Props) {
         borderColor={borderColor}
       >
         <Pressable onPress={() => router.push(`/chat/${user.id}`)}>
-          <Icon as={MessageCircle} size="sm" color="$secondary500" />
+          <Icon as={MessageCircle} size="sm" />
         </Pressable>
       </View>
     )
   }
 
   return (
-    <HStack gap="$4" mx="$4" mb="$3" alignItems="center">
+    <HStack gap="$4" mx="$4" mb="$3" alignItems="center" bg={bgColor}>
       <Pressable
         flexDirection="row"
         gap="$1"

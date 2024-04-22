@@ -1,6 +1,6 @@
 import { Button, ButtonText, Input, InputField, Text, View } from '@gluestack-ui/themed'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import Toast from 'react-native-toast-message'
 import { NavBar, NavButton } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
@@ -8,12 +8,8 @@ import { useAuth } from '@/utils/auth'
 
 export function EditNameScreen() {
   const router = useRouter()
-  const { currentUser } = useAuth()
-  const [name, setName] = useState('')
-
-  useEffect(() => {
-    setName(currentUser?.nickname || '')
-  }, [])
+  const { text } = useLocalSearchParams<{ text: string }>()
+  const [name, setName] = useState(text || '')
 
   const { mutateAsync: updateProfile } = trpc.user.updateProfile.useMutation()
 

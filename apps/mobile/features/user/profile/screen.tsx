@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Platform, StyleSheet, useWindowDimensions } from 'react-native'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { useRoute } from '@react-navigation/native'
 import { ArrowUpRightFromSquare } from 'lucide-react-native'
 import Animated, { Extrapolation, interpolate, useAnimatedReaction, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
@@ -60,7 +60,15 @@ export function ProfileScreen() {
     // paddingTop: (headerHeight ? headerHeight + TAB_BAR_HEIGHT : TAB_BAR_HEIGHT) + VERTICAL_SPACING / 2,
   }
 
-  const [data] = trpc.user.byId.useSuspenseQuery({ id: userId })
+  const [data, { refetch }] = trpc.user.byId.useSuspenseQuery({ id: userId })
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+      return () => {
+      }
+    }, []),
+  )
 
   const TABS = [
     {
@@ -212,7 +220,7 @@ export function ProfileScreen() {
               profileContainerTranslationStyle,
             ]}
           >
-            <Avatar size="xl" overflow="hidden" borderRadius="$full">
+            <Avatar size="xl" overflow="hidden" borderRadius="$full" bg={bgColor}>
               <AvatarImage
                 source={{ uri: data?.avatar }}
                 alt="avatar"
@@ -278,8 +286,8 @@ export function ProfileScreen() {
     const [data, { isLoading, refetch, isRefetching }] = trpc.user.byId.useSuspenseQuery({ id: userId }, {})
 
     return (
-      <View mt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION}>
-        <View pt={AVATAR_SIZE_VALUE / 2} pointerEvents="none" />
+      <View pt={AVATAR_SIZE_VALUE / 2 + VERTICAL_SPACING + BANNER_BOTTOM_HEIGHT_ADDITION} bg={bgColor}>
+        <View pt={AVATAR_SIZE_VALUE / 2} pointerEvents="none" bg={bgColor} />
         {/* 基本信息 */}
         <View px="$4" mb="$2">
           <Text>{data.desc ?? '暂无简介'}</Text>
@@ -323,6 +331,7 @@ export function ProfileScreen() {
               color: textColor,
               width: (window.width - 4 * 2 * 3) / 3,
             }}
+            activeColor={primaryColor}
             style={{ backgroundColor: bgColor }}
           />
         )}

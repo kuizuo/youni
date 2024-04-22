@@ -96,7 +96,10 @@ export function EditProfileScreen() {
                 <Icon as={ChevronRight} size="md" color="$secondary500" />
               </HStack>
             )}
-            onPress={() => router.push('/user/edit-profile/name')}
+            onPress={() => router.push({
+              pathname: '/user/edit-profile/name',
+              params: { text: currentUser.nickname },
+            })}
           />
           <ListItem
             title="简介"
@@ -106,7 +109,10 @@ export function EditProfileScreen() {
                 <Icon as={ChevronRight} size="md" color="$secondary500" />
               </HStack>
             )}
-            onPress={() => router.push('/user/edit-profile/desc')}
+            onPress={() => router.push({
+              pathname: '/user/edit-profile/desc',
+              params: { text: currentUser.desc! },
+            })}
           />
           <ListItem
             title="性别"
@@ -116,17 +122,20 @@ export function EditProfileScreen() {
                 <Icon as={ChevronRight} size="md" color="$secondary500" />
               </HStack>
             )}
-            onPress={() => router.push('/user/edit-profile/gender')}
+            onPress={() => router.push({
+              pathname: '/user/edit-profile/gender',
+              params: { gender: currentUser.gender! },
+            })}
           />
           <ListItem
             title="学校"
             right={(
               <HStack alignItems="center">
-                <Text size="sm">{currentUser.campusId}</Text>
+                <Text size="sm">{currentUser.campus?.name || '未认证'}</Text>
                 <Icon as={ChevronRight} size="md" color="$secondary500" />
               </HStack>
             )}
-            onPress={() => router.push('/user/edit-profile/name')}
+            onPress={() => router.push('/user/certify')}
           />
         </ListGroup>
 

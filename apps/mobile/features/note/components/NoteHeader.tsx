@@ -30,8 +30,8 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
           ? <NoteMenu item={item} />
           : <NoteShareButton item={item} />}
       >
-        <Pressable onPress={() => router.push(`/user/${user.id}/profile`)}>
-          <HStack flex={1} gap="$2" alignItems="center">
+        <HStack flex={1} alignItems="center">
+          <Pressable flex={1} flexDirection="row" gap="$2" alignItems="center" onPress={() => router.push(`/user/${user.id}/profile`)}>
             <Avatar size="sm" borderRadius="$full" overflow="hidden">
               <AvatarImage
                 source={{ uri: user.avatar }}
@@ -44,9 +44,9 @@ export function NoteHeader({ user, item }: Props): React.ReactNode {
             {
               item.state !== 'Published' && <NoteBadge state={item.state} />
             }
-          </HStack>
-        </Pressable>
-        {currentUser?.id !== user?.id && <UserFollowButton userId={user.id} isFollowing={isFollowing!} />}
+          </Pressable>
+          {currentUser?.id !== user?.id && <UserFollowButton userId={user.id} isFollowing={isFollowing!} />}
+        </HStack>
       </NavBar>
     </View>
   )
