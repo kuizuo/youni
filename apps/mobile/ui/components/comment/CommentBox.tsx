@@ -3,7 +3,8 @@ import type { ElementRef } from 'react'
 import React, { useEffect, useRef, useState } from 'react'
 import { CommentRefType } from '@server/modules/comment/comment.constant'
 import type { NoteItem } from '@server/modules/note/note'
-import { Button, ButtonText, HStack, Pressable, Toast, ToastTitle, View, useToast } from '@gluestack-ui/themed'
+import { Button, ButtonText, HStack, Pressable, View } from '@gluestack-ui/themed'
+import Toast from 'react-native-toast-message'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useCommentBoxOpen, useParentComment } from '@/atoms/comment'
 import { trpc } from '@/utils/trpc'
@@ -34,7 +35,6 @@ export function CommentBox({
   const [open, setOpen] = useCommentBoxOpen()
   const [parentComment, _] = useParentComment()
 
-  const toast = useToast()
   const inputRef = useRef<ElementRef<typeof TextInput>>(null)
   const [content, setContent] = useState('')
   const [placeholder, setPlaceholder] = useState('')
@@ -86,28 +86,16 @@ export function CommentBox({
           // empty
         }
 
-        toast.show({
-          placement: 'bottom',
-          render: ({ id }) => {
-            return (
-              <Toast nativeID={id} variant="accent" action="success">
-                <ToastTitle>发送成功</ToastTitle>
-              </Toast>
-            )
-          },
+        Toast.show({
+          type: 'sccess',
+          text1: '发送成功',
         })
       }
     }
     catch (error) {
-      toast.show({
-        placement: 'bottom',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="error">
-              <ToastTitle>发送失败</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'error',
+        text1: error.message,
       })
     }
   }

@@ -2,8 +2,9 @@ import React from 'react'
 import type { NoteItem } from '@server/modules/note/note'
 import type { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { BottomSheetView } from '@gorhom/bottom-sheet'
-import { Button, ButtonText, HStack, Heading, Pressable, Text, Toast, ToastTitle, View, useToast } from '@gluestack-ui/themed'
+import { Button, ButtonText, HStack, Heading, Pressable, Text, View } from '@gluestack-ui/themed'
 import * as Clipboard from 'expo-clipboard'
+import Toast from 'react-native-toast-message'
 import { CustomModal } from '../CustomModal'
 import { CustomDialog, useDialog } from '../CustomDialog'
 import { useAuth } from '@/utils/auth'
@@ -17,7 +18,6 @@ interface Props {
 export const NoteSheet = React.forwardRef<BottomSheetModal, Props>(
   ({ item, onClose }, ref) => {
     const { currentUser } = useAuth()
-    const toast = useToast()
 
     const { isOpen, openDialog, closeDialog } = useDialog()
 
@@ -28,17 +28,11 @@ export const NoteSheet = React.forwardRef<BottomSheetModal, Props>(
       // FIXME: Error: Cannot find native module 'ExpoClipboard'
       // await Clipboard.setStringAsync(`${prefix}/note/${item.id}`)
 
-      toast.show({
-        placement: 'bottom',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="success">
-              <ToastTitle>复制链接</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'success',
+        text1: '复制成功',
+        text2: '快去分享吧',
       })
-
       onClose?.()
     }
 
@@ -47,30 +41,15 @@ export const NoteSheet = React.forwardRef<BottomSheetModal, Props>(
         await deleteNote({ id: item.id })
         onClose?.()
 
-        toast.show({
-          placement: 'top',
-          render: ({ id }) => {
-            return (
-              <Toast nativeID={id} variant="accent" action="success">
-                <ToastTitle>删除成功</ToastTitle>
-              </Toast>
-            )
-          },
+        Toast.show({
+          type: 'success',
+          text1: '删除成功',
         })
       }
       catch (error) {
-        toast.show({
-          placement: 'top',
-          render: ({ id }) => {
-            return (
-              <Toast nativeID={id} variant="accent" action="error">
-                <ToastTitle>
-                  删除失败
-                  {error.message}
-                </ToastTitle>
-              </Toast>
-            )
-          },
+        Toast.show({
+          type: 'error',
+          text1: '删除失败',
         })
       }
     }

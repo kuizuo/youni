@@ -21,7 +21,7 @@ import {
   VStack,
   useToast,
 } from '@gluestack-ui/themed'
-
+import Toast from 'react-native-toast-message'
 import { Link } from 'solito/link'
 
 import { useForm } from 'react-hook-form'
@@ -274,7 +274,6 @@ export default function OtpVerification() {
   const [validationError, setValidationError] = useState<string | null>(null)
 
   const router = useRouter()
-  const toast = useToast()
 
   const onSubmit = () => {
     toast.show({

@@ -27,11 +27,10 @@ import {
   InputSlot,
   LinkText,
   Text,
-  Toast,
-  ToastTitle,
   VStack,
-  useToast,
 } from '@gluestack-ui/themed'
+import Toast from 'react-native-toast-message'
+
 import { Link, useRouter } from 'expo-router'
 
 import { Controller, useForm } from 'react-hook-form'
@@ -129,7 +128,6 @@ function SignUpForm() {
   })
   const [isEmailFocused, setIsEmailFocused] = useState(false)
   const [pwMatched, setPwMatched] = useState(false)
-  const toast = useToast()
 
   const { register: { isLoading, mutateAsync: registerApi } } = useAuth()
 
@@ -144,44 +142,25 @@ function SignUpForm() {
         })
       }
       catch (error) {
-        toast.show({
-          placement: 'top right',
-          render: ({ id }) => {
-            const toastId = `toast-${id}`
-
-            return (
-              <Toast nativeID={toastId} variant="accent" action="error">
-                <ToastTitle>{error.message}</ToastTitle>
-              </Toast>
-            )
-          },
+        Toast.show({
+          type: 'error',
+          text1: error.message,
         })
         return
       }
 
-      toast.show({
-        placement: 'bottom right',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="success">
-              <ToastTitle>注册成功</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'success',
+        text1: '注册成功',
       })
+
       reset()
       router.replace('/login')
     }
     else {
-      toast.show({
-        placement: 'bottom right',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} action="error">
-              <ToastTitle>密码不正确</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'error',
+        text1: '密码不匹配',
       })
     }
     // Implement your own onSubmit and navigation logic here.

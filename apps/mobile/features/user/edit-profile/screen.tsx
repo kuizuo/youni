@@ -59,16 +59,10 @@ export function EditProfileScreen() {
       }
     }
     else {
-      // toast.show({
-      //   placement: 'bottom right',
-      //   render: ({ id }) => {
-      //     return (
-      //       <Toast nativeID={id} variant="accent" action="warning">
-      //         <ToastTitle>请允许授权相册</ToastTitle>
-      //       </Toast>
-      //     )
-      //   },
-      // })
+      Toast.show({
+        type: 'success',
+        text1: '请允许授权相册',
+      })
     }
   }
   return (

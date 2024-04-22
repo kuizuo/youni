@@ -2,8 +2,9 @@ import { Highlighter, History, LifeBuoy } from 'lucide-react-native'
 import type { LucideProps } from 'lucide-react-native'
 import { useRouter } from 'expo-router'
 import { BlurView } from 'expo-blur'
-import { Icon, Pressable, Text, Toast, ToastTitle, View, useToast } from '@gluestack-ui/themed'
+import { Icon, Pressable, Text, View } from '@gluestack-ui/themed'
 import type { Campus } from '@youni/database'
+import Toast from 'react-native-toast-message'
 import { useAuth } from '@/utils/auth'
 import { useCurrentCampus } from '@/atoms/campus'
 import { useColor } from '@/utils/theme'
@@ -19,7 +20,6 @@ export function Navs() {
   const router = useRouter()
   const [currentCampus, setCurrentCampus] = useCurrentCampus()
   const { currentUser } = useAuth()
-  const toast = useToast()
 
   const { textColor, borderColor } = useColor()
 
@@ -37,15 +37,9 @@ export function Navs() {
           return
         }
 
-        toast.show({
-          placement: 'bottom',
-          render: ({ id }) => {
-            return (
-              <Toast nativeID={id} variant="accent" action="warning">
-                <ToastTitle>请完成学生认证后查看</ToastTitle>
-              </Toast>
-            )
-          },
+        Toast.show({
+          type: 'info',
+          text1: '请先完成学生认证',
         })
       },
       icon: <Icon as={LifeBuoy} size="md" color={textColor} />,

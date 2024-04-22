@@ -23,12 +23,9 @@ import {
   InputSlot,
   ScrollView,
   Text,
-  Toast,
-  ToastTitle,
   VStack,
-  useToast,
 } from '@gluestack-ui/themed'
-
+import Toast from 'react-native-toast-message'
 import { Link } from 'solito/link'
 
 import { Controller, useForm } from 'react-hook-form'
@@ -78,35 +75,24 @@ export default function CreatePassword() {
   })
 
   const router = useRouter()
-  const toast = useToast()
 
   const onSubmit = (data: CreatePasswordSchemaType) => {
     if (data.password === data.confirmpassword) {
       // Implement your own onSubmit logic and navigation logic here.
       router.replace('/login')
 
-      toast.show({
-        placement: 'bottom right',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="success">
-              <ToastTitle>Passwords matched, update successful</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: '密码匹配',
       })
       reset()
     }
     else {
-      toast.show({
-        placement: 'bottom right',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="error">
-              <ToastTitle>Passwords do not match</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: '密码不匹配',
       })
     }
   }

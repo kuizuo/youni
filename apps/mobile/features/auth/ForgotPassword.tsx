@@ -16,12 +16,9 @@ import {
   Input,
   InputField,
   Text,
-  Toast,
-  ToastTitle,
   VStack,
-  useToast,
 } from '@gluestack-ui/themed'
-
+import Toast from 'react-native-toast-message'
 import { Link } from 'solito/link'
 
 import { Controller, useForm } from 'react-hook-form'
@@ -157,21 +154,16 @@ export default function ForgotPassword() {
   const [isEmailFocused, setIsEmailFocused] = useState(false)
 
   const router = useRouter()
-  const toast = useToast()
 
   const onSubmit = (_data: forgotPasswordSchemaType) => {
     router.push('/verify-otp')
     reset()
-    toast.show({
-      placement: 'bottom right',
-      render: ({ id }) => {
-        return (
-          <Toast nativeID={id} variant="accent" action="success">
-            <ToastTitle>OTP Send Successfully</ToastTitle>
-          </Toast>
-        )
-      },
+    Toast.show({
+      type: 'success',
+      position: 'bottom',
+      text1: 'OTP Send Successfully',
     })
+
     reset()
   }
 

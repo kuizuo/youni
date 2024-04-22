@@ -27,12 +27,9 @@ import {
   LinkText,
   Pressable,
   Text,
-  Toast,
-  ToastTitle,
   VStack,
-  useToast,
 } from '@gluestack-ui/themed'
-
+import Toast from 'react-native-toast-message'
 import { Link, useRouter } from 'expo-router'
 
 import { Controller, useForm } from 'react-hook-form'
@@ -76,7 +73,6 @@ function SignInForm() {
   const [isEmailFocused, setIsEmailFocused] = useState(false)
 
   const router = useRouter()
-  const toast = useToast()
   const { login: { isLoading, mutateAsync: loginApi } } = useAuth()
 
   const onSubmit = async (_data: SignInSchemaType) => {
@@ -87,32 +83,16 @@ function SignInForm() {
       })
     }
     catch (error) {
-      toast.show({
-        placement: 'top right',
-        render: ({ id }) => {
-          const toastId = `toast-${id}`
-
-          return (
-            <Toast nativeID={toastId} variant="accent" action="error">
-              <ToastTitle>{error.message}</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'error',
+        title: error.message,
       })
       return
     }
 
-    toast.show({
-      placement: 'top right',
-      render: ({ id }) => {
-        const toastId = `toast-${id}`
-
-        return (
-          <Toast nativeID={toastId} variant="accent" action="success">
-            <ToastTitle>登录成功</ToastTitle>
-          </Toast>
-        )
-      },
+    Toast.show({
+      type: 'success',
+      text1: '登录成功',
     })
     reset()
     router.push('/')

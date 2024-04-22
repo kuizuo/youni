@@ -1,6 +1,7 @@
 import { Button, ButtonText, Input, InputField, Text, View } from '@gluestack-ui/themed'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
+import Toast from 'react-native-toast-message'
 import { NavBar, NavButton } from '@/ui/components/NavBar'
 import { trpc } from '@/utils/trpc'
 import { useAuth } from '@/utils/auth'
@@ -21,7 +22,10 @@ export function EditNameScreen() {
       nickname: name,
     })
 
-    // TODO: toast
+    Toast.show({
+      type: 'success',
+      text1: '更新成功',
+    })
 
     router.back()
   }

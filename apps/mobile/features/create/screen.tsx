@@ -27,11 +27,10 @@ import {
   Text,
   Textarea,
   TextareaInput,
-  Toast,
-  ToastTitle,
   View,
-  useToast,
 } from '@gluestack-ui/themed'
+import Toast from 'react-native-toast-message'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { TagSheet } from './components/TagSheet'
@@ -65,7 +64,6 @@ type CreateNoteSchemaType = z.infer<typeof createNoteSchema>
 export function CreateScreen() {
   const window = useWindowDimensions()
   const router = useRouter()
-  const toast = useToast()
   const { currentUser } = useAuth()
 
   const gap = useToken('space', '2')
@@ -120,28 +118,18 @@ export function CreateScreen() {
         state: 'Audit',
       })
 
-      toast.show({
-        placement: 'top',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="success">
-              <ToastTitle>发布成功</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'success',
+        text1: '发布成功',
+        text2: '快去查看吧',
       })
+
       router.replace(`/note/${result.id}`)
     }
     catch (error) {
-      toast.show({
-        placement: 'top',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="error">
-              <ToastTitle>{error.message}</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: 'error',
+        text1: error.message,
       })
     }
   }
@@ -167,19 +155,13 @@ export function CreateScreen() {
           mimeType: asset.type,
           // width: asset?.width,
           // height: asset?.height,
-        })) as unknown as ImagePicker.ImagePickerAsset[])
+        })) as unknown as any[])
       }
     }
     else {
-      toast.show({
-        placement: 'bottom right',
-        render: ({ id }) => {
-          return (
-            <Toast nativeID={id} variant="accent" action="warning">
-              <ToastTitle>需要授权相册才可发布图文</ToastTitle>
-            </Toast>
-          )
-        },
+      Toast.show({
+        type: '',
+        text1: '需要授权相册才可发布图文',
       })
     }
   }
@@ -260,6 +242,7 @@ export function CreateScreen() {
                     width={imageWidth}
                     height={imageWidth}
                     bg="$backgroundLight200"
+                    $dark-bg="$backgroundDark950"
                     justifyContent="center"
                     alignItems="center"
                     onPress={pickImageAsync}
@@ -310,6 +293,7 @@ export function CreateScreen() {
                   size="md"
                   borderBottomWidth={1}
                   borderBottomColor="$borderLight200"
+                  $dark-borderBlockColor="$borderDark800"
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -392,12 +376,12 @@ export function CreateScreen() {
             </HStack>
           </>
         )}
-        <ListItem
+        {/* <ListItem
           title={location || '我的位置'}
           icon={MapPin}
           right={<Icon as={ChevronRight} size="md" />}
           onPress={() => router.push('/create/map')}
-        />
+        /> */}
       </View>
 
       <TagSheet ref={modal.ref} />
