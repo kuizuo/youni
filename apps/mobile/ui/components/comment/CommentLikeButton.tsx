@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { TouchableOpacity } from 'react-native'
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import type { CommentItem } from '@server/modules/comment/comment'
 import { HStack, Icon, Text } from '@gluestack-ui/themed'
 import { Heart } from 'lucide-react-native'
+import { RectButton } from 'react-native-gesture-handler'
 import { trpc } from '@/utils/trpc'
 
 import { Like } from '@/ui/icons/like'
@@ -53,7 +53,7 @@ export function CommentLikeButton({
 
   return (
     <HStack gap="$1.5" alignItems="center">
-      <TouchableOpacity onPress={handleLike}>
+      <RectButton onPress={handleLike}>
         <Animated.View style={[animatedStyle]}>
           <Icon
             as={Heart}
@@ -62,7 +62,7 @@ export function CommentLikeButton({
             size={size}
           />
         </Animated.View>
-      </TouchableOpacity>
+      </RectButton>
       <Text color="$secondary500">
         {likedCount || placeholder}
       </Text>

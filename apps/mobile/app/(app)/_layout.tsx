@@ -9,10 +9,10 @@ export default function TabLayout() {
   const { primaryColor } = useColor()
   const { isLogged, currentUser } = useAuth()
 
+  const [count] = trpc.notification.count.useSuspenseQuery()
+
   if (!isLogged || !currentUser)
     return <Redirect href="/login" />
-
-  const [count] = trpc.notification.count.useSuspenseQuery()
 
   return (
     <Tabs
