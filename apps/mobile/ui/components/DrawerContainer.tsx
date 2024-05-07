@@ -1,6 +1,6 @@
 import { Drawer } from 'react-native-drawer-layout'
 import { useDrawerOpen } from '@/atoms/drawer'
-import CustomDrawerContent from '@/ui/components/CustomDrawerContent'
+import CustomDrawerContent from './CustomDrawerContent'
 
 export function DrawerContainer({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useDrawerOpen()

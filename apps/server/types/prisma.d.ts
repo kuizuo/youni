@@ -1,1 +1,1 @@
-import '@youni/prisma/global'
+import '@youni/database/global'

@@ -1,7 +1,7 @@
 {
   "name": "youni",
   "version": "0.1.0",
-  "packageManager": "pnpm@8.15.1",
+  "packageManager": "pnpm@9.0.5",
   "description": "",
   "author": "Kuizuo <hi@kuizuo.cn> (https://kuizuo.cn)",
   "license": "MIT",
