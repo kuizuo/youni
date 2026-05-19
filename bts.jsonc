@@ -1,0 +1,31 @@
+// Better-T-Stack
+//
+// Website: https://www.better-t-stack.dev/
+// Stack Builder: https://www.better-t-stack.dev/new
+// Analytics: https://www.better-t-stack.dev/analytics
+// Showcase: https://www.better-t-stack.dev/showcase
+// Sponsor: https://github.com/sponsors/AmanVarshney01
+//
+// Add new addons with: bun create better-t-stack add
+// This file is safe to delete
+
+{
+  "$schema": "https://r2.better-t-stack.dev/schema.json",
+  "version": "3.28.3",
+  "createdAt": "2026-05-19T16:19:04.194Z",
+  "reproducibleCommand": "bun create better-t-stack@latest youni --frontend tanstack-router native-uniwind --backend hono --runtime workers --database postgres --orm drizzle --api orpc --auth better-auth --payments none --addons biome turborepo --examples ai todo --db-setup none --web-deploy cloudflare --server-deploy cloudflare --git --package-manager bun --install",
+  "database": "postgres",
+  "orm": "drizzle",
+  "backend": "hono",
+  "runtime": "workers",
+  "frontend": ["tanstack-router", "native-uniwind"],
+  "addons": ["biome", "turborepo"],
+  "examples": ["ai", "todo"],
+  "auth": "better-auth",
+  "payments": "none",
+  "packageManager": "bun",
+  "dbSetup": "none",
+  "api": "orpc",
+  "webDeploy": "cloudflare",
+  "serverDeploy": "cloudflare",
+}

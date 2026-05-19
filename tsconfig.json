@@ -1,0 +1,3 @@
+{
+  "extends": "@youni/config/tsconfig.base.json"
+}
