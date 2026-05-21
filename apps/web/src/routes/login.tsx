@@ -5,15 +5,15 @@ import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 
 export const Route = createFileRoute("/login")({
-  component: RouteComponent,
+	component: RouteComponent,
 });
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
+	const [showSignIn, setShowSignIn] = useState(true);
 
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-  );
+	return showSignIn ? (
+		<SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+	) : (
+		<SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+	);
 }

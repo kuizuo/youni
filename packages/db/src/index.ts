@@ -5,10 +5,10 @@ import { Pool } from "pg";
 import * as schema from "./schema";
 
 export function createDb() {
-  const pool = new Pool({
-    connectionString: env.DATABASE_URL || "",
-    maxUses: 1,
-  });
+	const pool = new Pool({
+		connectionString: env.DATABASE_URL || "",
+		maxUses: 1,
+	});
 
-  return drizzle({ client: pool, schema });
+	return drizzle({ client: pool, schema });
 }
