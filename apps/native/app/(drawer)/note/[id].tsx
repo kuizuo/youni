@@ -2,9 +2,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { Link, useLocalSearchParams } from "expo-router";
-import { Button, useToast } from "heroui-native";
+import { useToast } from "heroui-native";
 import { useState } from "react";
-import { Alert, Image, ScrollView, Text, TextInput, View } from "react-native";
+import {
+	Alert,
+	Image,
+	Pressable,
+	ScrollView,
+	Text,
+	TextInput,
+	View,
+} from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
@@ -140,8 +148,8 @@ export default function NoteDetailScreen() {
 						placeholderTextColor="#8a8a8a"
 						className="h-10 flex-1 rounded-full bg-content2 px-4 text-foreground"
 					/>
-					<Button
-						isDisabled={!commentText.trim() || commentMutation.isPending}
+					<Pressable
+						disabled={!commentText.trim() || commentMutation.isPending}
 						onPress={() => {
 							if (requireLogin()) {
 								commentMutation.mutate({
@@ -150,9 +158,12 @@ export default function NoteDetailScreen() {
 								});
 							}
 						}}
+						className="h-10 items-center justify-center rounded-full bg-primary px-4 disabled:opacity-50"
 					>
-						<Button.Label>发送</Button.Label>
-					</Button>
+						<Text className="font-medium text-primary-foreground text-sm">
+							发送
+						</Text>
+					</Pressable>
 				</View>
 				<View className="flex-row justify-around">
 					<ActionButton
@@ -190,9 +201,12 @@ function ActionButton({
 	onPress: () => void;
 }) {
 	return (
-		<Button variant="ghost" onPress={onPress}>
+		<Pressable
+			onPress={onPress}
+			className="h-9 flex-row items-center justify-center gap-1 rounded-full px-3"
+		>
 			<Ionicons name={icon} size={18} color="#f43f5e" />
-			<Button.Label>{label}</Button.Label>
-		</Button>
+			<Text className="text-foreground text-sm">{label}</Text>
+		</Pressable>
 	);
 }

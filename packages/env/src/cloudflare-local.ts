@@ -3,6 +3,11 @@ import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
 
 config({ path: fileURLToPath(new URL("../../../.env", import.meta.url).href) });
+config({
+	path: fileURLToPath(
+		new URL("../../../apps/server/.env", import.meta.url).href,
+	),
+});
 config();
 
 const runtimeEnv: Record<string, string | undefined> =

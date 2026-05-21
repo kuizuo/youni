@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "heroui-native";
-import { FlatList, Image, ScrollView, Text, View } from "react-native";
+import {
+	FlatList,
+	Image,
+	Pressable,
+	ScrollView,
+	Text,
+	View,
+} from "react-native";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { NoteCard } from "@/components/note-card";
@@ -56,15 +62,15 @@ export default function MeScreen() {
 								{me.data?.profile.bio || "还没有简介"}
 							</Text>
 						</View>
-						<Button
-							variant="ghost"
+						<Pressable
 							onPress={() => {
 								authClient.signOut();
 								queryClient.clear();
 							}}
+							className="h-9 items-center justify-center rounded-full bg-content2 px-4"
 						>
-							<Button.Label>退出</Button.Label>
-						</Button>
+							<Text className="font-medium text-foreground text-sm">退出</Text>
+						</Pressable>
 					</View>
 					<View className="flex-row justify-around rounded-xl bg-content2 p-3">
 						<Stat label="图文" value={me.data?.profile.noteCount ?? 0} />

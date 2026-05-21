@@ -1,13 +1,30 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { Button, useToast } from "heroui-native";
+import { useToast } from "heroui-native";
 import { useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import {
+	Image,
+	Pressable,
+	ScrollView,
+	Text,
+	TextInput,
+	View,
+} from "react-native";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { authClient } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
+
+const sampleImages = [
+	"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+	"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+	"https://images.unsplash.com/photo-1514986888952-8cd320577b68?auto=format&fit=crop&w=900&q=80",
+	"https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=900&q=80",
+];
+
+const topicPresets = ["穿搭", "美食", "周末", "旅行", "灵感", "好物"];
 
 export default function CreateScreen() {
 	const router = useRouter();
@@ -48,17 +65,100 @@ export default function CreateScreen() {
 	const imageUrls = imageText
 		.split(/\s+/)
 		.map((item) => item.trim())
-		.filter(Boolean);
+		.filter(Boolean)
+		.slice(0, 9);
 	const topics = topicText
 		.split(/[,\s，#]+/)
 		.map((item) => item.trim())
 		.filter(Boolean);
 
+	const appendImage = (url: string) => {
+		if (imageUrls.includes(url) || imageUrls.length >= 9) return;
+		setImageText([...imageUrls, url].join("\n"));
+	};
+
+	const appendTopic = (topic: string) => {
+		if (topics.includes(topic)) return;
+		setTopicText([...topics, topic].join(" "));
+	};
+
 	return (
 		<ScrollView
 			contentInsetAdjustmentBehavior="automatic"
-			contentContainerClassName="gap-4 p-4"
+			contentContainerClassName="gap-5 p-4 pb-10"
 		>
+			<View className="flex-row items-center justify-between">
+				<View>
+					<Text className="font-semibold text-2xl text-foreground">
+						发布图文
+					</Text>
+					<Text className="mt-1 text-muted-foreground text-sm">
+						第一阶段使用图片链接，提交后进入后台审核。
+					</Text>
+				</View>
+				<Pressable
+					disabled={
+						!title.trim() ||
+						!content.trim() ||
+						imageUrls.length === 0 ||
+						createMutation.isPending
+					}
+					onPress={() =>
+						createMutation.mutate({ title, content, images: imageUrls, topics })
+					}
+					className="h-9 items-center justify-center rounded-full bg-primary px-4 disabled:opacity-50"
+				>
+					<Text className="font-medium text-primary-foreground text-sm">
+						{createMutation.isPending ? "提交中" : "发布"}
+					</Text>
+				</Pressable>
+			</View>
+
+			<View className="gap-3">
+				<Text className="font-medium text-foreground text-sm">图片</Text>
+				<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+					<View className="flex-row gap-3 pr-4">
+						{imageUrls.map((url) => (
+							<Image
+								key={url}
+								source={{ uri: url }}
+								className="size-28 rounded-xl bg-content3"
+								resizeMode="cover"
+							/>
+						))}
+						<View className="size-28 items-center justify-center rounded-xl border border-content3 border-dashed bg-content2">
+							<Ionicons name="image-outline" size={28} color="#8a8a8a" />
+							<Text className="mt-1 text-muted-foreground text-xs">
+								{imageUrls.length}/9
+							</Text>
+						</View>
+					</View>
+				</ScrollView>
+				<View className="flex-row flex-wrap gap-2">
+					{sampleImages.map((url, index) => (
+						<Pressable
+							key={url}
+							onPress={() => appendImage(url)}
+							className="rounded-full bg-content2 px-3 py-1.5"
+						>
+							<Text className="text-foreground text-xs">
+								示例图 {index + 1}
+							</Text>
+						</Pressable>
+					))}
+				</View>
+				<TextInput
+					value={imageText}
+					onChangeText={setImageText}
+					multiline
+					autoCapitalize="none"
+					placeholder="也可以粘贴图片链接，每行或空格分隔"
+					placeholderTextColor="#8a8a8a"
+					className="min-h-20 rounded-xl bg-content2 px-3 py-3 text-foreground"
+					textAlignVertical="top"
+				/>
+			</View>
+
 			<View className="gap-2">
 				<Text className="font-medium text-foreground text-sm">标题</Text>
 				<TextInput
@@ -81,21 +181,19 @@ export default function CreateScreen() {
 					textAlignVertical="top"
 				/>
 			</View>
-			<View className="gap-2">
-				<Text className="font-medium text-foreground text-sm">图片链接</Text>
-				<TextInput
-					value={imageText}
-					onChangeText={setImageText}
-					multiline
-					autoCapitalize="none"
-					placeholder="每行或空格分隔，最多 9 张"
-					placeholderTextColor="#8a8a8a"
-					className="min-h-24 rounded-xl bg-content2 px-3 py-3 text-foreground"
-					textAlignVertical="top"
-				/>
-			</View>
-			<View className="gap-2">
+			<View className="gap-3">
 				<Text className="font-medium text-foreground text-sm">话题</Text>
+				<View className="flex-row flex-wrap gap-2">
+					{topicPresets.map((topic) => (
+						<Pressable
+							key={topic}
+							onPress={() => appendTopic(topic)}
+							className="rounded-full bg-content2 px-3 py-1.5"
+						>
+							<Text className="text-foreground text-xs">#{topic}</Text>
+						</Pressable>
+					))}
+				</View>
 				<TextInput
 					value={topicText}
 					onChangeText={setTopicText}
@@ -104,21 +202,6 @@ export default function CreateScreen() {
 					className="h-11 rounded-xl bg-content2 px-3 text-foreground"
 				/>
 			</View>
-			<Button
-				isDisabled={
-					!title.trim() ||
-					!content.trim() ||
-					imageUrls.length === 0 ||
-					createMutation.isPending
-				}
-				onPress={() =>
-					createMutation.mutate({ title, content, images: imageUrls, topics })
-				}
-			>
-				<Button.Label>
-					{createMutation.isPending ? "提交中" : "提交审核"}
-				</Button.Label>
-			</Button>
 		</ScrollView>
 	);
 }

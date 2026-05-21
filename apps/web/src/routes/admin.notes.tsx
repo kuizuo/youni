@@ -4,6 +4,7 @@ import { Button } from "@youni/ui/components/button";
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
 } from "@youni/ui/components/card";
@@ -60,14 +61,15 @@ function AdminNotesRoute() {
 
 	return (
 		<AdminShell title="图文管理" description="处理用户发布、审核和下架图文。">
-			<Card>
+			<Card className="shadow-sm">
 				<CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
-					<div className="flex flex-1 items-center gap-2">
-						<Search data-icon="inline-start" />
+					<div className="flex flex-1 items-center gap-2 rounded-md border bg-background px-3">
+						<Search className="size-4 text-muted-foreground" />
 						<Input
 							value={keyword}
 							onChange={(event) => setKeyword(event.target.value)}
 							placeholder="搜索标题或内容"
+							className="border-0 px-0 shadow-none focus-visible:ring-0"
 						/>
 					</div>
 					<select
@@ -75,7 +77,7 @@ function AdminNotesRoute() {
 						onChange={(event) =>
 							setStatus(event.target.value as (typeof statuses)[number])
 						}
-						className="h-8 border bg-background px-2 text-sm"
+						className="h-9 rounded-md border bg-background px-3 text-sm"
 					>
 						{statuses.map((item) => (
 							<option key={item} value={item}>
@@ -86,40 +88,43 @@ function AdminNotesRoute() {
 				</CardContent>
 			</Card>
 
-			<Card>
-				<CardHeader>
+			<Card className="shadow-sm">
+				<CardHeader className="border-b bg-muted/30">
 					<CardTitle>图文列表</CardTitle>
+					<CardDescription>
+						点击标题展开详情，图片支持横向预览。
+					</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="p-0">
 					<div className="overflow-x-auto">
 						<table className="w-full min-w-[980px] text-left text-sm">
-							<thead className="border-b text-muted-foreground text-xs">
+							<thead className="border-b bg-background/60 text-muted-foreground text-xs">
 								<tr>
-									<th className="py-2 pr-3 font-medium">封面</th>
-									<th className="py-2 pr-3 font-medium">内容</th>
-									<th className="py-2 pr-3 font-medium">作者</th>
-									<th className="py-2 pr-3 font-medium">状态</th>
-									<th className="py-2 pr-3 font-medium">数据</th>
-									<th className="py-2 pr-3 font-medium">操作</th>
+									<th className="px-4 py-3 font-medium">封面</th>
+									<th className="px-4 py-3 font-medium">内容</th>
+									<th className="px-4 py-3 font-medium">作者</th>
+									<th className="px-4 py-3 font-medium">状态</th>
+									<th className="px-4 py-3 font-medium">数据</th>
+									<th className="px-4 py-3 font-medium">操作</th>
 								</tr>
 							</thead>
 							<tbody>
 								{notes.data?.map((item) => (
 									<tr
 										key={item.id}
-										className="border-b align-top last:border-b-0"
+										className="border-b bg-card align-top transition last:border-b-0 hover:bg-muted/35"
 									>
-										<td className="py-3 pr-3">
+										<td className="px-4 py-3">
 											<img
 												src={item.cover}
 												alt=""
-												className="size-20 object-cover"
+												className="size-20 rounded-md object-cover ring-1 ring-border"
 											/>
 										</td>
-										<td className="max-w-[360px] py-3 pr-3">
+										<td className="max-w-[360px] px-4 py-3">
 											<button
 												type="button"
-												className="text-left font-medium hover:underline"
+												className="text-left font-medium text-primary hover:underline"
 												onClick={() =>
 													setActiveId(activeId === item.id ? null : item.id)
 												}
@@ -133,7 +138,7 @@ function AdminNotesRoute() {
 												{item.topics.map((topic) => (
 													<span
 														key={topic}
-														className="border px-1.5 py-0.5 text-muted-foreground text-xs"
+														className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-700 text-xs ring-1 ring-blue-200"
 													>
 														#{topic}
 													</span>
@@ -148,20 +153,20 @@ function AdminNotesRoute() {
 																key={image}
 																src={image}
 																alt=""
-																className="size-24 object-cover"
+																className="size-24 rounded-md object-cover ring-1 ring-border"
 															/>
 														))}
 													</div>
 												</div>
 											) : null}
 										</td>
-										<td className="py-3 pr-3">
+										<td className="px-4 py-3">
 											<div>{item.authorName}</div>
 											<div className="text-muted-foreground text-xs">
 												{item.authorEmail}
 											</div>
 										</td>
-										<td className="py-3 pr-3">
+										<td className="px-4 py-3">
 											<NoteStatusBadge status={item.status} />
 											{item.rejectionReason ? (
 												<div className="mt-1 text-destructive text-xs">
@@ -169,12 +174,12 @@ function AdminNotesRoute() {
 												</div>
 											) : null}
 										</td>
-										<td className="py-3 pr-3 text-muted-foreground">
+										<td className="px-4 py-3 text-muted-foreground">
 											<div>赞 {item.likedCount}</div>
 											<div>藏 {item.collectedCount}</div>
 											<div>评 {item.commentCount}</div>
 										</td>
-										<td className="py-3 pr-3">
+										<td className="px-4 py-3">
 											<div className="flex flex-wrap gap-1">
 												<Button
 													size="icon-sm"

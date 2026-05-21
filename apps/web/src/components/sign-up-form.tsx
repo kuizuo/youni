@@ -38,7 +38,7 @@ export default function SignUpForm({
 						navigate({
 							to: "/admin",
 						});
-						toast.success("Sign up successful");
+						toast.success("注册成功");
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
@@ -48,9 +48,9 @@ export default function SignUpForm({
 		},
 		validators: {
 			onSubmit: z.object({
-				name: z.string().min(2, "Name must be at least 2 characters"),
-				email: z.email("Invalid email address"),
-				password: z.string().min(8, "Password must be at least 8 characters"),
+				name: z.string().min(2, "昵称至少 2 个字符"),
+				email: z.email("请输入正确的邮箱"),
+				password: z.string().min(8, "密码至少 8 位"),
 			}),
 		},
 	});
@@ -60,9 +60,7 @@ export default function SignUpForm({
 	}
 
 	return (
-		<div className="mx-auto mt-10 w-full max-w-md p-6">
-			<h1 className="mb-6 text-center font-bold text-3xl">Create Account</h1>
-
+		<div>
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
@@ -75,13 +73,14 @@ export default function SignUpForm({
 					<form.Field name="name">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Name</Label>
+								<Label htmlFor={field.name}>昵称</Label>
 								<Input
 									id={field.name}
 									name={field.name}
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder="你的昵称"
 								/>
 								{field.state.meta.errors.map((error) => (
 									<p key={error?.message} className="text-red-500">
@@ -97,7 +96,7 @@ export default function SignUpForm({
 					<form.Field name="email">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Email</Label>
+								<Label htmlFor={field.name}>邮箱</Label>
 								<Input
 									id={field.name}
 									name={field.name}
@@ -105,6 +104,7 @@ export default function SignUpForm({
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder="email@example.com"
 								/>
 								{field.state.meta.errors.map((error) => (
 									<p key={error?.message} className="text-red-500">
@@ -120,7 +120,7 @@ export default function SignUpForm({
 					<form.Field name="password">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Password</Label>
+								<Label htmlFor={field.name}>密码</Label>
 								<Input
 									id={field.name}
 									name={field.name}
@@ -128,6 +128,7 @@ export default function SignUpForm({
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder="至少 8 位"
 								/>
 								{field.state.meta.errors.map((error) => (
 									<p key={error?.message} className="text-red-500">
@@ -151,7 +152,7 @@ export default function SignUpForm({
 							className="w-full"
 							disabled={!canSubmit || isSubmitting}
 						>
-							{isSubmitting ? "Submitting..." : "Sign Up"}
+							{isSubmitting ? "注册中..." : "注册"}
 						</Button>
 					)}
 				</form.Subscribe>
@@ -161,9 +162,9 @@ export default function SignUpForm({
 				<Button
 					variant="link"
 					onClick={onSwitchToSignIn}
-					className="text-indigo-600 hover:text-indigo-800"
+					className="text-primary"
 				>
-					Already have an account? Sign In
+					已有账号？登录
 				</Button>
 			</div>
 		</div>

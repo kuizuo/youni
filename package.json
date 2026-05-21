@@ -38,6 +38,7 @@
 		"dev:web": "turbo -F web dev",
 		"dev:server": "turbo -F server dev",
 		"db:push": "turbo -F @youni/db db:push",
+		"db:seed": "turbo -F @youni/db db:seed",
 		"db:studio": "turbo -F @youni/db db:studio",
 		"db:generate": "turbo -F @youni/db db:generate",
 		"db:migrate": "turbo -F @youni/db db:migrate",

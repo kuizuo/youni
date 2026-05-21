@@ -15,8 +15,16 @@ export default function Home() {
 			keyExtractor={(item) => item.id}
 			numColumns={2}
 			contentInsetAdjustmentBehavior="automatic"
-			columnWrapperClassName="gap-3 px-3"
-			contentContainerClassName="gap-3 py-3"
+			ListHeaderComponent={
+				<View className="gap-1 px-4 pt-4 pb-2">
+					<Text className="font-semibold text-2xl text-foreground">发现</Text>
+					<Text className="text-muted-foreground text-sm">
+						看看大家最近分享的灵感、清单和生活方式。
+					</Text>
+				</View>
+			}
+			columnWrapperClassName="px-2"
+			contentContainerClassName="pb-4"
 			refreshControl={
 				<RefreshControl
 					refreshing={feed.isRefetching}

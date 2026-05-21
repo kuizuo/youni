@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import { Button } from "heroui-native";
-import { Alert, FlatList, Image, Text, View } from "react-native";
+import { Alert, FlatList, Image, Pressable, Text, View } from "react-native";
 
 import { NoteCard } from "@/components/note-card";
 import { authClient } from "@/lib/auth-client";
@@ -52,10 +51,7 @@ export default function UserProfileScreen() {
 							</Text>
 						</View>
 						{session.data?.user?.id !== id ? (
-							<Button
-								variant={
-									profile.data?.profile.isFollowing ? "secondary" : undefined
-								}
+							<Pressable
 								onPress={() => {
 									if (!session.data?.user) {
 										Alert.alert("请先登录", "到“我的”页面登录后即可关注。");
@@ -63,11 +59,22 @@ export default function UserProfileScreen() {
 									}
 									followMutation.mutate({ userId: id });
 								}}
+								className={
+									profile.data?.profile.isFollowing
+										? "h-9 items-center justify-center rounded-full bg-content2 px-4"
+										: "h-9 items-center justify-center rounded-full bg-primary px-4"
+								}
 							>
-								<Button.Label>
+								<Text
+									className={
+										profile.data?.profile.isFollowing
+											? "font-medium text-foreground text-sm"
+											: "font-medium text-primary-foreground text-sm"
+									}
+								>
 									{profile.data?.profile.isFollowing ? "已关注" : "关注"}
-								</Button.Label>
-							</Button>
+								</Text>
+							</Pressable>
 						) : null}
 					</View>
 					<View className="flex-row justify-around rounded-xl bg-content2 p-3">
