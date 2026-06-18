@@ -4,8 +4,8 @@ function DrawerLayout() {
 	return (
 		<Stack>
 			<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-			<Stack.Screen name="note/[id]" options={{ title: "图文详情" }} />
-			<Stack.Screen name="user/[id]" options={{ title: "个人主页" }} />
+			<Stack.Screen name="note/[id]" options={{ headerShown: false }} />
+			<Stack.Screen name="user/[id]" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

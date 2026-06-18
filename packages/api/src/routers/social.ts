@@ -285,14 +285,29 @@ async function getProfile(userId: string, viewerId?: string) {
 
 export const socialRouter = {
 	feed: publicProcedure.input(listInput).handler(async ({ input, context }) => {
-		const whereClause = input.keyword
-			? and(
-					eq(note.status, "published"),
-					or(
+		let topicNoteIds: string[] = [];
+		if (input.keyword) {
+			const rows = await createDb()
+				.select({ noteId: noteTopic.noteId })
+				.from(noteTopic)
+				.innerJoin(topic, eq(noteTopic.topicId, topic.id))
+				.where(ilike(topic.name, `%${input.keyword}%`));
+			topicNoteIds = Array.from(new Set(rows.map((row) => row.noteId)));
+		}
+		const keywordClause = input.keyword
+			? topicNoteIds.length > 0
+				? or(
 						ilike(note.title, `%${input.keyword}%`),
 						ilike(note.content, `%${input.keyword}%`),
-					),
-				)
+						inArray(note.id, topicNoteIds),
+					)
+				: or(
+						ilike(note.title, `%${input.keyword}%`),
+						ilike(note.content, `%${input.keyword}%`),
+					)
+			: undefined;
+		const whereClause = input.keyword
+			? and(eq(note.status, "published"), keywordClause)
 			: and(eq(note.status, "published"));
 		const rows = (await selectNoteRows(whereClause)).slice(0, input.limit);
 		return hydrateNotes(rows, context.session?.user.id);

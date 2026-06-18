@@ -1,4 +1,4 @@
-import { cn } from "heroui-native";
+import { cn, Surface } from "heroui-native";
 import type { PropsWithChildren } from "react";
 import {
 	ScrollView,
@@ -44,7 +44,9 @@ export function Container({
 					{children}
 				</ScrollView>
 			) : (
-				<View className="flex-1">{children}</View>
+				<Surface variant="transparent" className="flex-1 p-0">
+					{children}
+				</Surface>
 			)}
 		</AnimatedView>
 	);

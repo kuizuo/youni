@@ -1,13 +1,19 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useForm } from "@tanstack/react-form";
-import { useToast } from "heroui-native";
-import { useRef } from "react";
 import {
-	ActivityIndicator,
-	Pressable,
+	Alert,
+	Button,
+	Card,
+	Input,
+	Label,
+	Spinner,
+	Surface,
 	Text,
-	TextInput,
-	View,
-} from "react-native";
+	TextField,
+	useToast,
+} from "heroui-native";
+import { useRef, useState } from "react";
+import type { TextInput } from "react-native";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
@@ -28,9 +34,7 @@ function getErrorMessage(error: unknown): string | null {
 	if (Array.isArray(error)) {
 		for (const issue of error) {
 			const message = getErrorMessage(issue);
-			if (message) {
-				return message;
-			}
+			if (message) return message;
 		}
 		return null;
 	}
@@ -47,6 +51,10 @@ function getErrorMessage(error: unknown): string | null {
 
 function SignIn() {
 	const passwordInputRef = useRef<TextInput>(null);
+	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+	const [statusHint, setStatusHint] = useState(
+		"可使用管理员账号进入后台，也可以注册普通账号。",
+	);
 	const { toast } = useToast();
 
 	const form = useForm({
@@ -58,6 +66,7 @@ function SignIn() {
 			onSubmit: signInSchema,
 		},
 		onSubmit: async ({ value, formApi }) => {
+			setStatusHint("正在登录，请稍等。");
 			await authClient.signIn.email(
 				{
 					email: value.email.trim(),
@@ -65,13 +74,16 @@ function SignIn() {
 				},
 				{
 					onError(error) {
+						const message = error.error?.message || "登录失败";
+						setStatusHint(message);
 						toast.show({
 							variant: "danger",
-							label: error.error?.message || "登录失败",
+							label: message,
 						});
 					},
 					onSuccess() {
 						formApi.reset();
+						setStatusHint("登录成功，正在同步你的内容。");
 						toast.show({
 							variant: "success",
 							label: "登录成功",
@@ -82,10 +94,36 @@ function SignIn() {
 			);
 		},
 	});
+	const fillAdminAccount = () => {
+		form.setFieldValue("email", "admin@youni.local");
+		form.setFieldValue("password", "Admin123456");
+		setStatusHint("已填入管理员账号，可以直接登录。");
+		toast.show({
+			variant: "success",
+			label: "已填入管理员账号",
+			duration: 1200,
+		});
+	};
 
 	return (
-		<View className="rounded-lg bg-content2 p-4">
-			<Text className="mb-4 font-medium text-foreground">登录</Text>
+		<Card className="gap-4 rounded-3xl p-4">
+			<Card.Header className="flex-row items-center justify-between p-0">
+				<Card.Body className="gap-0.5 p-0">
+					<Card.Title className="font-semibold text-foreground text-lg">
+						登录
+					</Card.Title>
+					<Card.Description>回到你的收藏、关注和发布记录。</Card.Description>
+				</Card.Body>
+				<Button
+					size="sm"
+					variant="secondary"
+					feedbackVariant="scale-ripple"
+					onPress={fillAdminAccount}
+				>
+					<Ionicons name="shield-checkmark-outline" size={15} color="#8a8a8a" />
+					<Button.Label>管理员</Button.Label>
+				</Button>
+			</Card.Header>
 
 			<form.Subscribe
 				selector={(state) => ({
@@ -99,80 +137,133 @@ function SignIn() {
 					return (
 						<>
 							{formError ? (
-								<Text className="mb-3 text-danger text-xs">{formError}</Text>
+								<Alert status="danger" className="rounded-2xl">
+									<Alert.Indicator />
+									<Alert.Content>
+										<Alert.Title>登录信息需要检查</Alert.Title>
+										<Alert.Description>{formError}</Alert.Description>
+									</Alert.Content>
+								</Alert>
 							) : null}
+							<Surface
+								variant="secondary"
+								className="flex-row items-center gap-2 rounded-2xl bg-accent-soft px-3 py-2"
+							>
+								<Ionicons
+									name="information-circle-outline"
+									size={15}
+									color="#f43f5e"
+								/>
+								<Text.Paragraph
+									type="body-sm"
+									weight="semibold"
+									className="text-accent"
+								>
+									{statusHint}
+								</Text.Paragraph>
+							</Surface>
 
-							<View className="gap-3">
+							<Surface variant="transparent" className="gap-4 p-0">
 								<form.Field name="email">
 									{(field) => (
-										<View className="gap-1">
-											<Text className="text-muted-foreground text-xs">
-												邮箱
-											</Text>
-											<TextInput
+										<TextField isRequired>
+											<Label>邮箱</Label>
+											<Input
 												value={field.state.value}
 												onBlur={field.handleBlur}
 												onChangeText={field.handleChange}
 												placeholder="email@example.com"
-												placeholderTextColor="#8a8a8a"
 												keyboardType="email-address"
 												autoCapitalize="none"
 												autoComplete="email"
 												textContentType="emailAddress"
 												returnKeyType="next"
 												blurOnSubmit={false}
-												className="h-11 rounded-lg bg-background px-3 text-foreground"
 												onSubmitEditing={() => {
 													passwordInputRef.current?.focus();
 												}}
+												onFocus={() => setStatusHint("请输入登录邮箱。")}
 											/>
-										</View>
+										</TextField>
 									)}
 								</form.Field>
 
 								<form.Field name="password">
 									{(field) => (
-										<View className="gap-1">
-											<Text className="text-muted-foreground text-xs">
-												密码
-											</Text>
-											<TextInput
+										<TextField isRequired>
+											<Label>密码</Label>
+											<Input
 												ref={passwordInputRef}
 												value={field.state.value}
 												onBlur={field.handleBlur}
 												onChangeText={field.handleChange}
-												placeholder="••••••••"
-												placeholderTextColor="#8a8a8a"
-												secureTextEntry
+												placeholder="至少 8 位"
+												secureTextEntry={!isPasswordVisible}
 												autoComplete="password"
 												textContentType="password"
 												returnKeyType="go"
-												className="h-11 rounded-lg bg-background px-3 text-foreground"
 												onSubmitEditing={form.handleSubmit}
+												onFocus={() => setStatusHint("请输入密码，至少 8 位。")}
 											/>
-										</View>
+										</TextField>
 									)}
 								</form.Field>
+								<Card.Footer className="flex-row flex-wrap gap-2 p-0">
+									<Button
+										size="sm"
+										variant="secondary"
+										feedbackVariant="scale-ripple"
+										onPress={() => {
+											setIsPasswordVisible((value) => !value);
+											setStatusHint(
+												isPasswordVisible
+													? "密码已隐藏。"
+													: "密码已显示，确认后可登录。",
+											);
+										}}
+									>
+										<Ionicons
+											name={
+												isPasswordVisible ? "eye-off-outline" : "eye-outline"
+											}
+											size={15}
+											color="#8a8a8a"
+										/>
+										<Button.Label>
+											{isPasswordVisible ? "隐藏密码" : "显示密码"}
+										</Button.Label>
+									</Button>
+									<Button
+										size="sm"
+										variant="ghost"
+										feedbackVariant="scale-ripple"
+										onPress={() => {
+											form.reset();
+											setStatusHint("已清空输入。");
+											toast.show({ label: "已清空输入", duration: 900 });
+										}}
+									>
+										<Button.Label>清空</Button.Label>
+									</Button>
+								</Card.Footer>
 
-								<Pressable
+								<Button
+									variant="primary"
+									feedbackVariant="scale-ripple"
+									isDisabled={isSubmitting}
 									onPress={form.handleSubmit}
-									disabled={isSubmitting}
-									className="mt-1 h-11 items-center justify-center rounded-lg bg-primary disabled:opacity-60"
 								>
-									{isSubmitting ? (
-										<ActivityIndicator color="#ffffff" />
-									) : (
-										<Text className="font-medium text-primary-foreground">
-											登录
-										</Text>
-									)}
-								</Pressable>
-							</View>
+									{isSubmitting ? <Spinner size="sm" /> : null}
+									<Button.Label>
+										{isSubmitting ? "登录中" : "登录"}
+									</Button.Label>
+								</Button>
+							</Surface>
 						</>
 					);
 				}}
 			</form.Subscribe>
-		</View>
+		</Card>
 	);
 }
 
