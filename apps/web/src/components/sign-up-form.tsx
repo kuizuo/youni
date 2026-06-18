@@ -1,9 +1,7 @@
+import { Button, Input, Label, TextField } from "@heroui/react";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
-import { Button } from "@youni/ui/components/button";
-import { Input } from "@youni/ui/components/input";
-import { Label } from "@youni/ui/components/label";
-import { toast } from "sonner";
+import { useState } from "react";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
@@ -19,6 +17,7 @@ export default function SignUpForm({
 		from: "/",
 	});
 	const { isPending } = authClient.useSession();
+	const [formMessage, setFormMessage] = useState<string | null>(null);
 
 	const form = useForm({
 		defaultValues: {
@@ -27,6 +26,7 @@ export default function SignUpForm({
 			name: "",
 		},
 		onSubmit: async ({ value }) => {
+			setFormMessage(null);
 			await authClient.signUp.email(
 				{
 					email: value.email,
@@ -38,10 +38,9 @@ export default function SignUpForm({
 						navigate({
 							to: "/admin",
 						});
-						toast.success("注册成功");
 					},
 					onError: (error) => {
-						toast.error(error.error.message || error.error.statusText);
+						setFormMessage(error.error.message || error.error.statusText);
 					},
 				},
 			);
@@ -67,12 +66,12 @@ export default function SignUpForm({
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="space-y-4"
+				className="flex flex-col gap-4"
 			>
 				<div>
 					<form.Field name="name">
 						{(field) => (
-							<div className="space-y-2">
+							<TextField className="flex flex-col gap-2">
 								<Label htmlFor={field.name}>昵称</Label>
 								<Input
 									id={field.name}
@@ -81,13 +80,14 @@ export default function SignUpForm({
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 									placeholder="你的昵称"
+									fullWidth
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-danger text-sm">
 										{error?.message}
 									</p>
 								))}
-							</div>
+							</TextField>
 						)}
 					</form.Field>
 				</div>
@@ -95,7 +95,7 @@ export default function SignUpForm({
 				<div>
 					<form.Field name="email">
 						{(field) => (
-							<div className="space-y-2">
+							<TextField className="flex flex-col gap-2">
 								<Label htmlFor={field.name}>邮箱</Label>
 								<Input
 									id={field.name}
@@ -105,13 +105,14 @@ export default function SignUpForm({
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 									placeholder="email@example.com"
+									fullWidth
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-danger text-sm">
 										{error?.message}
 									</p>
 								))}
-							</div>
+							</TextField>
 						)}
 					</form.Field>
 				</div>
@@ -119,7 +120,7 @@ export default function SignUpForm({
 				<div>
 					<form.Field name="password">
 						{(field) => (
-							<div className="space-y-2">
+							<TextField className="flex flex-col gap-2">
 								<Label htmlFor={field.name}>密码</Label>
 								<Input
 									id={field.name}
@@ -129,16 +130,22 @@ export default function SignUpForm({
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 									placeholder="至少 8 位"
+									fullWidth
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-danger text-sm">
 										{error?.message}
 									</p>
 								))}
-							</div>
+							</TextField>
 						)}
 					</form.Field>
 				</div>
+				{formMessage ? (
+					<p className="rounded-2xl bg-danger-soft px-3 py-2 text-danger-soft-foreground text-sm">
+						{formMessage}
+					</p>
+				) : null}
 
 				<form.Subscribe
 					selector={(state) => ({
@@ -149,8 +156,9 @@ export default function SignUpForm({
 					{({ canSubmit, isSubmitting }) => (
 						<Button
 							type="submit"
-							className="w-full"
-							disabled={!canSubmit || isSubmitting}
+							fullWidth
+							isDisabled={!canSubmit || isSubmitting}
+							isPending={isSubmitting}
 						>
 							{isSubmitting ? "注册中..." : "注册"}
 						</Button>
@@ -159,11 +167,7 @@ export default function SignUpForm({
 			</form>
 
 			<div className="mt-4 text-center">
-				<Button
-					variant="link"
-					onClick={onSwitchToSignIn}
-					className="text-primary"
-				>
+				<Button variant="ghost" onPress={onSwitchToSignIn}>
 					已有账号？登录
 				</Button>
 			</div>

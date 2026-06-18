@@ -1,16 +1,8 @@
+import { Button, Card, Input } from "@heroui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Button } from "@youni/ui/components/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@youni/ui/components/card";
-import { Input } from "@youni/ui/components/input";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 
 import { AdminShell } from "@/components/admin-shell";
 import { UserStatusBadge } from "@/components/admin-status";
@@ -35,7 +27,7 @@ function AdminUsersRoute() {
 	const statusMutation = useMutation(
 		orpc.admin.updateUserStatus.mutationOptions({
 			onSuccess: () => {
-				toast.success("用户状态已更新");
+				console.info("用户状态已更新");
 				users.refetch();
 			},
 		}),
@@ -44,24 +36,25 @@ function AdminUsersRoute() {
 	return (
 		<AdminShell title="用户管理" description="查看用户资料、内容和账号状态。">
 			<Card>
-				<CardContent className="flex items-center gap-2 py-4">
-					<Search data-icon="inline-start" />
+				<Card.Content className="flex items-center gap-2 py-4">
+					<Search className="size-4 text-muted" data-icon="inline-start" />
 					<Input
 						value={keyword}
 						onChange={(event) => setKeyword(event.target.value)}
 						placeholder="搜索昵称或邮箱"
+						fullWidth
 					/>
-				</CardContent>
+				</Card.Content>
 			</Card>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>用户列表</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<Card.Header>
+					<Card.Title>用户列表</Card.Title>
+				</Card.Header>
+				<Card.Content>
 					<div className="overflow-x-auto">
 						<table className="w-full min-w-[920px] text-left text-sm">
-							<thead className="border-b text-muted-foreground text-xs">
+							<thead className="border-separator border-b text-muted text-xs">
 								<tr>
 									<th className="py-2 pr-3 font-medium">用户</th>
 									<th className="py-2 pr-3 font-medium">简介</th>
@@ -75,7 +68,7 @@ function AdminUsersRoute() {
 								{users.data?.map((item) => (
 									<tr
 										key={item.id}
-										className="border-b align-top last:border-b-0"
+										className="border-separator border-b align-top last:border-b-0"
 									>
 										<td className="py-3 pr-3">
 											<div className="flex items-center gap-3">
@@ -86,24 +79,22 @@ function AdminUsersRoute() {
 														className="size-10 object-cover"
 													/>
 												) : (
-													<div className="flex size-10 items-center justify-center bg-muted text-xs">
+													<div className="flex size-10 items-center justify-center rounded-full bg-surface-secondary text-xs">
 														{item.name.slice(0, 1)}
 													</div>
 												)}
 												<div>
 													<div className="font-medium">{item.name}</div>
-													<div className="text-muted-foreground text-xs">
-														{item.email}
-													</div>
+													<div className="text-muted text-xs">{item.email}</div>
 													{item.handle ? (
-														<div className="text-muted-foreground text-xs">
+														<div className="text-muted text-xs">
 															@{item.handle}
 														</div>
 													) : null}
 												</div>
 											</div>
 										</td>
-										<td className="max-w-[260px] py-3 pr-3 text-muted-foreground">
+										<td className="max-w-[260px] py-3 pr-3 text-muted">
 											{item.bio || "暂无简介"}
 										</td>
 										<td className="py-3 pr-3">
@@ -111,21 +102,21 @@ function AdminUsersRoute() {
 												status={item.status as "active" | "disabled"}
 											/>
 										</td>
-										<td className="py-3 pr-3 text-muted-foreground">
+										<td className="py-3 pr-3 text-muted">
 											<div>图文 {item.noteCount}</div>
 											<div>粉丝 {item.followerCount}</div>
 											<div>关注 {item.followingCount}</div>
 										</td>
-										<td className="py-3 pr-3 text-muted-foreground">
+										<td className="py-3 pr-3 text-muted">
 											{new Date(item.createdAt).toLocaleString()}
 										</td>
 										<td className="py-3 pr-3">
 											<Button
 												size="sm"
 												variant={
-													item.status === "active" ? "destructive" : "outline"
+													item.status === "active" ? "danger" : "outline"
 												}
-												onClick={() =>
+												onPress={() =>
 													statusMutation.mutate({
 														id: item.id,
 														status:
@@ -140,10 +131,7 @@ function AdminUsersRoute() {
 								))}
 								{!users.isLoading && users.data?.length === 0 ? (
 									<tr>
-										<td
-											className="py-8 text-center text-muted-foreground"
-											colSpan={6}
-										>
+										<td className="py-8 text-center text-muted" colSpan={6}>
 											暂无用户
 										</td>
 									</tr>
@@ -151,7 +139,7 @@ function AdminUsersRoute() {
 							</tbody>
 						</table>
 					</div>
-				</CardContent>
+				</Card.Content>
 			</Card>
 		</AdminShell>
 	);

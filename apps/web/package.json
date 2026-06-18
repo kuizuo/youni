@@ -13,7 +13,11 @@
 	},
 	"dependencies": {
 		"@ai-sdk/react": "catalog:",
+		"@heroui-pro/react": "1.0.0-beta.6",
+		"@heroui/react": ">=3.2.0",
+		"@heroui/styles": ">=3.2.0",
 		"@hookform/resolvers": "^5.2.2",
+		"@number-flow/react": ">=0.5.0",
 		"@orpc/client": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/tanstack-query": "catalog:",
@@ -21,6 +25,14 @@
 		"@tanstack/react-form": "catalog:",
 		"@tanstack/react-query": "catalog:",
 		"@tanstack/react-router": "^1.168.22",
+		"@tiptap/core": ">=3.23.6",
+		"@tiptap/extension-link": ">=3.23.6",
+		"@tiptap/extension-underline": ">=3.23.6",
+		"@tiptap/extensions": ">=3.23.6",
+		"@tiptap/pm": ">=3.23.6",
+		"@tiptap/react": ">=3.23.6",
+		"@tiptap/starter-kit": ">=3.23.6",
+		"@tiptap/suggestion": ">=3.23.6",
 		"@youni/api": "workspace:*",
 		"@youni/env": "workspace:*",
 		"@youni/ui": "workspace:*",
@@ -28,11 +40,19 @@
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
 		"lucide-react": "^1.8.0",
-		"next-themes": "catalog:",
+		"marked": ">=18.0.0",
+		"motion": ">=12.12.0",
 		"react": "^19.2.5",
+		"react-aria-components": ">=1.18.0",
 		"react-dom": "^19.2.5",
-		"sonner": "^2.0.7",
+		"react-markdown": ">=10.1.0",
+		"react-resizable-panels": ">=4.10.0",
+		"recharts": ">=2.0.0",
+		"remark-breaks": ">=4.0.0",
+		"remark-gfm": ">=4.0.0",
+		"shiki": ">=4.0.0",
 		"streamdown": "^1.6.10",
+		"tailwind-variants": ">=3.2.0",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
@@ -49,5 +69,10 @@
 		"tailwindcss": "^4.2.2",
 		"typescript": "^6",
 		"vite": "^8.0.8"
-	}
+	},
+	"trustedDependencies": [
+		"heroui-native-pro",
+		"@zowe/secrets-for-zowe-sdk",
+		"@heroui-pro/react"
+	]
 }

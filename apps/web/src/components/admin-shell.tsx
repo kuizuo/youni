@@ -1,14 +1,6 @@
+import { Card, Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { buttonVariants } from "@youni/ui/components/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@youni/ui/components/card";
-import { Skeleton } from "@youni/ui/components/skeleton";
-import { cn } from "@youni/ui/lib/utils";
 import { BarChart3, FileText, Hash, Sparkles, Users } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -39,8 +31,8 @@ export function AdminShell({ title, description, children }: AdminShellProps) {
 	if (session.isPending || admin.isLoading) {
 		return (
 			<main className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-6">
-				<Skeleton className="h-10 w-56" />
-				<Skeleton className="h-96 w-full" />
+				<Skeleton className="h-10 w-56 rounded-2xl" />
+				<Skeleton className="h-96 w-full rounded-2xl" />
 			</main>
 		);
 	}
@@ -49,22 +41,25 @@ export function AdminShell({ title, description, children }: AdminShellProps) {
 		return (
 			<main className="mx-auto flex min-h-[70svh] w-full max-w-md items-center px-4">
 				<Card>
-					<CardHeader>
-						<CardTitle>无法进入后台</CardTitle>
-					</CardHeader>
-					<CardContent className="flex flex-col gap-3 text-muted-foreground text-sm">
+					<Card.Header>
+						<Card.Title>无法进入后台</Card.Title>
+					</Card.Header>
+					<Card.Content className="flex flex-col gap-3 text-muted text-sm">
 						<p>请使用管理员邮箱登录后再访问后台。</p>
-						<Link to="/login" className={cn(buttonVariants())}>
+						<Link
+							to="/login"
+							className="inline-flex h-10 items-center justify-center rounded-2xl bg-accent px-4 font-medium text-accent-foreground text-sm"
+						>
 							去登录
 						</Link>
-					</CardContent>
+					</Card.Content>
 				</Card>
 			</main>
 		);
 	}
 
 	return (
-		<main className="relative min-h-[calc(100svh-48px)] overflow-hidden">
+		<main className="relative min-h-[calc(100svh-56px)] overflow-hidden">
 			<div className="pointer-events-none absolute inset-x-0 top-0 h-64 overflow-hidden">
 				<img
 					src="https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr"
@@ -78,17 +73,15 @@ export function AdminShell({ title, description, children }: AdminShellProps) {
 				/>
 			</div>
 			<div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[220px_1fr]">
-				<aside className="overflow-hidden rounded-lg bg-sidebar text-sidebar-foreground shadow-sm ring-1 ring-sidebar-border">
-					<div className="border-sidebar-border border-b p-4">
+				<aside className="overflow-hidden rounded-2xl bg-surface-secondary text-foreground shadow-surface ring-1 ring-border">
+					<div className="border-separator border-b p-4">
 						<div className="flex items-center gap-2 font-semibold text-sm">
-							<span className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+							<span className="flex size-8 items-center justify-center rounded-xl bg-accent text-accent-foreground">
 								<Sparkles className="size-4" />
 							</span>
 							Youni 工作台
 						</div>
-						<p className="mt-2 text-sidebar-foreground/55 text-xs">
-							内容审核与社区运营
-						</p>
+						<p className="mt-2 text-muted text-xs">内容审核与社区运营</p>
 					</div>
 					<nav className="grid gap-1 p-2">
 						{navItems.map((item) => {
@@ -98,7 +91,7 @@ export function AdminShell({ title, description, children }: AdminShellProps) {
 									key={item.to}
 									to={item.to}
 									activeProps={{ "data-active": true }}
-									className="flex h-10 items-center gap-2 rounded-md px-3 text-sidebar-foreground/70 text-sm transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
+									className="flex h-10 items-center gap-2 rounded-xl px-3 text-muted text-sm transition hover:bg-surface hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
 								>
 									<Icon data-icon="inline-start" />
 									{item.label}
@@ -108,9 +101,9 @@ export function AdminShell({ title, description, children }: AdminShellProps) {
 					</nav>
 				</aside>
 				<section className="grid min-w-0 gap-4">
-					<div className="rounded-lg bg-card/80 px-5 py-4 shadow-sm ring-1 ring-border/70 backdrop-blur">
+					<div className="rounded-2xl bg-surface/80 px-5 py-4 shadow-surface ring-1 ring-border backdrop-blur">
 						<h1 className="font-semibold text-2xl">{title}</h1>
-						<p className="mt-1 text-muted-foreground text-sm">{description}</p>
+						<p className="mt-1 text-muted text-sm">{description}</p>
 					</div>
 					{children}
 				</section>

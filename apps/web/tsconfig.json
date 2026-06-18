@@ -10,8 +10,7 @@
 		"types": ["vite/client"],
 		"rootDirs": ["."],
 		"paths": {
-			"@/*": ["./src/*"],
-			"@youni/ui/*": ["../../packages/ui/src/*"]
+			"@/*": ["./src/*"]
 		}
 	}
 }

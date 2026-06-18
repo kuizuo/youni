@@ -9,6 +9,7 @@ export default defineConfig({
 	},
 	resolve: {
 		tsconfigPaths: true,
+		dedupe: ["react", "react-dom", "react/jsx-runtime"],
 	},
 	plugins: [
 		tailwindcss(),

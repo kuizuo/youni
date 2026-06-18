@@ -1,9 +1,7 @@
+import { Button, Input, Label, TextField } from "@heroui/react";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
-import { Button } from "@youni/ui/components/button";
-import { Input } from "@youni/ui/components/input";
-import { Label } from "@youni/ui/components/label";
-import { toast } from "sonner";
+import { useState } from "react";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
@@ -19,6 +17,7 @@ export default function SignInForm({
 		from: "/",
 	});
 	const { isPending } = authClient.useSession();
+	const [formMessage, setFormMessage] = useState<string | null>(null);
 
 	const form = useForm({
 		defaultValues: {
@@ -26,6 +25,7 @@ export default function SignInForm({
 			password: "",
 		},
 		onSubmit: async ({ value }) => {
+			setFormMessage(null);
 			await authClient.signIn.email(
 				{
 					email: value.email,
@@ -36,10 +36,9 @@ export default function SignInForm({
 						navigate({
 							to: "/admin",
 						});
-						toast.success("登录成功");
 					},
 					onError: (error) => {
-						toast.error(error.error.message || error.error.statusText);
+						setFormMessage(error.error.message || error.error.statusText);
 					},
 				},
 			);
@@ -64,12 +63,12 @@ export default function SignInForm({
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="space-y-4"
+				className="flex flex-col gap-4"
 			>
 				<div>
 					<form.Field name="email">
 						{(field) => (
-							<div className="space-y-2">
+							<TextField className="flex flex-col gap-2">
 								<Label htmlFor={field.name}>邮箱</Label>
 								<Input
 									id={field.name}
@@ -79,13 +78,14 @@ export default function SignInForm({
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 									placeholder="admin@youni.local"
+									fullWidth
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-danger text-sm">
 										{error?.message}
 									</p>
 								))}
-							</div>
+							</TextField>
 						)}
 					</form.Field>
 				</div>
@@ -93,7 +93,7 @@ export default function SignInForm({
 				<div>
 					<form.Field name="password">
 						{(field) => (
-							<div className="space-y-2">
+							<TextField className="flex flex-col gap-2">
 								<Label htmlFor={field.name}>密码</Label>
 								<Input
 									id={field.name}
@@ -103,16 +103,22 @@ export default function SignInForm({
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 									placeholder="Admin123456"
+									fullWidth
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-danger text-sm">
 										{error?.message}
 									</p>
 								))}
-							</div>
+							</TextField>
 						)}
 					</form.Field>
 				</div>
+				{formMessage ? (
+					<p className="rounded-2xl bg-danger-soft px-3 py-2 text-danger-soft-foreground text-sm">
+						{formMessage}
+					</p>
+				) : null}
 
 				<form.Subscribe
 					selector={(state) => ({
@@ -123,8 +129,9 @@ export default function SignInForm({
 					{({ canSubmit, isSubmitting }) => (
 						<Button
 							type="submit"
-							className="w-full"
-							disabled={!canSubmit || isSubmitting}
+							fullWidth
+							isDisabled={!canSubmit || isSubmitting}
+							isPending={isSubmitting}
 						>
 							{isSubmitting ? "登录中..." : "登录"}
 						</Button>
@@ -133,11 +140,7 @@ export default function SignInForm({
 			</form>
 
 			<div className="mt-4 text-center">
-				<Button
-					variant="link"
-					onClick={onSwitchToSignUp}
-					className="text-primary"
-				>
+				<Button variant="ghost" onPress={onSwitchToSignUp}>
 					没有账号？注册
 				</Button>
 			</div>

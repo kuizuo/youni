@@ -1,15 +1,5 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Button } from "@youni/ui/components/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@youni/ui/components/dropdown-menu";
-import { Skeleton } from "@youni/ui/components/skeleton";
+import { Button, Skeleton } from "@heroui/react";
+import { useNavigate } from "@tanstack/react-router";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -18,45 +8,44 @@ export default function UserMenu() {
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
-		return <Skeleton className="h-9 w-24" />;
+		return <Skeleton className="h-9 w-24 rounded-2xl" />;
 	}
 
 	if (!session) {
 		return (
-			<Link to="/login">
-				<Button variant="outline">Sign In</Button>
-			</Link>
+			<Button
+				size="sm"
+				variant="outline"
+				onPress={() => navigate({ to: "/login" })}
+			>
+				Sign In
+			</Button>
 		);
 	}
 
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger render={<Button variant="outline" />}>
-				{session.user.name}
-			</DropdownMenuTrigger>
-			<DropdownMenuContent className="bg-card">
-				<DropdownMenuGroup>
-					<DropdownMenuLabel>My Account</DropdownMenuLabel>
-					<DropdownMenuSeparator />
-					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
-					<DropdownMenuItem
-						variant="destructive"
-						onClick={() => {
-							authClient.signOut({
-								fetchOptions: {
-									onSuccess: () => {
-										navigate({
-											to: "/",
-										});
-									},
-								},
-							});
-						}}
-					>
-						Sign Out
-					</DropdownMenuItem>
-				</DropdownMenuGroup>
-			</DropdownMenuContent>
-		</DropdownMenu>
+		<div className="flex items-center gap-2">
+			<div className="hidden text-right text-sm sm:block">
+				<div className="font-medium text-foreground">{session.user.name}</div>
+				<div className="text-muted text-xs">{session.user.email}</div>
+			</div>
+			<Button
+				size="sm"
+				variant="danger"
+				onPress={() => {
+					authClient.signOut({
+						fetchOptions: {
+							onSuccess: () => {
+								navigate({
+									to: "/",
+								});
+							},
+						},
+					});
+				}}
+			>
+				Sign Out
+			</Button>
+		</div>
 	);
 }

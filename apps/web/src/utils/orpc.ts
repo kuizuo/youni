@@ -4,17 +4,12 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import type { AppRouterClient } from "@youni/api/routers/index";
 import { env } from "@youni/env/web";
-import { toast } from "sonner";
 
 export const queryClient = new QueryClient({
 	queryCache: new QueryCache({
 		onError: (error, query) => {
-			toast.error(`Error: ${error.message}`, {
-				action: {
-					label: "retry",
-					onClick: query.invalidate,
-				},
-			});
+			console.error(`Error: ${error.message}`);
+			query.invalidate();
 		},
 	}),
 });

@@ -1,4 +1,4 @@
-import { cn } from "@youni/ui/lib/utils";
+import { Chip } from "@heroui/react";
 
 const noteStatusLabel = {
 	audit: "待审核",
@@ -12,13 +12,13 @@ const userStatusLabel = {
 	disabled: "禁用",
 } as const;
 
-const styles = {
-	audit: "border-chart-1/40 bg-chart-1/10 text-foreground",
-	published: "border-primary/30 bg-primary/10 text-foreground",
-	rejected: "border-destructive/30 bg-destructive/10 text-destructive",
-	hidden: "border-muted-foreground/30 bg-muted text-muted-foreground",
-	active: "border-primary/30 bg-primary/10 text-foreground",
-	disabled: "border-destructive/30 bg-destructive/10 text-destructive",
+const colors = {
+	audit: "warning",
+	published: "success",
+	rejected: "danger",
+	hidden: "default",
+	active: "success",
+	disabled: "danger",
 } as const;
 
 export function NoteStatusBadge({
@@ -27,11 +27,9 @@ export function NoteStatusBadge({
 	status: keyof typeof noteStatusLabel;
 }) {
 	return (
-		<span
-			className={cn("inline-flex border px-2 py-0.5 text-xs", styles[status])}
-		>
+		<Chip color={colors[status]} size="sm" variant="soft">
 			{noteStatusLabel[status]}
-		</span>
+		</Chip>
 	);
 }
 
@@ -41,11 +39,9 @@ export function UserStatusBadge({
 	status: keyof typeof userStatusLabel;
 }) {
 	return (
-		<span
-			className={cn("inline-flex border px-2 py-0.5 text-xs", styles[status])}
-		>
+		<Chip color={colors[status]} size="sm" variant="soft">
 			{userStatusLabel[status]}
-		</span>
+		</Chip>
 	);
 }
 

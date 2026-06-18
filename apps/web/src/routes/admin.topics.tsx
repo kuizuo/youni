@@ -1,16 +1,8 @@
+import { Button, Card, Input } from "@heroui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Button } from "@youni/ui/components/button";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@youni/ui/components/card";
-import { Input } from "@youni/ui/components/input";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 
 import { AdminShell } from "@/components/admin-shell";
 import { authClient } from "@/lib/auth-client";
@@ -36,7 +28,7 @@ function AdminTopicsRoute() {
 	const saveMutation = useMutation(
 		orpc.admin.saveTopic.mutationOptions({
 			onSuccess: () => {
-				toast.success(editingId ? "话题已更新" : "话题已新增");
+				console.info(editingId ? "话题已更新" : "话题已新增");
 				setName("");
 				setEditingId(null);
 				topics.refetch();
@@ -46,7 +38,7 @@ function AdminTopicsRoute() {
 	const deleteMutation = useMutation(
 		orpc.admin.deleteTopic.mutationOptions({
 			onSuccess: () => {
-				toast.success("话题已删除");
+				console.info("话题已删除");
 				topics.refetch();
 			},
 		}),
@@ -55,13 +47,14 @@ function AdminTopicsRoute() {
 	return (
 		<AdminShell title="话题管理" description="维护内容话题和查看使用情况。">
 			<Card>
-				<CardContent className="flex flex-col gap-3 py-4 md:flex-row">
+				<Card.Content className="flex flex-col gap-3 py-4 md:flex-row">
 					<div className="flex flex-1 items-center gap-2">
-						<Search data-icon="inline-start" />
+						<Search className="size-4 text-muted" data-icon="inline-start" />
 						<Input
 							value={keyword}
 							onChange={(event) => setKeyword(event.target.value)}
 							placeholder="搜索话题"
+							fullWidth
 						/>
 					</div>
 					<form
@@ -80,23 +73,24 @@ function AdminTopicsRoute() {
 							value={name}
 							onChange={(event) => setName(event.target.value)}
 							placeholder="新话题名称"
+							fullWidth
 						/>
-						<Button type="submit" disabled={!name.trim()}>
+						<Button type="submit" isDisabled={!name.trim()}>
 							<Plus data-icon="inline-start" />
 							保存
 						</Button>
 					</form>
-				</CardContent>
+				</Card.Content>
 			</Card>
 
 			<Card>
-				<CardHeader>
-					<CardTitle>话题列表</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<Card.Header>
+					<Card.Title>话题列表</Card.Title>
+				</Card.Header>
+				<Card.Content>
 					<div className="overflow-x-auto">
 						<table className="w-full min-w-[620px] text-left text-sm">
-							<thead className="border-b text-muted-foreground text-xs">
+							<thead className="border-separator border-b text-muted text-xs">
 								<tr>
 									<th className="py-2 pr-3 font-medium">话题</th>
 									<th className="py-2 pr-3 font-medium">图文数量</th>
@@ -106,19 +100,23 @@ function AdminTopicsRoute() {
 							</thead>
 							<tbody>
 								{topics.data?.map((item) => (
-									<tr key={item.id} className="border-b last:border-b-0">
+									<tr
+										key={item.id}
+										className="border-separator border-b last:border-b-0"
+									>
 										<td className="py-3 pr-3 font-medium">#{item.name}</td>
 										<td className="py-3 pr-3 tabular-nums">{item.noteCount}</td>
-										<td className="py-3 pr-3 text-muted-foreground">
+										<td className="py-3 pr-3 text-muted">
 											{new Date(item.createdAt).toLocaleString()}
 										</td>
 										<td className="py-3 pr-3">
 											<div className="flex gap-1">
 												<Button
-													size="icon-sm"
+													isIconOnly
+													size="sm"
 													variant="outline"
 													aria-label="编辑"
-													onClick={() => {
+													onPress={() => {
 														setEditingId(item.id);
 														setName(item.name);
 													}}
@@ -126,10 +124,11 @@ function AdminTopicsRoute() {
 													<Pencil data-icon="inline-start" />
 												</Button>
 												<Button
-													size="icon-sm"
-													variant="destructive"
+													isIconOnly
+													size="sm"
+													variant="danger"
 													aria-label="删除"
-													onClick={() => {
+													onPress={() => {
 														if (window.confirm("确认删除这个话题？")) {
 															deleteMutation.mutate({ id: item.id });
 														}
@@ -143,10 +142,7 @@ function AdminTopicsRoute() {
 								))}
 								{!topics.isLoading && topics.data?.length === 0 ? (
 									<tr>
-										<td
-											className="py-8 text-center text-muted-foreground"
-											colSpan={4}
-										>
+										<td className="py-8 text-center text-muted" colSpan={4}>
 											暂无话题
 										</td>
 									</tr>
@@ -154,7 +150,7 @@ function AdminTopicsRoute() {
 							</tbody>
 						</table>
 					</div>
-				</CardContent>
+				</Card.Content>
 			</Card>
 		</AdminShell>
 	);

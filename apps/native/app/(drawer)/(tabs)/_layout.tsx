@@ -28,18 +28,21 @@ const tabIcons: Record<
 	index: { active: "home", inactive: "home-outline" },
 	search: { active: "search", inactive: "search-outline" },
 	create: { active: "add", inactive: "add" },
+	preview: { active: "sparkles", inactive: "sparkles-outline" },
 	me: { active: "person", inactive: "person-outline" },
 };
 const tabHints: Record<string, string> = {
 	index: "发现新内容",
 	search: "搜索灵感",
 	create: "开始发布",
+	preview: "查看组件预览",
 	me: "查看我的",
 };
 const tabSubtitles: Record<string, string> = {
 	index: "刷新推荐、切到搜索或直接发布灵感。",
 	search: "继续找关键词、看热门或回发现页。",
 	create: "整理草稿、补图片或发布前再预览。",
+	preview: "查看 HeroUI Native 和 Native Pro 的组件状态。",
 	me: "查看收藏、作品和个人主页动作。",
 };
 
@@ -125,6 +128,29 @@ const tabQuickActions: Record<string, QuickAction[]> = {
 			toast: "回到发现",
 		},
 	],
+	preview: [
+		{
+			icon: "sparkles-outline",
+			label: "留在预览",
+			description: "继续检查 Native Pro 组件。",
+			target: "preview",
+			toast: "继续查看组件预览",
+		},
+		{
+			icon: "home-outline",
+			label: "回发现流",
+			description: "回到首页继续浏览社区内容。",
+			target: "index",
+			toast: "回到发现",
+		},
+		{
+			icon: "add-circle-outline",
+			label: "去发布",
+			description: "进入发布页检查表单和按钮表现。",
+			target: "create",
+			toast: "开始发布",
+		},
+	],
 	me: [
 		{
 			icon: "bookmark-outline",
@@ -187,6 +213,12 @@ export default function TabLayout() {
 				name="create"
 				options={{
 					title: "发布",
+				}}
+			/>
+			<RouterTabs.Screen
+				name="preview"
+				options={{
+					title: "预览",
 				}}
 			/>
 			<RouterTabs.Screen
