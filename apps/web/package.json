@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@ai-sdk/react": "catalog:",
+		"@gravity-ui/icons": "2.18.0",
 		"@heroui-pro/react": "1.0.0-beta.6",
 		"@heroui/react": ">=3.2.0",
 		"@heroui/styles": ">=3.2.0",
@@ -39,7 +40,6 @@
 		"ai": "catalog:",
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
-		"lucide-react": "^1.8.0",
 		"marked": ">=18.0.0",
 		"motion": ">=12.12.0",
 		"react": "^19.2.5",

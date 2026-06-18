@@ -1,13 +1,14 @@
+import { Button, Card } from "@heroui/react";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Outlet,
+	useNavigate,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
-import Header from "@/components/header";
 import type { orpc } from "@/utils/orpc";
 
 import "../index.css";
@@ -36,18 +37,36 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			},
 		],
 	}),
+	notFoundComponent: NotFoundComponent,
 });
 
 function RootComponent() {
 	return (
 		<>
 			<HeadContent />
-			<div className="grid h-svh grid-rows-[auto_1fr]">
-				<Header />
-				<Outlet />
-			</div>
+			<Outlet />
 			<TanStackRouterDevtools position="bottom-left" />
 			<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
 		</>
+	);
+}
+
+function NotFoundComponent() {
+	const navigate = useNavigate();
+
+	return (
+		<main className="mx-auto flex min-h-svh w-full max-w-md items-center px-4">
+			<Card>
+				<Card.Header>
+					<Card.Title>页面不存在</Card.Title>
+					<Card.Description>这个页面已经移除或地址不正确。</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<Button fullWidth onPress={() => navigate({ to: "/admin" })}>
+						返回后台
+					</Button>
+				</Card.Content>
+			</Card>
+		</main>
 	);
 }

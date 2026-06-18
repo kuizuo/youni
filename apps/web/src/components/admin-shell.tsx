@@ -1,113 +1,649 @@
-import { Card, Skeleton } from "@heroui/react";
+import {
+	ArrowRightFromSquare,
+	Bell,
+	ChartColumn,
+	Check,
+	Comment,
+	FileText,
+	Hashtag,
+	Magnifier,
+	Persons,
+	Star,
+} from "@gravity-ui/icons";
+import {
+	Avatar,
+	Button,
+	Chip,
+	Skeleton,
+	Tooltip,
+	useOverlayState,
+} from "@heroui/react";
+import { AppLayout, Command, Navbar, Sidebar } from "@heroui-pro/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { BarChart3, FileText, Hash, Sparkles, Users } from "lucide-react";
-import type { ReactNode } from "react";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import type { ComponentPropsWithRef, ComponentType, ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
-const navItems = [
-	{ to: "/admin", label: "概览", icon: BarChart3 },
-	{ to: "/admin/notes", label: "图文", icon: FileText },
-	{ to: "/admin/topics", label: "话题", icon: Hash },
-	{ to: "/admin/users", label: "用户", icon: Users },
+type AdminRouteTo =
+	| "/admin"
+	| "/admin/notes"
+	| "/admin/topics"
+	| "/admin/users";
+
+type AdminNavItem = {
+	readonly href: AdminRouteTo;
+	readonly label: string;
+	readonly icon: ComponentType<{ className?: string }>;
+	readonly badge?: string;
+};
+
+type AdminUser = {
+	readonly name?: string | null;
+	readonly email?: string | null;
+	readonly image?: string | null;
+};
+
+const NAV_ITEMS: readonly AdminNavItem[] = [
+	{ href: "/admin", icon: ChartColumn, label: "概览" },
+	{ href: "/admin/notes", icon: FileText, label: "图文" },
+	{ href: "/admin/topics", icon: Hashtag, label: "话题" },
+	{ href: "/admin/users", icon: Persons, label: "用户" },
 ] as const;
 
+const SEARCH_ITEMS = [
+	{
+		description: "查看指标、最近图文和运营提示。",
+		href: "/admin",
+		icon: ChartColumn,
+		keywords: "dashboard overview 指标 数据 最近图文",
+		label: "概览",
+	},
+	{
+		description: "搜索、筛选、审核、隐藏或删除图文。",
+		href: "/admin/notes",
+		icon: FileText,
+		keywords: "notes posts audit review publish hidden delete 图文 审核",
+		label: "图文管理",
+	},
+	{
+		description: "新增、编辑、删除话题并查看使用量。",
+		href: "/admin/topics",
+		icon: Hashtag,
+		keywords: "topics hashtag edit create delete 话题",
+		label: "话题管理",
+	},
+	{
+		description: "查看用户资料、内容数据和账号状态。",
+		href: "/admin/users",
+		icon: Persons,
+		keywords: "users accounts status disabled active 用户 账号",
+		label: "用户管理",
+	},
+] as const satisfies readonly (AdminNavItem & {
+	readonly description: string;
+	readonly keywords: string;
+})[];
+
+const ROUTE_LABELS = new Map<string, string>(
+	NAV_ITEMS.map((item) => [item.href, item.label]),
+);
+
 type AdminShellProps = {
-	title: string;
-	description: string;
+	user: AdminUser;
 	children: ReactNode;
 };
 
-export function AdminShell({ title, description, children }: AdminShellProps) {
-	const session = authClient.useSession();
-	const admin = useQuery({
-		...orpc.admin.me.queryOptions(),
-		enabled: !!session.data?.user,
-		retry: false,
+export function AdminShell({ user, children }: AdminShellProps) {
+	const navigate = useNavigate();
+	const pathname = useRouterState({
+		select: (state) => state.location.pathname,
 	});
-
-	if (session.isPending || admin.isLoading) {
-		return (
-			<main className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-6">
-				<Skeleton className="h-10 w-56 rounded-2xl" />
-				<Skeleton className="h-96 w-full rounded-2xl" />
-			</main>
-		);
-	}
-
-	if (!session.data?.user || admin.isError) {
-		return (
-			<main className="mx-auto flex min-h-[70svh] w-full max-w-md items-center px-4">
-				<Card>
-					<Card.Header>
-						<Card.Title>无法进入后台</Card.Title>
-					</Card.Header>
-					<Card.Content className="flex flex-col gap-3 text-muted text-sm">
-						<p>请使用管理员邮箱登录后再访问后台。</p>
-						<Link
-							to="/login"
-							className="inline-flex h-10 items-center justify-center rounded-2xl bg-accent px-4 font-medium text-accent-foreground text-sm"
-						>
-							去登录
-						</Link>
-					</Card.Content>
-				</Card>
-			</main>
-		);
-	}
+	const navigateTo = useCallback(
+		(href: string) => {
+			void navigate({ to: href as AdminRouteTo });
+		},
+		[navigate],
+	);
+	const title = useMemo(
+		() => ROUTE_LABELS.get(pathname) ?? "Youni 工作台",
+		[pathname],
+	);
 
 	return (
-		<main className="relative min-h-[calc(100svh-56px)] overflow-hidden">
-			<div className="pointer-events-none absolute inset-x-0 top-0 h-64 overflow-hidden">
-				<img
-					src="https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr"
-					alt=""
-					className="absolute top-8 left-10 h-56 opacity-25"
-				/>
-				<img
-					src="https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/C2TWRpJpiC0AAAAAAAAAAAAAFl94AQBr"
-					alt=""
-					className="absolute top-2 right-0 h-64 opacity-20"
-				/>
-			</div>
-			<div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[220px_1fr]">
-				<aside className="overflow-hidden rounded-2xl bg-surface-secondary text-foreground shadow-surface ring-1 ring-border">
-					<div className="border-separator border-b p-4">
-						<div className="flex items-center gap-2 font-semibold text-sm">
-							<span className="flex size-8 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-								<Sparkles className="size-4" />
-							</span>
-							Youni 工作台
-						</div>
-						<p className="mt-2 text-muted text-xs">内容审核与社区运营</p>
-					</div>
-					<nav className="grid gap-1 p-2">
-						{navItems.map((item) => {
-							const Icon = item.icon;
-							return (
-								<Link
-									key={item.to}
-									to={item.to}
-									activeProps={{ "data-active": true }}
-									className="flex h-10 items-center gap-2 rounded-xl px-3 text-muted text-sm transition hover:bg-surface hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
-								>
-									<Icon data-icon="inline-start" />
-									{item.label}
-								</Link>
-							);
-						})}
-					</nav>
-				</aside>
-				<section className="grid min-w-0 gap-4">
-					<div className="rounded-2xl bg-surface/80 px-5 py-4 shadow-surface ring-1 ring-border backdrop-blur">
-						<h1 className="font-semibold text-2xl">{title}</h1>
-						<p className="mt-1 text-muted text-sm">{description}</p>
-					</div>
-					{children}
-				</section>
-			</div>
+		<AppLayout
+			navigate={navigateTo}
+			navbar={<DashboardNavbar title={title} user={user} />}
+			scrollMode="content"
+			sidebar={<DashboardSidebar pathname={pathname} />}
+			sidebarCollapsible="offcanvas"
+		>
+			<div className="min-h-full bg-background">{children}</div>
+		</AppLayout>
+	);
+}
+
+type AdminPageProps = {
+	title: string;
+	description: string;
+	children: ReactNode;
+	actions?: ReactNode;
+};
+
+export function AdminPage({
+	title,
+	description,
+	children,
+	actions,
+}: AdminPageProps) {
+	return (
+		<main className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-5 pt-4 pb-10">
+			<section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+				<div className="min-w-0">
+					<h1 className="sr-only">{title}</h1>
+					<p className="text-muted text-sm">{description}</p>
+				</div>
+				{actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+			</section>
+			{children}
 		</main>
 	);
+}
+
+function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
+	const navigate = useNavigate();
+	const searchState = useOverlayState();
+	const overview = useQuery(orpc.admin.overview.queryOptions());
+	const fallback = getInitials(user);
+	const navigateToAdminRoute = useCallback(
+		(href: AdminRouteTo) => {
+			void navigate({ to: href });
+		},
+		[navigate],
+	);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+				event.preventDefault();
+				searchState.open();
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [searchState.open]);
+
+	return (
+		<>
+			<Navbar maxWidth="full">
+				<Navbar.Header>
+					<AppLayout.MenuToggle />
+					<Sidebar.Trigger />
+					<h2 className="truncate font-semibold text-foreground text-xl">
+						{title}
+					</h2>
+					<Navbar.Spacer />
+					<div className="flex items-center gap-2">
+						<IconButton
+							label="搜索"
+							size="sm"
+							tooltip="搜索后台页面"
+							variant="tertiary"
+							onPress={searchState.open}
+						>
+							<Magnifier className="size-4" />
+						</IconButton>
+						<NotificationButton
+							isLoading={overview.isLoading}
+							navigateTo={navigateToAdminRoute}
+							overview={overview.data}
+						/>
+						<div className="hidden items-center gap-3 border-separator border-l pl-3 md:flex">
+							<Avatar className="size-8">
+								{user.image ? (
+									<Avatar.Image alt={user.name ?? "管理员"} src={user.image} />
+								) : null}
+								<Avatar.Fallback>{fallback}</Avatar.Fallback>
+							</Avatar>
+							<div className="min-w-0 text-right">
+								<div className="truncate font-medium text-foreground text-sm">
+									{user.name || "管理员"}
+								</div>
+								<div className="truncate text-muted text-xs">{user.email}</div>
+							</div>
+						</div>
+						<IconButton
+							label="退出登录"
+							size="sm"
+							tooltip="退出登录"
+							variant="ghost"
+							onPress={() => {
+								authClient.signOut({
+									fetchOptions: {
+										onSuccess: () => {
+											navigate({ to: "/login" });
+										},
+									},
+								});
+							}}
+						>
+							<ArrowRightFromSquare className="size-4" />
+						</IconButton>
+					</div>
+				</Navbar.Header>
+			</Navbar>
+			<AdminSearchCommand
+				isOpen={searchState.isOpen}
+				navigateTo={navigateToAdminRoute}
+				onOpenChange={searchState.setOpen}
+			/>
+		</>
+	);
+}
+
+function DashboardSidebar({ pathname }: { pathname: string }) {
+	return (
+		<>
+			<Sidebar>
+				<SidebarContents pathname={pathname} />
+			</Sidebar>
+			<Sidebar.Mobile>
+				<SidebarContents idPrefix="mobile-" pathname={pathname} />
+			</Sidebar.Mobile>
+		</>
+	);
+}
+
+function SidebarContents({
+	idPrefix = "",
+	pathname,
+}: {
+	idPrefix?: string;
+	pathname: string;
+}) {
+	return (
+		<>
+			<Sidebar.Header>
+				<div className="flex items-center gap-3 px-1 py-1">
+					<span className="flex size-9 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+						<Star className="size-4" />
+					</span>
+					<div className="flex min-w-0 flex-col" data-sidebar="label">
+						<span className="truncate font-medium text-foreground text-sm leading-tight">
+							Youni 工作台
+						</span>
+						<span className="truncate font-medium text-muted text-xs leading-tight">
+							内容审核与社区运营
+						</span>
+					</div>
+				</div>
+			</Sidebar.Header>
+			<Sidebar.Content>
+				<Sidebar.Group>
+					<Sidebar.Menu aria-label="后台导航">
+						{NAV_ITEMS.map((item) => (
+							<SidebarNavItem
+								key={item.href}
+								idPrefix={idPrefix}
+								item={item}
+								pathname={pathname}
+							/>
+						))}
+					</Sidebar.Menu>
+				</Sidebar.Group>
+			</Sidebar.Content>
+		</>
+	);
+}
+
+function SidebarNavItem({
+	idPrefix,
+	item,
+	pathname,
+}: {
+	idPrefix: string;
+	item: AdminNavItem;
+	pathname: string;
+}) {
+	const Icon = item.icon;
+	const isCurrent =
+		item.href === "/admin"
+			? pathname === "/admin"
+			: pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+	return (
+		<Sidebar.MenuItem
+			href={item.href}
+			id={`${idPrefix}${item.href}`}
+			isCurrent={isCurrent}
+			textValue={item.label}
+		>
+			<Sidebar.MenuIcon>
+				<Icon className="size-4" />
+			</Sidebar.MenuIcon>
+			<Sidebar.MenuLabel>{item.label}</Sidebar.MenuLabel>
+			{item.badge ? (
+				<Sidebar.MenuChip>
+					<Chip color="success" size="sm" variant="soft">
+						{item.badge}
+					</Chip>
+				</Sidebar.MenuChip>
+			) : null}
+		</Sidebar.MenuItem>
+	);
+}
+
+type IconButtonProps = Omit<
+	ComponentPropsWithRef<typeof Button>,
+	"children" | "isIconOnly"
+> & {
+	children: ReactNode;
+	label: string;
+	tooltip?: ReactNode;
+};
+
+export function IconButton({
+	children,
+	label,
+	tooltip,
+	...buttonProps
+}: IconButtonProps) {
+	return (
+		<Tooltip>
+			<Button isIconOnly aria-label={label} {...buttonProps}>
+				{children}
+			</Button>
+			<Tooltip.Content>{tooltip ?? label}</Tooltip.Content>
+		</Tooltip>
+	);
+}
+
+function AdminSearchCommand({
+	isOpen,
+	navigateTo,
+	onOpenChange,
+}: {
+	isOpen: boolean;
+	navigateTo: (href: AdminRouteTo) => void;
+	onOpenChange: (isOpen: boolean) => void;
+}) {
+	return (
+		<Command>
+			<Command.Backdrop
+				isDismissable
+				isOpen={isOpen}
+				variant="blur"
+				onOpenChange={onOpenChange}
+			>
+				<Command.Container size="md">
+					<Command.Dialog aria-label="搜索后台页面">
+						<Command.Header>
+							<Command.InputGroup aria-label="搜索后台页面">
+								<Command.InputGroup.Prefix>
+									<Magnifier className="size-4" />
+								</Command.InputGroup.Prefix>
+								<Command.InputGroup.Input placeholder="搜索后台页面或功能" />
+								<Command.InputGroup.ClearButton />
+							</Command.InputGroup>
+						</Command.Header>
+						<Command.List
+							aria-label="后台页面"
+							renderEmptyState={() => "没有匹配的页面"}
+							onAction={(key) => {
+								const href = String(key);
+
+								if (isAdminRouteTo(href)) {
+									onOpenChange(false);
+									navigateTo(href);
+								}
+							}}
+						>
+							<Command.Group heading="后台页面">
+								{SEARCH_ITEMS.map((item) => {
+									const Icon = item.icon;
+
+									return (
+										<Command.Item
+											id={item.href}
+											key={item.href}
+											textValue={`${item.label} ${item.description} ${item.keywords}`}
+										>
+											<div className="flex min-w-0 items-center gap-3">
+												<span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+													<Icon className="size-4" />
+												</span>
+												<span className="min-w-0">
+													<span className="block truncate font-medium text-sm">
+														{item.label}
+													</span>
+													<span className="block truncate text-muted text-xs">
+														{item.description}
+													</span>
+												</span>
+											</div>
+										</Command.Item>
+									);
+								})}
+							</Command.Group>
+						</Command.List>
+					</Command.Dialog>
+				</Command.Container>
+			</Command.Backdrop>
+		</Command>
+	);
+}
+
+type NotificationOverview = {
+	readonly auditCount?: number;
+	readonly noteCount?: number;
+	readonly userCount?: number;
+};
+
+type NotificationTone = "accent" | "success" | "warning";
+
+type NotificationItem = {
+	readonly description: string;
+	readonly href: AdminRouteTo;
+	readonly icon: ComponentType<{ className?: string }>;
+	readonly id: string;
+	readonly label: string;
+	readonly tone: NotificationTone;
+};
+
+const notificationToneClassName: Record<NotificationTone, string> = {
+	accent: "bg-accent/10 text-accent",
+	success: "bg-success/10 text-success",
+	warning: "bg-warning/10 text-warning",
+};
+
+function NotificationButton({
+	isLoading,
+	navigateTo,
+	overview,
+}: {
+	isLoading: boolean;
+	navigateTo: (href: AdminRouteTo) => void;
+	overview?: NotificationOverview;
+}) {
+	const [isOpen, setIsOpen] = useState(false);
+	const rootRef = useRef<HTMLDivElement>(null);
+	const notifications = useMemo(() => getNotifications(overview), [overview]);
+	const pendingCount = overview?.auditCount ?? 0;
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		const handlePointerDown = (event: PointerEvent) => {
+			if (
+				event.target instanceof Node &&
+				!rootRef.current?.contains(event.target)
+			) {
+				setIsOpen(false);
+			}
+		};
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				setIsOpen(false);
+			}
+		};
+
+		document.addEventListener("pointerdown", handlePointerDown);
+		document.addEventListener("keydown", handleKeyDown);
+
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown);
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [isOpen]);
+
+	return (
+		<div ref={rootRef} className="relative">
+			<IconButton
+				aria-controls={isOpen ? "admin-notifications" : undefined}
+				aria-expanded={isOpen}
+				label="通知"
+				size="sm"
+				tooltip="查看通知"
+				variant="tertiary"
+				onPress={() => setIsOpen((value) => !value)}
+			>
+				<span className="relative flex">
+					<Bell className="size-4" />
+					{pendingCount > 0 ? (
+						<span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-danger ring-2 ring-background" />
+					) : null}
+				</span>
+			</IconButton>
+
+			{isOpen ? (
+				<div
+					aria-label="通知"
+					className="absolute top-full right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-border bg-background p-2 shadow-xl"
+					id="admin-notifications"
+					role="dialog"
+				>
+					<div className="px-3 py-2">
+						<div className="font-medium text-foreground text-sm">通知</div>
+						<div className="text-muted text-xs">
+							{pendingCount > 0
+								? `${pendingCount} 篇图文等待审核`
+								: "当前没有待审核内容"}
+						</div>
+					</div>
+					<div className="grid gap-1">
+						{isLoading
+							? ["audit", "notes", "users"].map((key) => (
+									<Skeleton key={key} className="h-16 rounded-2xl" />
+								))
+							: notifications.map((item) => {
+									const Icon = item.icon;
+
+									return (
+										<button
+											className="flex w-full items-start gap-3 rounded-2xl px-3 py-2 text-left transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+											key={item.id}
+											type="button"
+											onClick={() => {
+												setIsOpen(false);
+												navigateTo(item.href);
+											}}
+										>
+											<span
+												className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl ${notificationToneClassName[item.tone]}`}
+											>
+												<Icon className="size-4" />
+											</span>
+											<span className="min-w-0">
+												<span className="block truncate font-medium text-foreground text-sm">
+													{item.label}
+												</span>
+												<span className="line-clamp-2 text-muted text-xs">
+													{item.description}
+												</span>
+											</span>
+										</button>
+									);
+								})}
+					</div>
+				</div>
+			) : null}
+		</div>
+	);
+}
+
+function getNotifications(overview?: NotificationOverview): NotificationItem[] {
+	const auditCount = overview?.auditCount ?? 0;
+	const noteCount = overview?.noteCount ?? 0;
+	const userCount = overview?.userCount ?? 0;
+
+	return [
+		auditCount > 0
+			? {
+					description: "进入图文列表处理通过、拒绝或隐藏。",
+					href: "/admin/notes",
+					icon: FileText,
+					id: "audit",
+					label: `${auditCount} 篇图文待审核`,
+					tone: "warning",
+				}
+			: {
+					description: "图文管理里没有待处理审核。",
+					href: "/admin/notes",
+					icon: Check,
+					id: "audit-clear",
+					label: "审核队列已清空",
+					tone: "success",
+				},
+		{
+			description: "查看内容状态、互动数据和详情。",
+			href: "/admin/notes",
+			icon: Comment,
+			id: "notes",
+			label: `共 ${noteCount} 篇图文`,
+			tone: "accent",
+		},
+		{
+			description: "新增、编辑或删除社区话题。",
+			href: "/admin/topics",
+			icon: Hashtag,
+			id: "topics",
+			label: "话题维护",
+			tone: "accent",
+		},
+		{
+			description: "查看账号状态、资料和内容数据。",
+			href: "/admin/users",
+			icon: Persons,
+			id: "users",
+			label: `共 ${userCount} 位用户`,
+			tone: "accent",
+		},
+	];
+}
+
+function isAdminRouteTo(value: string): value is AdminRouteTo {
+	return NAV_ITEMS.some((item) => item.href === value);
+}
+
+function getInitials(user: AdminUser) {
+	const source = user.name || user.email || "管理员";
+	const parts = source.trim().split(/\s+/);
+
+	if (parts.length > 1) {
+		return parts
+			.slice(0, 2)
+			.map((part) => part[0])
+			.join("")
+			.toUpperCase();
+	}
+
+	return source.slice(0, 2).toUpperCase();
 }

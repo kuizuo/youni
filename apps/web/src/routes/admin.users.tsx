@@ -1,12 +1,13 @@
-import { Button, Card, Input } from "@heroui/react";
+import { Magnifier } from "@gravity-ui/icons";
+import { Avatar, Button, Card, SearchField } from "@heroui/react";
+import type { DataGridColumn } from "@heroui-pro/react";
+import { DataGrid } from "@heroui-pro/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { AdminShell } from "@/components/admin-shell";
+import { AdminPage } from "@/components/admin-shell";
 import { UserStatusBadge } from "@/components/admin-status";
-import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/admin/users")({
@@ -14,16 +15,12 @@ export const Route = createFileRoute("/admin/users")({
 });
 
 function AdminUsersRoute() {
-	const session = authClient.useSession();
 	const [keyword, setKeyword] = useState("");
 	const input = useMemo(
 		() => ({ keyword: keyword.trim() || undefined, limit: 100 }),
 		[keyword],
 	);
-	const users = useQuery({
-		...orpc.admin.users.queryOptions({ input }),
-		enabled: !!session.data?.user,
-	});
+	const users = useQuery(orpc.admin.users.queryOptions({ input }));
 	const statusMutation = useMutation(
 		orpc.admin.updateUserStatus.mutationOptions({
 			onSuccess: () => {
@@ -32,115 +29,151 @@ function AdminUsersRoute() {
 			},
 		}),
 	);
+	type UserItem = NonNullable<typeof users.data>[number];
+
+	const userColumns = useMemo<DataGridColumn<UserItem>[]>(
+		() => [
+			{
+				accessorKey: "name",
+				allowsSorting: true,
+				header: "用户",
+				id: "user",
+				isRowHeader: true,
+				minWidth: 260,
+				cell: (item) => (
+					<div className="flex items-center gap-3">
+						<Avatar className="size-10">
+							{item.image ? (
+								<Avatar.Image alt={item.name} src={item.image} />
+							) : null}
+							<Avatar.Fallback>{item.name.slice(0, 1)}</Avatar.Fallback>
+						</Avatar>
+						<div className="min-w-0">
+							<div className="truncate font-medium">{item.name}</div>
+							<div className="truncate text-muted text-xs">{item.email}</div>
+							{item.handle ? (
+								<div className="truncate text-muted text-xs">
+									@{item.handle}
+								</div>
+							) : null}
+						</div>
+					</div>
+				),
+			},
+			{
+				accessorKey: "bio",
+				header: "简介",
+				id: "bio",
+				minWidth: 260,
+				cell: (item) => (
+					<span className="line-clamp-2 text-muted">
+						{item.bio || "暂无简介"}
+					</span>
+				),
+			},
+			{
+				accessorKey: "status",
+				allowsSorting: true,
+				header: "状态",
+				id: "status",
+				minWidth: 120,
+				cell: (item) => (
+					<UserStatusBadge status={item.status as "active" | "disabled"} />
+				),
+			},
+			{
+				header: "数据",
+				id: "stats",
+				minWidth: 140,
+				cell: (item) => (
+					<div className="text-muted text-sm">
+						<div>图文 {item.noteCount}</div>
+						<div>粉丝 {item.followerCount}</div>
+						<div>关注 {item.followingCount}</div>
+					</div>
+				),
+			},
+			{
+				accessorKey: "createdAt",
+				allowsSorting: true,
+				header: "创建时间",
+				id: "createdAt",
+				minWidth: 180,
+				cell: (item) => (
+					<span className="text-muted tabular-nums">
+						{new Date(item.createdAt).toLocaleString()}
+					</span>
+				),
+			},
+			{
+				align: "end",
+				header: "操作",
+				id: "actions",
+				minWidth: 120,
+				cell: (item) => (
+					<Button
+						size="sm"
+						variant={item.status === "active" ? "danger" : "outline"}
+						isPending={statusMutation.isPending}
+						onPress={() =>
+							statusMutation.mutate({
+								id: item.id,
+								status: item.status === "active" ? "disabled" : "active",
+							})
+						}
+					>
+						{item.status === "active" ? "禁用" : "恢复"}
+					</Button>
+				),
+			},
+		],
+		[statusMutation],
+	);
 
 	return (
-		<AdminShell title="用户管理" description="查看用户资料、内容和账号状态。">
+		<AdminPage title="用户管理" description="查看用户资料、内容和账号状态。">
 			<Card>
-				<Card.Content className="flex items-center gap-2 py-4">
-					<Search className="size-4 text-muted" data-icon="inline-start" />
-					<Input
+				<Card.Content className="py-4">
+					<SearchField
+						aria-label="搜索用户"
+						className="w-full md:max-w-sm"
+						name="users-search"
 						value={keyword}
-						onChange={(event) => setKeyword(event.target.value)}
-						placeholder="搜索昵称或邮箱"
-						fullWidth
-					/>
+						onChange={setKeyword}
+					>
+						<SearchField.Group>
+							<SearchField.SearchIcon>
+								<Magnifier className="size-4" />
+							</SearchField.SearchIcon>
+							<SearchField.Input placeholder="搜索昵称或邮箱" />
+							<SearchField.ClearButton />
+						</SearchField.Group>
+					</SearchField>
 				</Card.Content>
 			</Card>
 
 			<Card>
 				<Card.Header>
 					<Card.Title>用户列表</Card.Title>
+					<Card.Description>
+						查看用户状态、内容数量和社交数据。
+					</Card.Description>
 				</Card.Header>
-				<Card.Content>
-					<div className="overflow-x-auto">
-						<table className="w-full min-w-[920px] text-left text-sm">
-							<thead className="border-separator border-b text-muted text-xs">
-								<tr>
-									<th className="py-2 pr-3 font-medium">用户</th>
-									<th className="py-2 pr-3 font-medium">简介</th>
-									<th className="py-2 pr-3 font-medium">状态</th>
-									<th className="py-2 pr-3 font-medium">数据</th>
-									<th className="py-2 pr-3 font-medium">创建时间</th>
-									<th className="py-2 pr-3 font-medium">操作</th>
-								</tr>
-							</thead>
-							<tbody>
-								{users.data?.map((item) => (
-									<tr
-										key={item.id}
-										className="border-separator border-b align-top last:border-b-0"
-									>
-										<td className="py-3 pr-3">
-											<div className="flex items-center gap-3">
-												{item.image ? (
-													<img
-														src={item.image}
-														alt=""
-														className="size-10 object-cover"
-													/>
-												) : (
-													<div className="flex size-10 items-center justify-center rounded-full bg-surface-secondary text-xs">
-														{item.name.slice(0, 1)}
-													</div>
-												)}
-												<div>
-													<div className="font-medium">{item.name}</div>
-													<div className="text-muted text-xs">{item.email}</div>
-													{item.handle ? (
-														<div className="text-muted text-xs">
-															@{item.handle}
-														</div>
-													) : null}
-												</div>
-											</div>
-										</td>
-										<td className="max-w-[260px] py-3 pr-3 text-muted">
-											{item.bio || "暂无简介"}
-										</td>
-										<td className="py-3 pr-3">
-											<UserStatusBadge
-												status={item.status as "active" | "disabled"}
-											/>
-										</td>
-										<td className="py-3 pr-3 text-muted">
-											<div>图文 {item.noteCount}</div>
-											<div>粉丝 {item.followerCount}</div>
-											<div>关注 {item.followingCount}</div>
-										</td>
-										<td className="py-3 pr-3 text-muted">
-											{new Date(item.createdAt).toLocaleString()}
-										</td>
-										<td className="py-3 pr-3">
-											<Button
-												size="sm"
-												variant={
-													item.status === "active" ? "danger" : "outline"
-												}
-												onPress={() =>
-													statusMutation.mutate({
-														id: item.id,
-														status:
-															item.status === "active" ? "disabled" : "active",
-													})
-												}
-											>
-												{item.status === "active" ? "禁用" : "恢复"}
-											</Button>
-										</td>
-									</tr>
-								))}
-								{!users.isLoading && users.data?.length === 0 ? (
-									<tr>
-										<td className="py-8 text-center text-muted" colSpan={6}>
-											暂无用户
-										</td>
-									</tr>
-								) : null}
-							</tbody>
-						</table>
-					</div>
+				<Card.Content className="p-0">
+					<DataGrid
+						aria-label="用户列表"
+						columns={userColumns}
+						contentClassName="min-w-[1040px]"
+						data={users.data ?? []}
+						getRowId={(item) => item.id}
+						isLoadingMore={users.isFetching}
+						renderEmptyState={() => (
+							<span className="text-muted text-sm">暂无用户</span>
+						)}
+						verticalAlign="top"
+					/>
 				</Card.Content>
 			</Card>
-		</AdminShell>
+		</AdminPage>
 	);
 }

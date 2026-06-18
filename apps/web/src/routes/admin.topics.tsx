@@ -1,11 +1,19 @@
-import { Button, Card, Input } from "@heroui/react";
+import { Magnifier, Pencil, Plus, TrashBin } from "@gravity-ui/icons";
+import {
+	Button,
+	Card,
+	Input,
+	Label,
+	SearchField,
+	TextField,
+} from "@heroui/react";
+import type { DataGridColumn } from "@heroui-pro/react";
+import { DataGrid } from "@heroui-pro/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { AdminShell } from "@/components/admin-shell";
-import { authClient } from "@/lib/auth-client";
+import { AdminPage, IconButton } from "@/components/admin-shell";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/admin/topics")({
@@ -13,7 +21,6 @@ export const Route = createFileRoute("/admin/topics")({
 });
 
 function AdminTopicsRoute() {
-	const session = authClient.useSession();
 	const [keyword, setKeyword] = useState("");
 	const [name, setName] = useState("");
 	const [editingId, setEditingId] = useState<string | null>(null);
@@ -21,10 +28,7 @@ function AdminTopicsRoute() {
 		() => ({ keyword: keyword.trim() || undefined, limit: 100 }),
 		[keyword],
 	);
-	const topics = useQuery({
-		...orpc.admin.topics.queryOptions({ input }),
-		enabled: !!session.data?.user,
-	});
+	const topics = useQuery(orpc.admin.topics.queryOptions({ input }));
 	const saveMutation = useMutation(
 		orpc.admin.saveTopic.mutationOptions({
 			onSuccess: () => {
@@ -43,22 +47,97 @@ function AdminTopicsRoute() {
 			},
 		}),
 	);
+	type TopicItem = NonNullable<typeof topics.data>[number];
+
+	const topicColumns = useMemo<DataGridColumn<TopicItem>[]>(
+		() => [
+			{
+				accessorKey: "name",
+				allowsSorting: true,
+				header: "话题",
+				id: "name",
+				isRowHeader: true,
+				minWidth: 240,
+				cell: (item) => <span className="font-medium">#{item.name}</span>,
+			},
+			{
+				accessorKey: "noteCount",
+				allowsSorting: true,
+				header: "图文数量",
+				id: "noteCount",
+				minWidth: 140,
+				cell: (item) => <span className="tabular-nums">{item.noteCount}</span>,
+			},
+			{
+				accessorKey: "createdAt",
+				allowsSorting: true,
+				header: "创建时间",
+				id: "createdAt",
+				minWidth: 180,
+				cell: (item) => (
+					<span className="text-muted tabular-nums">
+						{new Date(item.createdAt).toLocaleString()}
+					</span>
+				),
+			},
+			{
+				align: "end",
+				header: "操作",
+				id: "actions",
+				minWidth: 140,
+				cell: (item) => (
+					<div className="flex justify-end gap-1">
+						<IconButton
+							label="编辑"
+							size="sm"
+							variant="outline"
+							onPress={() => {
+								setEditingId(item.id);
+								setName(item.name);
+							}}
+						>
+							<Pencil className="size-4" />
+						</IconButton>
+						<IconButton
+							label="删除"
+							isDisabled={deleteMutation.isPending}
+							size="sm"
+							variant="danger"
+							onPress={() => {
+								if (window.confirm("确认删除这个话题？")) {
+									deleteMutation.mutate({ id: item.id });
+								}
+							}}
+						>
+							<TrashBin className="size-4" />
+						</IconButton>
+					</div>
+				),
+			},
+		],
+		[deleteMutation],
+	);
 
 	return (
-		<AdminShell title="话题管理" description="维护内容话题和查看使用情况。">
+		<AdminPage title="话题管理" description="维护内容话题和查看使用情况。">
 			<Card>
-				<Card.Content className="flex flex-col gap-3 py-4 md:flex-row">
-					<div className="flex flex-1 items-center gap-2">
-						<Search className="size-4 text-muted" data-icon="inline-start" />
-						<Input
-							value={keyword}
-							onChange={(event) => setKeyword(event.target.value)}
-							placeholder="搜索话题"
-							fullWidth
-						/>
-					</div>
+				<Card.Content className="grid gap-3 py-4 lg:grid-cols-[1fr_1.4fr]">
+					<SearchField
+						aria-label="搜索话题"
+						name="topics-search"
+						value={keyword}
+						onChange={setKeyword}
+					>
+						<SearchField.Group>
+							<SearchField.SearchIcon>
+								<Magnifier className="size-4" />
+							</SearchField.SearchIcon>
+							<SearchField.Input placeholder="搜索话题" />
+							<SearchField.ClearButton />
+						</SearchField.Group>
+					</SearchField>
 					<form
-						className="flex flex-1 gap-2"
+						className="flex gap-2"
 						onSubmit={(event) => {
 							event.preventDefault();
 							if (name.trim()) {
@@ -69,14 +148,21 @@ function AdminTopicsRoute() {
 							}
 						}}
 					>
-						<Input
-							value={name}
-							onChange={(event) => setName(event.target.value)}
-							placeholder="新话题名称"
-							fullWidth
-						/>
-						<Button type="submit" isDisabled={!name.trim()}>
-							<Plus data-icon="inline-start" />
+						<TextField className="flex-1" name="topic-name">
+							<Label className="sr-only">话题名称</Label>
+							<Input
+								fullWidth
+								placeholder={editingId ? "编辑话题名称" : "新话题名称"}
+								value={name}
+								onChange={(event) => setName(event.target.value)}
+							/>
+						</TextField>
+						<Button
+							type="submit"
+							isDisabled={!name.trim()}
+							isPending={saveMutation.isPending}
+						>
+							<Plus className="size-4" />
 							保存
 						</Button>
 					</form>
@@ -86,72 +172,24 @@ function AdminTopicsRoute() {
 			<Card>
 				<Card.Header>
 					<Card.Title>话题列表</Card.Title>
+					<Card.Description>
+						维护内容分类，并查看每个话题的使用量。
+					</Card.Description>
 				</Card.Header>
-				<Card.Content>
-					<div className="overflow-x-auto">
-						<table className="w-full min-w-[620px] text-left text-sm">
-							<thead className="border-separator border-b text-muted text-xs">
-								<tr>
-									<th className="py-2 pr-3 font-medium">话题</th>
-									<th className="py-2 pr-3 font-medium">图文数量</th>
-									<th className="py-2 pr-3 font-medium">创建时间</th>
-									<th className="py-2 pr-3 font-medium">操作</th>
-								</tr>
-							</thead>
-							<tbody>
-								{topics.data?.map((item) => (
-									<tr
-										key={item.id}
-										className="border-separator border-b last:border-b-0"
-									>
-										<td className="py-3 pr-3 font-medium">#{item.name}</td>
-										<td className="py-3 pr-3 tabular-nums">{item.noteCount}</td>
-										<td className="py-3 pr-3 text-muted">
-											{new Date(item.createdAt).toLocaleString()}
-										</td>
-										<td className="py-3 pr-3">
-											<div className="flex gap-1">
-												<Button
-													isIconOnly
-													size="sm"
-													variant="outline"
-													aria-label="编辑"
-													onPress={() => {
-														setEditingId(item.id);
-														setName(item.name);
-													}}
-												>
-													<Pencil data-icon="inline-start" />
-												</Button>
-												<Button
-													isIconOnly
-													size="sm"
-													variant="danger"
-													aria-label="删除"
-													onPress={() => {
-														if (window.confirm("确认删除这个话题？")) {
-															deleteMutation.mutate({ id: item.id });
-														}
-													}}
-												>
-													<Trash2 data-icon="inline-start" />
-												</Button>
-											</div>
-										</td>
-									</tr>
-								))}
-								{!topics.isLoading && topics.data?.length === 0 ? (
-									<tr>
-										<td className="py-8 text-center text-muted" colSpan={4}>
-											暂无话题
-										</td>
-									</tr>
-								) : null}
-							</tbody>
-						</table>
-					</div>
+				<Card.Content className="p-0">
+					<DataGrid
+						aria-label="话题列表"
+						columns={topicColumns}
+						contentClassName="min-w-[720px]"
+						data={topics.data ?? []}
+						getRowId={(item) => item.id}
+						isLoadingMore={topics.isFetching}
+						renderEmptyState={() => (
+							<span className="text-muted text-sm">暂无话题</span>
+						)}
+					/>
 				</Card.Content>
 			</Card>
-		</AdminShell>
+		</AdminPage>
 	);
 }
