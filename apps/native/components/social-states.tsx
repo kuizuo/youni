@@ -1,34 +1,31 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Alert, Button, Card, Skeleton, Surface, Text } from "heroui-native";
+import { Alert, Button, Skeleton, Text, useThemeColor } from "heroui-native";
+import { View } from "react-native";
 
 export function FeedSkeleton() {
 	return (
-		<Surface variant="transparent" className="flex-row gap-3 px-3 py-2">
+		<View className="flex-row gap-3 px-3 py-2">
 			{[0, 1].map((column) => (
-				<Surface
-					key={column}
-					variant="transparent"
-					className="flex-1 gap-3 p-0"
-				>
+				<View key={column} className="flex-1 gap-3">
 					{[0, 1].map((item) => (
-						<Card key={`${column}-${item}`} className="overflow-hidden p-0">
+						<View
+							key={`${column}-${item}`}
+							className="overflow-hidden rounded-xl bg-surface"
+						>
 							<Skeleton className="h-48 w-full rounded-none" />
-							<Surface variant="transparent" className="gap-2 p-3">
+							<View className="gap-2 p-3">
 								<Skeleton className="h-4 w-full rounded-full" />
 								<Skeleton className="h-4 w-3/4 rounded-full" />
-								<Surface
-									variant="transparent"
-									className="mt-1 flex-row items-center gap-2 p-0"
-								>
+								<View className="mt-1 flex-row items-center gap-2">
 									<Skeleton className="size-6 rounded-full" />
 									<Skeleton className="h-3 flex-1 rounded-full" />
-								</Surface>
-							</Surface>
-						</Card>
+								</View>
+							</View>
+						</View>
 					))}
-				</Surface>
+				</View>
 			))}
-		</Surface>
+		</View>
 	);
 }
 
@@ -45,11 +42,13 @@ export function EmptyState({
 	actionLabel?: string;
 	onAction?: () => void;
 }) {
+	const accentColor = useThemeColor("accent");
+
 	return (
-		<Card className="mx-6 my-12 items-center gap-3 rounded-3xl p-6">
-			<Surface className="size-14 items-center justify-center rounded-full bg-accent-soft p-0">
-				<Ionicons name={icon} size={26} color="#f62c55" />
-			</Surface>
+		<View className="mx-6 my-14 items-center gap-3 px-6 py-4">
+			<View className="size-12 items-center justify-center">
+				<Ionicons name={icon} size={26} color={accentColor} />
+			</View>
 			<Text.Paragraph align="center" weight="semibold">
 				{title}
 			</Text.Paragraph>
@@ -63,11 +62,10 @@ export function EmptyState({
 					feedbackVariant="scale-ripple"
 					onPress={onAction}
 				>
-					<Ionicons name="sparkles-outline" size={14} color="#ffffff" />
 					<Button.Label>{actionLabel}</Button.Label>
 				</Button>
 			) : null}
-		</Card>
+		</View>
 	);
 }
 
@@ -81,7 +79,7 @@ export function ErrorState({
 	onRetry?: () => void;
 }) {
 	return (
-		<Alert status="danger" className="mx-4 my-8 rounded-3xl">
+		<Alert status="danger" className="mx-4 my-8 rounded-2xl">
 			<Alert.Indicator />
 			<Alert.Content>
 				<Alert.Title>{title}</Alert.Title>

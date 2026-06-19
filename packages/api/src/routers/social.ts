@@ -91,6 +91,7 @@ async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
 
 	const db = createDb();
 	const noteIds = rows.map((row) => row.id);
+	const authorIds = Array.from(new Set(rows.map((row) => row.userId)));
 
 	const [
 		topicRows,
@@ -99,6 +100,7 @@ async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
 		commentRows,
 		likedRows,
 		collectedRows,
+		followingRows,
 	] = await Promise.all([
 		db
 			.select({ noteId: noteTopic.noteId, name: topic.name })
@@ -142,6 +144,17 @@ async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
 						),
 					)
 			: Promise.resolve([]),
+		viewerId
+			? db
+					.select({ followingId: follow.followingId })
+					.from(follow)
+					.where(
+						and(
+							inArray(follow.followingId, authorIds),
+							eq(follow.followerId, viewerId),
+						),
+					)
+			: Promise.resolve([]),
 	]);
 
 	const topicsByNote = new Map<string, string[]>();
@@ -163,6 +176,7 @@ async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
 	);
 	const likedSet = new Set(likedRows.map((row) => row.noteId));
 	const collectedSet = new Set(collectedRows.map((row) => row.noteId));
+	const followingSet = new Set(followingRows.map((row) => row.followingId));
 
 	return rows.map((row) => ({
 		...row,
@@ -177,6 +191,7 @@ async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
 			name: row.authorName,
 			image: row.authorImage,
 			handle: row.authorHandle,
+			isFollowing: followingSet.has(row.userId),
 		},
 	}));
 }
@@ -408,39 +423,57 @@ export const socialRouter = {
 
 	me: protectedProcedure.handler(async ({ context }) => {
 		const userId = context.session.user.id;
-		const profile = await getProfile(userId, userId);
-		const rows = (await selectNoteRows(and(eq(note.userId, userId)))).slice(
-			0,
-			30,
+		const [profile, rows, collectedRows] = await Promise.all([
+			getProfile(userId, userId),
+			selectNoteRows(and(eq(note.userId, userId))).then((items) =>
+				items.slice(0, 30),
+			),
+			createDb()
+				.select({
+					id: note.id,
+					title: note.title,
+					content: note.content,
+					images: note.images,
+					cover: note.cover,
+					status: note.status,
+					rejectionReason: note.rejectionReason,
+					publishedAt: note.publishedAt,
+					createdAt: note.createdAt,
+					updatedAt: note.updatedAt,
+					userId: note.userId,
+					authorName: user.name,
+					authorImage: user.image,
+					authorHandle: user.handle,
+				})
+				.from(noteCollection)
+				.innerJoin(note, eq(noteCollection.noteId, note.id))
+				.innerJoin(user, eq(note.userId, user.id))
+				.where(eq(noteCollection.userId, userId))
+				.orderBy(desc(noteCollection.createdAt))
+				.limit(30),
+		]);
+		const rowById = new Map<string, NoteRow>();
+		for (const row of [...rows, ...collectedRows]) {
+			rowById.set(row.id, row);
+		}
+		const hydratedRows = await hydrateNotes(
+			Array.from(rowById.values()),
+			userId,
 		);
-		const collectedRows = await createDb()
-			.select({
-				id: note.id,
-				title: note.title,
-				content: note.content,
-				images: note.images,
-				cover: note.cover,
-				status: note.status,
-				rejectionReason: note.rejectionReason,
-				publishedAt: note.publishedAt,
-				createdAt: note.createdAt,
-				updatedAt: note.updatedAt,
-				userId: note.userId,
-				authorName: user.name,
-				authorImage: user.image,
-				authorHandle: user.handle,
-			})
-			.from(noteCollection)
-			.innerJoin(note, eq(noteCollection.noteId, note.id))
-			.innerJoin(user, eq(note.userId, user.id))
-			.where(eq(noteCollection.userId, userId))
-			.orderBy(desc(noteCollection.createdAt))
-			.limit(30);
+		const hydratedById = new Map(hydratedRows.map((row) => [row.id, row]));
+		const notes = rows.flatMap((row) => {
+			const item = hydratedById.get(row.id);
+			return item ? [item] : [];
+		});
+		const collections = collectedRows.flatMap((row) => {
+			const item = hydratedById.get(row.id);
+			return item ? [item] : [];
+		});
 
 		return {
 			profile,
-			notes: await hydrateNotes(rows, userId),
-			collections: await hydrateNotes(collectedRows, userId),
+			notes,
+			collections,
 		};
 	}),
 

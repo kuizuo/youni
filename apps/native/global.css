@@ -7,6 +7,11 @@
 @source "./node_modules/heroui-native-pro/lib";
 
 @theme {
+	--font-light: "Nunito_300Light";
+	--font-normal: "Nunito_400Regular";
+	--font-medium: "Nunito_500Medium";
+	--font-semibold: "Nunito_600SemiBold";
+	--font-bold: "Nunito_700Bold";
 	--color-background: hsl(0, 0%, 98%);
 	--color-foreground: hsl(240, 10%, 12%);
 	--color-muted: hsl(240, 4%, 45%);
@@ -82,6 +87,10 @@
 	--color-success-hover: hsl(153, 58%, 39%);
 	--color-warning-hover: hsl(38, 86%, 52%);
 	--color-danger-hover: hsl(348, 86%, 51%);
+	--color-field: hsl(0, 0%, 100%);
+	--color-field-foreground: hsl(240, 10%, 12%);
+	--color-field-placeholder: hsl(240, 4%, 48%);
+	--color-field-border: hsl(240, 6%, 88%);
 	--color-field-hover: hsl(0, 0%, 100%);
 	--color-field-focus: hsl(0, 0%, 100%);
 	--color-field-border-hover: hsl(240, 6%, 78%);

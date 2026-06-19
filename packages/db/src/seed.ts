@@ -1,6 +1,6 @@
 import { hashPassword } from "better-auth/crypto";
-import { and, eq, inArray } from "drizzle-orm";
-import { createDb } from "./index";
+import { and, eq, inArray, or } from "drizzle-orm";
+import { closeDb, createDb } from "./index";
 import {
 	account,
 	comment,
@@ -62,9 +62,43 @@ const seedUsers = [
 			"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80",
 		password: demoPassword,
 	},
+	{
+		key: "nana",
+		id: "seed-user-nana",
+		name: "Nana",
+		email: "nana@youni.local",
+		handle: "nana_home",
+		bio: "家居角落、香氛和日常收纳。",
+		image:
+			"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=240&q=80",
+		password: demoPassword,
+	},
+	{
+		key: "qiqi",
+		id: "seed-user-qiqi",
+		name: "七七",
+		email: "qiqi@youni.local",
+		handle: "qiqi_notes",
+		bio: "拍照、护肤和轻运动打卡。",
+		image:
+			"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&q=80",
+		password: demoPassword,
+	},
 ];
 
-const seedTopics = ["穿搭", "美食", "周末", "旅行", "灵感", "好物", "咖啡"];
+const seedTopics = [
+	"穿搭",
+	"美食",
+	"周末",
+	"旅行",
+	"灵感",
+	"好物",
+	"咖啡",
+	"家居",
+	"护肤",
+	"摄影",
+	"运动",
+];
 
 const seedNotes = [
 	{
@@ -110,6 +144,76 @@ const seedNotes = [
 		publishedAt: new Date(now.getTime() - 1000 * 60 * 60 * 4),
 	},
 	{
+		id: "seed-note-home-corner",
+		authorKey: "nana",
+		status: "published" as const,
+		title: "把卧室角落改成小阅读区，晚上很放松",
+		content:
+			"只换了落地灯、地毯和一个窄边柜，角落马上安静很多。晚上关主灯，只开暖光灯，适合看书和整理照片。",
+		images: [
+			"https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=900&q=80",
+			"https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=900&q=80",
+		],
+		topics: ["家居", "好物", "灵感"],
+		publishedAt: new Date(now.getTime() - 1000 * 60 * 60 * 7),
+	},
+	{
+		id: "seed-note-skincare",
+		authorKey: "qiqi",
+		status: "published" as const,
+		title: "出门前 5 分钟护肤包：精简但够用",
+		content:
+			"最近包里只留防晒、润唇膏和小支护手霜。少带一点反而更容易坚持，也不会每天换包忘东西。",
+		images: [
+			"https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=900&q=80",
+			"https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80",
+		],
+		topics: ["护肤", "好物", "灵感"],
+		publishedAt: new Date(now.getTime() - 1000 * 60 * 60 * 12),
+	},
+	{
+		id: "seed-note-coffee-shop",
+		authorKey: "momo",
+		status: "published" as const,
+		title: "一家适合久坐的社区咖啡店",
+		content:
+			"座位间距舒服，下午阳光会落在靠窗位置。冷萃偏清爽，带电脑坐两小时也不会觉得吵。",
+		images: [
+			"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=900&q=80",
+			"https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=900&q=80",
+		],
+		topics: ["咖啡", "周末", "摄影"],
+		publishedAt: new Date(now.getTime() - 1000 * 60 * 60 * 22),
+	},
+	{
+		id: "seed-note-running",
+		authorKey: "ash",
+		status: "published" as const,
+		title: "晨跑 3 公里以后，早餐会变得更好吃",
+		content:
+			"路线不用复杂，固定一条小路更容易坚持。今天配了酸奶碗和香蕉，补充完能量再开始工作。",
+		images: [
+			"https://images.unsplash.com/photo-1502224562085-639556652f33?auto=format&fit=crop&w=900&q=80",
+			"https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=900&q=80",
+		],
+		topics: ["运动", "美食", "周末"],
+		publishedAt: new Date(now.getTime() - 1000 * 60 * 60 * 28),
+	},
+	{
+		id: "seed-note-photo-light",
+		authorKey: "lin",
+		status: "published" as const,
+		title: "手机拍照的小技巧：先找一块干净的光",
+		content:
+			"不用急着套滤镜。先看光线是不是柔和，背景有没有杂物，再让主体靠近窗边，照片会自然很多。",
+		images: [
+			"https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=900&q=80",
+			"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+		],
+		topics: ["摄影", "灵感", "好物"],
+		publishedAt: new Date(now.getTime() - 1000 * 60 * 60 * 34),
+	},
+	{
 		id: "seed-note-audit",
 		authorKey: "lin",
 		status: "audit" as const,
@@ -117,7 +221,7 @@ const seedNotes = [
 		content:
 			"前调很清爽，后调更木质。图片先用链接记录，等后台审核通过后再公开展示。",
 		images: [
-			"https://images.unsplash.com/photo-1514986888952-8cd320577b68?auto=format&fit=crop&w=900&q=80",
+			"https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=80",
 		],
 		topics: ["好物", "灵感"],
 		publishedAt: null,
@@ -134,13 +238,6 @@ const seedNotes = [
 		topics: ["运营"],
 		publishedAt: null,
 	},
-];
-
-const seedCommentIds = [
-	"seed-comment-1",
-	"seed-comment-2",
-	"seed-comment-3",
-	"seed-comment-4",
 ];
 
 async function ensureUser(
@@ -171,6 +268,10 @@ async function ensureUser(
 			},
 		})
 		.returning({ id: user.id });
+
+	if (!row) {
+		throw new Error(`Failed to seed user ${item.email}`);
+	}
 
 	const password = await hashPassword(item.password);
 	const existing = await db
@@ -214,7 +315,7 @@ async function main() {
 	await db
 		.delete(noteCollection)
 		.where(inArray(noteCollection.noteId, seedNoteIds));
-	await db.delete(comment).where(inArray(comment.id, seedCommentIds));
+	await db.delete(comment).where(inArray(comment.noteId, seedNoteIds));
 	await db.delete(noteTopic).where(inArray(noteTopic.noteId, seedNoteIds));
 	await db.delete(note).where(inArray(note.id, seedNoteIds));
 
@@ -222,6 +323,16 @@ async function main() {
 	for (const item of seedUsers) {
 		userIds.set(item.key, await ensureUser(db, item));
 	}
+	const seedUserIds = [...userIds.values()];
+
+	await db
+		.delete(follow)
+		.where(
+			or(
+				inArray(follow.followerId, seedUserIds),
+				inArray(follow.followingId, seedUserIds),
+			),
+		);
 
 	for (const name of [...seedTopics, "运营"]) {
 		await db
@@ -238,13 +349,15 @@ async function main() {
 	for (const item of seedNotes) {
 		const authorId = userIds.get(item.authorKey);
 		if (!authorId) throw new Error(`Missing author ${item.authorKey}`);
+		const cover = item.images[0];
+		if (!cover) throw new Error(`Missing cover image for ${item.id}`);
 
 		await db.insert(note).values({
 			id: item.id,
 			title: item.title,
 			content: item.content,
 			images: item.images,
-			cover: item.images[0],
+			cover,
 			status: item.status,
 			publishedAt: item.publishedAt,
 			userId: authorId,
@@ -265,7 +378,11 @@ async function main() {
 	const momo = userIds.get("momo");
 	const ash = userIds.get("ash");
 	const admin = userIds.get("admin");
-	if (!lin || !momo || !ash || !admin) throw new Error("Missing seed users");
+	const nana = userIds.get("nana");
+	const qiqi = userIds.get("qiqi");
+	if (!lin || !momo || !ash || !admin || !nana || !qiqi) {
+		throw new Error("Missing seed users");
+	}
 
 	await db.insert(comment).values([
 		{
@@ -296,6 +413,34 @@ async function main() {
 			content: "路线和图片都很适合首页推荐。",
 			createdAt: new Date(now.getTime() - 1000 * 60 * 20),
 		},
+		{
+			id: "seed-comment-5",
+			noteId: "seed-note-home-corner",
+			userId: lin,
+			content: "这个灯光氛围很好，想参考一下边柜尺寸。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 35),
+		},
+		{
+			id: "seed-comment-6",
+			noteId: "seed-note-skincare",
+			userId: momo,
+			content: "精简包很实用，通勤真的需要少一点。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 50),
+		},
+		{
+			id: "seed-comment-7",
+			noteId: "seed-note-coffee-shop",
+			userId: qiqi,
+			content: "靠窗位置看起来很舒服，下次周末去试试。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 75),
+		},
+		{
+			id: "seed-comment-8",
+			noteId: "seed-note-photo-light",
+			userId: nana,
+			content: "先找光这点太有用了，照片干净很多。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 95),
+		},
 	]);
 
 	await db
@@ -303,9 +448,26 @@ async function main() {
 		.values([
 			{ noteId: "seed-note-outfit", userId: momo },
 			{ noteId: "seed-note-outfit", userId: ash },
+			{ noteId: "seed-note-outfit", userId: qiqi },
+			{ noteId: "seed-note-outfit", userId: admin },
 			{ noteId: "seed-note-brunch", userId: lin },
+			{ noteId: "seed-note-brunch", userId: momo },
+			{ noteId: "seed-note-brunch", userId: nana },
 			{ noteId: "seed-note-citywalk", userId: lin },
 			{ noteId: "seed-note-citywalk", userId: ash },
+			{ noteId: "seed-note-citywalk", userId: qiqi },
+			{ noteId: "seed-note-home-corner", userId: lin },
+			{ noteId: "seed-note-home-corner", userId: momo },
+			{ noteId: "seed-note-home-corner", userId: qiqi },
+			{ noteId: "seed-note-skincare", userId: lin },
+			{ noteId: "seed-note-skincare", userId: momo },
+			{ noteId: "seed-note-coffee-shop", userId: ash },
+			{ noteId: "seed-note-coffee-shop", userId: qiqi },
+			{ noteId: "seed-note-running", userId: lin },
+			{ noteId: "seed-note-running", userId: nana },
+			{ noteId: "seed-note-photo-light", userId: momo },
+			{ noteId: "seed-note-photo-light", userId: ash },
+			{ noteId: "seed-note-photo-light", userId: qiqi },
 		])
 		.onConflictDoNothing();
 
@@ -315,6 +477,11 @@ async function main() {
 			{ noteId: "seed-note-outfit", userId: admin },
 			{ noteId: "seed-note-brunch", userId: momo },
 			{ noteId: "seed-note-citywalk", userId: lin },
+			{ noteId: "seed-note-home-corner", userId: qiqi },
+			{ noteId: "seed-note-skincare", userId: lin },
+			{ noteId: "seed-note-coffee-shop", userId: nana },
+			{ noteId: "seed-note-running", userId: momo },
+			{ noteId: "seed-note-photo-light", userId: admin },
 		])
 		.onConflictDoNothing();
 
@@ -325,6 +492,11 @@ async function main() {
 			{ followerId: momo, followingId: lin },
 			{ followerId: ash, followingId: lin },
 			{ followerId: admin, followingId: lin },
+			{ followerId: nana, followingId: lin },
+			{ followerId: nana, followingId: momo },
+			{ followerId: qiqi, followingId: nana },
+			{ followerId: lin, followingId: qiqi },
+			{ followerId: momo, followingId: ash },
 		])
 		.onConflictDoNothing();
 
@@ -333,7 +505,11 @@ async function main() {
 	console.log(`Demo: lin@youni.local / ${demoPassword}`);
 }
 
-main().catch((error) => {
-	console.error(error);
-	process.exit(1);
-});
+main()
+	.catch((error) => {
+		console.error(error);
+		process.exitCode = 1;
+	})
+	.finally(async () => {
+		await closeDb();
+	});

@@ -4,7 +4,8 @@ import type { ComponentType, ReactNode } from "react";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
-import { Container } from "@/components/container";
+import { Container } from "@/components/shared/container";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type LooseComponent = ComponentType<{
 	children?: ReactNode;
@@ -102,8 +103,14 @@ export default function PreviewScreen() {
 								确认 HeroUI Native 与 Native Pro 的样式和交互都已经接入。
 							</Text.Paragraph>
 						</Card.Body>
-						<Surface className="size-11 items-center justify-center rounded-full bg-accent p-0">
-							<Ionicons name="sparkles" size={20} color="#fff" />
+						<Surface
+							variant="transparent"
+							className="flex-row items-center gap-2 p-0"
+						>
+							<ThemeToggle />
+							<Surface className="size-11 items-center justify-center rounded-full bg-accent p-0">
+								<Ionicons name="sparkles" size={20} color="#fff" />
+							</Surface>
 						</Surface>
 					</Card.Header>
 					<Card.Footer className="flex-row flex-wrap gap-2 p-0">

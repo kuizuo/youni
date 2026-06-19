@@ -4,149 +4,78 @@ import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
 	Button,
-	Card,
 	Avatar as HeroAvatar,
 	PressableFeedback,
-	Spinner,
-	Surface,
 	Text,
+	useThemeColor,
 	useToast,
 } from "heroui-native";
-import { useEffect, useRef, useState } from "react";
-import { Image } from "react-native";
+import { type ComponentProps, useEffect, useState } from "react";
+import { Image, Modal, Platform, View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
 
 type NoteCardProps = {
+	compact?: boolean;
 	note: {
-		id: string;
-		title: string;
-		cover: string;
-		likedCount: number;
-		liked?: boolean;
-		collectedCount?: number;
+		author: {
+			handle?: null | string;
+			id: string;
+			image: null | string;
+			isFollowing?: boolean;
+			name: string;
+		};
 		commentCount?: number;
 		collected?: boolean;
-		status?: "audit" | "published" | "rejected" | "hidden";
+		collectedCount?: number;
+		cover: string;
+		id: string;
+		liked?: boolean;
+		likedCount: number;
+		status?: "audit" | "hidden" | "published" | "rejected";
+		title: string;
 		topics?: string[];
-		author: {
-			id: string;
-			name: string;
-			image: string | null;
-			handle?: string | null;
-		};
 	};
 };
 
-const cardActions = [
-	{
-		label: "分享",
-		description: "把这篇图文发给朋友",
-		icon: "share-social-outline",
-	},
-	{
-		label: "看相似",
-		description: "去搜索更多同类灵感",
-		icon: "search-outline",
-	},
-	{
-		label: "不感兴趣",
-		description: "减少这类内容推荐",
-		icon: "eye-off-outline",
-	},
-] as const;
-const shareActions = [
-	{
-		label: "打开详情",
-		description: "进入详情后再完整分享",
-		icon: "open-outline",
-		action: "detail",
-	},
-	{
-		label: "复制标题",
-		description: "先把标题拿去发给朋友",
-		icon: "copy-outline",
-		action: "copy",
-	},
-	{
-		label: "生成分享卡",
-		description: "用封面和标题生成分享提示",
-		icon: "image-outline",
-		action: "poster",
-	},
-] as const;
+function getStatusLabel(status?: NoteCardProps["note"]["status"]) {
+	if (status === "audit") return "审核中";
+	if (status === "rejected") return "未通过";
+	if (status === "hidden") return "已隐藏";
+	return null;
+}
 
-export function NoteCard({ note }: NoteCardProps) {
+export function NoteCard({ compact = false, note }: NoteCardProps) {
 	const router = useRouter();
 	const session = authClient.useSession();
 	const { toast } = useToast();
-	const [liked, setLiked] = useState(!!note.liked);
+	const mutedColor = useThemeColor("muted");
+	const dangerColor = useThemeColor("danger");
+	const [liked, setLiked] = useState(Boolean(note.liked));
 	const [likedCount, setLikedCount] = useState(note.likedCount);
-	const [collected, setCollected] = useState(!!note.collected);
+	const [collected, setCollected] = useState(Boolean(note.collected));
 	const [collectedCount, setCollectedCount] = useState(
 		note.collectedCount ?? 0,
 	);
-	const [isActionPanelOpen, setIsActionPanelOpen] = useState(false);
-	const [isSharePanelOpen, setIsSharePanelOpen] = useState(false);
-	const [isHidden, setIsHidden] = useState(false);
-	const [cardHint, setCardHint] = useState<string | null>(null);
-	const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [authorFollowing, setAuthorFollowing] = useState(
+		Boolean(note.author.isFollowing),
+	);
+	const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
 	useEffect(() => {
-		setLiked(!!note.liked);
+		setLiked(Boolean(note.liked));
 		setLikedCount(note.likedCount);
-		setCollected(!!note.collected);
+		setCollected(Boolean(note.collected));
 		setCollectedCount(note.collectedCount ?? 0);
-	}, [note.collected, note.collectedCount, note.liked, note.likedCount]);
-	useEffect(() => {
-		return () => {
-			if (hintTimer.current) {
-				clearTimeout(hintTimer.current);
-			}
-		};
-	}, []);
-
-	const showCardHint = (message: string) => {
-		setCardHint(message);
-		if (hintTimer.current) {
-			clearTimeout(hintTimer.current);
-		}
-		hintTimer.current = setTimeout(() => setCardHint(null), 1500);
-	};
-
-	const likeMutation = useMutation(
-		orpc.social.toggleLike.mutationOptions({
-			onSuccess: async (result) => {
-				setLiked(result.liked);
-				setLikedCount(result.likedCount);
-				toast.show({ label: result.liked ? "已点赞" : "已取消点赞" });
-				queryClient.refetchQueries();
-			},
-			onError: (error) => {
-				setLiked(!!note.liked);
-				setLikedCount(note.likedCount);
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
-	const collectMutation = useMutation(
-		orpc.social.toggleCollect.mutationOptions({
-			onSuccess: async (result) => {
-				setCollected(result.collected);
-				setCollectedCount(result.collectedCount);
-				toast.show({
-					label: result.collected ? "已收藏到我的" : "已取消收藏",
-				});
-				queryClient.refetchQueries();
-			},
-			onError: (error) => {
-				setCollected(!!note.collected);
-				setCollectedCount(note.collectedCount ?? 0);
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
+		setAuthorFollowing(Boolean(note.author.isFollowing));
+	}, [
+		note.author.isFollowing,
+		note.collected,
+		note.collectedCount,
+		note.liked,
+		note.likedCount,
+	]);
 
 	const openDetail = () => {
 		router.push({
@@ -154,482 +83,412 @@ export function NoteCard({ note }: NoteCardProps) {
 			params: { id: note.id },
 		} as unknown as Href);
 	};
+
 	const openAuthor = () => {
-		showCardHint("正在打开作者主页。");
 		router.push({
 			pathname: "/user/[id]",
 			params: { id: note.author.id },
 		} as unknown as Href);
 	};
-	const openSearchWithKeyword = (
-		keyword: string,
-		source: "note-topic" | "similar",
-	) => {
-		const nextKeyword = keyword.trim();
-		if (!nextKeyword) return;
-		router.push({
-			pathname: "/search",
-			params: {
-				keyword: nextKeyword,
-				source,
-				actionAt: String(Date.now()),
+
+	const requireLogin = (label: string) => {
+		if (session.data?.user) return true;
+		toast.show({
+			variant: "warning",
+			label,
+			description: "登录后可以继续互动。",
+			actionLabel: "去登录",
+			onActionPress: () => router.push("/me" as Href),
+		});
+		return false;
+	};
+
+	const likeMutation = useMutation(
+		orpc.social.toggleLike.mutationOptions({
+			onSuccess: (result) => {
+				setLiked(result.liked);
+				setLikedCount(result.likedCount);
+				queryClient.refetchQueries();
 			},
-		} as unknown as Href);
-	};
-
-	const handleTopicPress = (topic: string) => {
-		showCardHint(`正在看 #${topic}`);
-		toast.show({
-			variant: "accent",
-			label: `正在看 #${topic}`,
-			description: "已带着这个话题进入搜索页。",
-			duration: 1100,
-		});
-		openSearchWithKeyword(topic, "note-topic");
-	};
-
-	const handleCardAction = (action: (typeof cardActions)[number]) => {
-		setIsActionPanelOpen(false);
-		showCardHint(`${action.label}已响应`);
-		if (action.label === "分享") {
-			setIsSharePanelOpen(true);
-			toast.show({
-				variant: "accent",
-				label: "打开分享",
-				description: "可以进详情、复制标题或生成分享卡。",
-				duration: 1300,
-			});
-			return;
-		}
-		if (action.label === "看相似") {
-			const keyword = note.topics?.[0] ?? note.title.slice(0, 12);
-			toast.show({
-				variant: "accent",
-				label: `正在看「${keyword}」`,
-				description: "已带着这篇图文的主题进入搜索页。",
-			});
-			openSearchWithKeyword(keyword, "similar");
-			return;
-		}
-		if (action.label === "不感兴趣") {
-			setIsHidden(true);
-			setIsSharePanelOpen(false);
-			toast.show({
-				variant: "warning",
-				label: "已减少这类推荐",
-				description: "这张卡片已从当前列表收起。",
-				duration: 1400,
-			});
-			return;
-		}
-	};
-
-	const handleShareAction = (action: (typeof shareActions)[number]) => {
-		setIsSharePanelOpen(false);
-		if (action.action === "detail") {
-			toast.show({ label: "进入详情继续分享", duration: 900 });
-			openDetail();
-			return;
-		}
-		if (action.action === "copy") {
-			showCardHint("标题已准备好。");
-			toast.show({
-				variant: "success",
-				label: "标题已准备好",
-				description: note.title,
-				duration: 1600,
-			});
-			return;
-		}
-		toast.show({
-			variant: "success",
-			label: "分享卡已准备好",
-			description: "封面和标题已整理成分享提示。",
-			duration: 1500,
-		});
-	};
+			onError: (error) => {
+				setLiked(Boolean(note.liked));
+				setLikedCount(note.likedCount);
+				toast.show({ variant: "danger", label: error.message });
+			},
+		}),
+	);
+	const collectMutation = useMutation(
+		orpc.social.toggleCollect.mutationOptions({
+			onSuccess: (result) => {
+				setCollected(result.collected);
+				setCollectedCount(result.collectedCount);
+				queryClient.refetchQueries();
+				toast.show({ label: result.collected ? "已收藏" : "已取消收藏" });
+			},
+			onError: (error) => {
+				setCollected(Boolean(note.collected));
+				setCollectedCount(note.collectedCount ?? 0);
+				toast.show({ variant: "danger", label: error.message });
+			},
+		}),
+	);
+	const followMutation = useMutation(
+		orpc.social.toggleFollow.mutationOptions({
+			onSuccess: (result) => {
+				setAuthorFollowing(result.following);
+				queryClient.refetchQueries();
+				toast.show({ label: result.following ? "已关注" : "已取消关注" });
+			},
+			onError: (error) => {
+				setAuthorFollowing(Boolean(note.author.isFollowing));
+				toast.show({ variant: "danger", label: error.message });
+			},
+		}),
+	);
 
 	const toggleLike = () => {
-		if (!session.data?.user) {
-			toast.show({
-				variant: "warning",
-				label: "请先登录",
-				description: "到“我的”页面登录后即可点赞。",
-				actionLabel: "去登录",
-				onActionPress: () => {
-					router.push("/me" as Href);
-				},
-			});
-			return;
-		}
+		if (!requireLogin("先登录再点赞")) return;
 		const nextLiked = !liked;
 		setLiked(nextLiked);
 		setLikedCount((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
-		showCardHint(nextLiked ? "已喜欢这篇图文。" : "已取消喜欢。");
 		likeMutation.mutate({ id: note.id });
 	};
+
+	const openActionMenu = () => {
+		setIsActionMenuOpen(true);
+	};
+
+	const handleFeedback = (label: string) => {
+		setIsActionMenuOpen(false);
+		toast.show({
+			label: "已收到反馈",
+			description: label,
+		});
+	};
+
 	const toggleCollect = () => {
-		if (!session.data?.user) {
-			toast.show({
-				variant: "warning",
-				label: "请先登录",
-				description: "到“我的”页面登录后即可收藏。",
-				actionLabel: "去登录",
-				onActionPress: () => {
-					router.push("/me" as Href);
-				},
-			});
-			return;
-		}
+		setIsActionMenuOpen(false);
+		if (!requireLogin("先登录再收藏")) return;
 		const nextCollected = !collected;
 		setCollected(nextCollected);
 		setCollectedCount((count) => Math.max(0, count + (nextCollected ? 1 : -1)));
-		showCardHint(nextCollected ? "已收藏到我的灵感。" : "已取消收藏。");
 		collectMutation.mutate({ id: note.id });
 	};
-	const statusLabel =
-		note.status && note.status !== "published"
-			? getStatusLabel(note.status)
-			: null;
 
-	if (isHidden) {
-		return (
-			<Card className="m-1 flex-1 gap-3 rounded-2xl border border-content3 p-3">
-				<Card.Header className="flex-row items-start gap-2 p-0">
-					<Surface className="size-9 items-center justify-center rounded-full bg-danger-soft p-0">
-						<Ionicons name="eye-off-outline" size={17} color="#f43f5e" />
-					</Surface>
-					<Card.Body className="min-w-0 flex-1 gap-0.5 p-0">
-						<Card.Title className="text-sm">已减少这类推荐</Card.Title>
-						<Card.Description numberOfLines={2}>{note.title}</Card.Description>
-					</Card.Body>
-				</Card.Header>
-				<Card.Footer className="flex-row gap-2 p-0">
-					<Button
-						size="sm"
-						variant="secondary"
-						feedbackVariant="scale-ripple"
-						className="flex-1"
-						onPress={() => {
-							setIsHidden(false);
-							showCardHint("已恢复这张图文。");
-							toast.show({ label: "已恢复图文", duration: 1000 });
-						}}
-					>
-						<Ionicons name="return-up-back-outline" size={15} color="#8a8a8a" />
-						<Button.Label>撤回</Button.Label>
-					</Button>
-					<Button
-						size="sm"
-						variant="primary"
-						feedbackVariant="scale-ripple"
-						className="flex-1"
-						onPress={() => router.push("/search" as Href)}
-					>
-						<Ionicons name="search-outline" size={15} color="#ffffff" />
-						<Button.Label>看别的</Button.Label>
-					</Button>
-				</Card.Footer>
-			</Card>
-		);
-	}
+	const toggleFollow = () => {
+		setIsActionMenuOpen(false);
+		if (!requireLogin("先登录再关注")) return;
+		setAuthorFollowing((value) => !value);
+		followMutation.mutate({ userId: note.author.id });
+	};
+
+	const statusLabel = getStatusLabel(note.status);
+	const visibleTopics = note.topics?.slice(0, 3) ?? [];
+	const isSelf = session.data?.user?.id === note.author.id;
+	const contextMenuProps =
+		Platform.OS === "web"
+			? {
+					onContextMenu: (event: { preventDefault?: () => void }) => {
+						event.preventDefault?.();
+						openActionMenu();
+					},
+				}
+			: {};
 
 	return (
-		<PressableFeedback
-			className="m-1 flex-1 overflow-hidden rounded-2xl"
-			onPress={openDetail}
+		<View
+			{...contextMenuProps}
+			className={
+				compact
+					? "overflow-hidden rounded-xl bg-surface"
+					: "overflow-hidden rounded-2xl bg-surface"
+			}
 		>
-			<PressableFeedback.Ripple
-				animation={{
-					backgroundColor: { value: "rgba(246, 44, 85, 0.18)" },
-					opacity: { value: [0, 0.18, 0] },
-				}}
-			/>
-			<Card className="overflow-hidden rounded-2xl p-0 shadow-sm">
-				<Card.Body className="relative p-0">
-					<Image
-						source={{ uri: note.cover }}
-						className="h-52 w-full bg-content3"
-						resizeMode="cover"
-					/>
-					<Card.Footer className="absolute right-2 bottom-2 left-2 flex-row items-center justify-between p-0">
-						<Button
-							size="sm"
-							variant="ghost"
-							feedbackVariant="scale-ripple"
-							className="h-7 rounded-full bg-black/45 px-2"
-							onPress={(event) => {
-								event.stopPropagation();
-								toast.show({ label: "进入详情查看评论", duration: 900 });
-								openDetail();
-							}}
-						>
-							<Ionicons name="chatbubble-outline" size={12} color="#ffffff" />
-							<Button.Label className="text-white text-xs">
-								{note.commentCount ?? 0} 评论
-							</Button.Label>
-						</Button>
-						<Button
-							isIconOnly
-							size="sm"
-							variant="secondary"
-							feedbackVariant="scale-ripple"
-							onPress={(event) => {
-								event.stopPropagation();
-								setIsActionPanelOpen((value) => !value);
-								showCardHint(
-									isActionPanelOpen ? "已收起更多操作。" : "已打开更多操作。",
-								);
-							}}
-						>
-							<Ionicons name="ellipsis-horizontal" size={16} color="#8a8a8a" />
-						</Button>
-					</Card.Footer>
+			<PressableFeedback
+				onLongPress={openActionMenu}
+				onPress={openDetail}
+				className="bg-content2"
+			>
+				<Image
+					source={{ uri: note.cover }}
+					resizeMode="cover"
+					className={
+						compact ? "h-48 w-full bg-content2" : "h-72 w-full bg-content2"
+					}
+				/>
+			</PressableFeedback>
+			<View className={compact ? "gap-2 p-3" : "gap-3 p-4"}>
+				<View className="flex-row flex-wrap gap-1">
 					{statusLabel ? (
-						<Button
-							size="sm"
-							variant="ghost"
-							feedbackVariant="scale-ripple"
-							className="absolute top-2 left-2 h-7 rounded-full bg-black/45 px-2"
-							onPress={(event) => {
-								event.stopPropagation();
-								showCardHint(`当前状态：${statusLabel}`);
-								toast.show({
-									label: `当前状态：${statusLabel}`,
-									duration: 1000,
-								});
-							}}
+						<Text.Paragraph
+							type="body-xs"
+							weight="semibold"
+							className="text-warning-soft-foreground"
 						>
-							<Button.Label className="text-white text-xs">
-								{statusLabel}
-							</Button.Label>
-						</Button>
+							{statusLabel}
+						</Text.Paragraph>
 					) : null}
-					{cardHint ? (
-						<Surface
-							variant="transparent"
-							className="absolute top-2 right-2 left-2 items-center p-0"
-						>
-							<Surface className="max-w-full rounded-full bg-white/95 px-3 py-1.5">
-								<Text.Paragraph
-									type="body-xs"
-									weight="semibold"
-									numberOfLines={1}
-								>
-									{cardHint}
-								</Text.Paragraph>
-							</Surface>
-						</Surface>
-					) : null}
-					{isActionPanelOpen ? (
-						<Surface className="absolute inset-0 justify-end gap-2 bg-black/45 p-2">
-							<Card.Footer className="flex-row items-center justify-between p-0">
-								<Surface className="rounded-full bg-white/90 px-2 py-1">
-									<Text className="font-medium text-[10px] text-foreground">
-										更多操作
-									</Text>
-								</Surface>
-								<Button
-									isIconOnly
-									size="sm"
-									variant="secondary"
-									feedbackVariant="scale-highlight"
-									onPress={(event) => {
-										event.stopPropagation();
-										setIsActionPanelOpen(false);
-									}}
-								>
-									<Ionicons name="close" size={15} color="#8a8a8a" />
-								</Button>
-							</Card.Footer>
-							<Card.Body className="gap-2 p-0">
-								{cardActions.map((action) => (
-									<Button
-										key={action.label}
-										size="sm"
-										variant="secondary"
-										feedbackVariant="scale-ripple"
-										onPress={(event) => {
-											event.stopPropagation();
-											handleCardAction(action);
-										}}
-									>
-										<Ionicons name={action.icon} size={15} color="#8a8a8a" />
-										<Button.Label>{action.label}</Button.Label>
-									</Button>
-								))}
-							</Card.Body>
-						</Surface>
-					) : null}
-					{isSharePanelOpen ? (
-						<Surface className="absolute inset-0 justify-end gap-2 bg-black/55 p-2">
-							<Card.Footer className="flex-row items-center justify-between p-0">
-								<Surface className="rounded-full bg-white/90 px-2 py-1">
-									<Text className="font-medium text-[10px] text-foreground">
-										分享给朋友
-									</Text>
-								</Surface>
-								<Button
-									isIconOnly
-									size="sm"
-									variant="secondary"
-									feedbackVariant="scale-highlight"
-									onPress={(event) => {
-										event.stopPropagation();
-										setIsSharePanelOpen(false);
-									}}
-								>
-									<Ionicons name="close" size={15} color="#8a8a8a" />
-								</Button>
-							</Card.Footer>
-							<Card className="gap-2 rounded-2xl bg-white/95 p-2">
-								<Card.Description numberOfLines={1}>
-									{note.title}
-								</Card.Description>
-								<Card.Footer className="flex-row gap-1 p-0">
-									{shareActions.map((action) => (
-										<Button
-											key={action.label}
-											size="sm"
-											variant="secondary"
-											feedbackVariant="scale-ripple"
-											className="h-auto flex-1 flex-col gap-1 px-1 py-2"
-											onPress={(event) => {
-												event.stopPropagation();
-												handleShareAction(action);
-											}}
-										>
-											<Ionicons name={action.icon} size={15} color="#8a8a8a" />
-											<Button.Label className="text-xs">
-												{action.label}
-											</Button.Label>
-										</Button>
-									))}
-								</Card.Footer>
-							</Card>
-						</Surface>
-					) : null}
-				</Card.Body>
-				<Card.Body className="gap-2 p-3">
-					<Card.Title
-						className="font-semibold text-foreground text-sm leading-5"
+					{visibleTopics.map((topic) => (
+						<Text.Paragraph key={topic} type="body-xs" color="muted">
+							#{topic}
+						</Text.Paragraph>
+					))}
+				</View>
+
+				<PressableFeedback onLongPress={openActionMenu} onPress={openDetail}>
+					<Text.Paragraph
+						weight="semibold"
+						className={
+							compact
+								? "text-foreground text-sm leading-5"
+								: "text-foreground text-lg leading-6"
+						}
 						numberOfLines={2}
 					>
 						{note.title}
-					</Card.Title>
-					{note.topics?.length ? (
-						<Card.Footer className="flex-row flex-wrap gap-1 p-0">
-							{note.topics.slice(0, 2).map((topic) => (
-								<Button
-									key={topic}
-									size="sm"
-									variant="outline"
-									feedbackVariant="scale-ripple"
-									onPress={() => handleTopicPress(topic)}
-								>
-									<Ionicons name="pricetag-outline" size={12} color="#f43f5e" />
-									<Button.Label>#{topic}</Button.Label>
-								</Button>
-							))}
-						</Card.Footer>
-					) : null}
-					<Card.Footer className="flex-row items-center justify-between gap-2 p-0">
-						<Button
+					</Text.Paragraph>
+				</PressableFeedback>
+
+				<View className="flex-row items-center justify-between gap-3">
+					<PressableFeedback
+						onPress={openAuthor}
+						className="min-w-0 flex-1 flex-row items-center gap-2"
+					>
+						<HeroAvatar
 							size="sm"
-							variant="ghost"
-							feedbackVariant="scale-highlight"
-							className="h-auto min-w-0 flex-1 justify-start gap-1.5 rounded-full px-0 py-1"
-							onPress={(event) => {
-								event.stopPropagation();
-								openAuthor();
-							}}
+							className={compact ? "size-7" : "size-8"}
+							alt={note.author.name}
 						>
-							<Avatar name={note.author.name} image={note.author.image} />
-							<Card.Body className="min-w-0 flex-1 gap-0 p-0">
-								<Text.Paragraph color="muted" type="body-xs" numberOfLines={1}>
-									{note.author.name}
-								</Text.Paragraph>
-								{note.author.handle ? (
-									<Text.Paragraph
-										color="muted"
-										type="body-xs"
-										numberOfLines={1}
-									>
-										@{note.author.handle}
-									</Text.Paragraph>
-								) : null}
-							</Card.Body>
-						</Button>
-						<Card.Footer className="flex-row items-center gap-1 p-0">
-							<Button
-								size="sm"
-								variant={liked ? "danger-soft" : "ghost"}
-								feedbackVariant="scale-ripple"
-								isDisabled={likeMutation.isPending}
-								onPress={(event) => {
-									event.stopPropagation();
-									toggleLike();
-								}}
-							>
-								{likeMutation.isPending ? (
-									<Spinner size="sm" />
-								) : (
-									<Ionicons
-										name={liked ? "heart" : "heart-outline"}
-										size={15}
-										color="#f43f5e"
-									/>
-								)}
-								<Button.Label className="tabular-nums">
-									{likedCount}
-								</Button.Label>
-							</Button>
-							<Button
-								size="sm"
-								variant={collected ? "secondary" : "ghost"}
-								feedbackVariant="scale-ripple"
-								isDisabled={collectMutation.isPending}
-								onPress={(event) => {
-									event.stopPropagation();
-									toggleCollect();
-								}}
-							>
-								{collectMutation.isPending ? (
-									<Spinner size="sm" />
-								) : (
-									<Ionicons
-										name={collected ? "bookmark" : "bookmark-outline"}
-										size={15}
-										color={collected ? "#f59e0b" : "#8a8a8a"}
-									/>
-								)}
-								<Button.Label className="tabular-nums">
-									{collectedCount}
-								</Button.Label>
-							</Button>
-						</Card.Footer>
-					</Card.Footer>
-				</Card.Body>
-			</Card>
-		</PressableFeedback>
+							{note.author.image ? (
+								<HeroAvatar.Image source={{ uri: note.author.image }} />
+							) : null}
+							<HeroAvatar.Fallback>
+								{note.author.name.slice(0, 1)}
+							</HeroAvatar.Fallback>
+						</HeroAvatar>
+						<Text.Paragraph
+							type={compact ? "body-xs" : "body-sm"}
+							color="muted"
+							numberOfLines={1}
+							className="min-w-0 flex-1"
+						>
+							{note.author.handle ? `@${note.author.handle}` : note.author.name}
+						</Text.Paragraph>
+					</PressableFeedback>
+
+					<PressableFeedback
+						accessibilityLabel={liked ? "取消点赞" : "点赞"}
+						accessibilityRole="button"
+						className="min-h-8 flex-row items-center gap-1 pl-2"
+						hitSlop={8}
+						onPress={toggleLike}
+					>
+						<Ionicons
+							name={liked ? "heart" : "heart-outline"}
+							size={18}
+							color={liked ? dangerColor : mutedColor}
+						/>
+						<Text.Paragraph
+							type="body-xs"
+							weight={liked ? "semibold" : undefined}
+							style={{ color: liked ? dangerColor : mutedColor }}
+						>
+							{likedCount}
+						</Text.Paragraph>
+					</PressableFeedback>
+				</View>
+			</View>
+
+			<ActionMenuDialog
+				authorName={note.author.name}
+				collected={collected}
+				collectedCount={collectedCount}
+				collectPending={collectMutation.isPending}
+				following={authorFollowing}
+				followPending={followMutation.isPending}
+				isSelf={isSelf}
+				noteTitle={note.title}
+				onClose={() => setIsActionMenuOpen(false)}
+				onCollect={toggleCollect}
+				onFeedback={handleFeedback}
+				onFollow={toggleFollow}
+				onOpenAuthor={() => {
+					setIsActionMenuOpen(false);
+					openAuthor();
+				}}
+				onOpenDetail={() => {
+					setIsActionMenuOpen(false);
+					openDetail();
+				}}
+				visible={isActionMenuOpen}
+			/>
+		</View>
 	);
 }
 
-function getStatusLabel(status: NonNullable<NoteCardProps["note"]["status"]>) {
-	const labels = {
-		audit: "待审核",
-		published: "已发布",
-		rejected: "已拒绝",
-		hidden: "已隐藏",
-	};
-	return labels[status];
+function ActionMenuDialog({
+	authorName,
+	collected,
+	collectedCount,
+	collectPending,
+	following,
+	followPending,
+	isSelf,
+	noteTitle,
+	onClose,
+	onCollect,
+	onFeedback,
+	onFollow,
+	onOpenAuthor,
+	onOpenDetail,
+	visible,
+}: {
+	authorName: string;
+	collected: boolean;
+	collectedCount: number;
+	collectPending: boolean;
+	following: boolean;
+	followPending: boolean;
+	isSelf: boolean;
+	noteTitle: string;
+	onClose: () => void;
+	onCollect: () => void;
+	onFeedback: (label: string) => void;
+	onFollow: () => void;
+	onOpenAuthor: () => void;
+	onOpenDetail: () => void;
+	visible: boolean;
+}) {
+	const dangerColor = useThemeColor("danger");
+	const accentColor = useThemeColor("accent");
+
+	return (
+		<Modal
+			animationType="fade"
+			onRequestClose={onClose}
+			transparent
+			visible={visible}
+		>
+			<View className="flex-1 justify-end bg-black/35 px-3 pb-6">
+				<View className="w-full max-w-sm self-center rounded-3xl bg-surface p-3">
+					<View className="gap-1 px-2 pt-1 pb-3">
+						<Text.Paragraph weight="semibold" className="text-foreground">
+							更多操作
+						</Text.Paragraph>
+						<Text.Paragraph type="body-sm" color="muted" numberOfLines={2}>
+							{noteTitle}
+						</Text.Paragraph>
+					</View>
+
+					<View className="gap-1">
+						<ActionMenuItem
+							icon="open-outline"
+							label="打开详情"
+							onPress={onOpenDetail}
+						/>
+						<ActionMenuItem
+							icon="person-circle-outline"
+							label={`查看 ${authorName}`}
+							onPress={onOpenAuthor}
+						/>
+						{isSelf ? null : (
+							<ActionMenuItem
+								icon={following ? "checkmark-circle" : "person-add-outline"}
+								label={following ? "取消关注" : "关注作者"}
+								loading={followPending}
+								onPress={onFollow}
+								tintColor={following ? accentColor : undefined}
+							/>
+						)}
+						<ActionMenuItem
+							icon={collected ? "bookmark" : "bookmark-outline"}
+							label={collected ? "取消收藏" : "收藏图文"}
+							description={
+								collectedCount > 0 ? `${collectedCount} 人收藏` : undefined
+							}
+							loading={collectPending}
+							onPress={onCollect}
+							tintColor={collected ? accentColor : undefined}
+						/>
+						<ActionMenuItem
+							icon="remove-circle-outline"
+							label="减少类似内容"
+							onPress={() => onFeedback("减少类似内容")}
+						/>
+						<ActionMenuItem
+							icon="alert-circle-outline"
+							label="内容质量不佳"
+							onPress={() => onFeedback("内容质量不佳")}
+						/>
+						<ActionMenuItem
+							icon="flag-outline"
+							label="举报内容"
+							onPress={() => onFeedback("已标记为需要审核")}
+							tintColor={dangerColor}
+						/>
+					</View>
+
+					<Button
+						variant="ghost"
+						feedbackVariant="scale-ripple"
+						onPress={onClose}
+					>
+						<Button.Label>取消</Button.Label>
+					</Button>
+				</View>
+			</View>
+		</Modal>
+	);
 }
 
-function Avatar({ name, image }: { name: string; image: string | null }) {
+function ActionMenuItem({
+	description,
+	icon,
+	label,
+	loading = false,
+	onPress,
+	tintColor,
+}: {
+	description?: string;
+	icon: ComponentProps<typeof Ionicons>["name"];
+	label: string;
+	loading?: boolean;
+	onPress: () => void;
+	tintColor?: string;
+}) {
+	const mutedColor = useThemeColor("muted");
+	const foregroundColor = useThemeColor("foreground");
+	const iconColor = tintColor ?? foregroundColor;
+
 	return (
-		<HeroAvatar size="sm" color="accent" alt={name}>
-			{image ? <HeroAvatar.Image source={{ uri: image }} /> : null}
-			<HeroAvatar.Fallback>{name.slice(0, 1)}</HeroAvatar.Fallback>
-		</HeroAvatar>
+		<PressableFeedback
+			accessibilityRole="button"
+			className="min-h-12 flex-row items-center gap-3 rounded-2xl px-3 py-2"
+			onPress={onPress}
+		>
+			<View className="size-8 items-center justify-center rounded-full bg-content2">
+				<Ionicons
+					name={loading ? "sync-outline" : icon}
+					size={18}
+					color={iconColor}
+				/>
+			</View>
+			<View className="min-w-0 flex-1">
+				<Text.Paragraph
+					type="body-sm"
+					weight="semibold"
+					numberOfLines={1}
+					style={{ color: tintColor ?? foregroundColor }}
+				>
+					{label}
+				</Text.Paragraph>
+				{description ? (
+					<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+						{description}
+					</Text.Paragraph>
+				) : null}
+			</View>
+			<Ionicons name="chevron-forward" size={15} color={mutedColor} />
+		</PressableFeedback>
 	);
 }

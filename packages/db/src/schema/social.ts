@@ -105,7 +105,10 @@ export const noteLike = pgTable(
 			.references(() => user.id, { onDelete: "cascade" }),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 	},
-	(table) => [primaryKey({ columns: [table.noteId, table.userId] })],
+	(table) => [
+		primaryKey({ columns: [table.noteId, table.userId] }),
+		index("note_like_user_idx").on(table.userId),
+	],
 );
 
 export const noteCollection = pgTable(
@@ -119,7 +122,10 @@ export const noteCollection = pgTable(
 			.references(() => user.id, { onDelete: "cascade" }),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 	},
-	(table) => [primaryKey({ columns: [table.noteId, table.userId] })],
+	(table) => [
+		primaryKey({ columns: [table.noteId, table.userId] }),
+		index("note_collection_user_created_idx").on(table.userId, table.createdAt),
+	],
 );
 
 export const follow = pgTable(
