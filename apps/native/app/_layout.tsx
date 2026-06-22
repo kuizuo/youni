@@ -57,10 +57,10 @@ export default function Layout() {
 	const toastContentWrapper = useCallback(
 		(children: ReactNode) => (
 			<KeyboardAvoidingView
-				pointerEvents="box-none"
 				behavior="padding"
 				keyboardVerticalOffset={12}
 				className="flex-1"
+				style={{ pointerEvents: "box-none" }}
 			>
 				{children}
 			</KeyboardAvoidingView>
