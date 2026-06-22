@@ -11,13 +11,17 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { HeroUINativeProvider, useToast } from "heroui-native";
-import { useEffect } from "react";
+import { HeroUINativeProvider } from "heroui-native";
+import { type ReactNode, useCallback, useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
+import {
+	KeyboardAvoidingView,
+	KeyboardProvider,
+} from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AppThemeProvider } from "@/lib/contexts/app-theme-context";
+import { useAppToast } from "@/utils/app-toast";
 import { queryClient } from "@/utils/orpc";
 import { setRequestToastHandler } from "@/utils/request-toast";
 
@@ -40,7 +44,7 @@ function StackLayout() {
 }
 
 function RequestToastBridge() {
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 
 	useEffect(() => {
 		return setRequestToastHandler((options) => toast.show(options));
@@ -50,6 +54,19 @@ function RequestToastBridge() {
 }
 
 export default function Layout() {
+	const toastContentWrapper = useCallback(
+		(children: ReactNode) => (
+			<KeyboardAvoidingView
+				pointerEvents="box-none"
+				behavior="padding"
+				keyboardVerticalOffset={12}
+				className="flex-1"
+			>
+				{children}
+			</KeyboardAvoidingView>
+		),
+		[],
+	);
 	const [fontsLoaded, fontError] = useFonts({
 		Nunito_300Light,
 		Nunito_400Regular,
@@ -74,7 +91,24 @@ export default function Layout() {
 				<SafeAreaProvider>
 					<KeyboardProvider>
 						<AppThemeProvider>
-							<HeroUINativeProvider>
+							<HeroUINativeProvider
+								config={{
+									toast: {
+										contentWrapper: toastContentWrapper,
+										defaultProps: {
+											isSwipeable: true,
+											placement: "bottom",
+										},
+										insets: {
+											bottom: 92,
+											left: 16,
+											right: 16,
+											top: 12,
+										},
+										maxVisibleToasts: 2,
+									},
+								}}
+							>
 								<RequestToastBridge />
 								<StackLayout />
 							</HeroUINativeProvider>

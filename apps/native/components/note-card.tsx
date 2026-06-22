@@ -8,12 +8,12 @@ import {
 	PressableFeedback,
 	Text,
 	useThemeColor,
-	useToast,
 } from "heroui-native";
 import { type ComponentProps, useEffect, useState } from "react";
 import { Image, Modal, Platform, View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
+import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
@@ -50,7 +50,7 @@ function getStatusLabel(status?: NoteCardProps["note"]["status"]) {
 export function NoteCard({ compact = false, note }: NoteCardProps) {
 	const router = useRouter();
 	const session = authClient.useSession();
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
 	const [liked, setLiked] = useState(Boolean(note.liked));

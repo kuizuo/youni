@@ -13,7 +13,6 @@ import {
 	TextArea,
 	TextField,
 	useThemeColor,
-	useToast,
 } from "heroui-native";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -27,6 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { authClient } from "@/lib/auth-client";
+import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
@@ -53,7 +53,7 @@ const TOPIC_PRESETS = [
 export default function CreateScreen() {
 	const router = useRouter();
 	const session = authClient.useSession();
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const insets = useSafeAreaInsets();

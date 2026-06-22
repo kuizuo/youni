@@ -9,7 +9,6 @@ import {
 	Skeleton,
 	Text,
 	useThemeColor,
-	useToast,
 } from "heroui-native";
 import { useMemo } from "react";
 import { FlatList, View } from "react-native";
@@ -22,6 +21,7 @@ import {
 } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
+import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
@@ -34,7 +34,7 @@ export default function UserProfileScreen() {
 	const id = getRouteParam(params.id) ?? "";
 	const router = useRouter();
 	const session = authClient.useSession();
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 
 	const profile = useQuery({

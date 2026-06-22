@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Surface, Text, useToast } from "heroui-native";
+import { Button, Card, Surface, Text } from "heroui-native";
 import type { ComponentType, ReactNode } from "react";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
 import { Container } from "@/components/shared/container";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useAppToast } from "@/utils/app-toast";
 
 type LooseComponent = ComponentType<{
 	children?: ReactNode;
@@ -90,7 +91,7 @@ const steps: PreviewStep[] = [
 
 export default function PreviewScreen() {
 	const [currentStep, setCurrentStep] = useState(1);
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 
 	return (
 		<Container>

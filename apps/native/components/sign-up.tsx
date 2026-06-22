@@ -7,13 +7,13 @@ import {
 	Text,
 	TextField,
 	useThemeColor,
-	useToast,
 } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { useAppToast } from "@/utils/app-toast";
 import { queryClient } from "@/utils/orpc";
 import {
 	isRequestTimeoutError,
@@ -31,7 +31,7 @@ type SignUpProps = {
 };
 
 export function SignUp({ onAuthenticated }: SignUpProps) {
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
 	const [name, setName] = useState("");
@@ -76,7 +76,6 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 						authClient.$store.notify("$sessionSignal");
 						onAuthenticated?.();
 						queryClient.refetchQueries();
-						toast.show({ variant: "success", label: "注册成功" });
 					},
 				},
 			);

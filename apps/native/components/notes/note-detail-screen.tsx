@@ -11,7 +11,6 @@ import {
 	Spinner,
 	Text,
 	useThemeColor,
-	useToast,
 } from "heroui-native";
 import { useMemo, useState } from "react";
 import {
@@ -26,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
+import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
@@ -38,7 +38,7 @@ export default function NoteDetailScreen() {
 	const id = getRouteParam(params.id) ?? "";
 	const router = useRouter();
 	const session = authClient.useSession();
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
 	const accentForegroundColor = useThemeColor("accent-foreground");

@@ -13,7 +13,6 @@ import {
 	TextArea,
 	TextField,
 	useThemeColor,
-	useToast,
 } from "heroui-native";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
@@ -27,13 +26,14 @@ import {
 } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
+import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export default function MeScreen() {
 	const router = useRouter();
 	const session = authClient.useSession();
-	const { toast } = useToast();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const currentUser = session.data?.user;
 	const [hasAuthenticated, setHasAuthenticated] = useState(false);
@@ -129,7 +129,6 @@ export default function MeScreen() {
 		setHasAuthenticated(false);
 		authClient.signOut();
 		queryClient.clear();
-		toast.show({ label: "已退出登录" });
 		router.replace("/" as Href);
 	};
 
