@@ -4,8 +4,13 @@ import { createAuthClient } from "better-auth/react";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 
+import { fetchWithTimeout } from "@/utils/request-timeout";
+
 export const authClient = createAuthClient({
 	baseURL: env.EXPO_PUBLIC_SERVER_URL,
+	fetchOptions: {
+		customFetchImpl: fetchWithTimeout,
+	},
 	plugins: [
 		expoClient({
 			scheme: Constants.expoConfig?.scheme as string,

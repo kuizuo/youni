@@ -23,6 +23,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
 import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 function getRouteParam(value: string | string[] | undefined) {
 	return Array.isArray(value) ? value[0] : value;
@@ -47,6 +48,7 @@ export default function UserProfileScreen() {
 				queryClient.refetchQueries();
 			},
 			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
 		}),

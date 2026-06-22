@@ -11,7 +11,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { HeroUINativeProvider } from "heroui-native";
+import { HeroUINativeProvider, useToast } from "heroui-native";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -19,6 +19,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AppThemeProvider } from "@/lib/contexts/app-theme-context";
 import { queryClient } from "@/utils/orpc";
+import { setRequestToastHandler } from "@/utils/request-toast";
 
 export const unstable_settings = {
 	initialRouteName: "(tabs)",
@@ -36,6 +37,16 @@ function StackLayout() {
 			<Stack.Screen name="modal" options={{ presentation: "modal" }} />
 		</Stack>
 	);
+}
+
+function RequestToastBridge() {
+	const { toast } = useToast();
+
+	useEffect(() => {
+		return setRequestToastHandler((options) => toast.show(options));
+	}, [toast]);
+
+	return null;
 }
 
 export default function Layout() {
@@ -64,6 +75,7 @@ export default function Layout() {
 					<KeyboardProvider>
 						<AppThemeProvider>
 							<HeroUINativeProvider>
+								<RequestToastBridge />
 								<StackLayout />
 							</HeroUINativeProvider>
 						</AppThemeProvider>

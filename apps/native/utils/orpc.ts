@@ -7,6 +7,7 @@ import { env } from "@youni/env/native";
 import { Platform } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
+import { fetchWithTimeout } from "@/utils/request-timeout";
 
 export const queryClient = new QueryClient({
 	queryCache: new QueryCache({
@@ -18,9 +19,9 @@ export const queryClient = new QueryClient({
 
 export const link = new RPCLink({
 	url: `${env.EXPO_PUBLIC_SERVER_URL}/rpc`,
-	fetch: (url, options) =>
-		fetch(url, {
-			...options,
+	fetch: (request, init) =>
+		fetchWithTimeout(request, {
+			...init,
 			// Better Auth Expo forwards the session cookie manually on native.
 			credentials: Platform.OS === "web" ? "include" : "omit",
 		}),

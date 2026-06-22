@@ -15,6 +15,10 @@ import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
+import {
+	isRequestTimeoutError,
+	REQUEST_TIMEOUT_MESSAGE,
+} from "@/utils/request-timeout";
 
 const signUpSchema = z.object({
 	name: z.string().trim().min(2, "昵称至少 2 个字符"),
@@ -38,6 +42,8 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const submit = async () => {
+		if (isSubmitting) return;
+
 		const parsed = signUpSchema.safeParse({ name, email, password });
 		if (!parsed.success) {
 			setErrorMessage(parsed.error.issues[0]?.message ?? "请检查注册信息");
@@ -46,33 +52,49 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 
 		setErrorMessage(null);
 		setIsSubmitting(true);
-		await authClient.signUp.email(
-			{
-				name: parsed.data.name.trim(),
-				email: parsed.data.email.trim(),
-				password: parsed.data.password,
-			},
-			{
-				onError(error) {
-					setErrorMessage(error.error?.message || "注册失败，请稍后重试");
-					toast.show({
-						variant: "danger",
-						label: "注册失败",
-						description: error.error?.message,
-					});
+		try {
+			await authClient.signUp.email(
+				{
+					name: parsed.data.name.trim(),
+					email: parsed.data.email.trim(),
+					password: parsed.data.password,
 				},
-				onSuccess() {
-					setName("");
-					setEmail("");
-					setPassword("");
-					authClient.$store.notify("$sessionSignal");
-					onAuthenticated?.();
-					queryClient.refetchQueries();
-					toast.show({ variant: "success", label: "注册成功" });
+				{
+					onError(error) {
+						const message = error.error?.message || "注册失败，请稍后重试";
+						setErrorMessage(message);
+						toast.show({
+							variant: "danger",
+							label: "注册失败",
+							description: error.error?.message,
+						});
+					},
+					onSuccess() {
+						setName("");
+						setEmail("");
+						setPassword("");
+						authClient.$store.notify("$sessionSignal");
+						onAuthenticated?.();
+						queryClient.refetchQueries();
+						toast.show({ variant: "success", label: "注册成功" });
+					},
 				},
-			},
-		);
-		setIsSubmitting(false);
+			);
+		} catch (error) {
+			if (isRequestTimeoutError(error)) {
+				setErrorMessage(REQUEST_TIMEOUT_MESSAGE);
+				return;
+			}
+
+			setErrorMessage("注册失败，请稍后重试");
+			toast.show({
+				variant: "danger",
+				label: "注册失败",
+				description: error instanceof Error ? error.message : undefined,
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	return (

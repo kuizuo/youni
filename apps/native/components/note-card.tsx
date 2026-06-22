@@ -15,6 +15,7 @@ import { Image, Modal, Platform, View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 type NoteCardProps = {
 	compact?: boolean;
@@ -113,6 +114,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 			onError: (error) => {
 				setLiked(Boolean(note.liked));
 				setLikedCount(note.likedCount);
+				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
 		}),
@@ -128,6 +130,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 			onError: (error) => {
 				setCollected(Boolean(note.collected));
 				setCollectedCount(note.collectedCount ?? 0);
+				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
 		}),
@@ -141,6 +144,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 			},
 			onError: (error) => {
 				setAuthorFollowing(Boolean(note.author.isFollowing));
+				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
 		}),

@@ -28,6 +28,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
 import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export default function MeScreen() {
 	const router = useRouter();
@@ -77,6 +78,7 @@ export default function MeScreen() {
 				toast.show({ variant: "success", label: "资料已保存" });
 			},
 			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
 					label: "保存失败",

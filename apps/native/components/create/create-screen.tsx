@@ -28,6 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthPanel } from "@/components/auth-panel";
 import { authClient } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 const CREATE_ACTION_BAR_BOTTOM_OFFSET_PX = 80;
 
@@ -121,6 +122,7 @@ export default function CreateScreen() {
 				router.replace("/me" as Href);
 			},
 			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
 					label: "发布失败",

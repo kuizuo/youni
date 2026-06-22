@@ -15,6 +15,10 @@ import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
+import {
+	isRequestTimeoutError,
+	REQUEST_TIMEOUT_MESSAGE,
+} from "@/utils/request-timeout";
 
 const signInSchema = z.object({
 	email: z.string().trim().min(1, "请输入邮箱").email("请输入正确的邮箱"),
@@ -36,6 +40,8 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const submit = async () => {
+		if (isSubmitting) return;
+
 		const parsed = signInSchema.safeParse({ email, password });
 		if (!parsed.success) {
 			setErrorMessage(parsed.error.issues[0]?.message ?? "请检查登录信息");
@@ -44,31 +50,47 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 
 		setErrorMessage(null);
 		setIsSubmitting(true);
-		await authClient.signIn.email(
-			{
-				email: parsed.data.email.trim(),
-				password: parsed.data.password,
-			},
-			{
-				onError(error) {
-					setErrorMessage(error.error?.message || "登录失败，请稍后重试");
-					toast.show({
-						variant: "danger",
-						label: "登录失败",
-						description: error.error?.message,
-					});
+		try {
+			await authClient.signIn.email(
+				{
+					email: parsed.data.email.trim(),
+					password: parsed.data.password,
 				},
-				onSuccess() {
-					setEmail("");
-					setPassword("");
-					authClient.$store.notify("$sessionSignal");
-					onAuthenticated?.();
-					queryClient.refetchQueries();
-					toast.show({ variant: "success", label: "登录成功" });
+				{
+					onError(error) {
+						const message = error.error?.message || "登录失败，请稍后重试";
+						setErrorMessage(message);
+						toast.show({
+							variant: "danger",
+							label: "登录失败",
+							description: error.error?.message,
+						});
+					},
+					onSuccess() {
+						setEmail("");
+						setPassword("");
+						authClient.$store.notify("$sessionSignal");
+						onAuthenticated?.();
+						queryClient.refetchQueries();
+						toast.show({ variant: "success", label: "登录成功" });
+					},
 				},
-			},
-		);
-		setIsSubmitting(false);
+			);
+		} catch (error) {
+			if (isRequestTimeoutError(error)) {
+				setErrorMessage(REQUEST_TIMEOUT_MESSAGE);
+				return;
+			}
+
+			setErrorMessage("登录失败，请稍后重试");
+			toast.show({
+				variant: "danger",
+				label: "登录失败",
+				description: error instanceof Error ? error.message : undefined,
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	return (
