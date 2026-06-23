@@ -378,6 +378,33 @@ export const socialRouter = {
 		return hydrateNotes(rows, context.session?.user.id);
 	}),
 
+	followingFeed: protectedProcedure
+		.input(listInput)
+		.handler(async ({ input, context }) => {
+			const db = createDb();
+			const followingRows = await db
+				.select({ followingId: follow.followingId })
+				.from(follow)
+				.where(eq(follow.followerId, context.session.user.id));
+			const followingIds = followingRows.map((row) => row.followingId);
+
+			if (followingIds.length === 0) {
+				return [];
+			}
+
+			const rows = (
+				await selectNoteRows(
+					and(
+						eq(note.status, "published"),
+						inArray(note.userId, followingIds),
+						or(eq(note.visibility, "public"), eq(note.visibility, "followers")),
+					),
+				)
+			).slice(0, input.limit);
+
+			return hydrateNotes(rows, context.session.user.id);
+		}),
+
 	topics: publicProcedure.input(listInput).handler(async ({ input }) => {
 		const db = createDb();
 		const rows = input.keyword

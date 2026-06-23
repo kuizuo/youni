@@ -24,6 +24,7 @@
 		"@orpc/tanstack-query": "catalog:",
 		"@react-navigation/bottom-tabs": "^7.4.0",
 		"@react-navigation/elements": "^2.9.14",
+		"@shopify/flash-list": "^2.3.2",
 		"@shopify/react-native-skia": "2.4.18",
 		"@stardazed/streams-text-encoding": "^1.0.2",
 		"@tanstack/react-form": "catalog:",

@@ -46,6 +46,7 @@ function StackLayout() {
 			<Stack.Screen name="login" />
 			<Stack.Screen name="preview" />
 			<Stack.Screen name="publish" />
+			<Stack.Screen name="search" />
 			<Stack.Screen name="modal" options={{ presentation: "modal" }} />
 		</Stack>
 	);

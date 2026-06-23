@@ -227,10 +227,11 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	const card = (
 		<Card
 			{...contextMenuProps}
+			variant="transparent"
 			className={
 				compact
-					? "overflow-hidden rounded-xl bg-surface p-0"
-					: "overflow-hidden rounded-2xl bg-surface p-0"
+					? "overflow-hidden rounded-lg p-0 shadow-none"
+					: "overflow-hidden rounded-xl p-0 shadow-none"
 			}
 		>
 			<Card.Header className="p-0">
@@ -269,7 +270,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 				</PressableFeedback>
 			</Card.Header>
 
-			<Card.Body className={compact ? "gap-2 p-3" : "gap-3 p-4"}>
+			<Card.Body className={compact ? "gap-1.5 px-2.5 pt-2 pb-3" : "gap-2 p-3"}>
 				<Card.Header className="flex-row flex-wrap gap-1 p-0">
 					{statusLabel ? (
 						<Text.Paragraph
@@ -321,7 +322,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 							type={compact ? "body-xs" : "body-sm"}
 							color="muted"
 							numberOfLines={1}
-							className="min-w-0 flex-1"
+							className="min-w-0 flex-1 text-muted/90"
 						>
 							{note.author.handle ? `@${note.author.handle}` : note.author.name}
 						</Text.Paragraph>
