@@ -38,6 +38,7 @@ function StackLayout() {
 			<Stack.Screen name="note/[id]" />
 			<Stack.Screen name="user/[id]" />
 			<Stack.Screen name="preview" />
+			<Stack.Screen name="publish" />
 			<Stack.Screen name="modal" options={{ presentation: "modal" }} />
 		</Stack>
 	);

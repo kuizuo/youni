@@ -1,5 +1,12 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { cn, PressableFeedback, Surface, Text } from "heroui-native";
+import { type Href, router } from "expo-router";
+import {
+	cn,
+	PressableFeedback,
+	Surface,
+	Text,
+	useThemeColor,
+} from "heroui-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,6 +18,7 @@ export const TAB_BAR_SAFE_OFFSET_ADDON_PX = 12;
 
 export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 	const insets = useSafeAreaInsets();
+	const backgroundColor = useThemeColor("background");
 
 	return (
 		<View
@@ -37,6 +45,11 @@ export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 
 					const handlePress = (): void => {
 						fireHaptic();
+						if (config.isCreateAction) {
+							router.push("/publish" as Href);
+							return;
+						}
+
 						const event = navigation.emit({
 							type: "tabPress",
 							target: route.key,
@@ -63,20 +76,30 @@ export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 							onPress={handlePress}
 							className={cn(
 								"h-11 flex-row items-center justify-center rounded-full",
-								isFocused
+								config.isCreateAction
+									? "w-12 bg-foreground shadow-sm"
+									: undefined,
+								!config.isCreateAction && isFocused
 									? "w-20 gap-1.5 bg-accent px-3 shadow-sm"
-									: "w-12 bg-transparent",
+									: !config.isCreateAction
+										? "w-12 bg-transparent"
+										: undefined,
 							)}
 						>
 							<PressableFeedback.Highlight />
 							<SingleColorIcon
 								name={isFocused ? config.iconFocusedName : config.iconName}
 								size={22}
+								color={config.isCreateAction ? backgroundColor : undefined}
 								colorClassName={
-									isFocused ? "text-accent-foreground" : "text-muted"
+									config.isCreateAction
+										? "text-background"
+										: isFocused
+											? "text-accent-foreground"
+											: "text-muted"
 								}
 							/>
-							{isFocused ? (
+							{!config.isCreateAction && isFocused ? (
 								<Text.Paragraph
 									type="body-xs"
 									weight="semibold"

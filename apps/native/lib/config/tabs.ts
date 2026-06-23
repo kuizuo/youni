@@ -15,6 +15,7 @@ export type TabIconFocusedName = Extract<
 export interface TabConfig {
 	iconFocusedName: TabIconFocusedName;
 	iconName: TabIconName;
+	isCreateAction?: boolean;
 	label: string;
 	name: TabRouteName;
 }
@@ -33,16 +34,17 @@ export const TABS: readonly TabConfig[] = [
 		iconFocusedName: "search-fill",
 	},
 	{
-		name: "messages",
-		label: "消息",
-		iconName: "message",
-		iconFocusedName: "message-fill",
-	},
-	{
 		name: "create",
 		label: "发布",
 		iconName: "create",
 		iconFocusedName: "create-fill",
+		isCreateAction: true,
+	},
+	{
+		name: "messages",
+		label: "消息",
+		iconName: "message",
+		iconFocusedName: "message-fill",
 	},
 	{
 		name: "me",
