@@ -4,13 +4,17 @@ import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
 	Button,
+	Card,
 	Avatar as HeroAvatar,
+	Menu,
+	Portal,
 	PressableFeedback,
+	Surface,
 	Text,
 	useThemeColor,
 } from "heroui-native";
 import { type ComponentProps, useEffect, useState } from "react";
-import { Image, Modal, Platform, View } from "react-native";
+import { Image, Platform } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
@@ -163,8 +167,12 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 		setIsActionMenuOpen(true);
 	};
 
-	const handleFeedback = (label: string) => {
+	const closeActionMenu = () => {
 		setIsActionMenuOpen(false);
+	};
+
+	const handleFeedback = (label: string) => {
+		closeActionMenu();
 		toast.show({
 			label: "已收到反馈",
 			description: label,
@@ -172,7 +180,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	};
 
 	const toggleCollect = () => {
-		setIsActionMenuOpen(false);
+		closeActionMenu();
 		if (!requireLogin("先登录再收藏")) return;
 		const nextCollected = !collected;
 		setCollected(nextCollected);
@@ -181,68 +189,93 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	};
 
 	const toggleFollow = () => {
-		setIsActionMenuOpen(false);
+		closeActionMenu();
 		if (!requireLogin("先登录再关注")) return;
 		setAuthorFollowing((value) => !value);
 		followMutation.mutate({ userId: note.author.id });
 	};
 
+	const openActionMenuDetail = () => {
+		closeActionMenu();
+		openDetail();
+	};
+
+	const openActionMenuAuthor = () => {
+		closeActionMenu();
+		openAuthor();
+	};
+
 	const statusLabel = getStatusLabel(note.status);
 	const visibleTopics = note.topics?.slice(0, 3) ?? [];
 	const isSelf = session.data?.user?.id === note.author.id;
-	const contextMenuProps =
-		Platform.OS === "web"
-			? {
-					onContextMenu: (event: { preventDefault?: () => void }) => {
-						event.preventDefault?.();
-						openActionMenu();
-					},
-				}
-			: {};
-
-	return (
-		<View
+	const isWeb = Platform.OS === "web";
+	const contextMenuProps = isWeb
+		? {
+				onContextMenu: (event: { preventDefault?: () => void }) => {
+					event.preventDefault?.();
+					openActionMenu();
+				},
+			}
+		: {};
+	const actionButton = (
+		<Button
+			accessibilityLabel="更多操作"
+			className="size-8"
+			isIconOnly
+			onPress={isWeb ? openActionMenu : undefined}
+			size="sm"
+			variant="ghost"
+		>
+			<Ionicons name="ellipsis-horizontal" size={18} color={mutedColor} />
+		</Button>
+	);
+	const card = (
+		<Card
 			{...contextMenuProps}
 			className={
 				compact
-					? "overflow-hidden rounded-xl bg-surface"
-					: "overflow-hidden rounded-2xl bg-surface"
+					? "overflow-hidden rounded-xl bg-surface p-0"
+					: "overflow-hidden rounded-2xl bg-surface p-0"
 			}
 		>
-			<PressableFeedback
-				onLongPress={openActionMenu}
-				onPress={openDetail}
-				className="bg-content2"
-			>
-				{note.cover ? (
-					<Image
-						source={{ uri: note.cover }}
-						resizeMode="cover"
-						className={
-							compact ? "h-48 w-full bg-content2" : "h-72 w-full bg-content2"
-						}
-					/>
-				) : (
-					<View
-						className={
-							compact
-								? "h-48 w-full items-center justify-center bg-content2"
-								: "h-72 w-full items-center justify-center bg-content2"
-						}
-					>
-						<Ionicons
-							name="document-text-outline"
-							size={32}
-							color={mutedColor}
+			<Card.Header className="p-0">
+				<PressableFeedback
+					onLongPress={openActionMenu}
+					onPress={openDetail}
+					className="bg-content2"
+				>
+					{note.cover ? (
+						<Image
+							source={{ uri: note.cover }}
+							resizeMode="cover"
+							className={
+								compact ? "h-48 w-full bg-content2" : "h-72 w-full bg-content2"
+							}
 						/>
-						<Text.Paragraph type="body-xs" color="muted">
-							暂无封面
-						</Text.Paragraph>
-					</View>
-				)}
-			</PressableFeedback>
-			<View className={compact ? "gap-2 p-3" : "gap-3 p-4"}>
-				<View className="flex-row flex-wrap gap-1">
+					) : (
+						<Surface
+							variant="secondary"
+							className={
+								compact
+									? "h-48 w-full items-center justify-center gap-1 rounded-none"
+									: "h-72 w-full items-center justify-center gap-1 rounded-none"
+							}
+						>
+							<Ionicons
+								name="document-text-outline"
+								size={32}
+								color={mutedColor}
+							/>
+							<Text.Paragraph type="body-xs" color="muted">
+								暂无封面
+							</Text.Paragraph>
+						</Surface>
+					)}
+				</PressableFeedback>
+			</Card.Header>
+
+			<Card.Body className={compact ? "gap-2 p-3" : "gap-3 p-4"}>
+				<Card.Header className="flex-row flex-wrap gap-1 p-0">
 					{statusLabel ? (
 						<Text.Paragraph
 							type="body-xs"
@@ -257,11 +290,10 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 							#{topic}
 						</Text.Paragraph>
 					))}
-				</View>
+				</Card.Header>
 
 				<PressableFeedback onLongPress={openActionMenu} onPress={openDetail}>
-					<Text.Paragraph
-						weight="semibold"
+					<Card.Title
 						className={
 							compact
 								? "text-foreground text-sm leading-5"
@@ -270,10 +302,10 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 						numberOfLines={2}
 					>
 						{note.title}
-					</Text.Paragraph>
+					</Card.Title>
 				</PressableFeedback>
 
-				<View className="flex-row items-center justify-between gap-3">
+				<Card.Footer className="flex-row items-center justify-between gap-3 p-0">
 					<PressableFeedback
 						onPress={openAuthor}
 						className="min-w-0 flex-1 flex-row items-center gap-2"
@@ -300,30 +332,75 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 						</Text.Paragraph>
 					</PressableFeedback>
 
-					<PressableFeedback
-						accessibilityLabel={liked ? "取消点赞" : "点赞"}
-						accessibilityRole="button"
-						className="min-h-8 flex-row items-center gap-1 pl-2"
-						hitSlop={8}
-						onPress={toggleLike}
-					>
-						<Ionicons
-							name={liked ? "heart" : "heart-outline"}
-							size={18}
-							color={liked ? dangerColor : mutedColor}
-						/>
-						<Text.Paragraph
-							type="body-xs"
-							weight={liked ? "semibold" : undefined}
-							style={{ color: liked ? dangerColor : mutedColor }}
+					<Card.Footer className="flex-row items-center gap-1 p-0">
+						<PressableFeedback
+							accessibilityLabel={liked ? "取消点赞" : "点赞"}
+							accessibilityRole="button"
+							className="min-h-8 flex-row items-center gap-1 pl-2"
+							hitSlop={8}
+							onPress={toggleLike}
 						>
-							{likedCount}
-						</Text.Paragraph>
-					</PressableFeedback>
-				</View>
-			</View>
+							<Ionicons
+								name={liked ? "heart" : "heart-outline"}
+								size={18}
+								color={liked ? dangerColor : mutedColor}
+							/>
+							<Text.Paragraph
+								type="body-xs"
+								weight={liked ? "semibold" : undefined}
+								style={{ color: liked ? dangerColor : mutedColor }}
+							>
+								{likedCount}
+							</Text.Paragraph>
+						</PressableFeedback>
 
-			<ActionMenuDialog
+						{isWeb ? (
+							actionButton
+						) : (
+							<Menu.Trigger asChild>{actionButton}</Menu.Trigger>
+						)}
+					</Card.Footer>
+				</Card.Footer>
+			</Card.Body>
+		</Card>
+	);
+
+	if (isWeb) {
+		return (
+			<>
+				{card}
+				{isActionMenuOpen ? (
+					<Portal name={`note-action-menu-${note.id}`}>
+						<WebActionMenuPanel
+							authorName={note.author.name}
+							collected={collected}
+							collectedCount={collectedCount}
+							collectPending={collectMutation.isPending}
+							following={authorFollowing}
+							followPending={followMutation.isPending}
+							isSelf={isSelf}
+							noteTitle={note.title}
+							onClose={closeActionMenu}
+							onCollect={toggleCollect}
+							onFeedback={handleFeedback}
+							onFollow={toggleFollow}
+							onOpenAuthor={openActionMenuAuthor}
+							onOpenDetail={openActionMenuDetail}
+						/>
+					</Portal>
+				) : null}
+			</>
+		);
+	}
+
+	return (
+		<Menu
+			isOpen={isActionMenuOpen}
+			onOpenChange={setIsActionMenuOpen}
+			presentation="bottom-sheet"
+		>
+			{card}
+			<ActionMenuContent
 				authorName={note.author.name}
 				collected={collected}
 				collectedCount={collectedCount}
@@ -332,25 +409,18 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 				followPending={followMutation.isPending}
 				isSelf={isSelf}
 				noteTitle={note.title}
-				onClose={() => setIsActionMenuOpen(false)}
+				onClose={closeActionMenu}
 				onCollect={toggleCollect}
 				onFeedback={handleFeedback}
 				onFollow={toggleFollow}
-				onOpenAuthor={() => {
-					setIsActionMenuOpen(false);
-					openAuthor();
-				}}
-				onOpenDetail={() => {
-					setIsActionMenuOpen(false);
-					openDetail();
-				}}
-				visible={isActionMenuOpen}
+				onOpenAuthor={openActionMenuAuthor}
+				onOpenDetail={openActionMenuDetail}
 			/>
-		</View>
+		</Menu>
 	);
 }
 
-function ActionMenuDialog({
+function ActionMenuContent({
 	authorName,
 	collected,
 	collectedCount,
@@ -365,7 +435,6 @@ function ActionMenuDialog({
 	onFollow,
 	onOpenAuthor,
 	onOpenDetail,
-	visible,
 }: {
 	authorName: string;
 	collected: boolean;
@@ -381,91 +450,196 @@ function ActionMenuDialog({
 	onFollow: () => void;
 	onOpenAuthor: () => void;
 	onOpenDetail: () => void;
-	visible: boolean;
+}) {
+	const dangerColor = useThemeColor("danger");
+	const accentColor = useThemeColor("accent");
+	const content = (
+		<>
+			<Menu.Label className="ml-2 px-0 pt-1 pb-0 text-foreground">
+				更多操作
+			</Menu.Label>
+			<Text.Paragraph
+				type="body-sm"
+				color="muted"
+				numberOfLines={2}
+				className="px-2 pb-3"
+			>
+				{noteTitle}
+			</Text.Paragraph>
+
+			<ActionMenuItem
+				icon="open-outline"
+				label="打开详情"
+				onPress={onOpenDetail}
+			/>
+			<ActionMenuItem
+				icon="person-circle-outline"
+				label={`查看 ${authorName}`}
+				onPress={onOpenAuthor}
+			/>
+			{isSelf ? null : (
+				<ActionMenuItem
+					icon={following ? "checkmark-circle" : "person-add-outline"}
+					label={following ? "取消关注" : "关注作者"}
+					loading={followPending}
+					onPress={onFollow}
+					tintColor={following ? accentColor : undefined}
+				/>
+			)}
+			<ActionMenuItem
+				icon={collected ? "bookmark" : "bookmark-outline"}
+				label={collected ? "取消收藏" : "收藏图文"}
+				description={
+					collectedCount > 0 ? `${collectedCount} 人收藏` : undefined
+				}
+				loading={collectPending}
+				onPress={onCollect}
+				tintColor={collected ? accentColor : undefined}
+			/>
+			<ActionMenuItem
+				icon="remove-circle-outline"
+				label="减少类似内容"
+				onPress={() => onFeedback("减少类似内容")}
+			/>
+			<ActionMenuItem
+				icon="alert-circle-outline"
+				label="内容质量不佳"
+				onPress={() => onFeedback("内容质量不佳")}
+			/>
+			<ActionMenuItem
+				icon="flag-outline"
+				label="举报内容"
+				onPress={() => onFeedback("已标记为需要审核")}
+				tintColor={dangerColor}
+				variant="danger"
+			/>
+			<Button variant="ghost" feedbackVariant="scale-ripple" onPress={onClose}>
+				<Button.Label>取消</Button.Label>
+			</Button>
+		</>
+	);
+
+	return (
+		<Menu.Portal>
+			<Menu.Overlay className="bg-black/35" />
+			<Menu.Content
+				presentation="bottom-sheet"
+				className="mx-auto w-full max-w-sm gap-1 rounded-3xl bg-surface p-3"
+			>
+				{content}
+			</Menu.Content>
+		</Menu.Portal>
+	);
+}
+
+function WebActionMenuPanel({
+	authorName,
+	collected,
+	collectedCount,
+	collectPending,
+	following,
+	followPending,
+	isSelf,
+	noteTitle,
+	onClose,
+	onCollect,
+	onFeedback,
+	onFollow,
+	onOpenAuthor,
+	onOpenDetail,
+}: {
+	authorName: string;
+	collected: boolean;
+	collectedCount: number;
+	collectPending: boolean;
+	following: boolean;
+	followPending: boolean;
+	isSelf: boolean;
+	noteTitle: string;
+	onClose: () => void;
+	onCollect: () => void;
+	onFeedback: (label: string) => void;
+	onFollow: () => void;
+	onOpenAuthor: () => void;
+	onOpenDetail: () => void;
 }) {
 	const dangerColor = useThemeColor("danger");
 	const accentColor = useThemeColor("accent");
 
 	return (
-		<Modal
-			animationType="fade"
-			onRequestClose={onClose}
-			transparent
-			visible={visible}
-		>
-			<View className="flex-1 justify-end bg-black/35 px-3 pb-6">
-				<View className="w-full max-w-sm self-center rounded-3xl bg-surface p-3">
-					<View className="gap-1 px-2 pt-1 pb-3">
-						<Text.Paragraph weight="semibold" className="text-foreground">
-							更多操作
-						</Text.Paragraph>
-						<Text.Paragraph type="body-sm" color="muted" numberOfLines={2}>
-							{noteTitle}
-						</Text.Paragraph>
-					</View>
-
-					<View className="gap-1">
-						<ActionMenuItem
-							icon="open-outline"
-							label="打开详情"
-							onPress={onOpenDetail}
-						/>
-						<ActionMenuItem
-							icon="person-circle-outline"
-							label={`查看 ${authorName}`}
-							onPress={onOpenAuthor}
-						/>
-						{isSelf ? null : (
-							<ActionMenuItem
-								icon={following ? "checkmark-circle" : "person-add-outline"}
-								label={following ? "取消关注" : "关注作者"}
-								loading={followPending}
-								onPress={onFollow}
-								tintColor={following ? accentColor : undefined}
-							/>
-						)}
-						<ActionMenuItem
-							icon={collected ? "bookmark" : "bookmark-outline"}
-							label={collected ? "取消收藏" : "收藏图文"}
-							description={
-								collectedCount > 0 ? `${collectedCount} 人收藏` : undefined
-							}
-							loading={collectPending}
-							onPress={onCollect}
-							tintColor={collected ? accentColor : undefined}
-						/>
-						<ActionMenuItem
-							icon="remove-circle-outline"
-							label="减少类似内容"
-							onPress={() => onFeedback("减少类似内容")}
-						/>
-						<ActionMenuItem
-							icon="alert-circle-outline"
-							label="内容质量不佳"
-							onPress={() => onFeedback("内容质量不佳")}
-						/>
-						<ActionMenuItem
-							icon="flag-outline"
-							label="举报内容"
-							onPress={() => onFeedback("已标记为需要审核")}
-							tintColor={dangerColor}
-						/>
-					</View>
-
-					<Button
-						variant="ghost"
-						feedbackVariant="scale-ripple"
-						onPress={onClose}
+		<Surface className="absolute inset-0 z-50 bg-black/35 px-4 pt-20">
+			<Surface className="mx-auto w-full max-w-sm gap-0.5 rounded-2xl p-2 shadow-overlay">
+				<Card.Header className="gap-0.5 px-2 pt-1 pb-1">
+					<Text.Paragraph
+						type="body-sm"
+						weight="semibold"
+						className="text-foreground"
 					>
-						<Button.Label>取消</Button.Label>
-					</Button>
-				</View>
-			</View>
-		</Modal>
+						更多操作
+					</Text.Paragraph>
+					<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+						{noteTitle}
+					</Text.Paragraph>
+				</Card.Header>
+				<WebActionMenuItem
+					icon="open-outline"
+					label="打开详情"
+					onPress={onOpenDetail}
+				/>
+				<WebActionMenuItem
+					icon="person-circle-outline"
+					label={`查看 ${authorName}`}
+					onPress={onOpenAuthor}
+				/>
+				{isSelf ? null : (
+					<WebActionMenuItem
+						icon={following ? "checkmark-circle" : "person-add-outline"}
+						label={following ? "取消关注" : "关注作者"}
+						loading={followPending}
+						onPress={onFollow}
+						tintColor={following ? accentColor : undefined}
+					/>
+				)}
+				<WebActionMenuItem
+					icon={collected ? "bookmark" : "bookmark-outline"}
+					label={collected ? "取消收藏" : "收藏图文"}
+					description={
+						collectedCount > 0 ? `${collectedCount} 人收藏` : undefined
+					}
+					loading={collectPending}
+					onPress={onCollect}
+					tintColor={collected ? accentColor : undefined}
+				/>
+				<WebActionMenuItem
+					icon="remove-circle-outline"
+					label="减少类似内容"
+					onPress={() => onFeedback("减少类似内容")}
+				/>
+				<WebActionMenuItem
+					icon="alert-circle-outline"
+					label="内容质量不佳"
+					onPress={() => onFeedback("内容质量不佳")}
+				/>
+				<WebActionMenuItem
+					icon="flag-outline"
+					label="举报内容"
+					onPress={() => onFeedback("已标记为需要审核")}
+					tintColor={dangerColor}
+				/>
+				<Button
+					size="sm"
+					variant="ghost"
+					feedbackVariant="scale-ripple"
+					onPress={onClose}
+				>
+					<Button.Label>取消</Button.Label>
+				</Button>
+			</Surface>
+		</Surface>
 	);
 }
 
-function ActionMenuItem({
+function WebActionMenuItem({
 	description,
 	icon,
 	label,
@@ -486,20 +660,23 @@ function ActionMenuItem({
 
 	return (
 		<PressableFeedback
-			accessibilityRole="button"
-			className="min-h-12 flex-row items-center gap-3 rounded-2xl px-3 py-2"
+			accessibilityRole="menuitem"
+			className="min-h-8 flex-row items-center gap-2 rounded-xl px-2 py-1"
 			onPress={onPress}
 		>
-			<View className="size-8 items-center justify-center rounded-full bg-content2">
+			<Surface
+				variant="secondary"
+				className="size-7 items-center justify-center rounded-full"
+			>
 				<Ionicons
 					name={loading ? "sync-outline" : icon}
-					size={18}
+					size={15}
 					color={iconColor}
 				/>
-			</View>
-			<View className="min-w-0 flex-1">
+			</Surface>
+			<Card.Body className="min-w-0 flex-1 p-0">
 				<Text.Paragraph
-					type="body-sm"
+					type="body-xs"
 					weight="semibold"
 					numberOfLines={1}
 					style={{ color: tintColor ?? foregroundColor }}
@@ -511,8 +688,59 @@ function ActionMenuItem({
 						{description}
 					</Text.Paragraph>
 				) : null}
-			</View>
-			<Ionicons name="chevron-forward" size={15} color={mutedColor} />
+			</Card.Body>
+			<Ionicons name="chevron-forward" size={13} color={mutedColor} />
 		</PressableFeedback>
+	);
+}
+
+function ActionMenuItem({
+	description,
+	icon,
+	label,
+	loading = false,
+	onPress,
+	tintColor,
+	variant,
+}: {
+	description?: string;
+	icon: ComponentProps<typeof Ionicons>["name"];
+	label: string;
+	loading?: boolean;
+	onPress: () => void;
+	tintColor?: string;
+	variant?: "danger" | "default";
+}) {
+	const mutedColor = useThemeColor("muted");
+	const foregroundColor = useThemeColor("foreground");
+	const iconColor = tintColor ?? foregroundColor;
+
+	return (
+		<Menu.Item className="min-h-12 gap-3" onPress={onPress} variant={variant}>
+			<Surface
+				variant="secondary"
+				className="size-8 items-center justify-center rounded-full"
+			>
+				<Ionicons
+					name={loading ? "sync-outline" : icon}
+					size={18}
+					color={iconColor}
+				/>
+			</Surface>
+			<Card.Body className="min-w-0 flex-1 p-0">
+				<Menu.ItemTitle
+					numberOfLines={1}
+					style={tintColor ? { color: tintColor } : undefined}
+				>
+					{label}
+				</Menu.ItemTitle>
+				{description ? (
+					<Menu.ItemDescription numberOfLines={1}>
+						{description}
+					</Menu.ItemDescription>
+				) : null}
+			</Card.Body>
+			<Ionicons name="chevron-forward" size={15} color={mutedColor} />
+		</Menu.Item>
 	);
 }
