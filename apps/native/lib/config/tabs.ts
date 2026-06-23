@@ -1,10 +1,10 @@
 import type { SingleColorIconName } from "@/components/icons/single-color";
 
-export type TabRouteName = "index" | "search" | "create" | "me";
+export type TabRouteName = "index" | "search" | "messages" | "create" | "me";
 
 export type TabIconName = Extract<
 	SingleColorIconName,
-	"create" | "home" | "search" | "user"
+	"create" | "home" | "message" | "search" | "user"
 >;
 
 export type TabIconFocusedName = Extract<
@@ -31,6 +31,12 @@ export const TABS: readonly TabConfig[] = [
 		label: "搜索",
 		iconName: "search",
 		iconFocusedName: "search-fill",
+	},
+	{
+		name: "messages",
+		label: "消息",
+		iconName: "message",
+		iconFocusedName: "message-fill",
 	},
 	{
 		name: "create",

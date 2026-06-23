@@ -11,6 +11,8 @@ const SINGLE_COLOR_ICONS = {
 	"home-fill": "home",
 	search: "search-outline",
 	"search-fill": "search",
+	message: "chatbubble-ellipses-outline",
+	"message-fill": "chatbubble-ellipses",
 	create: "add-circle-outline",
 	"create-fill": "add-circle",
 	user: "person-outline",
