@@ -16,6 +16,23 @@ const localOrigins = [
 	"http://localhost:8081",
 	"http://127.0.0.1:8081",
 ];
+const googleClientIds = [
+	env.GOOGLE_WEB_CLIENT_ID,
+	env.GOOGLE_IOS_CLIENT_ID,
+	env.GOOGLE_ANDROID_CLIENT_ID,
+].filter((clientId): clientId is string => Boolean(clientId));
+const [firstGoogleClientId, ...additionalGoogleClientIds] = googleClientIds;
+const socialProviders = firstGoogleClientId
+	? {
+			google: {
+				clientId:
+					additionalGoogleClientIds.length === 0
+						? firstGoogleClientId
+						: [firstGoogleClientId, ...additionalGoogleClientIds],
+				clientSecret: env.GOOGLE_CLIENT_SECRET || undefined,
+			},
+		}
+	: undefined;
 
 export function createAuth() {
 	const db = createDb();
@@ -36,6 +53,7 @@ export function createAuth() {
 		emailAndPassword: {
 			enabled: true,
 		},
+		socialProviders,
 		// uncomment cookieCache setting when ready to deploy to Cloudflare using *.workers.dev domains
 		// session: {
 		//   cookieCache: {

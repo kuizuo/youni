@@ -1,7 +1,7 @@
-import { Tabs } from "heroui-native";
+import { Separator, Tabs, Text } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
-
+import { GoogleSignIn } from "@/components/google-sign-in";
 import { SignIn } from "@/components/sign-in";
 import { SignUp } from "@/components/sign-up";
 
@@ -14,6 +14,16 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
 
 	return (
 		<View className="mx-auto w-full max-w-sm gap-4">
+			<GoogleSignIn onAuthenticated={onAuthenticated} />
+
+			<View className="flex-row items-center gap-3">
+				<Separator className="flex-1" />
+				<Text.Paragraph type="body-sm" color="muted">
+					或
+				</Text.Paragraph>
+				<Separator className="flex-1" />
+			</View>
+
 			<Tabs
 				value={mode}
 				onValueChange={(value) => setMode(value as typeof mode)}

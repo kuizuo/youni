@@ -22,6 +22,7 @@
 		"@internationalized/number": "^3.6.6",
 		"@orpc/client": "catalog:",
 		"@orpc/tanstack-query": "catalog:",
+		"@react-native-google-signin/google-signin": "^16.1.2",
 		"@react-navigation/bottom-tabs": "^7.4.0",
 		"@react-navigation/elements": "^2.9.14",
 		"@shopify/flash-list": "^2.3.2",

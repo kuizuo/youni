@@ -43,6 +43,10 @@ export const server = await Worker("server", {
 		),
 		GOOGLE_GENERATIVE_AI_API_KEY:
 			alchemy.secret.env.GOOGLE_GENERATIVE_AI_API_KEY ?? "",
+		GOOGLE_WEB_CLIENT_ID: alchemy.env.GOOGLE_WEB_CLIENT_ID ?? "",
+		GOOGLE_IOS_CLIENT_ID: alchemy.env.GOOGLE_IOS_CLIENT_ID ?? "",
+		GOOGLE_ANDROID_CLIENT_ID: alchemy.env.GOOGLE_ANDROID_CLIENT_ID ?? "",
+		GOOGLE_CLIENT_SECRET: alchemy.secret.env.GOOGLE_CLIENT_SECRET ?? "",
 		ADMIN_EMAILS: alchemy.env.ADMIN_EMAILS || "admin@youni.local",
 	},
 	dev: {
