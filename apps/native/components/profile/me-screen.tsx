@@ -15,7 +15,7 @@ import {
 	useThemeColor,
 } from "heroui-native";
 import { useEffect, useMemo, useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { RefreshControl, View } from "react-native";
 import Animated, {
 	Extrapolation,
 	interpolate,
@@ -27,7 +27,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AuthPanel } from "@/components/auth-panel";
 import { NoteCard } from "@/components/note-card";
 import {
 	EmptyState,
@@ -63,7 +62,6 @@ export default function MeScreen() {
 	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const currentUser = session.data?.user;
-	const [hasAuthenticated, setHasAuthenticated] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [activeTab, setActiveTab] = useState<ProfileTabKey>("notes");
 	const [stickyTabsEnabled, setStickyTabsEnabled] = useState(false);
@@ -84,7 +82,7 @@ export default function MeScreen() {
 			}
 		},
 	);
-	const isAuthenticated = Boolean(currentUser) || hasAuthenticated;
+	const isAuthenticated = Boolean(currentUser);
 	const me = useQuery({
 		...orpc.social.me.queryOptions(),
 		enabled: isAuthenticated,
@@ -104,12 +102,6 @@ export default function MeScreen() {
 		setBio(profile.bio ?? "");
 		setImage(profile.image ?? "");
 	}, [isEditing, profile]);
-
-	useEffect(() => {
-		if (currentUser) {
-			setHasAuthenticated(true);
-		}
-	}, [currentUser]);
 
 	const updateProfile = useMutation(
 		orpc.social.updateProfile.mutationOptions({
@@ -194,22 +186,6 @@ export default function MeScreen() {
 		],
 	}));
 
-	if (!isAuthenticated) {
-		return (
-			<ScrollView
-				contentInsetAdjustmentBehavior="automatic"
-				contentContainerClassName="bg-background p-4 pb-32"
-			>
-				<AuthPanel
-					onAuthenticated={() => {
-						setHasAuthenticated(true);
-						session.refetch();
-					}}
-				/>
-			</ScrollView>
-		);
-	}
-
 	const saveProfile = () => {
 		if (!name.trim()) {
 			toast.show({ variant: "warning", label: "请输入昵称" });
@@ -229,7 +205,6 @@ export default function MeScreen() {
 	};
 
 	const signOut = () => {
-		setHasAuthenticated(false);
 		authClient.signOut();
 		queryClient.clear();
 		router.replace("/" as Href);

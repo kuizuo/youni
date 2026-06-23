@@ -13,6 +13,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { HeroUINativeProvider } from "heroui-native";
 import { type ReactNode, useCallback, useEffect } from "react";
+import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
 	KeyboardAvoidingView,
@@ -31,6 +32,10 @@ export const unstable_settings = {
 };
 
 SplashScreen.preventAutoHideAsync().catch((): void => {});
+LogBox.ignoreLogs([
+	"React does not recognize the `accessibilityElementsHidden` prop",
+	"React does not recognize the `importantForAccessibility` prop",
+]);
 
 function StackLayout() {
 	return (
@@ -38,6 +43,7 @@ function StackLayout() {
 			<Stack.Screen name="(tabs)" />
 			<Stack.Screen name="note/[id]" />
 			<Stack.Screen name="user/[id]" />
+			<Stack.Screen name="login" />
 			<Stack.Screen name="preview" />
 			<Stack.Screen name="publish" />
 			<Stack.Screen name="modal" options={{ presentation: "modal" }} />

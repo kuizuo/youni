@@ -17,6 +17,7 @@ import { type ComponentProps, useEffect, useState } from "react";
 import { Image, Platform } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
+import { getLoginHref } from "@/lib/auth-navigation";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
@@ -97,15 +98,9 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 		} as unknown as Href);
 	};
 
-	const requireLogin = (label: string) => {
+	const requireLogin = () => {
 		if (session.data?.user) return true;
-		toast.show({
-			variant: "warning",
-			label,
-			description: "登录后可以继续互动。",
-			actionLabel: "去登录",
-			onActionPress: () => router.push("/me" as Href),
-		});
+		router.push(getLoginHref("/"));
 		return false;
 	};
 
@@ -156,7 +151,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	);
 
 	const toggleLike = () => {
-		if (!requireLogin("先登录再点赞")) return;
+		if (!requireLogin()) return;
 		const nextLiked = !liked;
 		setLiked(nextLiked);
 		setLikedCount((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
@@ -181,7 +176,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 
 	const toggleCollect = () => {
 		closeActionMenu();
-		if (!requireLogin("先登录再收藏")) return;
+		if (!requireLogin()) return;
 		const nextCollected = !collected;
 		setCollected(nextCollected);
 		setCollectedCount((count) => Math.max(0, count + (nextCollected ? 1 : -1)));
@@ -190,7 +185,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 
 	const toggleFollow = () => {
 		closeActionMenu();
-		if (!requireLogin("先登录再关注")) return;
+		if (!requireLogin()) return;
 		setAuthorFollowing((value) => !value);
 		followMutation.mutate({ userId: note.author.id });
 	};

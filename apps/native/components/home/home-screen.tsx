@@ -12,6 +12,8 @@ import {
 	ErrorState,
 	FeedSkeleton,
 } from "@/components/social-states";
+import { authClient } from "@/lib/auth-client";
+import { getLoginHref } from "@/lib/auth-navigation";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
 import { orpc } from "@/utils/orpc";
 
@@ -19,6 +21,7 @@ const CHANNELS = ["推荐", "穿搭", "美食", "旅行", "好物"] as const;
 
 export default function HomeScreen() {
 	const router = useRouter();
+	const session = authClient.useSession();
 	const mutedColor = useThemeColor("muted");
 	const [channel, setChannel] = useState<(typeof CHANNELS)[number]>("推荐");
 	const input = useMemo(
@@ -128,7 +131,13 @@ export default function HomeScreen() {
 							title="还没有内容"
 							description="发布第一篇图文后，这里会出现新的灵感。"
 							actionLabel="去发布"
-							onAction={() => router.push("/create" as Href)}
+							onAction={() =>
+								router.push(
+									session.data?.user
+										? ("/publish" as Href)
+										: getLoginHref("/publish"),
+								)
+							}
 						/>
 					)
 				}

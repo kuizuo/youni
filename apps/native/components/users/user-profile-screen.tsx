@@ -20,6 +20,7 @@ import {
 	FeedSkeleton,
 } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
+import { getLoginHref } from "@/lib/auth-navigation";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -62,13 +63,7 @@ export default function UserProfileScreen() {
 
 	const requireLogin = () => {
 		if (session.data?.user) return true;
-		toast.show({
-			variant: "warning",
-			label: "先登录再关注",
-			description: "登录后可以继续互动。",
-			actionLabel: "去登录",
-			onActionPress: () => router.push("/me" as Href),
-		});
+		router.push(getLoginHref(`/user/${id}`));
 		return false;
 	};
 

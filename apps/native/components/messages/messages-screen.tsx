@@ -27,6 +27,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
+import { getLoginHref } from "@/lib/auth-navigation";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -468,7 +469,7 @@ export default function MessagesScreen() {
 							onAction={() =>
 								isAuthenticated
 									? router.replace("/" as Href)
-									: router.push("/me" as Href)
+									: router.push(getLoginHref("/messages"))
 							}
 						/>
 					)

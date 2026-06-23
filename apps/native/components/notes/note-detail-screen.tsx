@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
+import { getLoginHref } from "@/lib/auth-navigation";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
@@ -101,30 +102,24 @@ export default function NoteDetailScreen() {
 	const commentsEnabled = note.data?.advancedOptions.allowComment ?? true;
 	const canSendComment = commentsEnabled && commentText.trim().length > 0;
 
-	const requireLogin = (label: string) => {
+	const requireLogin = () => {
 		if (session.data?.user) return true;
-		toast.show({
-			variant: "warning",
-			label,
-			description: "登录后可以继续互动。",
-			actionLabel: "去登录",
-			onActionPress: () => router.push("/me" as Href),
-		});
+		router.push(getLoginHref(`/note/${id}`));
 		return false;
 	};
 
 	const toggleLike = () => {
-		if (!note.data || !requireLogin("先登录再点赞")) return;
+		if (!note.data || !requireLogin()) return;
 		likeMutation.mutate({ id: note.data.id });
 	};
 
 	const toggleFollow = () => {
-		if (!authorId || isSelf || !requireLogin("先登录再关注")) return;
+		if (!authorId || isSelf || !requireLogin()) return;
 		followMutation.mutate({ userId: authorId });
 	};
 
 	const sendComment = () => {
-		if (!note.data || !requireLogin("先登录再评论")) return;
+		if (!note.data || !requireLogin()) return;
 		if (!canSendComment || commentMutation.isPending) return;
 		commentMutation.mutate({
 			noteId: note.data.id,
@@ -381,7 +376,7 @@ export default function NoteDetailScreen() {
 							variant="secondary"
 							className="min-w-0 flex-1 justify-start rounded-full px-4"
 							feedbackVariant="scale-ripple"
-							onPress={() => router.push("/me" as Href)}
+							onPress={() => router.push(getLoginHref(`/note/${id}`))}
 						>
 							<Button.Label className="text-muted">登录后参与评论</Button.Label>
 						</Button>
