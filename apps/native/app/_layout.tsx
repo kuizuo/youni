@@ -21,6 +21,7 @@ import {
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AppThemeProvider } from "@/lib/contexts/app-theme-context";
+import { PushNotificationBridge } from "@/lib/notifications/push-notification-bridge";
 import { useAppToast } from "@/utils/app-toast";
 import { queryClient } from "@/utils/orpc";
 import { setRequestToastHandler } from "@/utils/request-toast";
@@ -111,6 +112,7 @@ export default function Layout() {
 								}}
 							>
 								<RequestToastBridge />
+								<PushNotificationBridge />
 								<StackLayout />
 							</HeroUINativeProvider>
 						</AppThemeProvider>

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
@@ -24,13 +25,18 @@ import {
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ErrorState } from "@/components/social-states";
+import { authClient } from "@/lib/auth-client";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
+import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 const HEADER_HEIGHT = 64;
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 type NotificationCategoryId = "activity" | "followers" | "system";
+type ActiveCategoryId = "all" | NotificationCategoryId;
 type NotificationKind =
 	| "announcement"
 	| "collect"
@@ -41,306 +47,223 @@ type NotificationKind =
 	| "mention"
 	| "system";
 
+type NotificationItem = {
+	actor: null | {
+		id: string;
+		image: null | string;
+		name: string;
+	};
+	body: string;
+	categoryId: NotificationCategoryId;
+	createdAt: Date | string;
+	id: string;
+	isRead: boolean;
+	kind: NotificationKind;
+	noteId: null | string;
+	previewUrl: null | string;
+	targetId: null | string;
+	targetType: null | string;
+	title: string;
+};
+
 type NotificationCategory = {
 	description: string;
 	icon: keyof typeof Ionicons.glyphMap;
 	id: NotificationCategoryId;
-	kinds: NotificationKind[];
 	title: string;
+	unreadCount: number;
+	updatedAt: null | string;
 };
 
-type NotificationItem = {
-	avatarUrl?: string;
-	body: string;
-	categoryId: NotificationCategoryId;
-	id: string;
-	isRead: boolean;
-	kind: NotificationKind;
-	nickname: string;
-	previewUrl?: string;
-	targetLabel?: string;
-	time: string;
-	title: string;
-};
-
-const CATEGORIES: NotificationCategory[] = [
-	{
+const CATEGORY_CONFIG: Record<
+	NotificationCategoryId,
+	Omit<NotificationCategory, "unreadCount" | "updatedAt">
+> = {
+	activity: {
 		id: "activity",
 		title: "互动通知",
 		description: "点赞、收藏、评论、@提及",
 		icon: "heart-outline",
-		kinds: ["like", "collect", "comment", "mention"],
 	},
-	{
+	followers: {
 		id: "followers",
 		title: "新增关注",
 		description: "新粉丝列表、关注提醒",
 		icon: "person-add-outline",
-		kinds: ["follow"],
 	},
-	{
+	system: {
 		id: "system",
 		title: "系统通知",
 		description: "官方公告、活动通知、系统消息",
 		icon: "notifications-outline",
-		kinds: ["announcement", "event", "system"],
 	},
-];
+};
 
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-	{
-		id: "n-1",
-		categoryId: "activity",
-		kind: "like",
-		nickname: "林小眠",
-		title: "林小眠赞了你的笔记",
-		body: "春日通勤包里装什么",
-		time: "刚刚",
-		isRead: false,
-		avatarUrl:
-			"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&crop=faces",
-		previewUrl:
-			"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=220&h=220&fit=crop",
-		targetLabel: "点赞",
-	},
-	{
-		id: "n-2",
-		categoryId: "activity",
-		kind: "comment",
-		nickname: "南风",
-		title: "南风评论了你的内容",
-		body: "这个配色也太舒服了，求桌面清单。",
-		time: "12 分钟前",
-		isRead: false,
-		avatarUrl:
-			"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces",
-		previewUrl:
-			"https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=220&h=220&fit=crop",
-		targetLabel: "评论",
-	},
-	{
-		id: "n-3",
-		categoryId: "followers",
-		kind: "follow",
-		nickname: "Mori",
-		title: "Mori 开始关注你",
-		body: "喜欢摄影、旅行和周末咖啡店。",
-		time: "38 分钟前",
-		isRead: false,
-		avatarUrl:
-			"https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&crop=faces",
-		targetLabel: "新粉丝",
-	},
-	{
-		id: "n-4",
-		categoryId: "activity",
-		kind: "collect",
-		nickname: "阿宁",
-		title: "阿宁收藏了你的笔记",
-		body: "三天两夜的城市散步路线",
-		time: "1 小时前",
-		isRead: true,
-		avatarUrl:
-			"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=160&h=160&fit=crop&crop=faces",
-		previewUrl:
-			"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=220&h=220&fit=crop",
-		targetLabel: "收藏",
-	},
-	{
-		id: "n-5",
-		categoryId: "system",
-		kind: "announcement",
-		nickname: "Youni 官方",
-		title: "你的内容获得了更多曝光",
-		body: "过去 24 小时内，有 128 位新朋友看到了你的笔记。",
-		time: "2 小时前",
-		isRead: false,
-		targetLabel: "官方公告",
-	},
-	{
-		id: "n-6",
-		categoryId: "activity",
-		kind: "mention",
-		nickname: "小周",
-		title: "小周在评论里 @ 了你",
-		body: "这家店是不是你上次推荐的那家？",
-		time: "昨天 21:18",
-		isRead: true,
-		avatarUrl:
-			"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&crop=faces",
-		previewUrl:
-			"https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=220&h=220&fit=crop",
-		targetLabel: "@提及",
-	},
-	{
-		id: "n-7",
-		categoryId: "followers",
-		kind: "follow",
-		nickname: "许枝",
-		title: "许枝关注了你",
-		body: "刚刚看完你的 4 篇穿搭笔记。",
-		time: "昨天 18:04",
-		isRead: true,
-		avatarUrl:
-			"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&crop=faces",
-		targetLabel: "关注提醒",
-	},
-	{
-		id: "n-8",
-		categoryId: "system",
-		kind: "event",
-		nickname: "Youni 活动",
-		title: "周末灵感征集开始了",
-		body: "发布带有 #周末灵感 的笔记，有机会进入精选流。",
-		time: "周一",
-		isRead: true,
-		previewUrl:
-			"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=220&h=220&fit=crop",
-		targetLabel: "活动通知",
-	},
-	{
-		id: "n-9",
-		categoryId: "activity",
-		kind: "like",
-		nickname: "栗子",
-		title: "栗子赞了你的笔记",
-		body: "低预算卧室改造记录",
-		time: "周日",
-		isRead: true,
-		avatarUrl:
-			"https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=160&h=160&fit=crop&crop=faces",
-		previewUrl:
-			"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=220&h=220&fit=crop",
-		targetLabel: "点赞",
-	},
-	{
-		id: "n-10",
-		categoryId: "system",
-		kind: "system",
-		nickname: "系统消息",
-		title: "账号安全提醒",
-		body: "建议完善个人资料，让更多人认识你。",
-		time: "上周五",
-		isRead: true,
-		targetLabel: "系统消息",
-	},
-];
+const TARGET_LABEL_BY_KIND: Record<NotificationKind, string> = {
+	announcement: "官方公告",
+	collect: "收藏",
+	comment: "评论",
+	event: "活动通知",
+	follow: "新粉丝",
+	like: "点赞",
+	mention: "@提及",
+	system: "系统消息",
+};
+
+function formatRelativeTime(value: Date | string | null) {
+	if (!value) return "暂无";
+	const date = new Date(value);
+	const diff = Date.now() - date.getTime();
+	const minute = 60 * 1000;
+	const hour = 60 * minute;
+	const day = 24 * hour;
+
+	if (Number.isNaN(date.getTime())) return "暂无";
+	if (diff < minute) return "刚刚";
+	if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`;
+	if (diff < day) return `${Math.floor(diff / hour)} 小时前`;
+	if (diff < 7 * day) return `${Math.floor(diff / day)} 天前`;
+	return `${date.getMonth() + 1}/${date.getDate()}`;
+}
 
 export default function MessagesScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { width } = useWindowDimensions();
+	const session = authClient.useSession();
 	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const foregroundColor = useThemeColor("foreground");
 	const dangerColor = useThemeColor("danger");
-	const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
-	const [activeCategoryId, setActiveCategoryId] = useState<
-		"all" | NotificationCategoryId
-	>("all");
-	const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-	const [isRefreshing, setIsRefreshing] = useState(false);
-	const [isLoadingMore, setIsLoadingMore] = useState(false);
+	const [activeCategoryId, setActiveCategoryId] =
+		useState<ActiveCategoryId>("all");
+	const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
 	const [actionsVisible, setActionsVisible] = useState(false);
 	const [selectedNotification, setSelectedNotification] =
 		useState<NotificationItem | null>(null);
 	const isWide = width >= 768;
+	const isAuthenticated = Boolean(session.data?.user);
 
-	const unreadTotal = useMemo(
-		() => notifications.filter((item) => !item.isRead).length,
-		[notifications],
+	const summary = useQuery({
+		...orpc.notifications.summary.queryOptions(),
+		enabled: isAuthenticated,
+	});
+	const notifications = useQuery({
+		...orpc.notifications.list.queryOptions({
+			input: {
+				category: activeCategoryId,
+				limit: visibleLimit,
+				offset: 0,
+			},
+		}),
+		enabled: isAuthenticated,
+	});
+	const items = (notifications.data?.items ?? []) as NotificationItem[];
+	const hasMore = notifications.data?.nextOffset != null;
+	const unreadTotal = summary.data?.totalUnread ?? 0;
+
+	const categories = useMemo<NotificationCategory[]>(() => {
+		const summaryByCategory = new Map(
+			(summary.data?.categories ?? []).map((item) => [item.category, item]),
+		);
+
+		return (["activity", "followers", "system"] as const).map((id) => {
+			const item = summaryByCategory.get(id);
+			return {
+				...CATEGORY_CONFIG[id],
+				unreadCount: item?.unreadCount ?? 0,
+				updatedAt: item?.updatedAt ? formatRelativeTime(item.updatedAt) : null,
+			};
+		});
+	}, [summary.data]);
+
+	const refreshNotifications = async () => {
+		await Promise.all([summary.refetch(), notifications.refetch()]);
+	};
+
+	const invalidateNotifications = async () => {
+		await queryClient.invalidateQueries();
+	};
+
+	const markReadMutation = useMutation(
+		orpc.notifications.markRead.mutationOptions({
+			onSuccess: invalidateNotifications,
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({ variant: "danger", label: error.message });
+			},
+		}),
 	);
-	const filteredNotifications = useMemo(() => {
-		if (activeCategoryId === "all") return notifications;
-		return notifications.filter((item) => item.categoryId === activeCategoryId);
-	}, [activeCategoryId, notifications]);
-	const visibleNotifications = filteredNotifications.slice(0, visibleCount);
-	const hasMore = visibleNotifications.length < filteredNotifications.length;
-
-	const categories = useMemo(
-		() =>
-			CATEGORIES.map((category) => {
-				const categoryItems = notifications.filter(
-					(item) => item.categoryId === category.id,
-				);
-				const latestItem = categoryItems[0];
-
-				return {
-					...category,
-					unreadCount: categoryItems.filter((item) => !item.isRead).length,
-					updatedAt: latestItem?.time ?? "暂无",
-				};
-			}),
-		[notifications],
+	const markAllReadMutation = useMutation(
+		orpc.notifications.markAllRead.mutationOptions({
+			onSuccess: async () => {
+				setActionsVisible(false);
+				await invalidateNotifications();
+				toast.show({ label: "已全部标为已读" });
+			},
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({ variant: "danger", label: error.message });
+			},
+		}),
 	);
-
-	const markAllAsRead = () => {
-		fireHaptic();
-		setNotifications((items) =>
-			items.map((item) => ({ ...item, isRead: true })),
-		);
-		setActionsVisible(false);
-		toast.show({ label: "已全部标为已读" });
-	};
-
-	const clearNotifications = () => {
-		fireHaptic();
-		setNotifications([]);
-		setVisibleCount(PAGE_SIZE);
-		setActionsVisible(false);
-		toast.show({ label: "通知已清空" });
-	};
-
-	const restoreNotifications = () => {
-		setNotifications(INITIAL_NOTIFICATIONS);
-		setVisibleCount(PAGE_SIZE);
-		toast.show({ label: "已恢复示例通知" });
-	};
-
-	const markNotificationRead = (id: string) => {
-		setNotifications((items) =>
-			items.map((item) => (item.id === id ? { ...item, isRead: true } : item)),
-		);
-	};
-
-	const toggleNotificationRead = (id: string) => {
-		fireHaptic();
-		setNotifications((items) =>
-			items.map((item) =>
-				item.id === id ? { ...item, isRead: !item.isRead } : item,
-			),
-		);
-	};
-
-	const deleteNotification = (id: string) => {
-		fireHaptic();
-		setNotifications((items) => items.filter((item) => item.id !== id));
-		setSelectedNotification((item) => (item?.id === id ? null : item));
-		toast.show({ label: "已删除通知" });
-	};
+	const deleteMutation = useMutation(
+		orpc.notifications.delete.mutationOptions({
+			onSuccess: async () => {
+				await invalidateNotifications();
+				toast.show({ label: "已删除通知" });
+			},
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({ variant: "danger", label: error.message });
+			},
+		}),
+	);
+	const deleteAllMutation = useMutation(
+		orpc.notifications.deleteAll.mutationOptions({
+			onSuccess: async () => {
+				setActionsVisible(false);
+				setVisibleLimit(PAGE_SIZE);
+				await invalidateNotifications();
+				toast.show({ label: "通知已清空" });
+			},
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({ variant: "danger", label: error.message });
+			},
+		}),
+	);
 
 	const openNotification = (item: NotificationItem) => {
 		fireHaptic();
-		markNotificationRead(item.id);
 		setSelectedNotification({ ...item, isRead: true });
+		if (!item.isRead) {
+			markReadMutation.mutate({ id: item.id, isRead: true });
+		}
 	};
 
-	const refreshNotifications = () => {
-		setIsRefreshing(true);
-		setTimeout(() => {
-			setNotifications((items) => [...items]);
-			setIsRefreshing(false);
-			toast.show({ label: "已刷新消息" });
-		}, 650);
+	const openTarget = (item: NotificationItem) => {
+		setSelectedNotification(null);
+		const targetId = item.noteId ?? item.targetId;
+		if (item.targetType === "note" && targetId) {
+			router.push({
+				pathname: "/note/[id]",
+				params: { id: targetId },
+			} as unknown as Href);
+			return;
+		}
+		if (item.targetType === "user" && item.targetId) {
+			router.push({
+				pathname: "/user/[id]",
+				params: { id: item.targetId },
+			} as unknown as Href);
+		}
 	};
 
-	const loadMore = () => {
-		if (!hasMore || isLoadingMore) return;
-		setIsLoadingMore(true);
-		setTimeout(() => {
-			setVisibleCount((count) => count + PAGE_SIZE);
-			setIsLoadingMore(false);
-		}, 520);
+	const changeCategory = (id: ActiveCategoryId) => {
+		fireHaptic();
+		setActiveCategoryId(id);
+		setVisibleLimit(PAGE_SIZE);
 	};
 
 	return (
@@ -395,7 +318,7 @@ export default function MessagesScreen() {
 
 			<FlatList
 				className="mx-auto w-full max-w-xl"
-				data={visibleNotifications}
+				data={items}
 				keyExtractor={(item) => item.id}
 				contentInsetAdjustmentBehavior="automatic"
 				showsVerticalScrollIndicator={false}
@@ -406,11 +329,15 @@ export default function MessagesScreen() {
 				}}
 				refreshControl={
 					<RefreshControl
-						refreshing={isRefreshing}
+						refreshing={notifications.isRefetching || summary.isRefetching}
 						onRefresh={refreshNotifications}
 					/>
 				}
-				onEndReached={loadMore}
+				onEndReached={() => {
+					if (hasMore && !notifications.isFetching) {
+						setVisibleLimit((value) => value + PAGE_SIZE);
+					}
+				}}
 				onEndReachedThreshold={0.35}
 				ListHeaderComponent={
 					<View className="gap-3 pb-2">
@@ -421,7 +348,10 @@ export default function MessagesScreen() {
 										variant="secondary"
 										className="h-10 flex-1 rounded-full"
 										feedbackVariant="scale-ripple"
-										onPress={markAllAsRead}
+										isDisabled={markAllReadMutation.isPending}
+										onPress={() =>
+											markAllReadMutation.mutate({ category: activeCategoryId })
+										}
 									>
 										<Ionicons
 											name="checkmark-done-outline"
@@ -434,7 +364,10 @@ export default function MessagesScreen() {
 										variant="danger-soft"
 										className="h-10 flex-1 rounded-full"
 										feedbackVariant="scale-ripple"
-										onPress={clearNotifications}
+										isDisabled={deleteAllMutation.isPending}
+										onPress={() =>
+											deleteAllMutation.mutate({ category: activeCategoryId })
+										}
 									>
 										<Ionicons
 											name="trash-outline"
@@ -477,13 +410,11 @@ export default function MessagesScreen() {
 									category={category}
 									isActive={activeCategoryId === category.id}
 									isWide={isWide}
-									onPress={() => {
-										fireHaptic();
-										setActiveCategoryId((value) =>
-											value === category.id ? "all" : category.id,
-										);
-										setVisibleCount(PAGE_SIZE);
-									}}
+									onPress={() =>
+										changeCategory(
+											activeCategoryId === category.id ? "all" : category.id,
+										)
+									}
 								/>
 							))}
 						</ScrollView>
@@ -493,8 +424,7 @@ export default function MessagesScreen() {
 								<Text.Paragraph weight="semibold" className="text-foreground">
 									{activeCategoryId === "all"
 										? "最新通知"
-										: CATEGORIES.find((item) => item.id === activeCategoryId)
-												?.title}
+										: CATEGORY_CONFIG[activeCategoryId].title}
 								</Text.Paragraph>
 								<Text.Paragraph type="body-xs" color="muted">
 									左滑可以快速处理，点击查看详情
@@ -505,10 +435,7 @@ export default function MessagesScreen() {
 								variant={activeCategoryId === "all" ? "primary" : "secondary"}
 								className="h-9 rounded-full px-4"
 								feedbackVariant="scale-ripple"
-								onPress={() => {
-									setActiveCategoryId("all");
-									setVisibleCount(PAGE_SIZE);
-								}}
+								onPress={() => changeCategory("all")}
 							>
 								<Button.Label>全部</Button.Label>
 							</Button>
@@ -518,16 +445,36 @@ export default function MessagesScreen() {
 				renderItem={({ item }) => (
 					<NotificationRow
 						item={item}
-						onDelete={() => deleteNotification(item.id)}
+						onDelete={() => deleteMutation.mutate({ id: item.id })}
 						onPress={() => openNotification(item)}
-						onToggleRead={() => toggleNotificationRead(item.id)}
+						onToggleRead={() =>
+							markReadMutation.mutate({ id: item.id, isRead: !item.isRead })
+						}
 					/>
 				)}
 				ListEmptyComponent={
-					<NotificationEmptyState onRestore={restoreNotifications} />
+					notifications.isLoading || summary.isLoading ? (
+						<View className="items-center py-16">
+							<Spinner />
+						</View>
+					) : notifications.isError || summary.isError ? (
+						<ErrorState
+							description="消息暂时没有加载出来，请检查网络后重试。"
+							onRetry={refreshNotifications}
+						/>
+					) : (
+						<NotificationEmptyState
+							isAuthenticated={isAuthenticated}
+							onAction={() =>
+								isAuthenticated
+									? router.replace("/" as Href)
+									: router.push("/me" as Href)
+							}
+						/>
+					)
 				}
 				ListFooterComponent={
-					isLoadingMore ? (
+					notifications.isFetching && items.length > 0 ? (
 						<View className="items-center py-5">
 							<Spinner size="sm" />
 						</View>
@@ -537,7 +484,7 @@ export default function MessagesScreen() {
 								继续下滑加载更多
 							</Text.Paragraph>
 						</View>
-					) : visibleNotifications.length > 0 ? (
+					) : items.length > 0 ? (
 						<View className="items-center py-5">
 							<Text.Paragraph type="body-xs" color="muted">
 								没有更多通知了
@@ -561,7 +508,7 @@ export default function MessagesScreen() {
 									通知详情
 								</Text.Heading>
 								<Text.Paragraph type="body-sm" color="muted">
-									{selectedNotification?.time}
+									{formatRelativeTime(selectedNotification?.createdAt ?? null)}
 								</Text.Paragraph>
 							</View>
 							<Button
@@ -603,10 +550,7 @@ export default function MessagesScreen() {
 									variant="primary"
 									className="rounded-full"
 									feedbackVariant="scale-ripple"
-									onPress={() => {
-										setSelectedNotification(null);
-										toast.show({ label: "已进入相关内容" });
-									}}
+									onPress={() => openTarget(selectedNotification)}
 								>
 									<Button.Label>查看相关内容</Button.Label>
 								</Button>
@@ -625,7 +569,7 @@ function CategoryCard({
 	isWide,
 	onPress,
 }: {
-	category: NotificationCategory & { unreadCount: number; updatedAt: string };
+	category: NotificationCategory;
 	isActive: boolean;
 	isWide: boolean;
 	onPress: () => void;
@@ -682,7 +626,7 @@ function CategoryCard({
 				<View className="flex-row items-center gap-1 pt-1">
 					<Ionicons name="time-outline" size={13} color={mutedColor} />
 					<Text.Paragraph type="body-xs" color="muted">
-						{category.updatedAt}
+						{category.updatedAt ?? "暂无"}
 					</Text.Paragraph>
 				</View>
 			</View>
@@ -690,7 +634,13 @@ function CategoryCard({
 	);
 }
 
-function NotificationEmptyState({ onRestore }: { onRestore: () => void }) {
+function NotificationEmptyState({
+	isAuthenticated,
+	onAction,
+}: {
+	isAuthenticated: boolean;
+	onAction: () => void;
+}) {
 	const accentColor = useThemeColor("accent");
 	const mutedColor = useThemeColor("muted");
 
@@ -721,10 +671,12 @@ function NotificationEmptyState({ onRestore }: { onRestore: () => void }) {
 					weight="semibold"
 					className="text-foreground"
 				>
-					暂时没有通知
+					{isAuthenticated ? "暂时没有通知" : "登录后查看消息"}
 				</Text.Paragraph>
 				<Text.Paragraph align="center" type="body-sm" color="muted">
-					新的互动、关注和官方消息会出现在这里。
+					{isAuthenticated
+						? "新的互动、关注和官方消息会出现在这里。"
+						: "点赞、评论、关注提醒会同步到你的消息中心。"}
 				</Text.Paragraph>
 			</View>
 			<Button
@@ -732,9 +684,9 @@ function NotificationEmptyState({ onRestore }: { onRestore: () => void }) {
 				variant="primary"
 				className="rounded-full px-5"
 				feedbackVariant="scale-ripple"
-				onPress={onRestore}
+				onPress={onAction}
 			>
-				<Button.Label>恢复示例</Button.Label>
+				<Button.Label>{isAuthenticated ? "去发现" : "去登录"}</Button.Label>
 			</Button>
 		</View>
 	);
@@ -832,7 +784,7 @@ function NotificationRow({
 								</Text.Paragraph>
 							</View>
 							<Text.Paragraph type="body-xs" color="muted">
-								{item.time}
+								{formatRelativeTime(item.createdAt)}
 							</Text.Paragraph>
 						</View>
 
@@ -840,11 +792,11 @@ function NotificationRow({
 							<View className="min-w-0 flex-1 flex-row items-center gap-2">
 								<View className="rounded-full bg-content2 px-2.5 py-1">
 									<Text.Paragraph type="body-xs" color="muted">
-										{item.targetLabel}
+										{TARGET_LABEL_BY_KIND[item.kind]}
 									</Text.Paragraph>
 								</View>
 								<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
-									来自 {item.nickname}
+									来自 {item.actor?.name ?? "Youni"}
 								</Text.Paragraph>
 							</View>
 							{item.previewUrl ? (
@@ -865,11 +817,19 @@ function NotificationRow({
 function NotificationAvatar({ item }: { item: NotificationItem }) {
 	const accentColor = useThemeColor("accent");
 
-	if (item.avatarUrl) {
+	if (item.actor?.image) {
 		return (
-			<Avatar size="md" alt={item.nickname} className="bg-content2">
-				<Avatar.Image source={{ uri: item.avatarUrl }} />
-				<Avatar.Fallback>{item.nickname.slice(0, 1)}</Avatar.Fallback>
+			<Avatar size="md" alt={item.actor.name} className="bg-content2">
+				<Avatar.Image source={{ uri: item.actor.image }} />
+				<Avatar.Fallback>{item.actor.name.slice(0, 1)}</Avatar.Fallback>
+			</Avatar>
+		);
+	}
+
+	if (item.actor) {
+		return (
+			<Avatar size="md" alt={item.actor.name} className="bg-content2">
+				<Avatar.Fallback>{item.actor.name.slice(0, 1)}</Avatar.Fallback>
 			</Avatar>
 		);
 	}

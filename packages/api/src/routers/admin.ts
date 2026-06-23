@@ -44,7 +44,9 @@ const adminProcedure = protectedProcedure.use(async ({ context, next }) => {
 
 const adminListInput = z.object({
 	keyword: z.string().trim().optional(),
-	status: z.enum(["audit", "published", "rejected", "hidden"]).optional(),
+	status: z
+		.enum(["draft", "audit", "published", "rejected", "hidden"])
+		.optional(),
 	limit: z.number().int().min(1).max(100).default(50),
 });
 
@@ -52,7 +54,7 @@ const idInput = z.object({ id: z.string().min(1) });
 
 const statusInput = z.object({
 	id: z.string().min(1),
-	status: z.enum(["audit", "published", "rejected", "hidden"]),
+	status: z.enum(["draft", "audit", "published", "rejected", "hidden"]),
 	rejectionReason: z.string().trim().max(200).optional(),
 });
 
@@ -150,10 +152,15 @@ export const adminRouter = {
 						content: note.content,
 						cover: note.cover,
 						images: note.images,
+						locationName: note.locationName,
+						visibility: note.visibility,
+						components: note.components,
+						advancedOptions: note.advancedOptions,
 						status: note.status,
 						rejectionReason: note.rejectionReason,
 						createdAt: note.createdAt,
 						publishedAt: note.publishedAt,
+						draftSavedAt: note.draftSavedAt,
 						userId: note.userId,
 						authorName: user.name,
 						authorEmail: user.email,
@@ -170,10 +177,15 @@ export const adminRouter = {
 						content: note.content,
 						cover: note.cover,
 						images: note.images,
+						locationName: note.locationName,
+						visibility: note.visibility,
+						components: note.components,
+						advancedOptions: note.advancedOptions,
 						status: note.status,
 						rejectionReason: note.rejectionReason,
 						createdAt: note.createdAt,
 						publishedAt: note.publishedAt,
+						draftSavedAt: note.draftSavedAt,
 						userId: note.userId,
 						authorName: user.name,
 						authorEmail: user.email,

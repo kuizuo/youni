@@ -12,8 +12,8 @@ import {
 } from "@youni/db/schema/index";
 import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import z from "zod";
-
 import { protectedProcedure, publicProcedure } from "../index";
+import { notifyFollow, notifyNoteOwner } from "../lib/notifications";
 
 const idInput = z.object({ id: z.string().min(1) });
 const profileInput = z.object({ userId: z.string().min(1) });
@@ -23,10 +23,36 @@ const listInput = z.object({
 });
 
 const noteCreateInput = z.object({
-	title: z.string().trim().min(1).max(100),
-	content: z.string().trim().min(1).max(5000),
-	images: z.array(z.string().trim().url()).min(1).max(9),
+	title: z.string().trim().max(100).default(""),
+	content: z.string().trim().max(5000).default(""),
+	images: z.array(z.string().trim().url()).max(9).default([]),
 	topics: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
+	locationName: z.string().trim().min(1).max(80).optional(),
+	visibility: z.enum(["public", "followers", "private"]).default("public"),
+	components: z
+		.array(
+			z.object({
+				type: z.enum(["file", "poll"]),
+				title: z.string().trim().min(1).max(80),
+				value: z.string().trim().max(300).optional(),
+				options: z.array(z.string().trim().min(1).max(80)).max(8).optional(),
+			}),
+		)
+		.max(5)
+		.default([]),
+	advancedOptions: z
+		.object({
+			allowComment: z.boolean().default(true),
+			allowShare: z.boolean().default(true),
+			isOriginal: z.boolean().default(true),
+			contentDisclosure: z.string().trim().max(120).optional(),
+		})
+		.default({
+			allowComment: true,
+			allowShare: true,
+			isOriginal: true,
+		}),
+	submitMode: z.enum(["draft", "publish"]).default("publish"),
 });
 
 const commentInput = z.object({
@@ -54,10 +80,25 @@ type NoteRow = {
 	title: string;
 	content: string;
 	images: string[];
-	cover: string;
-	status: "audit" | "published" | "rejected" | "hidden";
+	cover: string | null;
+	locationName: string | null;
+	visibility: "public" | "followers" | "private";
+	components: Array<{
+		options?: string[];
+		title: string;
+		type: "file" | "poll";
+		value?: string;
+	}>;
+	advancedOptions: {
+		allowComment: boolean;
+		allowShare: boolean;
+		contentDisclosure?: string | null;
+		isOriginal: boolean;
+	};
+	status: "audit" | "draft" | "published" | "rejected" | "hidden";
 	rejectionReason: string | null;
 	publishedAt: Date | null;
+	draftSavedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 	userId: string;
@@ -204,9 +245,14 @@ async function selectNoteRows(whereClause?: ReturnType<typeof and>) {
 		content: note.content,
 		images: note.images,
 		cover: note.cover,
+		locationName: note.locationName,
+		visibility: note.visibility,
+		components: note.components,
+		advancedOptions: note.advancedOptions,
 		status: note.status,
 		rejectionReason: note.rejectionReason,
 		publishedAt: note.publishedAt,
+		draftSavedAt: note.draftSavedAt,
 		createdAt: note.createdAt,
 		updatedAt: note.updatedAt,
 		userId: note.userId,
@@ -322,8 +368,12 @@ export const socialRouter = {
 					)
 			: undefined;
 		const whereClause = input.keyword
-			? and(eq(note.status, "published"), keywordClause)
-			: and(eq(note.status, "published"));
+			? and(
+					eq(note.status, "published"),
+					eq(note.visibility, "public"),
+					keywordClause,
+				)
+			: and(eq(note.status, "published"), eq(note.visibility, "public"));
 		const rows = (await selectNoteRows(whereClause)).slice(0, input.limit);
 		return hydrateNotes(rows, context.session?.user.id);
 	}),
@@ -376,8 +426,18 @@ export const socialRouter = {
 	byId: publicProcedure.input(idInput).handler(async ({ input, context }) => {
 		const [row] = await selectNoteRows(
 			context.session?.user.id
-				? and(eq(note.id, input.id))
-				: and(eq(note.id, input.id), eq(note.status, "published")),
+				? and(
+						eq(note.id, input.id),
+						or(
+							and(eq(note.status, "published"), eq(note.visibility, "public")),
+							eq(note.userId, context.session.user.id),
+						),
+					)
+				: and(
+						eq(note.id, input.id),
+						eq(note.status, "published"),
+						eq(note.visibility, "public"),
+					),
 		);
 
 		if (!row) {
@@ -412,7 +472,11 @@ export const socialRouter = {
 			const profile = await getProfile(input.userId, context.session?.user.id);
 			const rows = (
 				await selectNoteRows(
-					and(eq(note.userId, input.userId), eq(note.status, "published")),
+					and(
+						eq(note.userId, input.userId),
+						eq(note.status, "published"),
+						eq(note.visibility, "public"),
+					),
 				)
 			).slice(0, 30);
 			return {
@@ -435,9 +499,14 @@ export const socialRouter = {
 					content: note.content,
 					images: note.images,
 					cover: note.cover,
+					locationName: note.locationName,
+					visibility: note.visibility,
+					components: note.components,
+					advancedOptions: note.advancedOptions,
 					status: note.status,
 					rejectionReason: note.rejectionReason,
 					publishedAt: note.publishedAt,
+					draftSavedAt: note.draftSavedAt,
 					createdAt: note.createdAt,
 					updatedAt: note.updatedAt,
 					userId: note.userId,
@@ -502,18 +571,37 @@ export const socialRouter = {
 			const noteId = createId();
 			const topicNames = uniqueTopics(input.topics);
 			const cover = input.images[0];
+			const title = input.title.trim();
+			const content = input.content.trim();
+			const status = input.submitMode === "draft" ? "draft" : "audit";
 
-			if (!cover) {
-				throw new ORPCError("BAD_REQUEST");
+			if (input.submitMode === "publish") {
+				const missingItems = [
+					cover ? null : "图片",
+					title ? null : "标题",
+					content ? null : "正文",
+					topicNames.length > 0 ? null : "话题",
+				].filter((item): item is string => Boolean(item));
+
+				if (missingItems.length > 0) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: `还差：${missingItems.join("、")}`,
+					});
+				}
 			}
 
 			await db.insert(note).values({
 				id: noteId,
-				title: input.title,
-				content: input.content,
+				title: title || "未命名草稿",
+				content,
 				images: input.images,
-				cover,
-				status: "audit",
+				cover: cover ?? null,
+				locationName: input.locationName || null,
+				visibility: input.visibility,
+				components: input.components,
+				advancedOptions: input.advancedOptions,
+				status,
+				draftSavedAt: status === "draft" ? new Date() : null,
 				userId: context.session.user.id,
 			});
 
@@ -535,7 +623,7 @@ export const socialRouter = {
 					.onConflictDoNothing();
 			}
 
-			return { id: noteId, status: "audit" as const };
+			return { id: noteId, status };
 		}),
 
 	toggleLike: protectedProcedure
@@ -557,6 +645,11 @@ export const socialRouter = {
 				await db
 					.insert(noteLike)
 					.values({ noteId: input.id, userId: context.session.user.id });
+				await notifyNoteOwner({
+					type: "like",
+					noteId: input.id,
+					actorId: context.session.user.id,
+				});
 			} else {
 				await db.delete(noteLike).where(whereClause);
 			}
@@ -587,6 +680,11 @@ export const socialRouter = {
 				await db
 					.insert(noteCollection)
 					.values({ noteId: input.id, userId: context.session.user.id });
+				await notifyNoteOwner({
+					type: "collect",
+					noteId: input.id,
+					actorId: context.session.user.id,
+				});
 			} else {
 				await db.delete(noteCollection).where(whereClause);
 			}
@@ -602,6 +700,22 @@ export const socialRouter = {
 		.input(commentInput)
 		.handler(async ({ input, context }) => {
 			const db = createDb();
+			const [targetNote] = await db
+				.select({ advancedOptions: note.advancedOptions })
+				.from(note)
+				.where(eq(note.id, input.noteId))
+				.limit(1);
+
+			if (!targetNote) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
+			if (!targetNote.advancedOptions.allowComment) {
+				throw new ORPCError("FORBIDDEN", {
+					message: "作者已关闭评论",
+				});
+			}
+
 			const [created] = await db
 				.insert(comment)
 				.values({
@@ -611,6 +725,12 @@ export const socialRouter = {
 					content: input.content,
 				})
 				.returning();
+			await notifyNoteOwner({
+				type: "comment",
+				noteId: input.noteId,
+				actorId: context.session.user.id,
+				content: input.content,
+			});
 			return created;
 		}),
 
@@ -638,6 +758,10 @@ export const socialRouter = {
 				await db
 					.insert(follow)
 					.values({ followingId: input.userId, followerId: viewerId });
+				await notifyFollow({
+					actorId: viewerId,
+					recipientId: input.userId,
+				});
 			} else {
 				await db.delete(follow).where(whereClause);
 			}

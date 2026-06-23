@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+	boolean,
 	index,
 	jsonb,
 	pgEnum,
@@ -13,10 +14,34 @@ import {
 import { user } from "./auth";
 
 export const noteStatus = pgEnum("note_status", [
+	"draft",
 	"audit",
 	"published",
 	"rejected",
 	"hidden",
+]);
+
+export const noteVisibility = pgEnum("note_visibility", [
+	"public",
+	"followers",
+	"private",
+]);
+
+export const notificationCategory = pgEnum("notification_category", [
+	"activity",
+	"followers",
+	"system",
+]);
+
+export const notificationType = pgEnum("notification_type", [
+	"like",
+	"collect",
+	"comment",
+	"mention",
+	"follow",
+	"announcement",
+	"event",
+	"system",
 ]);
 
 export const note = pgTable(
@@ -29,10 +54,35 @@ export const note = pgTable(
 			.$type<string[]>()
 			.default(sql`'[]'::jsonb`)
 			.notNull(),
-		cover: text("cover").notNull(),
+		cover: text("cover"),
+		locationName: text("location_name"),
+		visibility: noteVisibility("visibility").default("public").notNull(),
+		components: jsonb("components")
+			.$type<
+				Array<{
+					options?: string[];
+					title: string;
+					type: "file" | "poll";
+					value?: string;
+				}>
+			>()
+			.default(sql`'[]'::jsonb`)
+			.notNull(),
+		advancedOptions: jsonb("advanced_options")
+			.$type<{
+				allowComment: boolean;
+				allowShare: boolean;
+				contentDisclosure?: string | null;
+				isOriginal: boolean;
+			}>()
+			.default(
+				sql`'{"allowComment":true,"allowShare":true,"isOriginal":true}'::jsonb`,
+			)
+			.notNull(),
 		status: noteStatus("status").default("audit").notNull(),
 		rejectionReason: text("rejection_reason"),
 		publishedAt: timestamp("published_at"),
+		draftSavedAt: timestamp("draft_saved_at"),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()
@@ -45,6 +95,7 @@ export const note = pgTable(
 	(table) => [
 		index("note_status_created_idx").on(table.status, table.createdAt),
 		index("note_user_idx").on(table.userId),
+		index("note_visibility_idx").on(table.visibility),
 	],
 );
 
@@ -142,5 +193,74 @@ export const follow = pgTable(
 	(table) => [
 		primaryKey({ columns: [table.followerId, table.followingId] }),
 		index("follow_following_idx").on(table.followingId),
+	],
+);
+
+export const notification = pgTable(
+	"notification",
+	{
+		id: text("id").primaryKey(),
+		recipientId: text("recipient_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		actorId: text("actor_id").references(() => user.id, {
+			onDelete: "set null",
+		}),
+		type: notificationType("type").notNull(),
+		category: notificationCategory("category").notNull(),
+		title: text("title").notNull(),
+		body: text("body").notNull(),
+		targetType: text("target_type"),
+		targetId: text("target_id"),
+		noteId: text("note_id").references(() => note.id, {
+			onDelete: "set null",
+		}),
+		dedupeKey: text("dedupe_key").notNull(),
+		isRead: boolean("is_read").default(false).notNull(),
+		isDeleted: boolean("is_deleted").default(false).notNull(),
+		readAt: timestamp("read_at"),
+		deletedAt: timestamp("deleted_at"),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("notification_recipient_created_idx").on(
+			table.recipientId,
+			table.createdAt,
+		),
+		index("notification_recipient_category_idx").on(
+			table.recipientId,
+			table.category,
+		),
+		uniqueIndex("notification_recipient_dedupe_idx").on(
+			table.recipientId,
+			table.dedupeKey,
+		),
+	],
+);
+
+export const notificationPushToken = pgTable(
+	"notification_push_token",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		token: text("token").notNull(),
+		platform: text("platform").default("unknown").notNull(),
+		isEnabled: boolean("is_enabled").default(true).notNull(),
+		lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		uniqueIndex("notification_push_token_token_idx").on(table.token),
+		index("notification_push_token_user_idx").on(table.userId),
 	],
 );

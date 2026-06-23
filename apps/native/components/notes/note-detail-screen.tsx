@@ -98,7 +98,8 @@ export default function NoteDetailScreen() {
 	const images = useMemo(() => note.data?.images ?? [], [note.data?.images]);
 	const isSelf = session.data?.user?.id === authorId;
 	const isFollowing = Boolean(authorProfile.data?.profile.isFollowing);
-	const canSendComment = commentText.trim().length > 0;
+	const commentsEnabled = note.data?.advancedOptions.allowComment ?? true;
+	const canSendComment = commentsEnabled && commentText.trim().length > 0;
 
 	const requireLogin = (label: string) => {
 		if (session.data?.user) return true;
@@ -174,14 +175,30 @@ export default function NoteDetailScreen() {
 						className="bg-content2"
 						style={{ width: pageWidth }}
 					>
-						{images.map((image) => (
-							<Image
-								key={image}
-								source={{ uri: image }}
-								resizeMode="cover"
+						{images.length > 0 ? (
+							images.map((image) => (
+								<Image
+									key={image}
+									source={{ uri: image }}
+									resizeMode="cover"
+									style={{ width: pageWidth, height: imageHeight }}
+								/>
+							))
+						) : (
+							<View
+								className="items-center justify-center bg-content2"
 								style={{ width: pageWidth, height: imageHeight }}
-							/>
-						))}
+							>
+								<Ionicons
+									name="document-text-outline"
+									size={34}
+									color={mutedColor}
+								/>
+								<Text.Paragraph type="body-sm" color="muted">
+									暂无封面
+								</Text.Paragraph>
+							</View>
+						)}
 					</ScrollView>
 
 					<View className="gap-5 px-4 py-5">
@@ -263,17 +280,22 @@ export default function NoteDetailScreen() {
 									{note.data.commentCount} 条
 								</Text.Paragraph>
 							</View>
-							{note.data.comments.length > 0 ? (
+							{commentsEnabled ? null : (
+								<Text.Paragraph type="body-sm" color="muted">
+									作者已关闭评论。
+								</Text.Paragraph>
+							)}
+							{commentsEnabled && note.data.comments.length > 0 ? (
 								<View className="gap-4">
 									{note.data.comments.map((comment) => (
 										<CommentItem key={comment.id} comment={comment} />
 									))}
 								</View>
-							) : (
+							) : commentsEnabled ? (
 								<Text.Paragraph type="body-sm" color="muted">
 									还没有评论，来写第一条。
 								</Text.Paragraph>
-							)}
+							) : null}
 						</View>
 					</View>
 				</View>
@@ -310,38 +332,50 @@ export default function NoteDetailScreen() {
 					</PressableFeedback>
 
 					{session.data?.user ? (
-						<>
-							<View className="min-w-0 flex-1">
-								<Input
-									value={commentText}
-									onChangeText={setCommentText}
-									placeholder="说点什么..."
-									placeholderTextColor={mutedColor}
-									returnKeyType="send"
-									onSubmitEditing={sendComment}
-									className="h-10 rounded-full bg-content2 px-4"
-									maxLength={500}
-								/>
-							</View>
-							<Button
-								isIconOnly
-								size="sm"
-								variant="primary"
-								feedbackVariant="scale-ripple"
-								isDisabled={!canSendComment || commentMutation.isPending}
-								onPress={sendComment}
-							>
-								{commentMutation.isPending ? (
-									<Spinner size="sm" />
-								) : (
-									<Ionicons
-										name="send"
-										size={16}
-										color={accentForegroundColor}
+						commentsEnabled ? (
+							<>
+								<View className="min-w-0 flex-1">
+									<Input
+										value={commentText}
+										onChangeText={setCommentText}
+										placeholder="说点什么..."
+										placeholderTextColor={mutedColor}
+										returnKeyType="send"
+										onSubmitEditing={sendComment}
+										className="h-10 rounded-full bg-content2 px-4"
+										maxLength={500}
 									/>
-								)}
+								</View>
+								<Button
+									isIconOnly
+									size="sm"
+									variant="primary"
+									feedbackVariant="scale-ripple"
+									isDisabled={!canSendComment || commentMutation.isPending}
+									onPress={sendComment}
+								>
+									{commentMutation.isPending ? (
+										<Spinner size="sm" />
+									) : (
+										<Ionicons
+											name="send"
+											size={16}
+											color={accentForegroundColor}
+										/>
+									)}
+								</Button>
+							</>
+						) : (
+							<Button
+								variant="secondary"
+								className="min-w-0 flex-1 justify-start rounded-full px-4"
+								isDisabled
+							>
+								<Button.Label className="text-muted">
+									作者已关闭评论
+								</Button.Label>
 							</Button>
-						</>
+						)
 					) : (
 						<Button
 							variant="secondary"

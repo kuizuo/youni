@@ -14,7 +14,14 @@ export const Route = createFileRoute("/admin/notes")({
 	component: AdminNotesRoute,
 });
 
-const statuses = ["all", "audit", "published", "rejected", "hidden"] as const;
+const statuses = [
+	"all",
+	"draft",
+	"audit",
+	"published",
+	"rejected",
+	"hidden",
+] as const;
 
 function AdminNotesRoute() {
 	const [keyword, setKeyword] = useState("");
@@ -89,10 +96,27 @@ function AdminNotesRoute() {
 									#{topic}
 								</Chip>
 							))}
+							{item.locationName ? (
+								<Chip color="default" size="sm" variant="soft">
+									{item.locationName}
+								</Chip>
+							) : null}
+							<Chip color="default" size="sm" variant="soft">
+								{item.visibility === "public"
+									? "公开可见"
+									: item.visibility === "followers"
+										? "仅关注者"
+										: "仅自己"}
+							</Chip>
 						</div>
 						{activeId === item.id ? (
 							<div className="grid gap-2 rounded-2xl bg-background p-3 text-muted text-sm ring-1 ring-border">
 								<p>{item.content}</p>
+								<p>
+									组件 {item.components.length} 个 · 评论
+									{item.advancedOptions.allowComment ? "开启" : "关闭"} · 分享
+									{item.advancedOptions.allowShare ? "开启" : "关闭"}
+								</p>
 								<div className="flex gap-2 overflow-x-auto">
 									{item.images.map((image) => (
 										<img

@@ -30,11 +30,11 @@ type NoteCardProps = {
 		commentCount?: number;
 		collected?: boolean;
 		collectedCount?: number;
-		cover: string;
+		cover: null | string;
 		id: string;
 		liked?: boolean;
 		likedCount: number;
-		status?: "audit" | "hidden" | "published" | "rejected";
+		status?: "audit" | "draft" | "hidden" | "published" | "rejected";
 		title: string;
 		topics?: string[];
 	};
@@ -42,6 +42,7 @@ type NoteCardProps = {
 
 function getStatusLabel(status?: NoteCardProps["note"]["status"]) {
 	if (status === "audit") return "审核中";
+	if (status === "draft") return "草稿";
 	if (status === "rejected") return "未通过";
 	if (status === "hidden") return "已隐藏";
 	return null;
@@ -213,13 +214,32 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 				onPress={openDetail}
 				className="bg-content2"
 			>
-				<Image
-					source={{ uri: note.cover }}
-					resizeMode="cover"
-					className={
-						compact ? "h-48 w-full bg-content2" : "h-72 w-full bg-content2"
-					}
-				/>
+				{note.cover ? (
+					<Image
+						source={{ uri: note.cover }}
+						resizeMode="cover"
+						className={
+							compact ? "h-48 w-full bg-content2" : "h-72 w-full bg-content2"
+						}
+					/>
+				) : (
+					<View
+						className={
+							compact
+								? "h-48 w-full items-center justify-center bg-content2"
+								: "h-72 w-full items-center justify-center bg-content2"
+						}
+					>
+						<Ionicons
+							name="document-text-outline"
+							size={32}
+							color={mutedColor}
+						/>
+						<Text.Paragraph type="body-xs" color="muted">
+							暂无封面
+						</Text.Paragraph>
+					</View>
+				)}
 			</PressableFeedback>
 			<View className={compact ? "gap-2 p-3" : "gap-3 p-4"}>
 				<View className="flex-row flex-wrap gap-1">

@@ -57,6 +57,19 @@ const OPTION_ROWS = [
 ] as const;
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
+type NoteVisibility = "followers" | "private" | "public";
+type PublishSubmitMode = "draft" | "publish";
+type NoteComponent = {
+	title: string;
+	type: "file" | "poll";
+	value?: string;
+};
+
+const DEFAULT_ADVANCED_OPTIONS = {
+	allowComment: true,
+	allowShare: true,
+	isOriginal: true,
+};
 
 export default function CreateScreen() {
 	const session = authClient.useSession();
@@ -70,6 +83,14 @@ export default function CreateScreen() {
 	const [content, setContent] = useState("");
 	const [imageUrls, setImageUrls] = useState<string[]>([]);
 	const [topics, setTopics] = useState<string[]>([]);
+	const [locationName, setLocationName] = useState("");
+	const [visibility, setVisibility] = useState<NoteVisibility>("public");
+	const [components, setComponents] = useState<NoteComponent[]>([]);
+	const [advancedOptions, setAdvancedOptions] = useState(
+		DEFAULT_ADVANCED_OPTIONS,
+	);
+	const [pendingSubmitMode, setPendingSubmitMode] =
+		useState<PublishSubmitMode | null>(null);
 	const isAuthenticated = Boolean(session.data?.user) || hasAuthenticated;
 
 	useEffect(() => {
@@ -89,19 +110,35 @@ export default function CreateScreen() {
 		[content, imageUrls.length, title, topics.length],
 	);
 	const canPublish = missingItems.length === 0;
+	const visibilityLabel =
+		visibility === "public"
+			? "公开可见"
+			: visibility === "followers"
+				? "仅关注者可见"
+				: "仅自己可见";
+	const componentLabel =
+		components.length > 0 ? `已添加 ${components.length} 个` : "可添加文件";
+	const advancedLabel = advancedOptions.allowComment ? "评论开启" : "评论关闭";
 
 	const createMutation = useMutation(
 		orpc.social.create.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: async (_result, variables) => {
 				setTitle("");
 				setContent("");
 				setImageUrls([]);
 				setTopics([]);
+				setLocationName("");
+				setVisibility("public");
+				setComponents([]);
+				setAdvancedOptions(DEFAULT_ADVANCED_OPTIONS);
 				await queryClient.refetchQueries();
+				const isDraft = variables.submitMode === "draft";
 				toast.show({
 					variant: "success",
-					label: "已提交审核",
-					description: "审核通过后会出现在发现页。",
+					label: isDraft ? "已保存草稿" : "已提交审核",
+					description: isDraft
+						? "草稿已保存到你的主页。"
+						: "审核通过后会出现在发现页。",
 				});
 				router.replace("/me" as Href);
 			},
@@ -113,8 +150,23 @@ export default function CreateScreen() {
 					description: error.message,
 				});
 			},
+			onSettled: () => {
+				setPendingSubmitMode(null);
+			},
 		}),
 	);
+
+	const buildPayload = (submitMode: PublishSubmitMode) => ({
+		title: title.trim(),
+		content: content.trim(),
+		images: imageUrls,
+		topics,
+		locationName: locationName || undefined,
+		visibility,
+		components,
+		advancedOptions,
+		submitMode,
+	});
 
 	const goBack = () => {
 		fireHaptic();
@@ -151,11 +203,17 @@ export default function CreateScreen() {
 
 	const saveDraft = () => {
 		fireHaptic();
-		toast.show({
-			variant: "success",
-			label: "已保存草稿",
-			description: "内容已先留在当前编辑页。",
-		});
+		if (createMutation.isPending) return;
+		if (!isAuthenticated) {
+			toast.show({
+				variant: "warning",
+				label: "登录后再保存",
+				description: "请先登录账号，再保存草稿。",
+			});
+			return;
+		}
+		setPendingSubmitMode("draft");
+		createMutation.mutate(buildPayload("draft"));
 	};
 
 	const publish = () => {
@@ -180,12 +238,40 @@ export default function CreateScreen() {
 			return;
 		}
 
-		createMutation.mutate({
-			title: title.trim(),
-			content: content.trim(),
-			images: imageUrls,
-			topics,
+		setPendingSubmitMode("publish");
+		createMutation.mutate(buildPayload("publish"));
+	};
+
+	const cycleVisibility = () => {
+		fireHaptic();
+		setVisibility((value) => {
+			if (value === "public") return "followers";
+			if (value === "followers") return "private";
+			return "public";
 		});
+	};
+
+	const toggleFileComponent = () => {
+		fireHaptic();
+		setComponents((current) =>
+			current.length > 0
+				? []
+				: [
+						{
+							type: "file",
+							title: "可添加文件",
+							value: "发布页组件占位",
+						},
+					],
+		);
+	};
+
+	const toggleAllowComment = () => {
+		fireHaptic();
+		setAdvancedOptions((current) => ({
+			...current,
+			allowComment: !current.allowComment,
+		}));
 	};
 
 	return (
@@ -279,7 +365,11 @@ export default function CreateScreen() {
 						>
 							{[...TOPIC_PRESETS, ...TOPIC_SUGGESTIONS.slice(0, 1)].map(
 								(topic) => (
-									<SuggestionChip key={topic} label={`#${topic}`} />
+									<SuggestionChip
+										key={topic}
+										label={`#${topic}`}
+										onPress={() => toggleTopic(topic)}
+									/>
 								),
 							)}
 						</ScrollView>
@@ -297,28 +387,52 @@ export default function CreateScreen() {
 					</View>
 
 					<View className="border-border-tertiary border-t">
-						{OPTION_ROWS.map((row) => (
-							<OptionRow
-								key={row.label}
-								icon={row.icon}
-								label={row.label}
-								value={"value" in row ? row.value : undefined}
-								foregroundColor={defaultForegroundColor}
-								mutedColor={mutedColor}
-							>
-								{"suggestions" in row ? (
-									<ScrollView
-										horizontal
-										showsHorizontalScrollIndicator={false}
-										contentContainerClassName="gap-2 pt-3 pr-4"
-									>
-										{row.suggestions.map((suggestion) => (
-											<SuggestionChip key={suggestion} label={suggestion} />
-										))}
-									</ScrollView>
-								) : null}
-							</OptionRow>
-						))}
+						{OPTION_ROWS.map((row) => {
+							const value =
+								row.label === "公开可见"
+									? visibilityLabel
+									: row.label === "添加组件"
+										? componentLabel
+										: row.label === "高级选项"
+											? advancedLabel
+											: locationName || undefined;
+							const onPress =
+								row.label === "公开可见"
+									? cycleVisibility
+									: row.label === "添加组件"
+										? toggleFileComponent
+										: row.label === "高级选项"
+											? toggleAllowComment
+											: undefined;
+
+							return (
+								<OptionRow
+									key={row.label}
+									icon={row.icon}
+									label={row.label}
+									value={value}
+									foregroundColor={defaultForegroundColor}
+									mutedColor={mutedColor}
+									onPress={onPress}
+								>
+									{"suggestions" in row ? (
+										<ScrollView
+											horizontal
+											showsHorizontalScrollIndicator={false}
+											contentContainerClassName="gap-2 pt-3 pr-4"
+										>
+											{row.suggestions.map((suggestion) => (
+												<SuggestionChip
+													key={suggestion}
+													label={suggestion}
+													onPress={() => setLocationName(suggestion)}
+												/>
+											))}
+										</ScrollView>
+									) : null}
+								</OptionRow>
+							);
+						})}
 					</View>
 
 					<PressableFeedback
@@ -345,8 +459,10 @@ export default function CreateScreen() {
 						size="lg"
 						variant="outline"
 						feedbackVariant="scale-ripple"
+						isDisabled={createMutation.isPending}
 						className="h-14 flex-1 rounded-full"
 					>
+						{pendingSubmitMode === "draft" ? <Spinner size="sm" /> : null}
 						<Button.Label>存草稿</Button.Label>
 					</Button>
 					<Button
@@ -358,7 +474,7 @@ export default function CreateScreen() {
 						className="h-14 flex-[2] rounded-full"
 						style={{ backgroundColor: "#ff2442" }}
 					>
-						{createMutation.isPending ? <Spinner size="sm" /> : null}
+						{pendingSubmitMode === "publish" ? <Spinner size="sm" /> : null}
 						<Button.Label className="text-white">发布笔记</Button.Label>
 					</Button>
 				</View>
@@ -406,13 +522,33 @@ function MediaTile({
 	);
 }
 
-function SuggestionChip({ label }: { label: string }) {
-	return (
+function SuggestionChip({
+	label,
+	onPress,
+}: {
+	label: string;
+	onPress?: () => void;
+}) {
+	const content = (
 		<View className="rounded-full bg-content2 px-4 py-2">
 			<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
 				{label}
 			</Text.Paragraph>
 		</View>
+	);
+
+	if (!onPress) {
+		return content;
+	}
+
+	return (
+		<PressableFeedback
+			accessibilityLabel={label}
+			accessibilityRole="button"
+			onPress={onPress}
+		>
+			{content}
+		</PressableFeedback>
 	);
 }
 
@@ -453,6 +589,7 @@ function OptionRow({
 	icon,
 	label,
 	mutedColor,
+	onPress,
 	value,
 }: {
 	children?: ReactNode;
@@ -460,6 +597,7 @@ function OptionRow({
 	icon: IoniconName;
 	label: string;
 	mutedColor: string;
+	onPress?: () => void;
 	value?: string;
 }) {
 	return (
@@ -467,7 +605,7 @@ function OptionRow({
 			<PressableFeedback
 				accessibilityLabel={label}
 				accessibilityRole="button"
-				onPress={() => fireHaptic()}
+				onPress={onPress ?? (() => fireHaptic())}
 				className="flex-row items-center gap-3"
 			>
 				<Ionicons name={icon} size={25} color={foregroundColor} />

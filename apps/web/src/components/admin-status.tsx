@@ -1,6 +1,7 @@
 import { Chip } from "@heroui/react";
 
 const noteStatusLabel = {
+	draft: "草稿",
 	audit: "待审核",
 	published: "已发布",
 	rejected: "已拒绝",
@@ -13,6 +14,7 @@ const userStatusLabel = {
 } as const;
 
 const colors = {
+	draft: "default",
 	audit: "warning",
 	published: "success",
 	rejected: "danger",
