@@ -49,3 +49,6 @@ coverage
 .cache
 tmp
 temp
+
+.wrangler
+.playwright-mcp
