@@ -111,10 +111,6 @@ type NoteRow = {
 	authorHandle: string | null;
 };
 
-function createId() {
-	return crypto.randomUUID();
-}
-
 function uniqueTopics(values: string[]) {
 	return Array.from(
 		new Set(
@@ -599,7 +595,6 @@ export const socialRouter = {
 		.input(noteCreateInput)
 		.handler(async ({ input, context }) => {
 			const db = createDb();
-			const noteId = createId();
 			const topicNames = uniqueTopics(input.topics);
 			const cover = input.images[0];
 			const title = input.title.trim();
@@ -621,26 +616,29 @@ export const socialRouter = {
 				}
 			}
 
-			await db.insert(note).values({
-				id: noteId,
-				title: title || "未命名草稿",
-				content,
-				images: input.images,
-				cover: cover ?? null,
-				locationName: input.locationName || null,
-				visibility: input.visibility,
-				components: input.components,
-				advancedOptions: input.advancedOptions,
-				status,
-				draftSavedAt: status === "draft" ? new Date() : null,
-				userId: context.session.user.id,
-			});
+			const [createdNote] = await db
+				.insert(note)
+				.values({
+					title: title || "未命名草稿",
+					content,
+					images: input.images,
+					cover: cover ?? null,
+					locationName: input.locationName || null,
+					visibility: input.visibility,
+					components: input.components,
+					advancedOptions: input.advancedOptions,
+					status,
+					draftSavedAt: status === "draft" ? new Date() : null,
+					userId: context.session.user.id,
+				})
+				.returning({ id: note.id });
+			if (!createdNote) {
+				throw new ORPCError("INTERNAL_SERVER_ERROR");
+			}
+			const noteId = createdNote.id;
 
 			for (const name of topicNames) {
-				await db
-					.insert(topic)
-					.values({ id: createId(), name })
-					.onConflictDoNothing();
+				await db.insert(topic).values({ name }).onConflictDoNothing();
 			}
 
 			if (topicNames.length > 0) {
@@ -750,7 +748,6 @@ export const socialRouter = {
 			const [created] = await db
 				.insert(comment)
 				.values({
-					id: createId(),
 					noteId: input.noteId,
 					userId: context.session.user.id,
 					content: input.content,

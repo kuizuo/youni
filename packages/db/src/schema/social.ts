@@ -9,7 +9,9 @@ import {
 	text,
 	timestamp,
 	uniqueIndex,
+	varchar,
 } from "drizzle-orm/pg-core";
+import { ulid } from "ulid";
 
 import { user } from "./auth";
 
@@ -47,7 +49,9 @@ export const notificationType = pgEnum("notification_type", [
 export const note = pgTable(
 	"note",
 	{
-		id: text("id").primaryKey(),
+		id: varchar("id", { length: 256 })
+			.primaryKey()
+			.$defaultFn(() => ulid()),
 		title: text("title").notNull(),
 		content: text("content").notNull(),
 		images: jsonb("images")
@@ -102,7 +106,9 @@ export const note = pgTable(
 export const topic = pgTable(
 	"topic",
 	{
-		id: text("id").primaryKey(),
+		id: varchar("id", { length: 256 })
+			.primaryKey()
+			.$defaultFn(() => ulid()),
 		name: text("name").notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
@@ -116,10 +122,10 @@ export const topic = pgTable(
 export const noteTopic = pgTable(
 	"note_topic",
 	{
-		noteId: text("note_id")
+		noteId: varchar("note_id", { length: 256 })
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
-		topicId: text("topic_id")
+		topicId: varchar("topic_id", { length: 256 })
 			.notNull()
 			.references(() => topic.id, { onDelete: "cascade" }),
 	},
@@ -132,10 +138,12 @@ export const noteTopic = pgTable(
 export const comment = pgTable(
 	"comment",
 	{
-		id: text("id").primaryKey(),
+		id: varchar("id", { length: 256 })
+			.primaryKey()
+			.$defaultFn(() => ulid()),
 		content: text("content").notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
-		noteId: text("note_id")
+		noteId: varchar("note_id", { length: 256 })
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
 		userId: text("user_id")
@@ -148,7 +156,7 @@ export const comment = pgTable(
 export const noteLike = pgTable(
 	"note_like",
 	{
-		noteId: text("note_id")
+		noteId: varchar("note_id", { length: 256 })
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
 		userId: text("user_id")
@@ -165,7 +173,7 @@ export const noteLike = pgTable(
 export const noteCollection = pgTable(
 	"note_collection",
 	{
-		noteId: text("note_id")
+		noteId: varchar("note_id", { length: 256 })
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
 		userId: text("user_id")
@@ -199,7 +207,9 @@ export const follow = pgTable(
 export const notification = pgTable(
 	"notification",
 	{
-		id: text("id").primaryKey(),
+		id: varchar("id", { length: 256 })
+			.primaryKey()
+			.$defaultFn(() => ulid()),
 		recipientId: text("recipient_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -212,7 +222,7 @@ export const notification = pgTable(
 		body: text("body").notNull(),
 		targetType: text("target_type"),
 		targetId: text("target_id"),
-		noteId: text("note_id").references(() => note.id, {
+		noteId: varchar("note_id", { length: 256 }).references(() => note.id, {
 			onDelete: "set null",
 		}),
 		dedupeKey: text("dedupe_key").notNull(),
@@ -245,7 +255,9 @@ export const notification = pgTable(
 export const notificationPushToken = pgTable(
 	"notification_push_token",
 	{
-		id: text("id").primaryKey(),
+		id: varchar("id", { length: 256 })
+			.primaryKey()
+			.$defaultFn(() => ulid()),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),

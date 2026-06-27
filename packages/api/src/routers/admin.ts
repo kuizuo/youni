@@ -649,7 +649,7 @@ export const adminRouter = {
 
 		const [created] = await db
 			.insert(topic)
-			.values({ id: createId(), name: input.name })
+			.values({ name: input.name })
 			.onConflictDoNothing({ target: topic.name })
 			.returning();
 

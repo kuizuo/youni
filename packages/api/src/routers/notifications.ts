@@ -32,10 +32,6 @@ const registerPushTokenInput = z.object({
 	platform: z.enum(["android", "ios", "web", "unknown"]).default("unknown"),
 });
 
-function createId() {
-	return crypto.randomUUID();
-}
-
 function toNumber(value: unknown) {
 	return Number(value ?? 0);
 }
@@ -247,7 +243,6 @@ export const notificationsRouter = {
 			const [row] = await createDb()
 				.insert(notificationPushToken)
 				.values({
-					id: createId(),
 					userId: context.session.user.id,
 					token: input.token,
 					platform: input.platform,

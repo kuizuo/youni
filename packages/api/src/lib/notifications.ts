@@ -30,10 +30,6 @@ type CreateNotificationInput = {
 	type: NotificationType;
 };
 
-function createId() {
-	return crypto.randomUUID();
-}
-
 function createDedupeKey(input: CreateNotificationInput) {
 	return [
 		input.type,
@@ -54,7 +50,6 @@ export async function createNotification(input: CreateNotificationInput) {
 	const [row] = await db
 		.insert(notification)
 		.values({
-			id: createId(),
 			recipientId: input.recipientId,
 			actorId: input.actorId ?? null,
 			type: input.type,
