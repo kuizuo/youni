@@ -127,7 +127,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
 
 type AdminPageProps = {
 	title: string;
-	description: string;
+	description?: string;
 	children: ReactNode;
 	actions?: ReactNode;
 };
@@ -143,7 +143,9 @@ export function AdminPage({
 			<section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 				<div className="min-w-0">
 					<h1 className="sr-only">{title}</h1>
-					<p className="text-muted text-sm">{description}</p>
+					{description ? (
+						<p className="text-muted text-sm">{description}</p>
+					) : null}
 				</div>
 				{actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
 			</section>

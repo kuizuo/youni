@@ -1,14 +1,29 @@
-import { Magnifier } from "@gravity-ui/icons";
-import { Avatar, Button, Card, SearchField } from "@heroui/react";
-import type { DataGridColumn } from "@heroui-pro/react";
-import { DataGrid } from "@heroui-pro/react";
+import { Plus } from "@gravity-ui/icons";
+import { Button } from "@heroui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-
+import { env } from "@youni/env/web";
+import type { FormEvent } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AdminPage } from "@/components/admin-shell";
-import { UserStatusBadge } from "@/components/admin-status";
 import { orpc } from "@/utils/orpc";
+
+import {
+	type AdminUserListItem,
+	canManageItem,
+	emptyForm,
+	getErrorMessage,
+	toGender,
+	toUserRole,
+	toUserStatus,
+	type UserFormMode,
+	type UserFormState,
+	type UserRole,
+	type UserStatus,
+} from "./-admin-users/types";
+import { UserFilters } from "./-admin-users/user-filters";
+import { UserFormDrawer } from "./-admin-users/user-form-drawer";
+import { UserTable } from "./-admin-users/user-table";
 
 export const Route = createFileRoute("/admin/users")({
 	component: AdminUsersRoute,
@@ -16,164 +31,224 @@ export const Route = createFileRoute("/admin/users")({
 
 function AdminUsersRoute() {
 	const [keyword, setKeyword] = useState("");
+	const [statusFilter, setStatusFilter] = useState<UserStatus | "">("");
+	const [formMode, setFormMode] = useState<UserFormMode>("create");
+	const [form, setForm] = useState<UserFormState>(emptyForm);
+	const [formMessage, setFormMessage] = useState<string | null>(null);
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const input = useMemo(
-		() => ({ keyword: keyword.trim() || undefined, limit: 100 }),
-		[keyword],
+		() => ({
+			keyword: keyword.trim() || undefined,
+			limit: 100,
+			status: statusFilter || undefined,
+		}),
+		[keyword, statusFilter],
 	);
 	const users = useQuery(orpc.admin.users.queryOptions({ input }));
+	const admin = useQuery(orpc.admin.me.queryOptions());
+	const createMutation = useMutation(orpc.admin.createUser.mutationOptions());
+	const updateMutation = useMutation(orpc.admin.updateUser.mutationOptions());
 	const statusMutation = useMutation(
-		orpc.admin.updateUserStatus.mutationOptions({
-			onSuccess: () => {
-				console.info("用户状态已更新");
-				users.refetch();
-			},
-		}),
+		orpc.admin.updateUserStatus.mutationOptions(),
 	);
-	type UserItem = NonNullable<typeof users.data>[number];
+	const deleteMutation = useMutation(
+		orpc.admin.softDeleteUser.mutationOptions(),
+	);
+	const restoreMutation = useMutation(orpc.admin.restoreUser.mutationOptions());
 
-	const userColumns = useMemo<DataGridColumn<UserItem>[]>(
-		() => [
-			{
-				accessorKey: "name",
-				allowsSorting: true,
-				header: "用户",
-				id: "user",
-				isRowHeader: true,
-				minWidth: 260,
-				cell: (item) => (
-					<div className="flex items-center gap-3">
-						<Avatar className="size-10">
-							{item.image ? (
-								<Avatar.Image alt={item.name} src={item.image} />
-							) : null}
-							<Avatar.Fallback>{item.name.slice(0, 1)}</Avatar.Fallback>
-						</Avatar>
-						<div className="min-w-0">
-							<div className="truncate font-medium">{item.name}</div>
-							<div className="truncate text-muted text-xs">{item.email}</div>
-							{item.handle ? (
-								<div className="truncate text-muted text-xs">
-									@{item.handle}
-								</div>
-							) : null}
-						</div>
-					</div>
-				),
-			},
-			{
-				accessorKey: "bio",
-				header: "简介",
-				id: "bio",
-				minWidth: 260,
-				cell: (item) => (
-					<span className="line-clamp-2 text-muted">
-						{item.bio || "暂无简介"}
-					</span>
-				),
-			},
-			{
-				accessorKey: "status",
-				allowsSorting: true,
-				header: "状态",
-				id: "status",
-				minWidth: 120,
-				cell: (item) => (
-					<UserStatusBadge status={item.status as "active" | "disabled"} />
-				),
-			},
-			{
-				header: "数据",
-				id: "stats",
-				minWidth: 140,
-				cell: (item) => (
-					<div className="text-muted text-sm">
-						<div>图文 {item.noteCount}</div>
-						<div>粉丝 {item.followerCount}</div>
-						<div>关注 {item.followingCount}</div>
-					</div>
-				),
-			},
-			{
-				accessorKey: "createdAt",
-				allowsSorting: true,
-				header: "创建时间",
-				id: "createdAt",
-				minWidth: 180,
-				cell: (item) => (
-					<span className="text-muted tabular-nums">
-						{new Date(item.createdAt).toLocaleString()}
-					</span>
-				),
-			},
-			{
-				align: "end",
-				header: "操作",
-				id: "actions",
-				minWidth: 120,
-				cell: (item) => (
-					<Button
-						size="sm"
-						variant={item.status === "active" ? "danger" : "outline"}
-						isPending={statusMutation.isPending}
-						onPress={() =>
-							statusMutation.mutate({
-								id: item.id,
-								status: item.status === "active" ? "disabled" : "active",
-							})
-						}
-					>
-						{item.status === "active" ? "禁用" : "恢复"}
-					</Button>
-				),
-			},
-		],
-		[statusMutation],
+	const currentRole = admin.data?.role as UserRole | undefined;
+	const currentUserId = admin.data?.user.id;
+	const isSubmitting = createMutation.isPending || updateMutation.isPending;
+	const isStatusBusy =
+		statusMutation.isPending ||
+		deleteMutation.isPending ||
+		restoreMutation.isPending;
+
+	const resetForm = useCallback(() => {
+		setFormMode("create");
+		setForm(emptyForm);
+		setFormMessage(null);
+	}, []);
+
+	const openCreateDrawer = useCallback(() => {
+		resetForm();
+		setIsFormOpen(true);
+	}, [resetForm]);
+
+	const closeFormDrawer = useCallback(() => {
+		setIsFormOpen(false);
+		resetForm();
+	}, [resetForm]);
+
+	const startEdit = useCallback(
+		(item: AdminUserListItem) => {
+			if (!canManageItem(currentRole, item.role)) return;
+			setFormMode("edit");
+			setForm({
+				id: item.id,
+				name: item.name,
+				email: item.email,
+				password: "",
+				role: toUserRole(item.role),
+				status: toUserStatus(item.status),
+				image: item.image ?? "",
+				handle: item.handle ?? "",
+				bio: item.bio ?? "",
+				gender: toGender(item.gender),
+			});
+			setFormMessage(null);
+			setIsFormOpen(true);
+		},
+		[currentRole],
+	);
+
+	const refetchUsers = useCallback(async () => {
+		await users.refetch();
+	}, [users]);
+
+	const submitForm = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		setFormMessage(null);
+
+		if (!form.name.trim() || !form.email.trim()) {
+			setFormMessage("请填写昵称和邮箱");
+			return;
+		}
+
+		if (formMode === "create" && form.password.length < 8) {
+			setFormMessage("新用户密码至少 8 位");
+			return;
+		}
+
+		try {
+			if (formMode === "create") {
+				await createMutation.mutateAsync({
+					name: form.name.trim(),
+					email: form.email.trim(),
+					password: form.password,
+					role: form.role,
+					status: form.status === "deleted" ? "disabled" : form.status,
+					image: form.image.trim() || undefined,
+					handle: form.handle.trim() || undefined,
+					bio: form.bio.trim() || undefined,
+					gender: form.gender,
+				});
+			} else if (form.id) {
+				await updateMutation.mutateAsync({
+					id: form.id,
+					name: form.name.trim(),
+					email: form.email.trim(),
+					password: form.password || undefined,
+					role: form.role,
+					status: form.status,
+					image: form.image.trim() || undefined,
+					handle: form.handle.trim() || undefined,
+					bio: form.bio.trim() || undefined,
+					gender: form.gender,
+				});
+			}
+
+			await refetchUsers();
+			closeFormDrawer();
+		} catch (error) {
+			setFormMessage(getErrorMessage(error));
+		}
+	};
+
+	const uploadAvatar = useCallback(async (file: File) => {
+		setFormMessage(null);
+		setIsUploadingAvatar(true);
+
+		try {
+			const body = new FormData();
+			body.append("avatar", file);
+			const response = await fetch(
+				`${env.VITE_SERVER_URL}/admin/uploads/avatar`,
+				{
+					body,
+					credentials: "include",
+					method: "POST",
+				},
+			);
+			const result = (await response.json().catch(() => null)) as {
+				message?: string;
+				url?: string;
+			} | null;
+
+			if (!response.ok || !result?.url) {
+				throw new Error(result?.message || "头像上传失败");
+			}
+
+			return result.url;
+		} catch (error) {
+			setFormMessage(getErrorMessage(error));
+			throw error;
+		} finally {
+			setIsUploadingAvatar(false);
+		}
+	}, []);
+
+	const updateStatus = useCallback(
+		async (item: AdminUserListItem, status: UserStatus) => {
+			try {
+				if (status === "deleted") {
+					await deleteMutation.mutateAsync({ id: item.id });
+				} else if (item.status === "deleted") {
+					await restoreMutation.mutateAsync({ id: item.id, status });
+				} else {
+					await statusMutation.mutateAsync({ id: item.id, status });
+				}
+				await refetchUsers();
+			} catch (error) {
+				setFormMessage(getErrorMessage(error));
+			}
+		},
+		[deleteMutation, refetchUsers, restoreMutation, statusMutation],
 	);
 
 	return (
-		<AdminPage title="用户管理" description="查看用户资料、内容和账号状态。">
-			<Card>
-				<Card.Content className="py-4">
-					<SearchField
-						aria-label="搜索用户"
-						className="w-full md:max-w-sm"
-						name="users-search"
-						value={keyword}
-						onChange={setKeyword}
-					>
-						<SearchField.Group>
-							<SearchField.SearchIcon>
-								<Magnifier className="size-4" />
-							</SearchField.SearchIcon>
-							<SearchField.Input placeholder="搜索昵称或邮箱" />
-							<SearchField.ClearButton />
-						</SearchField.Group>
-					</SearchField>
-				</Card.Content>
-			</Card>
+		<AdminPage
+			title="用户管理"
+			actions={
+				<Button onPress={openCreateDrawer}>
+					<Plus className="size-4" />
+					新建用户
+				</Button>
+			}
+		>
+			<UserFilters
+				keyword={keyword}
+				statusFilter={statusFilter}
+				onKeywordChange={setKeyword}
+				onStatusChange={setStatusFilter}
+			/>
 
-			<Card>
-				<Card.Header>
-					<Card.Title>用户列表</Card.Title>
-					<Card.Description>
-						查看用户状态、内容数量和社交数据。
-					</Card.Description>
-				</Card.Header>
-				<Card.Content className="p-0">
-					<DataGrid
-						aria-label="用户列表"
-						columns={userColumns}
-						contentClassName="min-w-[1040px]"
-						data={users.data ?? []}
-						getRowId={(item) => item.id}
-						isLoadingMore={users.isFetching}
-						renderEmptyState={() => (
-							<span className="text-muted text-sm">暂无用户</span>
-						)}
-						verticalAlign="top"
-					/>
-				</Card.Content>
-			</Card>
+			<UserFormDrawer
+				currentRole={currentRole}
+				currentUserId={currentUserId}
+				form={form}
+				formMessage={formMessage}
+				isOpen={isFormOpen}
+				isSubmitting={isSubmitting}
+				isUploadingAvatar={isUploadingAvatar}
+				mode={formMode}
+				onCancel={closeFormDrawer}
+				onChange={setForm}
+				onSubmit={submitForm}
+				onUploadAvatar={uploadAvatar}
+			/>
+
+			<UserTable
+				currentRole={currentRole}
+				currentUserId={currentUserId}
+				isDeletePending={deleteMutation.isPending}
+				isFetching={users.isFetching}
+				isStatusBusy={isStatusBusy}
+				users={users.data ?? []}
+				onEdit={startEdit}
+				onUpdateStatus={updateStatus}
+			/>
 		</AdminPage>
 	);
 }

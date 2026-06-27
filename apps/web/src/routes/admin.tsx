@@ -30,7 +30,7 @@ function AdminLayoutRoute() {
 					<Card.Header>
 						<Card.Title>无法进入后台</Card.Title>
 						<Card.Description>
-							请使用管理员邮箱登录后再访问后台。
+							请使用管理员或运营账号登录后再访问后台。
 						</Card.Description>
 					</Card.Header>
 					<Card.Content>

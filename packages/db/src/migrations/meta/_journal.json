@@ -15,6 +15,13 @@
       "when": 1782185194453,
       "tag": "0001_rapid_warhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782240565587,
+      "tag": "0002_mushy_cargill",
+      "breakpoints": true
     }
   ]
 }

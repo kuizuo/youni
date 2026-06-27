@@ -4,6 +4,7 @@ import * as schema from "@youni/db/schema/auth";
 import { env } from "@youni/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { eq } from "drizzle-orm";
 
 const isProduction = process.env.NODE_ENV === "production";
 const configuredOrigins =
@@ -52,6 +53,52 @@ export function createAuth() {
 		],
 		emailAndPassword: {
 			enabled: true,
+		},
+		user: {
+			additionalFields: {
+				role: {
+					type: "string",
+					required: false,
+					defaultValue: "user",
+					input: false,
+				},
+				status: {
+					type: "string",
+					required: false,
+					defaultValue: "active",
+					input: false,
+				},
+			},
+		},
+		databaseHooks: {
+			user: {
+				create: {
+					async before(user) {
+						return {
+							data: {
+								...user,
+								role: user.role ?? "user",
+								status: user.status ?? "active",
+							},
+						};
+					},
+				},
+			},
+			session: {
+				create: {
+					async before(session) {
+						const [owner] = await db
+							.select({ status: schema.user.status })
+							.from(schema.user)
+							.where(eq(schema.user.id, session.userId))
+							.limit(1);
+
+						if (!owner || owner.status === "deleted") {
+							return false;
+						}
+					},
+				},
+			},
 		},
 		socialProviders,
 		// uncomment cookieCache setting when ready to deploy to Cloudflare using *.workers.dev domains

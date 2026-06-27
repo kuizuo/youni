@@ -15,6 +15,7 @@
 		"@youni/db": "workspace:*",
 		"@youni/env": "workspace:*",
 		"better-auth": "catalog:",
+		"drizzle-orm": "catalog:",
 		"dotenv": "catalog:",
 		"zod": "catalog:"
 	},

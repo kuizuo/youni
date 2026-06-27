@@ -1,5 +1,5 @@
 import alchemy from "alchemy";
-import { Vite, Worker } from "alchemy/cloudflare";
+import { R2Bucket, Vite, Worker } from "alchemy/cloudflare";
 import { config } from "dotenv";
 
 config({ path: "./.env" });
@@ -26,6 +26,10 @@ export const web = await Vite("web", {
 	},
 });
 
+export const youniBucket = await R2Bucket("youni", {
+	name: "youni",
+});
+
 export const server = await Worker("server", {
 	cwd: "../../apps/server",
 	entrypoint: "src/index.ts",
@@ -47,7 +51,7 @@ export const server = await Worker("server", {
 		GOOGLE_IOS_CLIENT_ID: alchemy.env.GOOGLE_IOS_CLIENT_ID ?? "",
 		GOOGLE_ANDROID_CLIENT_ID: alchemy.env.GOOGLE_ANDROID_CLIENT_ID ?? "",
 		GOOGLE_CLIENT_SECRET: alchemy.secret.env.GOOGLE_CLIENT_SECRET ?? "",
-		ADMIN_EMAILS: alchemy.env.ADMIN_EMAILS || "admin@youni.local",
+		YOUNI_BUCKET: youniBucket,
 	},
 	dev: {
 		port: 3000,

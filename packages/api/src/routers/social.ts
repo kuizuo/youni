@@ -12,7 +12,11 @@ import {
 } from "@youni/db/schema/index";
 import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import z from "zod";
-import { protectedProcedure, publicProcedure } from "../index";
+import {
+	activeUserProcedure,
+	protectedProcedure,
+	publicProcedure,
+} from "../index";
 import { notifyFollow, notifyNoteOwner } from "../lib/notifications";
 
 const idInput = z.object({ id: z.string().min(1) });
@@ -573,7 +577,7 @@ export const socialRouter = {
 		};
 	}),
 
-	updateProfile: protectedProcedure
+	updateProfile: activeUserProcedure
 		.input(profileUpdateInput)
 		.handler(async ({ input, context }) => {
 			const db = createDb();
@@ -591,7 +595,7 @@ export const socialRouter = {
 			return updated;
 		}),
 
-	create: protectedProcedure
+	create: activeUserProcedure
 		.input(noteCreateInput)
 		.handler(async ({ input, context }) => {
 			const db = createDb();
@@ -653,7 +657,7 @@ export const socialRouter = {
 			return { id: noteId, status };
 		}),
 
-	toggleLike: protectedProcedure
+	toggleLike: activeUserProcedure
 		.input(idInput)
 		.handler(async ({ input, context }) => {
 			const db = createDb();
@@ -688,7 +692,7 @@ export const socialRouter = {
 			return { liked, likedCount: toNumber(row?.value) };
 		}),
 
-	toggleCollect: protectedProcedure
+	toggleCollect: activeUserProcedure
 		.input(idInput)
 		.handler(async ({ input, context }) => {
 			const db = createDb();
@@ -723,7 +727,7 @@ export const socialRouter = {
 			return { collected, collectedCount: toNumber(row?.value) };
 		}),
 
-	addComment: protectedProcedure
+	addComment: activeUserProcedure
 		.input(commentInput)
 		.handler(async ({ input, context }) => {
 			const db = createDb();
@@ -761,7 +765,7 @@ export const socialRouter = {
 			return created;
 		}),
 
-	toggleFollow: protectedProcedure
+	toggleFollow: activeUserProcedure
 		.input(profileInput)
 		.handler(async ({ input, context }) => {
 			const viewerId = context.session.user.id;

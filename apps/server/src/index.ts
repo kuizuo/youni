@@ -8,9 +8,12 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@youni/api/context";
 import { appRouter } from "@youni/api/routers/index";
 import { createAuth } from "@youni/auth";
+import { createDb } from "@youni/db";
+import { user } from "@youni/db/schema/index";
 import { env } from "@youni/env/server";
 import { convertToModelMessages, streamText, wrapLanguageModel } from "ai";
-import { Hono } from "hono";
+import { eq } from "drizzle-orm";
+import { Hono, type Context as HonoContext } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
@@ -31,6 +34,14 @@ const allowedCorsOrigins = new Set([
 				"http://127.0.0.1:8081",
 			]),
 ]);
+const avatarPrefix = "avatar/";
+const avatarMaxSize = 2 * 1024 * 1024;
+const avatarContentTypes = new Map([
+	["image/jpeg", "jpg"],
+	["image/png", "png"],
+	["image/webp", "webp"],
+	["image/gif", "gif"],
+]);
 
 app.use(logger());
 app.use(
@@ -50,6 +61,98 @@ app.use(
 );
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => createAuth().handler(c.req.raw));
+
+async function assertBackofficeAccess(c: HonoContext) {
+	const context = await createContext({ context: c });
+	if (!context.session?.user) {
+		return null;
+	}
+
+	const [account] = await createDb()
+		.select({
+			id: user.id,
+			role: user.role,
+			status: user.status,
+		})
+		.from(user)
+		.where(eq(user.id, context.session.user.id))
+		.limit(1);
+
+	if (
+		!account ||
+		account.status !== "active" ||
+		(account.role !== "admin" && account.role !== "operator")
+	) {
+		return null;
+	}
+
+	return account;
+}
+
+app.post("/admin/uploads/avatar", async (c) => {
+	const account = await assertBackofficeAccess(c);
+	if (!account) {
+		return c.json({ message: "没有权限上传头像" }, 403);
+	}
+
+	if (!env.YOUNI_BUCKET) {
+		return c.json({ message: "头像存储尚未配置" }, 503);
+	}
+
+	const body = await c.req.parseBody();
+	const file = body.avatar;
+
+	if (!(file instanceof File)) {
+		return c.json({ message: "请选择头像文件" }, 400);
+	}
+
+	const extension = avatarContentTypes.get(file.type);
+	if (!extension) {
+		return c.json({ message: "头像仅支持 JPG、PNG、WebP 或 GIF" }, 400);
+	}
+
+	if (file.size > avatarMaxSize) {
+		return c.json({ message: "头像不能超过 2MB" }, 400);
+	}
+
+	const fileName = `${crypto.randomUUID()}.${extension}`;
+	const key = `${avatarPrefix}${fileName}`;
+
+	await env.YOUNI_BUCKET.put(key, file.stream(), {
+		httpMetadata: {
+			cacheControl: "public, max-age=31536000, immutable",
+			contentType: file.type,
+		},
+	});
+
+	return c.json({
+		key,
+		url: new URL(`/uploads/avatar/${fileName}`, c.req.url).toString(),
+	});
+});
+
+app.get("/uploads/avatar/:fileName", async (c) => {
+	if (!env.YOUNI_BUCKET) {
+		return c.notFound();
+	}
+
+	const fileName = c.req.param("fileName");
+	if (!/^[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(fileName)) {
+		return c.notFound();
+	}
+
+	const object = await env.YOUNI_BUCKET.get(`${avatarPrefix}${fileName}`);
+	if (!object) {
+		return c.notFound();
+	}
+
+	const headers = new Headers();
+	object.writeHttpMetadata(headers);
+	headers.set("etag", object.httpEtag);
+	headers.set("cache-control", "public, max-age=31536000, immutable");
+
+	return new Response(object.body, { headers });
+});
 
 export const apiHandler = new OpenAPIHandler(appRouter, {
 	plugins: [

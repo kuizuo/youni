@@ -28,6 +28,19 @@ const seedUsers = [
 		image:
 			"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=80",
 		password: adminPassword,
+		role: "admin" as const,
+	},
+	{
+		key: "operator",
+		id: "seed-user-operator",
+		name: "Youni Operator",
+		email: "operator@youni.local",
+		handle: "youni_operator",
+		bio: "社区内容运营",
+		image:
+			"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=240&q=80",
+		password: adminPassword,
+		role: "operator" as const,
 	},
 	{
 		key: "lin",
@@ -39,6 +52,7 @@ const seedUsers = [
 		image:
 			"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=240&q=80",
 		password: demoPassword,
+		role: "user" as const,
 	},
 	{
 		key: "momo",
@@ -50,6 +64,7 @@ const seedUsers = [
 		image:
 			"https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=240&q=80",
 		password: demoPassword,
+		role: "user" as const,
 	},
 	{
 		key: "ash",
@@ -61,6 +76,7 @@ const seedUsers = [
 		image:
 			"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80",
 		password: demoPassword,
+		role: "user" as const,
 	},
 	{
 		key: "nana",
@@ -72,6 +88,7 @@ const seedUsers = [
 		image:
 			"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=240&q=80",
 		password: demoPassword,
+		role: "user" as const,
 	},
 	{
 		key: "qiqi",
@@ -83,6 +100,7 @@ const seedUsers = [
 		image:
 			"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&q=80",
 		password: demoPassword,
+		role: "user" as const,
 	},
 ];
 
@@ -254,6 +272,7 @@ async function ensureUser(
 			handle: item.handle,
 			bio: item.bio,
 			image: item.image,
+			role: item.role,
 			status: "active",
 		})
 		.onConflictDoUpdate({
@@ -264,6 +283,7 @@ async function ensureUser(
 				handle: item.handle,
 				bio: item.bio,
 				image: item.image,
+				role: item.role,
 				status: "active",
 			},
 		})
@@ -378,9 +398,10 @@ async function main() {
 	const momo = userIds.get("momo");
 	const ash = userIds.get("ash");
 	const admin = userIds.get("admin");
+	const operator = userIds.get("operator");
 	const nana = userIds.get("nana");
 	const qiqi = userIds.get("qiqi");
-	if (!lin || !momo || !ash || !admin || !nana || !qiqi) {
+	if (!lin || !momo || !ash || !admin || !operator || !nana || !qiqi) {
 		throw new Error("Missing seed users");
 	}
 
@@ -502,6 +523,7 @@ async function main() {
 
 	console.log("Seed completed");
 	console.log(`Admin: admin@youni.local / ${adminPassword}`);
+	console.log(`Operator: operator@youni.local / ${adminPassword}`);
 	console.log(`Demo: lin@youni.local / ${demoPassword}`);
 }
 

@@ -1,6 +1,12 @@
 import { relations } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
+export const userRoles = ["admin", "operator", "user"] as const;
+export const userStatuses = ["active", "disabled", "deleted"] as const;
+
+export type UserRole = (typeof userRoles)[number];
+export type UserStatus = (typeof userStatuses)[number];
+
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
@@ -10,6 +16,7 @@ export const user = pgTable("user", {
 	handle: text("handle").unique(),
 	bio: text("bio"),
 	gender: text("gender").default("unknown").notNull(),
+	role: text("role").default("user").notNull(),
 	status: text("status").default("active").notNull(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")

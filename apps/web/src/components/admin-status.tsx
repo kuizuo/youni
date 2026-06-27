@@ -11,6 +11,13 @@ const noteStatusLabel = {
 const userStatusLabel = {
 	active: "正常",
 	disabled: "禁用",
+	deleted: "已删除",
+} as const;
+
+const userRoleLabel = {
+	admin: "管理员",
+	operator: "运营",
+	user: "用户",
 } as const;
 
 const colors = {
@@ -21,6 +28,10 @@ const colors = {
 	hidden: "default",
 	active: "success",
 	disabled: "danger",
+	deleted: "default",
+	admin: "accent",
+	operator: "warning",
+	user: "default",
 } as const;
 
 export function NoteStatusBadge({
@@ -47,4 +58,12 @@ export function UserStatusBadge({
 	);
 }
 
-export { noteStatusLabel, userStatusLabel };
+export function UserRoleBadge({ role }: { role: keyof typeof userRoleLabel }) {
+	return (
+		<Chip color={colors[role]} size="sm" variant="soft">
+			{userRoleLabel[role]}
+		</Chip>
+	);
+}
+
+export { noteStatusLabel, userRoleLabel, userStatusLabel };

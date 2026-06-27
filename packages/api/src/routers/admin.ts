@@ -1,6 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import {
+	account,
 	comment,
 	follow,
 	note,
@@ -10,35 +11,36 @@ import {
 	topic,
 	user,
 } from "@youni/db/schema/index";
-import { env } from "@youni/env/server";
-import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { hashPassword } from "better-auth/crypto";
+import { and, count, desc, eq, ilike, inArray, ne, or } from "drizzle-orm";
 import z from "zod";
 
 import { protectedProcedure } from "../index";
 
-const adminEnv = env as unknown as Record<string, string | undefined>;
+const userRoleInput = z.enum(["admin", "operator", "user"]);
+const userStatusInput = z.enum(["active", "disabled", "deleted"]);
+const manageableUserStatusInput = z.enum(["active", "disabled"]);
 
-function adminEmails() {
-	return new Set(
-		(adminEnv.ADMIN_EMAILS ?? "")
-			.split(",")
-			.map((email) => email.trim().toLowerCase())
-			.filter(Boolean),
-	);
-}
-
-export function isAdminEmail(email?: string | null) {
-	if (!email) return false;
-	return adminEmails().has(email.toLowerCase());
-}
+type UserRole = z.infer<typeof userRoleInput>;
+type UserStatus = z.infer<typeof userStatusInput>;
 
 const adminProcedure = protectedProcedure.use(async ({ context, next }) => {
-	if (!isAdminEmail(context.session.user.email)) {
+	const role = parseRole(context.account.role);
+	const status = parseStatus(context.account.status);
+
+	if (!role || !status || status !== "active" || !isBackofficeRole(role)) {
 		throw new ORPCError("FORBIDDEN");
 	}
 
 	return next({
-		context,
+		context: {
+			...context,
+			adminUser: {
+				...context.account,
+				role,
+				status,
+			},
+		},
 	});
 });
 
@@ -65,12 +67,43 @@ const topicInput = z.object({
 
 const userListInput = z.object({
 	keyword: z.string().trim().optional(),
+	status: userStatusInput.optional(),
 	limit: z.number().int().min(1).max(100).default(50),
 });
 
-const userStatusInput = z.object({
+const userStatusChangeInput = z.object({
 	id: z.string().min(1),
-	status: z.enum(["active", "disabled"]),
+	status: userStatusInput,
+});
+
+const userCreateInput = z.object({
+	name: z.string().trim().min(1).max(50),
+	email: z.string().trim().toLowerCase().email(),
+	password: z.string().min(8).max(128),
+	role: userRoleInput.default("user"),
+	status: manageableUserStatusInput.default("active"),
+	image: z.string().trim().url().optional().or(z.literal("")),
+	handle: z
+		.string()
+		.trim()
+		.min(2)
+		.max(30)
+		.regex(/^[a-zA-Z0-9_]+$/)
+		.optional()
+		.or(z.literal("")),
+	bio: z.string().trim().max(160).optional(),
+	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
+});
+
+const userUpdateInput = userCreateInput.omit({ password: true }).extend({
+	id: z.string().min(1),
+	status: userStatusInput,
+	password: z.string().min(8).max(128).optional().or(z.literal("")),
+});
+
+const userRestoreInput = z.object({
+	id: z.string().min(1),
+	status: manageableUserStatusInput.default("active"),
 });
 
 function createId() {
@@ -81,11 +114,141 @@ function toNumber(value: unknown) {
 	return Number(value ?? 0);
 }
 
+function parseRole(value?: string | null): UserRole | null {
+	return userRoleInput.safeParse(value).success ? (value as UserRole) : null;
+}
+
+function parseStatus(value?: string | null): UserStatus | null {
+	return userStatusInput.safeParse(value).success
+		? (value as UserStatus)
+		: null;
+}
+
+function isBackofficeRole(role: UserRole) {
+	return role === "admin" || role === "operator";
+}
+
+function normalizeText(value?: string) {
+	const normalized = value?.trim();
+	return normalized ? normalized : null;
+}
+
+function assertCanManageUser({
+	actorRole,
+	desiredRole,
+	desiredStatus,
+	target,
+}: {
+	actorRole: UserRole;
+	desiredRole: UserRole;
+	desiredStatus?: UserStatus;
+	target: {
+		id: string;
+		role: string;
+		status: string;
+	};
+}) {
+	const targetRole = parseRole(target.role);
+	const targetStatus = parseStatus(target.status);
+
+	if (!targetRole || !targetStatus) {
+		throw new ORPCError("BAD_REQUEST");
+	}
+
+	if (actorRole === "operator") {
+		if (targetRole !== "user" || desiredRole !== "user") {
+			throw new ORPCError("FORBIDDEN", {
+				message: "运营只能管理普通用户",
+			});
+		}
+		return;
+	}
+
+	if (actorRole !== "admin") {
+		throw new ORPCError("FORBIDDEN");
+	}
+
+	if (desiredStatus && desiredStatus !== targetStatus) {
+		return;
+	}
+}
+
+function assertCanManageSelf({
+	actorId,
+	desiredRole,
+	desiredStatus,
+	target,
+}: {
+	actorId: string;
+	desiredRole: UserRole;
+	desiredStatus?: UserStatus;
+	target: {
+		id: string;
+		role: string;
+		status: string;
+	};
+}) {
+	if (actorId !== target.id) return;
+
+	if (desiredRole !== target.role || desiredStatus !== target.status) {
+		throw new ORPCError("FORBIDDEN", {
+			message: "不能修改自己的角色或状态",
+		});
+	}
+}
+
+function assertCanCreateRole(actorRole: UserRole, role: UserRole) {
+	if (actorRole === "admin") return;
+	if (actorRole === "operator" && role === "user") return;
+
+	throw new ORPCError("FORBIDDEN", {
+		message: "运营只能创建普通用户",
+	});
+}
+
+function duplicateUserError(error: unknown): never {
+	if (
+		error &&
+		typeof error === "object" &&
+		"code" in error &&
+		error.code === "23505"
+	) {
+		throw new ORPCError("BAD_REQUEST", {
+			message: "邮箱或用户名已存在",
+		});
+	}
+
+	throw error;
+}
+
+async function getUserForAdmin(id: string) {
+	const [target] = await createDb()
+		.select({
+			id: user.id,
+			role: user.role,
+			status: user.status,
+		})
+		.from(user)
+		.where(eq(user.id, id))
+		.limit(1);
+
+	if (!target) {
+		throw new ORPCError("NOT_FOUND");
+	}
+
+	return target;
+}
+
 export const adminRouter = {
 	me: adminProcedure.handler(({ context }) => {
 		return {
 			isAdmin: true,
-			user: context.session.user,
+			role: context.adminUser.role,
+			user: {
+				...context.session.user,
+				role: context.adminUser.role,
+				status: context.adminUser.status,
+			},
 		};
 	}),
 
@@ -102,7 +265,10 @@ export const adminRouter = {
 		] = await Promise.all([
 			db.select({ value: count() }).from(note),
 			db.select({ value: count() }).from(note).where(eq(note.status, "audit")),
-			db.select({ value: count() }).from(user),
+			db
+				.select({ value: count() })
+				.from(user)
+				.where(ne(user.status, "deleted")),
 			db.select({ value: count() }).from(topic),
 			db.select({ value: count() }).from(noteLike),
 			db.select({ value: count() }).from(comment),
@@ -353,12 +519,17 @@ export const adminRouter = {
 
 	users: adminProcedure.input(userListInput).handler(async ({ input }) => {
 		const db = createDb();
-		const whereClause = input.keyword
-			? or(
-					ilike(user.name, `%${input.keyword}%`),
-					ilike(user.email, `%${input.keyword}%`),
-				)
-			: undefined;
+		const conditions = [
+			input.status ? eq(user.status, input.status) : ne(user.status, "deleted"),
+			input.keyword
+				? or(
+						ilike(user.name, `%${input.keyword}%`),
+						ilike(user.email, `%${input.keyword}%`),
+						ilike(user.handle, `%${input.keyword}%`),
+					)
+				: undefined,
+		].filter(Boolean);
+		const whereClause = conditions.length ? and(...conditions) : undefined;
 		const rows = whereClause
 			? await db
 					.select({
@@ -369,8 +540,10 @@ export const adminRouter = {
 						handle: user.handle,
 						bio: user.bio,
 						gender: user.gender,
+						role: user.role,
 						status: user.status,
 						createdAt: user.createdAt,
+						updatedAt: user.updatedAt,
 					})
 					.from(user)
 					.where(whereClause)
@@ -385,8 +558,10 @@ export const adminRouter = {
 						handle: user.handle,
 						bio: user.bio,
 						gender: user.gender,
+						role: user.role,
 						status: user.status,
 						createdAt: user.createdAt,
+						updatedAt: user.updatedAt,
 					})
 					.from(user)
 					.orderBy(desc(user.createdAt))
@@ -430,15 +605,219 @@ export const adminRouter = {
 		}));
 	}),
 
-	updateUserStatus: adminProcedure
-		.input(userStatusInput)
-		.handler(async ({ input }) => {
+	createUser: adminProcedure
+		.input(userCreateInput)
+		.handler(async ({ input, context }) => {
+			assertCanCreateRole(context.adminUser.role, input.role);
+
 			const db = createDb();
-			const [updated] = await db
+			const now = new Date();
+			const id = createId();
+			const password = await hashPassword(input.password);
+
+			try {
+				return await db.transaction(async (tx) => {
+					const [createdUser] = await tx
+						.insert(user)
+						.values({
+							id,
+							name: input.name,
+							email: input.email,
+							emailVerified: true,
+							image: normalizeText(input.image),
+							handle: normalizeText(input.handle),
+							bio: normalizeText(input.bio),
+							gender: input.gender,
+							role: input.role,
+							status: input.status,
+							createdAt: now,
+							updatedAt: now,
+						})
+						.returning();
+
+					await tx.insert(account).values({
+						id: createId(),
+						accountId: id,
+						providerId: "credential",
+						userId: id,
+						password,
+						createdAt: now,
+						updatedAt: now,
+					});
+
+					return createdUser;
+				});
+			} catch (error) {
+				duplicateUserError(error);
+			}
+		}),
+
+	updateUser: adminProcedure
+		.input(userUpdateInput)
+		.handler(async ({ input, context }) => {
+			const target = await getUserForAdmin(input.id);
+			assertCanManageSelf({
+				actorId: context.adminUser.id,
+				desiredRole: input.role,
+				desiredStatus: input.status,
+				target,
+			});
+			assertCanManageUser({
+				actorRole: context.adminUser.role,
+				desiredRole: input.role,
+				desiredStatus: input.status,
+				target,
+			});
+
+			const db = createDb();
+			const now = new Date();
+
+			try {
+				return await db.transaction(async (tx) => {
+					const [updatedUser] = await tx
+						.update(user)
+						.set({
+							name: input.name,
+							email: input.email,
+							image: normalizeText(input.image),
+							handle: normalizeText(input.handle),
+							bio: normalizeText(input.bio),
+							gender: input.gender,
+							role: input.role,
+							status: input.status,
+							updatedAt: now,
+						})
+						.where(eq(user.id, input.id))
+						.returning();
+
+					if (input.password) {
+						const password = await hashPassword(input.password);
+						const [existing] = await tx
+							.select({ id: account.id })
+							.from(account)
+							.where(
+								and(
+									eq(account.userId, input.id),
+									eq(account.providerId, "credential"),
+								),
+							)
+							.limit(1);
+
+						if (existing) {
+							await tx
+								.update(account)
+								.set({
+									accountId: input.id,
+									password,
+									updatedAt: now,
+								})
+								.where(eq(account.id, existing.id));
+						} else {
+							await tx.insert(account).values({
+								id: createId(),
+								accountId: input.id,
+								providerId: "credential",
+								userId: input.id,
+								password,
+								createdAt: now,
+								updatedAt: now,
+							});
+						}
+					}
+
+					return updatedUser;
+				});
+			} catch (error) {
+				duplicateUserError(error);
+			}
+		}),
+
+	updateUserStatus: adminProcedure
+		.input(userStatusChangeInput)
+		.handler(async ({ input, context }) => {
+			const target = await getUserForAdmin(input.id);
+			const targetRole = parseRole(target.role);
+			if (!targetRole) {
+				throw new ORPCError("BAD_REQUEST");
+			}
+			assertCanManageSelf({
+				actorId: context.adminUser.id,
+				desiredRole: targetRole,
+				desiredStatus: input.status,
+				target,
+			});
+			assertCanManageUser({
+				actorRole: context.adminUser.role,
+				desiredRole: targetRole,
+				desiredStatus: input.status,
+				target,
+			});
+
+			const [updated] = await createDb()
 				.update(user)
-				.set({ status: input.status })
+				.set({ status: input.status, updatedAt: new Date() })
 				.where(eq(user.id, input.id))
 				.returning();
+			return updated;
+		}),
+
+	softDeleteUser: adminProcedure
+		.input(idInput)
+		.handler(async ({ input, context }) => {
+			const target = await getUserForAdmin(input.id);
+			const targetRole = parseRole(target.role);
+			if (!targetRole) {
+				throw new ORPCError("BAD_REQUEST");
+			}
+			assertCanManageSelf({
+				actorId: context.adminUser.id,
+				desiredRole: targetRole,
+				desiredStatus: "deleted",
+				target,
+			});
+			assertCanManageUser({
+				actorRole: context.adminUser.role,
+				desiredRole: targetRole,
+				desiredStatus: "deleted",
+				target,
+			});
+
+			const [updated] = await createDb()
+				.update(user)
+				.set({ status: "deleted", updatedAt: new Date() })
+				.where(eq(user.id, input.id))
+				.returning();
+
+			return updated;
+		}),
+
+	restoreUser: adminProcedure
+		.input(userRestoreInput)
+		.handler(async ({ input, context }) => {
+			const target = await getUserForAdmin(input.id);
+			const targetRole = parseRole(target.role);
+			if (!targetRole) {
+				throw new ORPCError("BAD_REQUEST");
+			}
+			assertCanManageSelf({
+				actorId: context.adminUser.id,
+				desiredRole: targetRole,
+				desiredStatus: input.status,
+				target,
+			});
+			assertCanManageUser({
+				actorRole: context.adminUser.role,
+				desiredRole: targetRole,
+				desiredStatus: input.status,
+				target,
+			});
+
+			const [updated] = await createDb()
+				.update(user)
+				.set({ status: input.status, updatedAt: new Date() })
+				.where(eq(user.id, input.id))
+				.returning();
+
 			return updated;
 		}),
 };

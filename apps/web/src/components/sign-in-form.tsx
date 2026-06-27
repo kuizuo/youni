@@ -8,11 +8,7 @@ import { authClient } from "@/lib/auth-client";
 
 import Loader from "./loader";
 
-export default function SignInForm({
-	onSwitchToSignUp,
-}: {
-	onSwitchToSignUp: () => void;
-}) {
+export default function SignInForm() {
 	const navigate = useNavigate({
 		from: "/",
 	});
@@ -140,12 +136,6 @@ export default function SignInForm({
 					)}
 				</form.Subscribe>
 			</form>
-
-			<div className="mt-4 text-center">
-				<Button variant="ghost" onPress={onSwitchToSignUp}>
-					没有账号？注册
-				</Button>
-			</div>
 		</div>
 	);
 }
