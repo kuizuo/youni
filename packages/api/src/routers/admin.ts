@@ -239,6 +239,68 @@ async function getUserForAdmin(id: string) {
 	return target;
 }
 
+async function enrichNoteRows<
+	T extends {
+		id: string;
+	},
+>(db: ReturnType<typeof createDb>, rows: T[]) {
+	if (rows.length === 0) return [];
+
+	const noteIds = rows.map((row) => row.id);
+	const [topicRows, likeRows, commentRows, collectionRows] = await Promise.all([
+		db
+			.select({ noteId: noteTopic.noteId, id: topic.id, name: topic.name })
+			.from(noteTopic)
+			.innerJoin(topic, eq(noteTopic.topicId, topic.id))
+			.where(inArray(noteTopic.noteId, noteIds)),
+		db
+			.select({ noteId: noteLike.noteId, value: count() })
+			.from(noteLike)
+			.where(inArray(noteLike.noteId, noteIds))
+			.groupBy(noteLike.noteId),
+		db
+			.select({ noteId: comment.noteId, value: count() })
+			.from(comment)
+			.where(inArray(comment.noteId, noteIds))
+			.groupBy(comment.noteId),
+		db
+			.select({ noteId: noteCollection.noteId, value: count() })
+			.from(noteCollection)
+			.where(inArray(noteCollection.noteId, noteIds))
+			.groupBy(noteCollection.noteId),
+	]);
+
+	const topicsByNote = new Map<string, { id: string; name: string }[]>();
+	for (const row of topicRows) {
+		topicsByNote.set(row.noteId, [
+			...(topicsByNote.get(row.noteId) ?? []),
+			{ id: row.id, name: row.name },
+		]);
+	}
+
+	const likesByNote = new Map(
+		likeRows.map((row) => [row.noteId, toNumber(row.value)]),
+	);
+	const commentsByNote = new Map(
+		commentRows.map((row) => [row.noteId, toNumber(row.value)]),
+	);
+	const collectionsByNote = new Map(
+		collectionRows.map((row) => [row.noteId, toNumber(row.value)]),
+	);
+
+	return rows.map((row) => {
+		const topics = topicsByNote.get(row.id) ?? [];
+		return {
+			...row,
+			topics: topics.map((item) => item.name),
+			topicDetails: topics,
+			likedCount: likesByNote.get(row.id) ?? 0,
+			commentCount: commentsByNote.get(row.id) ?? 0,
+			collectedCount: collectionsByNote.get(row.id) ?? 0,
+		};
+	});
+}
+
 export const adminRouter = {
 	me: adminProcedure.handler(({ context }) => {
 		return {
@@ -361,58 +423,94 @@ export const adminRouter = {
 					.orderBy(desc(note.createdAt))
 					.limit(input.limit);
 
-		if (rows.length === 0) return [];
+		return enrichNoteRows(db, rows);
+	}),
 
-		const noteIds = rows.map((row) => row.id);
-		const [topicRows, likeRows, commentRows, collectionRows] =
-			await Promise.all([
-				db
-					.select({ noteId: noteTopic.noteId, name: topic.name })
-					.from(noteTopic)
-					.innerJoin(topic, eq(noteTopic.topicId, topic.id))
-					.where(inArray(noteTopic.noteId, noteIds)),
-				db
-					.select({ noteId: noteLike.noteId, value: count() })
-					.from(noteLike)
-					.where(inArray(noteLike.noteId, noteIds))
-					.groupBy(noteLike.noteId),
-				db
-					.select({ noteId: comment.noteId, value: count() })
-					.from(comment)
-					.where(inArray(comment.noteId, noteIds))
-					.groupBy(comment.noteId),
-				db
-					.select({ noteId: noteCollection.noteId, value: count() })
-					.from(noteCollection)
-					.where(inArray(noteCollection.noteId, noteIds))
-					.groupBy(noteCollection.noteId),
-			]);
+	noteDetail: adminProcedure.input(idInput).handler(async ({ input }) => {
+		const db = createDb();
+		const [row] = await db
+			.select({
+				id: note.id,
+				title: note.title,
+				content: note.content,
+				cover: note.cover,
+				images: note.images,
+				locationName: note.locationName,
+				visibility: note.visibility,
+				components: note.components,
+				advancedOptions: note.advancedOptions,
+				status: note.status,
+				rejectionReason: note.rejectionReason,
+				createdAt: note.createdAt,
+				updatedAt: note.updatedAt,
+				publishedAt: note.publishedAt,
+				draftSavedAt: note.draftSavedAt,
+				userId: note.userId,
+				authorName: user.name,
+				authorEmail: user.email,
+				authorImage: user.image,
+				authorHandle: user.handle,
+			})
+			.from(note)
+			.innerJoin(user, eq(note.userId, user.id))
+			.where(eq(note.id, input.id))
+			.limit(1);
 
-		const topicsByNote = new Map<string, string[]>();
-		for (const row of topicRows) {
-			topicsByNote.set(row.noteId, [
-				...(topicsByNote.get(row.noteId) ?? []),
-				row.name,
-			]);
+		if (!row) {
+			throw new ORPCError("NOT_FOUND");
 		}
 
-		const likesByNote = new Map(
-			likeRows.map((row) => [row.noteId, toNumber(row.value)]),
-		);
-		const commentsByNote = new Map(
-			commentRows.map((row) => [row.noteId, toNumber(row.value)]),
-		);
-		const collectionsByNote = new Map(
-			collectionRows.map((row) => [row.noteId, toNumber(row.value)]),
-		);
+		const [detail] = await enrichNoteRows(db, [row]);
+		const [comments, likedUsers, collectedUsers] = await Promise.all([
+			db
+				.select({
+					id: comment.id,
+					content: comment.content,
+					createdAt: comment.createdAt,
+					authorId: user.id,
+					authorName: user.name,
+					authorEmail: user.email,
+					authorImage: user.image,
+				})
+				.from(comment)
+				.innerJoin(user, eq(comment.userId, user.id))
+				.where(eq(comment.noteId, input.id))
+				.orderBy(desc(comment.createdAt))
+				.limit(50),
+			db
+				.select({
+					userId: user.id,
+					name: user.name,
+					email: user.email,
+					image: user.image,
+					createdAt: noteLike.createdAt,
+				})
+				.from(noteLike)
+				.innerJoin(user, eq(noteLike.userId, user.id))
+				.where(eq(noteLike.noteId, input.id))
+				.orderBy(desc(noteLike.createdAt))
+				.limit(20),
+			db
+				.select({
+					userId: user.id,
+					name: user.name,
+					email: user.email,
+					image: user.image,
+					createdAt: noteCollection.createdAt,
+				})
+				.from(noteCollection)
+				.innerJoin(user, eq(noteCollection.userId, user.id))
+				.where(eq(noteCollection.noteId, input.id))
+				.orderBy(desc(noteCollection.createdAt))
+				.limit(20),
+		]);
 
-		return rows.map((row) => ({
-			...row,
-			topics: topicsByNote.get(row.id) ?? [],
-			likedCount: likesByNote.get(row.id) ?? 0,
-			commentCount: commentsByNote.get(row.id) ?? 0,
-			collectedCount: collectionsByNote.get(row.id) ?? 0,
-		}));
+		return {
+			...detail,
+			comments,
+			likedUsers,
+			collectedUsers,
+		};
 	}),
 
 	updateNoteStatus: adminProcedure
@@ -482,6 +580,60 @@ export const adminRouter = {
 			...row,
 			noteCount: countByTopic.get(row.id) ?? 0,
 		}));
+	}),
+
+	topicDetail: adminProcedure.input(idInput).handler(async ({ input }) => {
+		const db = createDb();
+		const [topicRow] = await db
+			.select({
+				id: topic.id,
+				name: topic.name,
+				createdAt: topic.createdAt,
+				updatedAt: topic.updatedAt,
+			})
+			.from(topic)
+			.where(eq(topic.id, input.id))
+			.limit(1);
+
+		if (!topicRow) {
+			throw new ORPCError("NOT_FOUND");
+		}
+
+		const rows = await db
+			.select({
+				id: note.id,
+				title: note.title,
+				content: note.content,
+				cover: note.cover,
+				images: note.images,
+				locationName: note.locationName,
+				visibility: note.visibility,
+				components: note.components,
+				advancedOptions: note.advancedOptions,
+				status: note.status,
+				rejectionReason: note.rejectionReason,
+				createdAt: note.createdAt,
+				publishedAt: note.publishedAt,
+				draftSavedAt: note.draftSavedAt,
+				userId: note.userId,
+				authorName: user.name,
+				authorEmail: user.email,
+			})
+			.from(noteTopic)
+			.innerJoin(note, eq(noteTopic.noteId, note.id))
+			.innerJoin(user, eq(note.userId, user.id))
+			.where(eq(noteTopic.topicId, input.id))
+			.orderBy(desc(note.createdAt))
+			.limit(100);
+
+		const notes = await enrichNoteRows(db, rows);
+		return {
+			topic: {
+				...topicRow,
+				noteCount: notes.length,
+			},
+			notes,
+		};
 	}),
 
 	saveTopic: adminProcedure.input(topicInput).handler(async ({ input }) => {
@@ -603,6 +755,113 @@ export const adminRouter = {
 			followerCount: followerCountByUser.get(row.id) ?? 0,
 			followingCount: followingCountByUser.get(row.id) ?? 0,
 		}));
+	}),
+
+	userDetail: adminProcedure.input(idInput).handler(async ({ input }) => {
+		const db = createDb();
+		const [userRow] = await db
+			.select({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				image: user.image,
+				handle: user.handle,
+				bio: user.bio,
+				gender: user.gender,
+				role: user.role,
+				status: user.status,
+				createdAt: user.createdAt,
+				updatedAt: user.updatedAt,
+			})
+			.from(user)
+			.where(eq(user.id, input.id))
+			.limit(1);
+
+		if (!userRow) {
+			throw new ORPCError("NOT_FOUND");
+		}
+
+		const [
+			noteRows,
+			[followerCountRow],
+			[followingCountRow],
+			followers,
+			following,
+		] = await Promise.all([
+			db
+				.select({
+					id: note.id,
+					title: note.title,
+					content: note.content,
+					cover: note.cover,
+					images: note.images,
+					locationName: note.locationName,
+					visibility: note.visibility,
+					components: note.components,
+					advancedOptions: note.advancedOptions,
+					status: note.status,
+					rejectionReason: note.rejectionReason,
+					createdAt: note.createdAt,
+					publishedAt: note.publishedAt,
+					draftSavedAt: note.draftSavedAt,
+					userId: note.userId,
+					authorName: user.name,
+					authorEmail: user.email,
+				})
+				.from(note)
+				.innerJoin(user, eq(note.userId, user.id))
+				.where(eq(note.userId, input.id))
+				.orderBy(desc(note.createdAt))
+				.limit(100),
+			db
+				.select({ value: count() })
+				.from(follow)
+				.where(eq(follow.followingId, input.id)),
+			db
+				.select({ value: count() })
+				.from(follow)
+				.where(eq(follow.followerId, input.id)),
+			db
+				.select({
+					userId: user.id,
+					name: user.name,
+					email: user.email,
+					image: user.image,
+					createdAt: follow.createdAt,
+				})
+				.from(follow)
+				.innerJoin(user, eq(follow.followerId, user.id))
+				.where(eq(follow.followingId, input.id))
+				.orderBy(desc(follow.createdAt))
+				.limit(20),
+			db
+				.select({
+					userId: user.id,
+					name: user.name,
+					email: user.email,
+					image: user.image,
+					createdAt: follow.createdAt,
+				})
+				.from(follow)
+				.innerJoin(user, eq(follow.followingId, user.id))
+				.where(eq(follow.followerId, input.id))
+				.orderBy(desc(follow.createdAt))
+				.limit(20),
+		]);
+
+		const notes = await enrichNoteRows(db, noteRows);
+
+		return {
+			user: {
+				...userRow,
+				noteCount: notes.length,
+				followerCount: toNumber(followerCountRow?.value),
+				followingCount: toNumber(followingCountRow?.value),
+			},
+			notes,
+			followers,
+			following,
+		};
 	}),
 
 	createUser: adminProcedure

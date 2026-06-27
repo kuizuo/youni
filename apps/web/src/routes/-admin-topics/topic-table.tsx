@@ -1,6 +1,6 @@
-import { ArrowsRotateLeft, Ban, Pencil, TrashBin } from "@gravity-ui/icons";
+import { Pencil, TrashBin } from "@gravity-ui/icons";
 import type { SortDescriptor } from "@heroui/react";
-import { Avatar, Button, Pagination, Popover, Table } from "@heroui/react";
+import { Button, Pagination, Popover, Table } from "@heroui/react";
 import {
 	createColumnHelper,
 	flexRender,
@@ -12,29 +12,17 @@ import {
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 
-import { UserRoleBadge, UserStatusBadge } from "@/components/admin-status";
-
-import {
-	type AdminUserListItem,
-	canManageItem,
-	toUserRole,
-	toUserStatus,
-	type UserRole,
-	type UserStatus,
-} from "./types";
+import type { AdminTopicListItem } from "./types";
 
 const pageSize = 5;
 
-const columnHelper = createColumnHelper<AdminUserListItem>();
+const columnHelper = createColumnHelper<AdminTopicListItem>();
 
 const columnMinWidth: Record<string, number> = {
 	name: 280,
-	role: 110,
-	status: 110,
-	bio: 260,
-	stats: 140,
+	noteCount: 140,
 	createdAt: 180,
-	actions: 140,
+	actions: 120,
 };
 
 function toSortDescriptor(sorting: SortingState): SortDescriptor | undefined {
@@ -55,62 +43,33 @@ function toSortingState(descriptor: SortDescriptor): SortingState {
 	];
 }
 
-export function UserTable({
-	currentRole,
-	currentUserId,
+export function TopicTable({
 	isDeletePending,
 	isFetching,
-	isStatusBusy,
+	onDelete,
 	onEdit,
-	onOpenUser,
-	onUpdateStatus,
-	users,
+	onOpenTopic,
+	topics,
 }: {
-	currentRole?: UserRole;
-	currentUserId?: string;
 	isDeletePending: boolean;
 	isFetching: boolean;
-	isStatusBusy: boolean;
-	onEdit: (item: AdminUserListItem) => void;
-	onOpenUser?: (item: AdminUserListItem) => void;
-	onUpdateStatus: (
-		item: AdminUserListItem,
-		status: UserStatus,
-	) => Promise<void> | void;
-	users: AdminUserListItem[];
+	onDelete: (item: AdminTopicListItem) => Promise<void> | void;
+	onEdit: (item: AdminTopicListItem) => void;
+	onOpenTopic?: (item: AdminTopicListItem) => void;
+	topics: AdminTopicListItem[];
 }) {
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const columns = useMemo(
 		() => [
 			columnHelper.accessor("name", {
 				cell: (info) => (
-					<UserIdentityCell user={info.row.original} onOpenUser={onOpenUser} />
+					<TopicNameCell topic={info.row.original} onOpenTopic={onOpenTopic} />
 				),
-				header: "用户",
+				header: "话题",
 			}),
-			columnHelper.accessor("role", {
-				cell: (info) => <UserRoleBadge role={toUserRole(info.getValue())} />,
-				header: "角色",
-			}),
-			columnHelper.accessor("status", {
-				cell: (info) => (
-					<UserStatusBadge status={toUserStatus(info.getValue())} />
-				),
-				header: "状态",
-			}),
-			columnHelper.accessor("bio", {
-				cell: (info) => (
-					<span className="line-clamp-2 text-muted">
-						{info.getValue() || "暂无简介"}
-					</span>
-				),
-				header: "简介",
-			}),
-			columnHelper.display({
-				cell: (info) => <UserStatsCell user={info.row.original} />,
-				enableSorting: false,
-				header: "数据",
-				id: "stats",
+			columnHelper.accessor("noteCount", {
+				cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
+				header: "图文数量",
 			}),
 			columnHelper.accessor((row) => new Date(row.createdAt).getTime(), {
 				cell: (info) => (
@@ -122,45 +81,24 @@ export function UserTable({
 				id: "createdAt",
 			}),
 			columnHelper.display({
-				cell: (info) => {
-					const item = info.row.original;
-					const canManage = canManageItem(currentRole, item.role);
-					const isSelf = item.id === currentUserId;
-					const isDeleted = item.status === "deleted";
-					const nextStatus = item.status === "active" ? "disabled" : "active";
-
-					return (
-						<UserActionsCell
-							canManage={canManage}
-							isDeletePending={isDeletePending}
-							isDeleted={isDeleted}
-							isSelf={isSelf}
-							isStatusBusy={isStatusBusy}
-							item={item}
-							nextStatus={nextStatus}
-							onEdit={onEdit}
-							onUpdateStatus={onUpdateStatus}
-						/>
-					);
-				},
+				cell: (info) => (
+					<TopicActionsCell
+						isDeletePending={isDeletePending}
+						topic={info.row.original}
+						onDelete={onDelete}
+						onEdit={onEdit}
+					/>
+				),
 				enableSorting: false,
 				header: "操作",
 				id: "actions",
 			}),
 		],
-		[
-			currentRole,
-			currentUserId,
-			isDeletePending,
-			isStatusBusy,
-			onEdit,
-			onOpenUser,
-			onUpdateStatus,
-		],
+		[isDeletePending, onDelete, onEdit, onOpenTopic],
 	);
 	const table = useReactTable({
 		columns,
-		data: users,
+		data: topics,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -175,8 +113,8 @@ export function UserTable({
 		() => Array.from({ length: pageCount }, (_, index) => index + 1),
 		[pageCount],
 	);
-	const start = users.length === 0 ? 0 : pageIndex * pageSize + 1;
-	const end = Math.min((pageIndex + 1) * pageSize, users.length);
+	const start = topics.length === 0 ? 0 : pageIndex * pageSize + 1;
+	const end = Math.min((pageIndex + 1) * pageSize, topics.length);
 	const currentPage = pageIndex + 1;
 	const totalPages = Math.max(pageCount, 1);
 
@@ -184,8 +122,8 @@ export function UserTable({
 		<Table>
 			<Table.ScrollContainer className="overflow-x-auto">
 				<Table.Content
-					aria-label="用户列表"
-					className="min-w-[1320px]"
+					aria-label="话题列表"
+					className="min-w-[760px]"
 					sortDescriptor={sortDescriptor}
 					onSortChange={(descriptor) => setSorting(toSortingState(descriptor))}
 				>
@@ -219,7 +157,7 @@ export function UserTable({
 					<Table.Body
 						renderEmptyState={() => (
 							<span className="text-muted text-sm">
-								{isFetching ? "正在加载用户" : "暂无用户"}
+								{isFetching ? "正在加载话题" : "暂无话题"}
 							</span>
 						)}
 					>
@@ -238,9 +176,9 @@ export function UserTable({
 			<Table.Footer className="flex flex-col gap-3 border-border border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 				<div className="flex flex-wrap items-center gap-3 text-muted text-sm">
 					<Pagination.Summary>
-						{users.length > 0
-							? `显示 ${start}-${end}，共 ${users.length} 个用户`
-							: "暂无用户"}
+						{topics.length > 0
+							? `显示 ${start}-${end}，共 ${topics.length} 个话题`
+							: "暂无话题"}
 					</Pagination.Summary>
 					<span className="hidden h-4 w-px bg-border sm:block" />
 					<span className="tabular-nums">
@@ -284,81 +222,40 @@ export function UserTable({
 	);
 }
 
-function UserIdentityCell({
-	onOpenUser,
-	user,
+function TopicNameCell({
+	onOpenTopic,
+	topic,
 }: {
-	onOpenUser?: (item: AdminUserListItem) => void;
-	user: AdminUserListItem;
+	onOpenTopic?: (item: AdminTopicListItem) => void;
+	topic: AdminTopicListItem;
 }) {
+	if (!onOpenTopic) {
+		return <span className="font-medium">#{topic.name}</span>;
+	}
+
 	return (
-		<div className="flex items-center gap-3">
-			<Avatar className="size-10">
-				{user.image ? <Avatar.Image alt={user.name} src={user.image} /> : null}
-				<Avatar.Fallback>{user.name.slice(0, 1)}</Avatar.Fallback>
-			</Avatar>
-			<div className="min-w-0">
-				{onOpenUser ? (
-					<button
-						type="button"
-						className="truncate font-medium text-accent hover:underline"
-						onClick={() => onOpenUser(user)}
-					>
-						{user.name}
-					</button>
-				) : (
-					<div className="truncate font-medium">{user.name}</div>
-				)}
-				<div className="truncate text-muted text-xs">{user.email}</div>
-				{user.handle ? (
-					<div className="truncate text-muted text-xs">@{user.handle}</div>
-				) : null}
-			</div>
-		</div>
+		<button
+			type="button"
+			className="font-medium text-accent hover:underline"
+			onClick={() => onOpenTopic(topic)}
+		>
+			#{topic.name}
+		</button>
 	);
 }
 
-function UserStatsCell({ user }: { user: AdminUserListItem }) {
-	return (
-		<div className="text-muted text-sm">
-			<div>图文 {user.noteCount}</div>
-			<div>粉丝 {user.followerCount}</div>
-			<div>关注 {user.followingCount}</div>
-		</div>
-	);
-}
-
-function UserActionsCell({
-	canManage,
+function TopicActionsCell({
 	isDeletePending,
-	isDeleted,
-	isSelf,
-	isStatusBusy,
-	item,
-	nextStatus,
+	onDelete,
 	onEdit,
-	onUpdateStatus,
+	topic,
 }: {
-	canManage: boolean;
 	isDeletePending: boolean;
-	isDeleted: boolean;
-	isSelf: boolean;
-	isStatusBusy: boolean;
-	item: AdminUserListItem;
-	nextStatus: UserStatus;
-	onEdit: (item: AdminUserListItem) => void;
-	onUpdateStatus: (
-		item: AdminUserListItem,
-		status: UserStatus,
-	) => Promise<void> | void;
+	onDelete: (item: AdminTopicListItem) => Promise<void> | void;
+	onEdit: (item: AdminTopicListItem) => void;
+	topic: AdminTopicListItem;
 }) {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-	const statusActionLabel = isDeleted
-		? "恢复"
-		: item.status === "active"
-			? "禁用"
-			: "恢复";
-	const StatusActionIcon = item.status === "active" ? Ban : ArrowsRotateLeft;
 
 	return (
 		<div className="flex justify-end gap-2">
@@ -367,21 +264,9 @@ function UserActionsCell({
 				variant="tertiary"
 				isIconOnly
 				aria-label="编辑"
-				isDisabled={!canManage}
-				onPress={() => onEdit(item)}
+				onPress={() => onEdit(topic)}
 			>
 				<Pencil className="size-4" />
-			</Button>
-			<Button
-				size="sm"
-				variant={item.status === "active" ? "outline" : "secondary"}
-				isIconOnly
-				aria-label={statusActionLabel}
-				isDisabled={!canManage || isSelf || isStatusBusy}
-				isPending={isStatusBusy}
-				onPress={() => onUpdateStatus(item, nextStatus)}
-			>
-				<StatusActionIcon className="size-4" />
 			</Button>
 			<Popover isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
 				<Popover.Trigger>
@@ -390,7 +275,7 @@ function UserActionsCell({
 						variant="danger"
 						isIconOnly
 						aria-label="删除"
-						isDisabled={!canManage || isSelf || isDeleted || isStatusBusy}
+						isDisabled={isDeletePending}
 						isPending={isDeletePending}
 					>
 						<TrashBin className="size-4" />
@@ -398,13 +283,13 @@ function UserActionsCell({
 				</Popover.Trigger>
 				<Popover.Content className="w-72" placement="top" offset={10}>
 					<Popover.Arrow />
-					<Popover.Dialog aria-label="确认删除用户" className="space-y-3 p-3">
+					<Popover.Dialog aria-label="确认删除话题" className="space-y-3 p-3">
 						<div>
 							<Popover.Heading className="font-medium text-sm">
-								确认删除用户
+								确认删除话题
 							</Popover.Heading>
 							<p className="mt-1 text-muted text-sm">
-								{`将软删除用户「${item.name}」，删除后该账号将不能再登录。历史内容不会被清空。`}
+								{`将删除话题「#${topic.name}」，关联图文将不再显示这个话题。`}
 							</p>
 						</div>
 						<div className="flex justify-end gap-2">
@@ -420,7 +305,7 @@ function UserActionsCell({
 								variant="danger"
 								isPending={isDeletePending}
 								onPress={async () => {
-									await onUpdateStatus(item, "deleted");
+									await onDelete(topic);
 									setIsDeleteOpen(false);
 								}}
 							>

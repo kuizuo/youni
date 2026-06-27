@@ -91,6 +91,15 @@ const ROUTE_LABELS = new Map<string, string>(
 	NAV_ITEMS.map((item) => [item.href, item.label]),
 );
 
+function getAdminRouteLabel(pathname: string) {
+	const exactLabel = ROUTE_LABELS.get(pathname);
+	if (exactLabel) return exactLabel;
+	if (pathname.startsWith("/admin/notes/")) return "图文详情";
+	if (pathname.startsWith("/admin/topics/")) return "话题详情";
+	if (pathname.startsWith("/admin/users/")) return "用户详情";
+	return "Youni 工作台";
+}
+
 type AdminShellProps = {
 	user: AdminUser;
 	children: ReactNode;
@@ -107,10 +116,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
 		},
 		[navigate],
 	);
-	const title = useMemo(
-		() => ROUTE_LABELS.get(pathname) ?? "Youni 工作台",
-		[pathname],
-	);
+	const title = useMemo(() => getAdminRouteLabel(pathname), [pathname]);
 
 	return (
 		<AppLayout

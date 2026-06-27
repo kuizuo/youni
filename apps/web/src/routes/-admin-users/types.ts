@@ -36,6 +36,15 @@ export type AdminUserListItem = {
 	followerCount: number;
 	followingCount: number;
 	createdAt: Date | string;
+	updatedAt?: Date | string;
+};
+
+export type AdminUserRelationItem = {
+	userId: string;
+	name: string;
+	email: string;
+	image?: string | null;
+	createdAt: Date | string;
 };
 
 export const emptyForm: UserFormState = {

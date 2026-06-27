@@ -1,7 +1,10 @@
-import { Plus } from "@gravity-ui/icons";
-import { Button } from "@heroui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Outlet,
+	useNavigate,
+	useRouterState,
+} from "@tanstack/react-router";
 import { env } from "@youni/env/web";
 import type { FormEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -30,6 +33,10 @@ export const Route = createFileRoute("/admin/users")({
 });
 
 function AdminUsersRoute() {
+	const navigate = useNavigate();
+	const pathname = useRouterState({
+		select: (state) => state.location.pathname,
+	});
 	const [keyword, setKeyword] = useState("");
 	const [statusFilter, setStatusFilter] = useState<UserStatus | "">("");
 	const [formMode, setFormMode] = useState<UserFormMode>("create");
@@ -207,20 +214,17 @@ function AdminUsersRoute() {
 		[deleteMutation, refetchUsers, restoreMutation, statusMutation],
 	);
 
+	if (pathname !== "/admin/users") {
+		return <Outlet />;
+	}
+
 	return (
-		<AdminPage
-			title="用户管理"
-			actions={
-				<Button onPress={openCreateDrawer}>
-					<Plus className="size-4" />
-					新建用户
-				</Button>
-			}
-		>
+		<AdminPage title="用户管理">
 			<UserFilters
 				keyword={keyword}
 				statusFilter={statusFilter}
 				onKeywordChange={setKeyword}
+				onCreateUser={openCreateDrawer}
 				onStatusChange={setStatusFilter}
 			/>
 
@@ -247,6 +251,9 @@ function AdminUsersRoute() {
 				isStatusBusy={isStatusBusy}
 				users={users.data ?? []}
 				onEdit={startEdit}
+				onOpenUser={(item) =>
+					navigate({ to: "/admin/users/$userId", params: { userId: item.id } })
+				}
 				onUpdateStatus={updateStatus}
 			/>
 		</AdminPage>
