@@ -1,6 +1,6 @@
-import { Avatar, Button, Card } from "@heroui/react";
-
+import { Button, Card } from "@heroui/react";
 import { UserRoleBadge, UserStatusBadge } from "@/components/admin-status";
+import { AppAvatar } from "@/components/app-avatar";
 
 import { NoteTable } from "../-admin-notes/note-table";
 import type { AdminNoteListItem } from "../-admin-notes/types";
@@ -41,12 +41,12 @@ export function UserDetailView({
 			<Card>
 				<Card.Content className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_360px]">
 					<div className="flex min-w-0 items-start gap-4">
-						<Avatar className="size-16">
-							{user.image ? (
-								<Avatar.Image alt={user.name} src={user.image} />
-							) : null}
-							<Avatar.Fallback>{user.name.slice(0, 1)}</Avatar.Fallback>
-						</Avatar>
+						<AppAvatar
+							alt={user.name}
+							className="size-16"
+							fallback={user.name.slice(0, 1)}
+							src={user.image}
+						/>
 						<div className="min-w-0">
 							<div className="flex flex-wrap items-center gap-2">
 								<h2 className="font-semibold text-2xl">{user.name}</h2>
@@ -128,12 +128,12 @@ function RelationList({
 							className="flex items-center gap-3 rounded-lg p-2 text-left hover:bg-surface-secondary"
 							onClick={() => onOpenUser(user.userId)}
 						>
-							<Avatar className="size-8">
-								{user.image ? (
-									<Avatar.Image alt={user.name} src={user.image} />
-								) : null}
-								<Avatar.Fallback>{user.name.slice(0, 1)}</Avatar.Fallback>
-							</Avatar>
+							<AppAvatar
+								alt={user.name}
+								className="size-8"
+								fallback={user.name.slice(0, 1)}
+								src={user.image}
+							/>
 							<div className="min-w-0">
 								<div className="truncate font-medium text-sm">{user.name}</div>
 								<div className="truncate text-muted text-xs">{user.email}</div>

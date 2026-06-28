@@ -1,6 +1,8 @@
 import { CloudArrowUpIn, TrashBin } from "@gravity-ui/icons";
-import { Avatar, Button, Input, Label } from "@heroui/react";
+import { Button, Input, Label } from "@heroui/react";
 import { type ChangeEvent, type ReactNode, useRef } from "react";
+
+import { AppAvatar } from "@/components/app-avatar";
 
 export function TextInputField({
 	id,
@@ -94,10 +96,12 @@ export function AvatarUploadField({
 		<div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
 			<Label>{label}</Label>
 			<div className="flex items-center gap-3 rounded-xl border border-border p-3">
-				<Avatar className="size-14">
-					{value ? <Avatar.Image alt={name || "头像"} src={value} /> : null}
-					<Avatar.Fallback>{(name || "用").slice(0, 1)}</Avatar.Fallback>
-				</Avatar>
+				<AppAvatar
+					alt={name || "头像"}
+					className="size-14"
+					fallback={(name || "用").slice(0, 1)}
+					src={value}
+				/>
 				<div className="min-w-0 flex-1">
 					<p className="truncate text-muted text-sm">
 						{value ? "已上传头像" : "未上传头像"}

@@ -1,6 +1,6 @@
 import { ArrowsRotateLeft, Ban, Pencil, TrashBin } from "@gravity-ui/icons";
 import type { SortDescriptor } from "@heroui/react";
-import { Avatar, Button, Pagination, Popover, Table } from "@heroui/react";
+import { Button, Pagination, Popover, Table } from "@heroui/react";
 import {
 	createColumnHelper,
 	flexRender,
@@ -11,8 +11,8 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-
 import { UserRoleBadge, UserStatusBadge } from "@/components/admin-status";
+import { AppAvatar } from "@/components/app-avatar";
 
 import {
 	type AdminUserListItem,
@@ -293,10 +293,12 @@ function UserIdentityCell({
 }) {
 	return (
 		<div className="flex items-center gap-3">
-			<Avatar className="size-10">
-				{user.image ? <Avatar.Image alt={user.name} src={user.image} /> : null}
-				<Avatar.Fallback>{user.name.slice(0, 1)}</Avatar.Fallback>
-			</Avatar>
+			<AppAvatar
+				alt={user.name}
+				className="size-10"
+				fallback={user.name.slice(0, 1)}
+				src={user.image}
+			/>
 			<div className="min-w-0">
 				{onOpenUser ? (
 					<button

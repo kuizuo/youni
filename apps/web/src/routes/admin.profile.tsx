@@ -1,11 +1,11 @@
 import { Gear, Persons, ShieldCheck } from "@gravity-ui/icons";
-import { Avatar, Button, Card, Skeleton } from "@heroui/react";
+import { Button, Card, Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-
 import { AdminPage } from "@/components/admin-shell";
 import { UserRoleBadge, UserStatusBadge } from "@/components/admin-status";
+import { AppAvatar } from "@/components/app-avatar";
 import { orpc } from "@/utils/orpc";
 import {
 	genderLabel,
@@ -64,12 +64,12 @@ function AdminProfileRoute() {
 					<div className="border-separator border-b bg-surface-secondary px-5 py-5">
 						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 							<div className="flex min-w-0 items-center gap-4">
-								<Avatar className="size-16">
-									{user.image ? (
-										<Avatar.Image alt={name} src={user.image} />
-									) : null}
-									<Avatar.Fallback>{getInitials(name)}</Avatar.Fallback>
-								</Avatar>
+								<AppAvatar
+									alt={name}
+									className="size-16"
+									fallback={getInitials(name)}
+									src={user.image}
+								/>
 								<div className="min-w-0">
 									<div className="truncate font-semibold text-foreground text-xl">
 										{name}

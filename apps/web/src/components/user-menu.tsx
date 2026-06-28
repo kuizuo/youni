@@ -1,8 +1,8 @@
 import { ArrowRightFromSquare, Gear } from "@gravity-ui/icons";
-import { Avatar, Button, Dropdown, Label, Skeleton } from "@heroui/react";
+import { Button, Dropdown, Label, Skeleton } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 
+import { AppAvatar } from "@/components/app-avatar";
 import { authClient } from "@/lib/auth-client";
 
 type UserMenuUser = {
@@ -43,16 +43,21 @@ export default function UserMenu({ user }: UserMenuProps) {
 	return (
 		<Dropdown>
 			<Dropdown.Trigger aria-label="打开账号菜单" className="rounded-full">
-				<MenuAvatar alt={name} fallback={fallback} image={currentUser.image} />
+				<AppAvatar
+					alt={name}
+					className="size-9"
+					fallback={fallback}
+					src={currentUser.image}
+				/>
 			</Dropdown.Trigger>
 			<Dropdown.Popover className="min-w-60">
 				<div className="px-3 pt-3 pb-1">
 					<div className="flex items-center gap-2">
-						<MenuAvatar
+						<AppAvatar
 							alt={name}
+							className="size-8"
 							fallback={fallback}
-							image={currentUser.image}
-							size="sm"
+							src={currentUser.image}
 						/>
 						<div className="flex min-w-0 flex-col gap-0">
 							<p className="truncate font-medium text-sm leading-5">{name}</p>
@@ -101,36 +106,6 @@ export default function UserMenu({ user }: UserMenuProps) {
 				</Dropdown.Menu>
 			</Dropdown.Popover>
 		</Dropdown>
-	);
-}
-
-function MenuAvatar({
-	alt,
-	fallback,
-	image,
-	size = "md",
-}: {
-	alt: string;
-	fallback: ReactNode;
-	image?: string | null;
-	size?: "md" | "sm";
-}) {
-	const className =
-		size === "sm"
-			? "size-8 shrink-0 overflow-hidden rounded-full"
-			: "size-9 shrink-0 overflow-hidden rounded-full";
-
-	return (
-		<Avatar className={className}>
-			{image ? (
-				<Avatar.Image
-					alt={alt}
-					className="size-full rounded-full object-cover"
-					src={image}
-				/>
-			) : null}
-			<Avatar.Fallback delayMs={600}>{fallback}</Avatar.Fallback>
-		</Avatar>
 	);
 }
 

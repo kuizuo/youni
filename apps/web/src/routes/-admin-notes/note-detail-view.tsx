@@ -1,6 +1,6 @@
-import { Avatar, Button, Card, Chip } from "@heroui/react";
-
+import { Button, Card, Chip } from "@heroui/react";
 import { NoteStatusBadge } from "@/components/admin-status";
+import { AppAvatar } from "@/components/app-avatar";
 
 import type { AdminNoteDetail, AdminNoteUserAction } from "./types";
 import { toNoteStatus } from "./types";
@@ -83,17 +83,12 @@ export function NoteDetailView({
 									className="flex items-center gap-3 text-left"
 									onClick={() => onOpenUser(note.userId)}
 								>
-									<Avatar className="size-10">
-										{note.authorImage ? (
-											<Avatar.Image
-												alt={note.authorName}
-												src={note.authorImage}
-											/>
-										) : null}
-										<Avatar.Fallback>
-											{note.authorName.slice(0, 1)}
-										</Avatar.Fallback>
-									</Avatar>
+									<AppAvatar
+										alt={note.authorName}
+										className="size-10"
+										fallback={note.authorName.slice(0, 1)}
+										src={note.authorImage}
+									/>
 									<div className="min-w-0">
 										<div className="truncate font-medium">
 											{note.authorName}
@@ -168,17 +163,12 @@ export function NoteDetailView({
 									className="flex items-center gap-3 text-left"
 									onClick={() => onOpenUser(comment.authorId)}
 								>
-									<Avatar className="size-8">
-										{comment.authorImage ? (
-											<Avatar.Image
-												alt={comment.authorName}
-												src={comment.authorImage}
-											/>
-										) : null}
-										<Avatar.Fallback>
-											{comment.authorName.slice(0, 1)}
-										</Avatar.Fallback>
-									</Avatar>
+									<AppAvatar
+										alt={comment.authorName}
+										className="size-8"
+										fallback={comment.authorName.slice(0, 1)}
+										src={comment.authorImage}
+									/>
 									<div className="min-w-0">
 										<div className="truncate font-medium text-sm">
 											{comment.authorName}
@@ -234,12 +224,12 @@ function UserActionList({
 							className="flex items-center gap-3 rounded-lg p-2 text-left hover:bg-surface-secondary"
 							onClick={() => onOpenUser(user.userId)}
 						>
-							<Avatar className="size-8">
-								{user.image ? (
-									<Avatar.Image alt={user.name} src={user.image} />
-								) : null}
-								<Avatar.Fallback>{user.name.slice(0, 1)}</Avatar.Fallback>
-							</Avatar>
+							<AppAvatar
+								alt={user.name}
+								className="size-8"
+								fallback={user.name.slice(0, 1)}
+								src={user.image}
+							/>
 							<div className="min-w-0">
 								<div className="truncate font-medium text-sm">{user.name}</div>
 								<div className="truncate text-muted text-xs">{user.email}</div>
