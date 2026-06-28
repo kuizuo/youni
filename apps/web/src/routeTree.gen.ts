@@ -15,6 +15,8 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as PublicIndexRouteImport } from './routes/_public.index'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTopicsRouteImport } from './routes/admin.topics'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminProfileRouteImport } from './routes/admin.profile'
 import { Route as AdminNotesRouteImport } from './routes/admin.notes'
 import { Route as PublicLoginRouteImport } from './routes/_public.login'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin.users.$userId'
@@ -50,6 +52,16 @@ const AdminTopicsRoute = AdminTopicsRouteImport.update({
   path: '/topics',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminNotesRoute = AdminNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -81,6 +93,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof PublicLoginRoute
   '/admin/notes': typeof AdminNotesRouteWithChildren
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/topics': typeof AdminTopicsRouteWithChildren
   '/admin/users': typeof AdminUsersRouteWithChildren
   '/admin/': typeof AdminIndexRoute
@@ -91,6 +105,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof PublicLoginRoute
   '/admin/notes': typeof AdminNotesRouteWithChildren
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/topics': typeof AdminTopicsRouteWithChildren
   '/admin/users': typeof AdminUsersRouteWithChildren
   '/': typeof PublicIndexRoute
@@ -105,6 +121,8 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
   '/admin/notes': typeof AdminNotesRouteWithChildren
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/topics': typeof AdminTopicsRouteWithChildren
   '/admin/users': typeof AdminUsersRouteWithChildren
   '/_public/': typeof PublicIndexRoute
@@ -120,6 +138,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/admin/notes'
+    | '/admin/profile'
+    | '/admin/settings'
     | '/admin/topics'
     | '/admin/users'
     | '/admin/'
@@ -130,6 +150,8 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/admin/notes'
+    | '/admin/profile'
+    | '/admin/settings'
     | '/admin/topics'
     | '/admin/users'
     | '/'
@@ -143,6 +165,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/_public/login'
     | '/admin/notes'
+    | '/admin/profile'
+    | '/admin/settings'
     | '/admin/topics'
     | '/admin/users'
     | '/_public/'
@@ -199,6 +223,20 @@ declare module '@tanstack/react-router' {
       path: '/topics'
       fullPath: '/admin/topics'
       preLoaderRoute: typeof AdminTopicsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/notes': {
@@ -290,6 +328,8 @@ const AdminUsersRouteWithChildren = AdminUsersRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminNotesRoute: typeof AdminNotesRouteWithChildren
+  AdminProfileRoute: typeof AdminProfileRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTopicsRoute: typeof AdminTopicsRouteWithChildren
   AdminUsersRoute: typeof AdminUsersRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
@@ -297,6 +337,8 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminNotesRoute: AdminNotesRouteWithChildren,
+  AdminProfileRoute: AdminProfileRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminTopicsRoute: AdminTopicsRouteWithChildren,
   AdminUsersRoute: AdminUsersRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,

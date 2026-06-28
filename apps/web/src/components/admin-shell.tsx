@@ -1,17 +1,16 @@
 import {
-	ArrowRightFromSquare,
 	Bell,
 	ChartColumn,
 	Check,
 	Comment,
 	FileText,
+	Gear,
 	Hashtag,
 	Magnifier,
 	Persons,
 	Star,
 } from "@gravity-ui/icons";
 import {
-	Avatar,
 	Button,
 	Chip,
 	Skeleton,
@@ -24,12 +23,14 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import type { ComponentPropsWithRef, ComponentType, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { authClient } from "@/lib/auth-client";
+import UserMenu from "@/components/user-menu";
 import { orpc } from "@/utils/orpc";
 
 type AdminRouteTo =
 	| "/admin"
 	| "/admin/notes"
+	| "/admin/profile"
+	| "/admin/settings"
 	| "/admin/topics"
 	| "/admin/users";
 
@@ -51,6 +52,7 @@ const NAV_ITEMS: readonly AdminNavItem[] = [
 	{ href: "/admin/notes", icon: FileText, label: "图文" },
 	{ href: "/admin/topics", icon: Hashtag, label: "话题" },
 	{ href: "/admin/users", icon: Persons, label: "用户" },
+	{ href: "/admin/settings", icon: Gear, label: "设置" },
 ] as const;
 
 const SEARCH_ITEMS = [
@@ -82,14 +84,29 @@ const SEARCH_ITEMS = [
 		keywords: "users accounts status disabled active 用户 账号",
 		label: "用户管理",
 	},
+	{
+		description: "查看当前账号资料和后台权限。",
+		href: "/admin/settings",
+		icon: Gear,
+		keywords: "settings profile permission status logout 设置 账号 权限",
+		label: "设置",
+	},
+	{
+		description: "查看当前账号对外展示资料和后台身份。",
+		href: "/admin/profile",
+		icon: Persons,
+		keywords: "profile account avatar bio handle personal 个人 主页 资料",
+		label: "个人主页",
+	},
 ] as const satisfies readonly (AdminNavItem & {
 	readonly description: string;
 	readonly keywords: string;
 })[];
 
-const ROUTE_LABELS = new Map<string, string>(
-	NAV_ITEMS.map((item) => [item.href, item.label]),
-);
+const ROUTE_LABELS = new Map<string, string>([
+	...NAV_ITEMS.map((item) => [item.href, item.label] as const),
+	["/admin/profile", "个人主页"] as const,
+]);
 
 function getAdminRouteLabel(pathname: string) {
 	const exactLabel = ROUTE_LABELS.get(pathname);
@@ -164,7 +181,6 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 	const navigate = useNavigate();
 	const searchState = useOverlayState();
 	const overview = useQuery(orpc.admin.overview.queryOptions());
-	const fallback = getInitials(user);
 	const navigateToAdminRoute = useCallback(
 		(href: AdminRouteTo) => {
 			void navigate({ to: href });
@@ -212,37 +228,9 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 							navigateTo={navigateToAdminRoute}
 							overview={overview.data}
 						/>
-						<div className="hidden items-center gap-3 border-separator border-l pl-3 md:flex">
-							<Avatar className="size-8">
-								{user.image ? (
-									<Avatar.Image alt={user.name ?? "管理员"} src={user.image} />
-								) : null}
-								<Avatar.Fallback>{fallback}</Avatar.Fallback>
-							</Avatar>
-							<div className="min-w-0 text-right">
-								<div className="truncate font-medium text-foreground text-sm">
-									{user.name || "管理员"}
-								</div>
-								<div className="truncate text-muted text-xs">{user.email}</div>
-							</div>
+						<div className="border-separator border-l pl-2">
+							<UserMenu user={user} />
 						</div>
-						<IconButton
-							label="退出登录"
-							size="sm"
-							tooltip="退出登录"
-							variant="ghost"
-							onPress={() => {
-								authClient.signOut({
-									fetchOptions: {
-										onSuccess: () => {
-											navigate({ to: "/login" });
-										},
-									},
-								});
-							}}
-						>
-							<ArrowRightFromSquare className="size-4" />
-						</IconButton>
 					</div>
 				</Navbar.Header>
 			</Navbar>
@@ -638,20 +626,5 @@ function getNotifications(overview?: NotificationOverview): NotificationItem[] {
 }
 
 function isAdminRouteTo(value: string): value is AdminRouteTo {
-	return NAV_ITEMS.some((item) => item.href === value);
-}
-
-function getInitials(user: AdminUser) {
-	const source = user.name || user.email || "管理员";
-	const parts = source.trim().split(/\s+/);
-
-	if (parts.length > 1) {
-		return parts
-			.slice(0, 2)
-			.map((part) => part[0])
-			.join("")
-			.toUpperCase();
-	}
-
-	return source.slice(0, 2).toUpperCase();
+	return SEARCH_ITEMS.some((item) => item.href === value);
 }

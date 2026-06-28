@@ -44,7 +44,7 @@ function AdminLayoutRoute() {
 	}
 
 	return (
-		<AdminShell user={session.data.user}>
+		<AdminShell user={admin.data?.user ?? session.data.user}>
 			<Outlet />
 		</AdminShell>
 	);

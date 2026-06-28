@@ -101,6 +101,21 @@ const userUpdateInput = userCreateInput.omit({ password: true }).extend({
 	password: z.string().min(8).max(128).optional().or(z.literal("")),
 });
 
+const currentProfileInput = z.object({
+	name: z.string().trim().min(1).max(50),
+	image: z.string().trim().url().optional().or(z.literal("")),
+	handle: z
+		.string()
+		.trim()
+		.min(2)
+		.max(30)
+		.regex(/^[a-zA-Z0-9_]+$/)
+		.optional()
+		.or(z.literal("")),
+	bio: z.string().trim().max(160).optional(),
+	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
+});
+
 const userRestoreInput = z.object({
 	id: z.string().min(1),
 	status: manageableUserStatusInput.default("active"),
@@ -206,15 +221,34 @@ function assertCanCreateRole(actorRole: UserRole, role: UserRole) {
 	});
 }
 
+function getDatabaseErrorCode(error: unknown): string | null {
+	if (!error || typeof error !== "object") return null;
+
+	if ("code" in error && typeof error.code === "string") {
+		return error.code;
+	}
+
+	if ("cause" in error) {
+		return getDatabaseErrorCode(error.cause);
+	}
+
+	return null;
+}
+
 function duplicateUserError(error: unknown): never {
-	if (
-		error &&
-		typeof error === "object" &&
-		"code" in error &&
-		error.code === "23505"
-	) {
+	if (getDatabaseErrorCode(error) === "23505") {
 		throw new ORPCError("BAD_REQUEST", {
 			message: "邮箱或用户名已存在",
+		});
+	}
+
+	throw error;
+}
+
+function duplicateProfileError(error: unknown): never {
+	if (getDatabaseErrorCode(error) === "23505") {
+		throw new ORPCError("BAD_REQUEST", {
+			message: "用户名已存在",
 		});
 	}
 
@@ -302,17 +336,74 @@ async function enrichNoteRows<
 }
 
 export const adminRouter = {
-	me: adminProcedure.handler(({ context }) => {
+	me: adminProcedure.handler(async ({ context }) => {
+		const [profile] = await createDb()
+			.select({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				image: user.image,
+				handle: user.handle,
+				bio: user.bio,
+				gender: user.gender,
+				role: user.role,
+				status: user.status,
+				createdAt: user.createdAt,
+				updatedAt: user.updatedAt,
+			})
+			.from(user)
+			.where(eq(user.id, context.adminUser.id))
+			.limit(1);
+
+		if (!profile) {
+			throw new ORPCError("NOT_FOUND");
+		}
+
 		return {
 			isAdmin: true,
 			role: context.adminUser.role,
-			user: {
-				...context.session.user,
-				role: context.adminUser.role,
-				status: context.adminUser.status,
-			},
+			user: profile,
 		};
 	}),
+
+	updateCurrentProfile: adminProcedure
+		.input(currentProfileInput)
+		.handler(async ({ input, context }) => {
+			try {
+				const [updated] = await createDb()
+					.update(user)
+					.set({
+						name: input.name,
+						image: normalizeText(input.image),
+						handle: normalizeText(input.handle),
+						bio: normalizeText(input.bio),
+						gender: input.gender,
+						updatedAt: new Date(),
+					})
+					.where(eq(user.id, context.adminUser.id))
+					.returning({
+						id: user.id,
+						name: user.name,
+						email: user.email,
+						image: user.image,
+						handle: user.handle,
+						bio: user.bio,
+						gender: user.gender,
+						role: user.role,
+						status: user.status,
+						createdAt: user.createdAt,
+						updatedAt: user.updatedAt,
+					});
+
+				if (!updated) {
+					throw new ORPCError("NOT_FOUND");
+				}
+
+				return updated;
+			} catch (error) {
+				duplicateProfileError(error);
+			}
+		}),
 
 	overview: adminProcedure.handler(async () => {
 		const db = createDb();
