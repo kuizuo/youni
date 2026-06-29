@@ -7,6 +7,7 @@ import {
 	noteCollection,
 	noteLike,
 	noteTopic,
+	noteViewHistory,
 	topic,
 	user,
 } from "@youni/db/schema/index";
@@ -57,6 +58,9 @@ const noteCreateInput = z.object({
 			isOriginal: true,
 		}),
 	submitMode: z.enum(["draft", "publish"]).default("publish"),
+});
+const draftUpdateInput = noteCreateInput.extend({
+	id: z.string().min(1),
 });
 
 const commentInput = z.object({
@@ -110,6 +114,29 @@ type NoteRow = {
 	authorImage: string | null;
 	authorHandle: string | null;
 };
+type NoteMutationInput = z.infer<typeof noteCreateInput>;
+
+const noteRowFields = {
+	id: note.id,
+	title: note.title,
+	content: note.content,
+	images: note.images,
+	cover: note.cover,
+	locationName: note.locationName,
+	visibility: note.visibility,
+	components: note.components,
+	advancedOptions: note.advancedOptions,
+	status: note.status,
+	rejectionReason: note.rejectionReason,
+	publishedAt: note.publishedAt,
+	draftSavedAt: note.draftSavedAt,
+	createdAt: note.createdAt,
+	updatedAt: note.updatedAt,
+	userId: note.userId,
+	authorName: user.name,
+	authorImage: user.image,
+	authorHandle: user.handle,
+};
 
 function uniqueTopics(values: string[]) {
 	return Array.from(
@@ -123,6 +150,27 @@ function uniqueTopics(values: string[]) {
 
 function toNumber(value: unknown) {
 	return Number(value ?? 0);
+}
+
+function getMissingPublishItems(
+	input: NoteMutationInput,
+	topicNames: string[],
+) {
+	return [
+		input.images[0] ? null : "图片",
+		input.title.trim() ? null : "标题",
+		input.content.trim() ? null : "正文",
+		topicNames.length > 0 ? null : "话题",
+	].filter((item): item is string => Boolean(item));
+}
+
+function assertPublishReady(input: NoteMutationInput, topicNames: string[]) {
+	const missingItems = getMissingPublishItems(input, topicNames);
+	if (missingItems.length > 0) {
+		throw new ORPCError("BAD_REQUEST", {
+			message: `还差：${missingItems.join("、")}`,
+		});
+	}
 }
 
 async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
@@ -239,31 +287,10 @@ async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
 
 async function selectNoteRows(whereClause?: ReturnType<typeof and>) {
 	const db = createDb();
-	const fields = {
-		id: note.id,
-		title: note.title,
-		content: note.content,
-		images: note.images,
-		cover: note.cover,
-		locationName: note.locationName,
-		visibility: note.visibility,
-		components: note.components,
-		advancedOptions: note.advancedOptions,
-		status: note.status,
-		rejectionReason: note.rejectionReason,
-		publishedAt: note.publishedAt,
-		draftSavedAt: note.draftSavedAt,
-		createdAt: note.createdAt,
-		updatedAt: note.updatedAt,
-		userId: note.userId,
-		authorName: user.name,
-		authorImage: user.image,
-		authorHandle: user.handle,
-	};
 
 	if (whereClause) {
 		return db
-			.select(fields)
+			.select(noteRowFields)
 			.from(note)
 			.innerJoin(user, eq(note.userId, user.id))
 			.where(whereClause)
@@ -271,10 +298,29 @@ async function selectNoteRows(whereClause?: ReturnType<typeof and>) {
 	}
 
 	return db
-		.select(fields)
+		.select(noteRowFields)
 		.from(note)
 		.innerJoin(user, eq(note.userId, user.id))
 		.orderBy(desc(note.createdAt));
+}
+
+async function recordNoteView(noteId: string, userId: string) {
+	const now = new Date();
+	await createDb()
+		.insert(noteViewHistory)
+		.values({
+			noteId,
+			userId,
+			viewedAt: now,
+			updatedAt: now,
+		})
+		.onConflictDoUpdate({
+			target: [noteViewHistory.userId, noteViewHistory.noteId],
+			set: {
+				viewedAt: now,
+				updatedAt: now,
+			},
+		});
 }
 
 async function getProfile(userId: string, viewerId?: string) {
@@ -450,6 +496,34 @@ export const socialRouter = {
 		}));
 	}),
 
+	searchUsers: publicProcedure
+		.input(listInput)
+		.handler(async ({ input, context }) => {
+			const keyword = input.keyword?.trim();
+			if (!keyword) return [];
+
+			const searchValue = `%${keyword}%`;
+			const rows = await createDb()
+				.select({ id: user.id })
+				.from(user)
+				.where(
+					and(
+						eq(user.status, "active"),
+						or(
+							ilike(user.name, searchValue),
+							ilike(user.handle, searchValue),
+							ilike(user.bio, searchValue),
+						),
+					),
+				)
+				.orderBy(desc(user.createdAt))
+				.limit(input.limit);
+
+			return Promise.all(
+				rows.map((row) => getProfile(row.id, context.session?.user.id)),
+			);
+		}),
+
 	byId: publicProcedure.input(idInput).handler(async ({ input, context }) => {
 		const [row] = await selectNoteRows(
 			context.session?.user.id
@@ -486,6 +560,9 @@ export const socialRouter = {
 			.innerJoin(user, eq(comment.userId, user.id))
 			.where(eq(comment.noteId, input.id))
 			.orderBy(desc(comment.createdAt));
+		if (context.session?.user.id) {
+			await recordNoteView(input.id, context.session.user.id);
+		}
 
 		return {
 			...item,
@@ -514,42 +591,38 @@ export const socialRouter = {
 
 	me: protectedProcedure.handler(async ({ context }) => {
 		const userId = context.session.user.id;
-		const [profile, rows, collectedRows] = await Promise.all([
+		const [profile, rows, collectedRows, likedRows] = await Promise.all([
 			getProfile(userId, userId),
 			selectNoteRows(and(eq(note.userId, userId))).then((items) =>
 				items.slice(0, 30),
 			),
 			createDb()
-				.select({
-					id: note.id,
-					title: note.title,
-					content: note.content,
-					images: note.images,
-					cover: note.cover,
-					locationName: note.locationName,
-					visibility: note.visibility,
-					components: note.components,
-					advancedOptions: note.advancedOptions,
-					status: note.status,
-					rejectionReason: note.rejectionReason,
-					publishedAt: note.publishedAt,
-					draftSavedAt: note.draftSavedAt,
-					createdAt: note.createdAt,
-					updatedAt: note.updatedAt,
-					userId: note.userId,
-					authorName: user.name,
-					authorImage: user.image,
-					authorHandle: user.handle,
-				})
+				.select(noteRowFields)
 				.from(noteCollection)
 				.innerJoin(note, eq(noteCollection.noteId, note.id))
 				.innerJoin(user, eq(note.userId, user.id))
 				.where(eq(noteCollection.userId, userId))
 				.orderBy(desc(noteCollection.createdAt))
 				.limit(30),
+			createDb()
+				.select(noteRowFields)
+				.from(noteLike)
+				.innerJoin(note, eq(noteLike.noteId, note.id))
+				.innerJoin(user, eq(note.userId, user.id))
+				.where(
+					and(
+						eq(noteLike.userId, userId),
+						or(
+							and(eq(note.status, "published"), eq(note.visibility, "public")),
+							eq(note.userId, userId),
+						),
+					),
+				)
+				.orderBy(desc(noteLike.createdAt))
+				.limit(30),
 		]);
 		const rowById = new Map<string, NoteRow>();
-		for (const row of [...rows, ...collectedRows]) {
+		for (const row of [...rows, ...collectedRows, ...likedRows]) {
 			rowById.set(row.id, row);
 		}
 		const hydratedRows = await hydrateNotes(
@@ -565,12 +638,222 @@ export const socialRouter = {
 			const item = hydratedById.get(row.id);
 			return item ? [item] : [];
 		});
+		const liked = likedRows.flatMap((row) => {
+			const item = hydratedById.get(row.id);
+			return item ? [item] : [];
+		});
 
 		return {
 			profile,
 			notes,
 			collections,
+			liked,
 		};
+	}),
+
+	drafts: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+		const rows = await createDb()
+			.select(noteRowFields)
+			.from(note)
+			.innerJoin(user, eq(note.userId, user.id))
+			.where(and(eq(note.userId, userId), eq(note.status, "draft")))
+			.orderBy(desc(note.draftSavedAt), desc(note.updatedAt))
+			.limit(60);
+
+		return hydrateNotes(rows, userId);
+	}),
+
+	draftById: protectedProcedure
+		.input(idInput)
+		.handler(async ({ input, context }) => {
+			const [row] = await selectNoteRows(
+				and(
+					eq(note.id, input.id),
+					eq(note.userId, context.session.user.id),
+					eq(note.status, "draft"),
+				),
+			);
+
+			if (!row) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
+			const [item] = await hydrateNotes([row], context.session.user.id);
+			return item;
+		}),
+
+	updateDraft: activeUserProcedure
+		.input(draftUpdateInput)
+		.handler(async ({ input, context }) => {
+			const db = createDb();
+			const [existing] = await db
+				.select({ id: note.id })
+				.from(note)
+				.where(
+					and(
+						eq(note.id, input.id),
+						eq(note.userId, context.session.user.id),
+						eq(note.status, "draft"),
+					),
+				)
+				.limit(1);
+
+			if (!existing) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
+			const topicNames = uniqueTopics(input.topics);
+			const status = input.submitMode === "draft" ? "draft" : "audit";
+			const cover = input.images[0];
+			const title = input.title.trim();
+			const content = input.content.trim();
+
+			if (input.submitMode === "publish") {
+				assertPublishReady(input, topicNames);
+			}
+
+			await db
+				.update(note)
+				.set({
+					title: title || "未命名草稿",
+					content,
+					images: input.images,
+					cover: cover ?? null,
+					locationName: input.locationName || null,
+					visibility: input.visibility,
+					components: input.components,
+					advancedOptions: input.advancedOptions,
+					status,
+					draftSavedAt: status === "draft" ? new Date() : null,
+				})
+				.where(eq(note.id, input.id));
+
+			await db.delete(noteTopic).where(eq(noteTopic.noteId, input.id));
+			for (const name of topicNames) {
+				await db.insert(topic).values({ name }).onConflictDoNothing();
+			}
+
+			if (topicNames.length > 0) {
+				const topicRows = await db
+					.select({ id: topic.id })
+					.from(topic)
+					.where(inArray(topic.name, topicNames));
+				await db
+					.insert(noteTopic)
+					.values(
+						topicRows.map((row) => ({
+							noteId: input.id,
+							topicId: row.id,
+						})),
+					)
+					.onConflictDoNothing();
+			}
+
+			return { id: input.id, status };
+		}),
+
+	creatorStats: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+		const db = createDb();
+		const [statusRows, [likeCount], [collectionCount], [commentCount]] =
+			await Promise.all([
+				db
+					.select({ status: note.status, value: count() })
+					.from(note)
+					.where(eq(note.userId, userId))
+					.groupBy(note.status),
+				db
+					.select({ value: count() })
+					.from(noteLike)
+					.innerJoin(note, eq(noteLike.noteId, note.id))
+					.where(eq(note.userId, userId)),
+				db
+					.select({ value: count() })
+					.from(noteCollection)
+					.innerJoin(note, eq(noteCollection.noteId, note.id))
+					.where(eq(note.userId, userId)),
+				db
+					.select({ value: count() })
+					.from(comment)
+					.innerJoin(note, eq(comment.noteId, note.id))
+					.where(eq(note.userId, userId)),
+			]);
+		const byStatus = new Map(
+			statusRows.map((row) => [row.status, toNumber(row.value)]),
+		);
+		const published = byStatus.get("published") ?? 0;
+		const draft = byStatus.get("draft") ?? 0;
+		const audit = byStatus.get("audit") ?? 0;
+		const rejected = byStatus.get("rejected") ?? 0;
+		const hidden = byStatus.get("hidden") ?? 0;
+
+		return {
+			total: published + draft + audit + rejected + hidden,
+			published,
+			draft,
+			audit,
+			rejected,
+			hidden,
+			liked: toNumber(likeCount?.value),
+			collected: toNumber(collectionCount?.value),
+			comments: toNumber(commentCount?.value),
+		};
+	}),
+
+	viewHistory: protectedProcedure
+		.input(listInput)
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const rows = await createDb()
+				.select({
+					...noteRowFields,
+					viewedAt: noteViewHistory.viewedAt,
+				})
+				.from(noteViewHistory)
+				.innerJoin(note, eq(noteViewHistory.noteId, note.id))
+				.innerJoin(user, eq(note.userId, user.id))
+				.where(
+					and(
+						eq(noteViewHistory.userId, userId),
+						or(
+							and(eq(note.status, "published"), eq(note.visibility, "public")),
+							eq(note.userId, userId),
+						),
+					),
+				)
+				.orderBy(desc(noteViewHistory.viewedAt))
+				.limit(input.limit);
+			const hydratedRows = await hydrateNotes(rows, userId);
+			const viewedAtById = new Map(rows.map((row) => [row.id, row.viewedAt]));
+
+			return hydratedRows.map((item) => ({
+				note: item,
+				viewedAt: viewedAtById.get(item.id) ?? item.updatedAt,
+			}));
+		}),
+
+	deleteViewHistory: protectedProcedure
+		.input(idInput)
+		.handler(async ({ input, context }) => {
+			await createDb()
+				.delete(noteViewHistory)
+				.where(
+					and(
+						eq(noteViewHistory.noteId, input.id),
+						eq(noteViewHistory.userId, context.session.user.id),
+					),
+				);
+
+			return { ok: true };
+		}),
+
+	clearViewHistory: protectedProcedure.handler(async ({ context }) => {
+		await createDb()
+			.delete(noteViewHistory)
+			.where(eq(noteViewHistory.userId, context.session.user.id));
+
+		return { ok: true };
 	}),
 
 	updateProfile: activeUserProcedure
@@ -602,18 +885,7 @@ export const socialRouter = {
 			const status = input.submitMode === "draft" ? "draft" : "audit";
 
 			if (input.submitMode === "publish") {
-				const missingItems = [
-					cover ? null : "图片",
-					title ? null : "标题",
-					content ? null : "正文",
-					topicNames.length > 0 ? null : "话题",
-				].filter((item): item is string => Boolean(item));
-
-				if (missingItems.length > 0) {
-					throw new ORPCError("BAD_REQUEST", {
-						message: `还差：${missingItems.join("、")}`,
-					});
-				}
+				assertPublishReady(input, topicNames);
 			}
 
 			const [createdNote] = await db

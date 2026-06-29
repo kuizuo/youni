@@ -168,3 +168,26 @@ export const noteCollection = pgTable(
 		index("note_collection_user_created_idx").on(table.userId, table.createdAt),
 	],
 );
+
+export const noteViewHistory = pgTable(
+	"note_view_history",
+	{
+		noteId: varchar("note_id", { length: 256 })
+			.notNull()
+			.references(() => note.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.userId, table.noteId] }),
+		index("note_view_history_user_viewed_idx").on(table.userId, table.viewedAt),
+		index("note_view_history_note_idx").on(table.noteId),
+	],
+);

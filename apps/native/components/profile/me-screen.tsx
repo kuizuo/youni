@@ -28,6 +28,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NoteCard } from "@/components/note-card";
+import { ProfileMenuDrawer } from "@/components/profile/profile-menu-drawer";
 import {
 	EmptyState,
 	ErrorState,
@@ -46,7 +47,7 @@ const STICKY_TAB_TRIGGER = 300;
 const PROFILE_TABS = [
 	{ key: "notes", label: "笔记", icon: null },
 	{ key: "collections", label: "收藏", icon: null },
-	{ key: "liked", label: "赞过", icon: "lock-closed-outline" },
+	{ key: "liked", label: "赞过", icon: "heart-outline" },
 ] as const;
 
 type ProfileTabKey = (typeof PROFILE_TABS)[number]["key"];
@@ -70,6 +71,7 @@ export default function MeScreen() {
 	const [bio, setBio] = useState("");
 	const [image, setImage] = useState("");
 	const [showAvatarLink, setShowAvatarLink] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const scrollOffset = useSharedValue(0);
 	const handleScroll = useAnimatedScrollHandler((event) => {
 		scrollOffset.value = event.contentOffset.y;
@@ -128,7 +130,7 @@ export default function MeScreen() {
 		() => me.data?.collections ?? [],
 		[me.data?.collections],
 	);
-	const likedData = useMemo(() => [], []);
+	const likedData = useMemo(() => me.data?.liked ?? [], [me.data?.liked]);
 	const listData = useMemo(() => {
 		if (activeTab === "collections") return collectionsData;
 		if (activeTab === "liked") return likedData;
@@ -381,16 +383,6 @@ export default function MeScreen() {
 										: "发布图文"}
 								</Button.Label>
 							</Button>
-							<Button
-								isIconOnly
-								variant="ghost"
-								className="rounded-full bg-white/15"
-								feedbackVariant="scale-ripple"
-								accessibilityLabel="退出登录"
-								onPress={signOut}
-							>
-								<Ionicons name="log-out-outline" size={18} color="#ffffff" />
-							</Button>
 						</View>
 
 						{isEditing ? (
@@ -540,10 +532,10 @@ export default function MeScreen() {
 						variant="ghost"
 						className="rounded-full"
 						feedbackVariant="scale-ripple"
-						accessibilityLabel="退出登录"
-						onPress={signOut}
+						accessibilityLabel="打开更多菜单"
+						onPress={() => setIsMenuOpen(true)}
 					>
-						<Ionicons name="log-out-outline" size={24} color="#ffffff" />
+						<Ionicons name="menu-outline" size={24} color="#ffffff" />
 					</Button>
 
 					<Animated.View style={miniAvatarStyle}>
@@ -619,6 +611,15 @@ export default function MeScreen() {
 					</View>
 				</>
 			) : null}
+
+			<ProfileMenuDrawer
+				displayHandle={displayHandle}
+				displayName={displayName}
+				image={profile?.image ?? currentUser?.image}
+				isVisible={isMenuOpen}
+				onClose={() => setIsMenuOpen(false)}
+				onSignOut={signOut}
+			/>
 		</View>
 	);
 }

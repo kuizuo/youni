@@ -1,3 +1,5 @@
+/* biome-ignore-all lint/suspicious/noDuplicateCustomProperties: light and dark themes intentionally define the same tokens. */
+
 @import "tailwindcss";
 @import "uniwind";
 @import "heroui-native/styles";
@@ -12,120 +14,102 @@
 	--font-medium: "Nunito_500Medium";
 	--font-semibold: "Nunito_600SemiBold";
 	--font-bold: "Nunito_700Bold";
-	--color-background: hsl(0, 0%, 98%);
-	--color-foreground: hsl(240, 10%, 12%);
-	--color-muted: hsl(240, 4%, 45%);
-	--color-surface: hsl(0, 0%, 100%);
-	--color-surface-foreground: hsl(240, 10%, 12%);
-	--color-surface-secondary: hsl(0, 0%, 96%);
-	--color-surface-secondary-foreground: hsl(240, 10%, 12%);
-	--color-surface-tertiary: hsl(0, 0%, 93%);
-	--color-surface-tertiary-foreground: hsl(240, 10%, 12%);
-	--color-overlay: hsl(0, 0%, 100%);
-	--color-overlay-foreground: hsl(240, 10%, 12%);
-	--color-default: hsl(240, 6%, 92%);
-	--color-default-foreground: hsl(240, 10%, 12%);
-	--color-default-hover: hsl(240, 6%, 88%);
-	--color-accent: hsl(78, 91%, 58%);
-	--color-accent-foreground: hsl(70, 23%, 6%);
-	--color-accent-hover: hsl(78, 86%, 50%);
-	--color-accent-soft: hsl(78, 100%, 92%);
-	--color-accent-soft-foreground: hsl(80, 52%, 24%);
-	--color-accent-soft-hover: hsl(78, 86%, 86%);
-	--color-danger: hsl(348, 92%, 57%);
-	--color-danger-foreground: hsl(0, 0%, 100%);
-	--color-danger-hover: hsl(348, 86%, 51%);
-	--color-danger-soft: hsl(350, 100%, 96%);
-	--color-danger-soft-foreground: hsl(348, 86%, 44%);
-	--color-danger-soft-hover: hsl(350, 92%, 92%);
-	--color-success: hsl(153, 58%, 45%);
-	--color-success-foreground: hsl(0, 0%, 100%);
-	--color-success-hover: hsl(153, 58%, 39%);
-	--color-warning: hsl(38, 92%, 58%);
-	--color-warning-foreground: hsl(240, 10%, 12%);
-	--color-warning-hover: hsl(38, 86%, 52%);
-	--color-field: hsl(0, 0%, 100%);
-	--color-field-foreground: hsl(240, 10%, 12%);
-	--color-field-placeholder: hsl(240, 4%, 48%);
-	--color-field-border: hsl(240, 6%, 88%);
-	--color-field-hover: hsl(0, 0%, 100%);
-	--color-field-focus: hsl(0, 0%, 100%);
-	--color-field-border-hover: hsl(240, 6%, 78%);
-	--color-field-border-focus: hsl(78, 91%, 58%);
-	--color-segment: hsl(0, 0%, 100%);
-	--color-segment-foreground: hsl(240, 10%, 12%);
-	--color-border: hsl(240, 6%, 88%);
-	--color-border-secondary: hsl(240, 6%, 92%);
-	--color-border-tertiary: hsl(240, 6%, 95%);
-	--color-separator: hsl(240, 6%, 90%);
-	--color-separator-secondary: hsl(240, 6%, 93%);
-	--color-separator-tertiary: hsl(240, 6%, 96%);
-	--color-focus: hsl(78, 91%, 58%);
-	--color-link: hsl(80, 52%, 24%);
-	--color-background-secondary: hsl(0, 0%, 96%);
-	--color-background-tertiary: hsl(0, 0%, 93%);
-	--color-background-inverse: hsl(240, 10%, 12%);
-	--color-content2: hsl(0, 0%, 96%);
-	--color-content3: hsl(240, 6%, 90%);
-	--color-primary: hsl(78, 91%, 58%);
-	--color-primary-foreground: hsl(70, 23%, 6%);
 }
 
-:root {
-	--color-surface-foreground: hsl(240, 10%, 12%);
-	--color-surface-hover: hsl(0, 0%, 97%);
-	--color-overlay-foreground: hsl(240, 10%, 12%);
-	--color-overlay-backdrop: hsla(240, 10%, 12%, 0.42);
-	--color-muted-foreground: hsl(240, 4%, 45%);
-	--color-focus: hsl(78, 91%, 58%);
-	--color-link: hsl(80, 52%, 24%);
-	--color-background-secondary: hsl(0, 0%, 96%);
-	--color-background-tertiary: hsl(0, 0%, 93%);
-	--color-background-inverse: hsl(240, 10%, 12%);
-	--color-default-hover: hsl(240, 6%, 88%);
-	--color-accent-hover: hsl(348, 86%, 51%);
-	--color-success-hover: hsl(153, 58%, 39%);
-	--color-warning-hover: hsl(38, 86%, 52%);
-	--color-danger-hover: hsl(348, 86%, 51%);
-	--color-field: hsl(0, 0%, 100%);
-	--color-field-foreground: hsl(240, 10%, 12%);
-	--color-field-placeholder: hsl(240, 4%, 48%);
-	--color-field-border: hsl(240, 6%, 88%);
-	--color-field-hover: hsl(0, 0%, 100%);
-	--color-field-focus: hsl(0, 0%, 100%);
-	--color-field-border-hover: hsl(240, 6%, 78%);
-	--color-field-border-focus: hsl(78, 91%, 58%);
-	--color-accent-soft-hover: hsl(78, 86%, 86%);
-	--color-danger-soft-foreground: hsl(348, 86%, 44%);
-	--color-danger-soft-hover: hsl(350, 92%, 92%);
-	--color-warning-soft: hsl(40, 100%, 94%);
-	--color-warning-soft-foreground: hsl(34, 86%, 32%);
-	--color-warning-soft-hover: hsl(40, 95%, 89%);
-	--color-success-soft: hsl(151, 70%, 92%);
-	--color-success-soft-foreground: hsl(153, 58%, 32%);
-	--color-success-soft-hover: hsl(151, 62%, 87%);
-	--color-on-surface: hsl(0, 0%, 100%);
-	--color-on-surface-foreground: hsl(240, 10%, 12%);
-	--color-on-surface-hover: hsl(0, 0%, 97%);
-	--color-on-surface-focus: hsl(0, 0%, 100%);
-	--color-on-surface-secondary: hsl(0, 0%, 96%);
-	--color-on-surface-secondary-foreground: hsl(240, 10%, 12%);
-	--color-on-surface-secondary-hover: hsl(0, 0%, 93%);
-	--color-on-surface-secondary-focus: hsl(0, 0%, 96%);
-	--color-on-surface-tertiary: hsl(0, 0%, 93%);
-	--color-on-surface-tertiary-foreground: hsl(240, 10%, 12%);
-	--color-on-surface-tertiary-hover: hsl(0, 0%, 90%);
-	--color-on-surface-tertiary-focus: hsl(0, 0%, 93%);
-	--color-separator-secondary: hsl(240, 6%, 93%);
-	--color-separator-tertiary: hsl(240, 6%, 96%);
-	--color-border-secondary: hsl(240, 6%, 92%);
-	--color-border-tertiary: hsl(240, 6%, 95%);
+@theme inline {
+	--color-content2: var(--content2);
+	--color-content3: var(--content3);
+	--color-overlay-backdrop: var(--backdrop);
+	--color-primary: var(--accent);
+	--color-primary-foreground: var(--accent-foreground);
 }
 
 @layer theme {
 	:root {
-		--accent: #c6f432;
-		--accent-foreground: #11130c;
-		--surface-shadow: 0 0 0 0 transparent inset;
+		@variant light {
+			--background: hsl(0, 0%, 98%);
+			--foreground: hsl(240, 10%, 12%);
+			--surface: hsl(0, 0%, 100%);
+			--surface-foreground: hsl(240, 10%, 12%);
+			--surface-secondary: hsl(0, 0%, 96%);
+			--surface-secondary-foreground: hsl(240, 10%, 12%);
+			--surface-tertiary: hsl(0, 0%, 93%);
+			--surface-tertiary-foreground: hsl(240, 10%, 12%);
+			--overlay: hsl(0, 0%, 100%);
+			--overlay-foreground: hsl(240, 10%, 12%);
+			--backdrop: hsla(240, 10%, 12%, 0.42);
+			--muted: hsl(240, 4%, 45%);
+			--default: hsl(240, 6%, 92%);
+			--default-foreground: hsl(240, 10%, 12%);
+			--accent: hsl(78, 91%, 58%);
+			--accent-foreground: hsl(70, 23%, 6%);
+			--field-background: hsl(0, 0%, 100%);
+			--field-foreground: hsl(240, 10%, 12%);
+			--field-placeholder: hsl(240, 4%, 48%);
+			--field-border: hsl(240, 6%, 88%);
+			--success: hsl(153, 58%, 45%);
+			--success-foreground: hsl(0, 0%, 100%);
+			--warning: hsl(38, 92%, 58%);
+			--warning-foreground: hsl(240, 10%, 12%);
+			--danger: hsl(348, 92%, 57%);
+			--danger-foreground: hsl(0, 0%, 100%);
+			--segment: hsl(0, 0%, 100%);
+			--segment-foreground: hsl(240, 10%, 12%);
+			--border: hsl(240, 6%, 88%);
+			--separator: hsl(240, 6%, 90%);
+			--focus: hsl(78, 91%, 58%);
+			--link: hsl(80, 52%, 24%);
+			--content2: hsl(0, 0%, 96%);
+			--content3: hsl(240, 6%, 90%);
+			--surface-shadow:
+				0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
+				0 0 1px 0 rgba(0, 0, 0, 0.06);
+			--overlay-shadow:
+				0 2px 8px 0 rgba(0, 0, 0, 0.02), 0 -6px 12px 0 rgba(0, 0, 0, 0.01),
+				0 14px 28px 0 rgba(0, 0, 0, 0.03);
+			--field-shadow:
+				0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06),
+				0 0 1px 0 rgba(0, 0, 0, 0.06);
+		}
+
+		@variant dark {
+			--background: hsl(240, 10%, 8%);
+			--foreground: hsl(0, 0%, 96%);
+			--surface: hsl(240, 8%, 12%);
+			--surface-foreground: hsl(0, 0%, 96%);
+			--surface-secondary: hsl(240, 7%, 16%);
+			--surface-secondary-foreground: hsl(0, 0%, 96%);
+			--surface-tertiary: hsl(240, 6%, 20%);
+			--surface-tertiary-foreground: hsl(0, 0%, 96%);
+			--overlay: hsl(240, 8%, 13%);
+			--overlay-foreground: hsl(0, 0%, 96%);
+			--backdrop: hsla(0, 0%, 0%, 0.52);
+			--muted: hsl(240, 5%, 68%);
+			--default: hsl(240, 6%, 19%);
+			--default-foreground: hsl(0, 0%, 96%);
+			--accent: hsl(78, 91%, 58%);
+			--accent-foreground: hsl(70, 23%, 6%);
+			--field-background: hsl(240, 7%, 15%);
+			--field-foreground: hsl(0, 0%, 96%);
+			--field-placeholder: hsl(240, 5%, 64%);
+			--field-border: hsl(240, 6%, 24%);
+			--success: hsl(153, 58%, 48%);
+			--success-foreground: hsl(0, 0%, 100%);
+			--warning: hsl(38, 92%, 62%);
+			--warning-foreground: hsl(240, 10%, 12%);
+			--danger: hsl(348, 86%, 62%);
+			--danger-foreground: hsl(0, 0%, 100%);
+			--segment: hsl(240, 7%, 17%);
+			--segment-foreground: hsl(0, 0%, 96%);
+			--border: hsl(240, 6%, 23%);
+			--separator: hsl(240, 5%, 31%);
+			--focus: hsl(78, 91%, 58%);
+			--link: hsl(78, 91%, 70%);
+			--content2: hsl(240, 7%, 16%);
+			--content3: hsl(240, 6%, 24%);
+			--surface-shadow: 0 0 0 0 transparent inset;
+			--overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+			--field-shadow: 0 0 0 0 transparent inset;
+		}
 	}
 }

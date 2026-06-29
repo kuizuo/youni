@@ -1,32 +1,53 @@
 import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Input, Text, useThemeColor } from "heroui-native";
+import {
+	Avatar,
+	Button,
+	PressableFeedback,
+	SearchField,
+	Spinner,
+	Text,
+	useThemeColor,
+} from "heroui-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { NoteCard } from "@/components/note-card";
-import {
-	EmptyState,
-	ErrorState,
-	FeedSkeleton,
-} from "@/components/social-states";
-import { orpc } from "@/utils/orpc";
+import { EmptyState, ErrorState } from "@/components/social-states";
+import { authClient } from "@/lib/auth-client";
+import { getLoginHref } from "@/lib/auth-navigation";
+import { fireHaptic } from "@/lib/utils/fire-haptic";
+import { useAppToast } from "@/utils/app-toast";
+import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 const QUICK_WORDS = [
-	"穿搭",
-	"咖啡",
-	"周末",
-	"旅行",
-	"好物",
-	"家居",
-	"护肤",
 	"摄影",
-	"运动",
+	"旅行",
+	"美食",
+	"设计",
+	"穿搭",
+	"校园",
+	"生活方式",
+	"创作者",
+	"咖啡",
 ] as const;
+
+type UserSearchItem = {
+	id: string;
+	name: string;
+	email: string;
+	image: null | string;
+	handle: null | string;
+	bio: null | string;
+	noteCount: number;
+	followerCount: number;
+	followingCount: number;
+	likedCount: number;
+	isFollowing: boolean;
+};
 
 let searchHistoryCache: string[] = [];
 
@@ -42,12 +63,16 @@ export default function SearchScreen() {
 		source?: string | string[];
 	}>();
 	const insets = useSafeAreaInsets();
+	const session = authClient.useSession();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const foregroundColor = useThemeColor("foreground");
+	const accentColor = useThemeColor("accent");
 	const handledExternalSearch = useRef<string | null>(null);
 	const [keyword, setKeyword] = useState("");
 	const [activeKeyword, setActiveKeyword] = useState("");
 	const [recentWords, setRecentWords] = useState<string[]>(searchHistoryCache);
+	const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
 	const hasActiveSearch = activeKeyword.length > 0;
 	const normalizedKeyword = keyword.trim();
 	const canSubmitKeyword = normalizedKeyword.length > 0;
@@ -55,20 +80,22 @@ export default function SearchScreen() {
 		() => ({ keyword: activeKeyword || undefined, limit: 40 }),
 		[activeKeyword],
 	);
-	const feed = useQuery({
-		...orpc.social.feed.queryOptions({ input }),
+	const users = useQuery({
+		...orpc.social.searchUsers.queryOptions({ input }),
 		enabled: hasActiveSearch,
 	});
-	const results = feed.data ?? [];
+	const results = (users.data ?? []) as UserSearchItem[];
 	const quickWords = useMemo(
 		() => uniqueWords([...recentWords, ...QUICK_WORDS], 12),
 		[recentWords],
 	);
+	const currentUserId = session.data?.user?.id;
 
 	const applyKeyword = useCallback((value: string) => {
 		const nextKeyword = value.trim();
 		if (!nextKeyword) return;
 
+		fireHaptic();
 		setKeyword(nextKeyword);
 		setActiveKeyword(nextKeyword);
 		setRecentWords((items) => {
@@ -91,6 +118,22 @@ export default function SearchScreen() {
 		applyKeyword(nextKeyword);
 	}, [applyKeyword, params.actionAt, params.keyword, params.source]);
 
+	const followMutation = useMutation(
+		orpc.social.toggleFollow.mutationOptions({
+			onSuccess: (result) => {
+				queryClient.refetchQueries();
+				toast.show({ label: result.following ? "已关注" : "已取消关注" });
+			},
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({ variant: "danger", label: error.message });
+			},
+			onSettled: () => {
+				setPendingFollowId(null);
+			},
+		}),
+	);
+
 	const goBack = () => {
 		if (router.canGoBack()) {
 			router.back();
@@ -103,23 +146,38 @@ export default function SearchScreen() {
 		applyKeyword(keyword);
 	};
 
-	const clearKeyword = () => {
+	const clearSearch = () => {
+		fireHaptic();
 		setKeyword("");
 		setActiveKeyword("");
 	};
 
 	const clearHistory = () => {
+		fireHaptic();
 		searchHistoryCache = [];
 		setRecentWords([]);
+	};
+
+	const requireLogin = () => {
+		if (session.data?.user) return true;
+		router.push(getLoginHref("/search"));
+		return false;
+	};
+
+	const toggleFollow = (userId: string) => {
+		if (currentUserId === userId || !requireLogin()) return;
+		fireHaptic();
+		setPendingFollowId(userId);
+		followMutation.mutate({ userId });
 	};
 
 	return (
 		<View className="flex-1 bg-background">
 			<View
-				className="mx-auto w-full max-w-xl gap-3 border-border border-b px-3 pb-3"
+				className="mx-auto w-full max-w-xl border-border border-b bg-background px-3 pb-0"
 				style={{ paddingTop: Math.max(insets.top, 8) + 6 }}
 			>
-				<View className="flex-row items-center gap-2">
+				<View className="flex-row items-center gap-2 pb-3">
 					<Button
 						isIconOnly
 						variant="ghost"
@@ -131,34 +189,28 @@ export default function SearchScreen() {
 						<Ionicons name="chevron-back" size={24} color={foregroundColor} />
 					</Button>
 
-					<View className="min-w-0 flex-1">
-						<Input
-							value={keyword}
-							onChangeText={setKeyword}
-							placeholder="搜索你感兴趣的内容"
-							placeholderTextColor={mutedColor}
-							returnKeyType="search"
-							autoFocus
-							onSubmitEditing={submitSearch}
-							className="h-11 rounded-full bg-content2 pr-10 pl-10"
-						/>
-						<View className="pointer-events-none absolute top-0 left-3 h-11 items-center justify-center">
-							<Ionicons name="search-outline" size={18} color={mutedColor} />
-						</View>
-						{keyword ? (
-							<Button
-								isIconOnly
-								size="sm"
-								variant="ghost"
-								accessibilityLabel="清空输入"
-								className="absolute top-1.5 right-1.5 h-8 w-8 rounded-full"
-								feedbackVariant="scale-ripple"
-								onPress={() => setKeyword("")}
-							>
-								<Ionicons name="close" size={15} color={mutedColor} />
-							</Button>
-						) : null}
-					</View>
+					<SearchField
+						value={keyword}
+						onChange={setKeyword}
+						className="min-w-0 flex-1"
+					>
+						<SearchField.Group>
+							<SearchField.SearchIcon iconProps={{ color: mutedColor }} />
+							<SearchField.Input
+								autoFocus
+								placeholder="搜索用户"
+								placeholderTextColor={mutedColor}
+								returnKeyType="search"
+								className="h-11 rounded-full bg-content2"
+								onSubmitEditing={submitSearch}
+							/>
+							<SearchField.ClearButton
+								accessibilityLabel="清空搜索"
+								iconProps={{ color: mutedColor }}
+								onPress={clearSearch}
+							/>
+						</SearchField.Group>
+					</SearchField>
 
 					<Button
 						size="sm"
@@ -173,71 +225,64 @@ export default function SearchScreen() {
 					</Button>
 				</View>
 
-				{hasActiveSearch ? (
-					<View className="flex-row items-center justify-between px-1">
-						<View className="min-w-0 flex-1">
-							<Text.Paragraph weight="semibold" className="text-foreground">
-								关于「{activeKeyword}」
-							</Text.Paragraph>
-							<Text.Paragraph type="body-xs" color="muted">
-								{feed.isFetching
-									? "正在搜索"
-									: results.length > 0
-										? `找到 ${results.length} 篇相关图文`
-										: "暂无相关图文"}
-							</Text.Paragraph>
-						</View>
-						<Button
-							size="sm"
-							variant="ghost"
-							className="rounded-full px-3"
-							feedbackVariant="scale-ripple"
-							onPress={clearKeyword}
-						>
-							<Button.Label>取消</Button.Label>
-						</Button>
+				<View className="h-11 flex-row items-end">
+					<View className="flex-1 items-center justify-end gap-2">
+						<Text.Paragraph weight="semibold" className="text-foreground">
+							用户
+						</Text.Paragraph>
+						<View
+							className="h-1 w-14 rounded-full"
+							style={{ backgroundColor: accentColor }}
+						/>
 					</View>
-				) : null}
+				</View>
 			</View>
 
 			{hasActiveSearch ? (
-				<FlashList
-					style={{ alignSelf: "center", width: "100%", maxWidth: 576 }}
+				<FlatList
+					className="mx-auto w-full max-w-xl"
 					data={results}
 					keyExtractor={(item) => item.id}
-					numColumns={2}
-					masonry
-					optimizeItemArrangement={false}
-					renderItem={({ item }) => (
-						<View className="px-1 pb-2">
-							<NoteCard compact note={item} />
-						</View>
-					)}
 					showsVerticalScrollIndicator={false}
 					keyboardDismissMode="on-drag"
 					keyboardShouldPersistTaps="handled"
-					refreshing={feed.isRefetching}
+					refreshing={users.isRefetching}
 					onRefresh={() => {
-						feed.refetch();
+						users.refetch();
 					}}
 					contentContainerStyle={{
-						paddingTop: 8,
 						paddingBottom: insets.bottom + 28,
-						paddingHorizontal: 4,
 					}}
+					ListHeaderComponent={
+						<SearchResultHeader
+							activeKeyword={activeKeyword}
+							isFetching={users.isFetching}
+							resultCount={results.length}
+						/>
+					}
+					renderItem={({ item }) => (
+						<UserResultRow
+							currentUserId={currentUserId}
+							isPending={pendingFollowId === item.id}
+							item={item}
+							onToggleFollow={toggleFollow}
+						/>
+					)}
 					ListEmptyComponent={
-						feed.isLoading ? (
-							<FeedSkeleton />
-						) : feed.isError ? (
+						users.isLoading ? (
+							<View className="items-center py-16">
+								<Spinner />
+							</View>
+						) : users.isError ? (
 							<ErrorState
-								description="内容暂时没有加载出来，请检查网络后重试。"
-								onRetry={() => feed.refetch()}
+								description="用户暂时没有加载出来，请检查网络后重试。"
+								onRetry={() => users.refetch()}
 							/>
 						) : (
 							<EmptyState
-								icon="search-outline"
-								title="没有找到相关内容"
-								description="换个关键词，或者点上面的推荐词继续逛。"
+								icon="person-outline"
+								title="没有找到用户"
+								description="换个名字、用户名或简介关键词再试。"
 							/>
 						)
 					}
@@ -253,6 +298,138 @@ export default function SearchScreen() {
 				/>
 			)}
 		</View>
+	);
+}
+
+function SearchResultHeader({
+	activeKeyword,
+	isFetching,
+	resultCount,
+}: {
+	activeKeyword: string;
+	isFetching: boolean;
+	resultCount: number;
+}) {
+	return (
+		<View className="gap-1 border-border-tertiary border-b px-4 py-4">
+			<Text.Paragraph weight="semibold" className="text-foreground">
+				{activeKeyword}
+			</Text.Paragraph>
+			<Text.Paragraph type="body-xs" color="muted">
+				{isFetching
+					? "正在搜索用户"
+					: resultCount > 0
+						? `找到 ${resultCount} 位用户`
+						: "暂无相关用户"}
+			</Text.Paragraph>
+		</View>
+	);
+}
+
+function UserResultRow({
+	currentUserId,
+	isPending,
+	item,
+	onToggleFollow,
+}: {
+	currentUserId?: string;
+	isPending: boolean;
+	item: UserSearchItem;
+	onToggleFollow: (userId: string) => void;
+}) {
+	const router = useRouter();
+	const mutedColor = useThemeColor("muted");
+	const isSelf = currentUserId === item.id;
+	const secondaryName = item.handle ? `@${item.handle}` : "未设置用户名";
+
+	const openProfile = () => {
+		router.push({
+			pathname: "/user/[id]",
+			params: { id: item.id },
+		} as unknown as Href);
+	};
+
+	return (
+		<View className="flex-row items-start gap-3 border-border-tertiary border-b px-4 py-4">
+			<PressableFeedback
+				accessibilityRole="button"
+				accessibilityLabel={`查看 ${item.name} 的主页`}
+				className="min-w-0 flex-1 flex-row items-start gap-3"
+				onPress={openProfile}
+			>
+				<Avatar size="md" alt={item.name}>
+					{item.image ? <Avatar.Image source={{ uri: item.image }} /> : null}
+					<Avatar.Fallback>{item.name.slice(0, 1)}</Avatar.Fallback>
+				</Avatar>
+
+				<View className="min-w-0 flex-1 gap-1">
+					<View className="gap-0.5">
+						<Text.Paragraph
+							weight="semibold"
+							numberOfLines={1}
+							className="text-foreground"
+						>
+							{item.name}
+						</Text.Paragraph>
+						<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
+							{secondaryName}
+						</Text.Paragraph>
+					</View>
+
+					{item.bio ? (
+						<Text.Paragraph
+							type="body-sm"
+							numberOfLines={2}
+							className="text-foreground leading-5"
+						>
+							{item.bio}
+						</Text.Paragraph>
+					) : null}
+
+					<View className="flex-row flex-wrap items-center gap-x-3 gap-y-1">
+						<UserMetric label="作品" value={item.noteCount} />
+						<UserMetric label="粉丝" value={item.followerCount} />
+						<View className="flex-row items-center gap-1">
+							<Ionicons name="heart-outline" size={14} color={mutedColor} />
+							<Text.Paragraph type="body-xs" color="muted">
+								{formatCount(item.likedCount)}
+							</Text.Paragraph>
+						</View>
+					</View>
+				</View>
+			</PressableFeedback>
+
+			{isSelf ? (
+				<Button
+					size="sm"
+					variant="secondary"
+					className="rounded-full px-3"
+					feedbackVariant="scale-ripple"
+					onPress={() => router.push("/me" as Href)}
+				>
+					<Button.Label>我</Button.Label>
+				</Button>
+			) : (
+				<Button
+					size="sm"
+					variant={item.isFollowing ? "secondary" : "primary"}
+					className="rounded-full px-4"
+					feedbackVariant="scale-ripple"
+					isDisabled={isPending}
+					onPress={() => onToggleFollow(item.id)}
+				>
+					<Button.Label>{item.isFollowing ? "已关注" : "关注"}</Button.Label>
+				</Button>
+			)}
+		</View>
+	);
+}
+
+function UserMetric({ label, value }: { label: string; value: number }) {
+	return (
+		<Text.Paragraph type="body-xs" color="muted">
+			{formatCount(value)} {label}
+		</Text.Paragraph>
 	);
 }
 
@@ -282,7 +459,7 @@ function SearchHome({
 				<View className="gap-3">
 					<View className="flex-row items-center justify-between">
 						<Text.Paragraph weight="semibold" className="text-foreground">
-							搜索历史
+							最近搜索
 						</Text.Paragraph>
 						<Button
 							isIconOnly
@@ -301,7 +478,7 @@ function SearchHome({
 
 			<View className="gap-3">
 				<Text.Paragraph weight="semibold" className="text-foreground">
-					猜你想搜
+					推荐搜索
 				</Text.Paragraph>
 				<WordWrap words={quickWords} onPressWord={onPressWord} />
 			</View>
@@ -343,4 +520,15 @@ function uniqueWords(values: readonly string[], limit: number) {
 		}
 	}
 	return words.slice(0, limit);
+}
+
+function formatCount(value: number) {
+	if (value >= 10000) {
+		const formatted =
+			value >= 100000
+				? String(Math.round(value / 10000))
+				: (value / 10000).toFixed(1).replace(/\.0$/, "");
+		return `${formatted}万`;
+	}
+	return String(value);
 }
