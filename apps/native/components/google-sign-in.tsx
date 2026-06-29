@@ -1,9 +1,6 @@
-import {
-	GoogleSignin,
-	isErrorWithCode,
-	statusCodes,
-} from "@react-native-google-signin/google-signin";
+import type * as GoogleSignInNative from "@react-native-google-signin/google-signin";
 import { env } from "@youni/env/native";
+import Constants from "expo-constants";
 import { Text, useThemeColor } from "heroui-native";
 import { SocialAuthButton } from "heroui-native-pro";
 import { useState } from "react";
@@ -21,23 +18,49 @@ type GoogleSignInProps = {
 	onAuthenticated?: () => Promise<void> | void;
 };
 
+type GoogleSignInModule = typeof GoogleSignInNative;
+
 let isGoogleSignInConfigured = false;
+let googleSignInModule: GoogleSignInModule | null = null;
+
+function getGoogleSignInModule() {
+	if (Constants.appOwnership === "expo") {
+		return null;
+	}
+
+	if (googleSignInModule) {
+		return googleSignInModule;
+	}
+
+	try {
+		googleSignInModule =
+			require("@react-native-google-signin/google-signin") as GoogleSignInModule;
+		return googleSignInModule;
+	} catch {
+		return null;
+	}
+}
 
 function configureGoogleSignIn() {
+	const googleSignIn = getGoogleSignInModule();
+	if (!googleSignIn) {
+		return null;
+	}
+
 	const webClientId = env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 	if (!webClientId) {
-		return false;
+		return null;
 	}
 
 	if (Platform.OS === "ios" && !env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID) {
-		return false;
+		return null;
 	}
 
 	if (isGoogleSignInConfigured) {
-		return true;
+		return googleSignIn;
 	}
 
-	GoogleSignin.configure({
+	googleSignIn.GoogleSignin.configure({
 		webClientId,
 		...(env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
 			? { iosClientId: env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID }
@@ -46,22 +69,25 @@ function configureGoogleSignIn() {
 	});
 	isGoogleSignInConfigured = true;
 
-	return true;
+	return googleSignIn;
 }
 
-function getGoogleErrorMessage(error: unknown) {
-	if (!isErrorWithCode(error)) {
+function getGoogleErrorMessage(
+	error: unknown,
+	googleSignIn: GoogleSignInModule,
+) {
+	if (!googleSignIn.isErrorWithCode(error)) {
 		return error instanceof Error
 			? error.message
 			: "Google 登录失败，请稍后重试";
 	}
 
 	switch (error.code) {
-		case statusCodes.SIGN_IN_CANCELLED:
+		case googleSignIn.statusCodes.SIGN_IN_CANCELLED:
 			return null;
-		case statusCodes.IN_PROGRESS:
+		case googleSignIn.statusCodes.IN_PROGRESS:
 			return "Google 登录正在进行中";
-		case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+		case googleSignIn.statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
 			return "当前设备无法使用 Google 登录";
 		default:
 			return "Google 登录失败，请稍后重试";
@@ -77,8 +103,12 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 	const submit = async () => {
 		if (isSubmitting) return;
 
-		if (!configureGoogleSignIn()) {
-			const message = "Google 登录还没有配置";
+		const googleSignIn = configureGoogleSignIn();
+		if (!googleSignIn) {
+			const message =
+				Constants.appOwnership === "expo"
+					? "当前预览环境不支持 Google 登录，请使用邮箱登录"
+					: "Google 登录还没有配置";
 			setErrorMessage(message);
 			toast.show({
 				variant: "danger",
@@ -92,17 +122,17 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 		setIsSubmitting(true);
 		try {
 			if (Platform.OS === "android") {
-				await GoogleSignin.hasPlayServices({
+				await googleSignIn.GoogleSignin.hasPlayServices({
 					showPlayServicesUpdateDialog: true,
 				});
 			}
 
-			const response = await GoogleSignin.signIn();
+			const response = await googleSignIn.GoogleSignin.signIn();
 			if (response.type !== "success") {
 				return;
 			}
 
-			const tokens = await GoogleSignin.getTokens();
+			const tokens = await googleSignIn.GoogleSignin.getTokens();
 			const idToken = response.data.idToken ?? tokens.idToken;
 			if (!idToken) {
 				throw new Error("没有拿到 Google 登录凭证");
@@ -136,7 +166,7 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 				return;
 			}
 
-			const message = getGoogleErrorMessage(error);
+			const message = getGoogleErrorMessage(error, googleSignIn);
 			if (!message) {
 				return;
 			}

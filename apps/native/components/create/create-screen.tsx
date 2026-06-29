@@ -71,7 +71,11 @@ const DEFAULT_ADVANCED_OPTIONS = {
 	isOriginal: true,
 };
 
-export default function CreateScreen() {
+type CreateScreenProps = {
+	onRequestClose?: () => void;
+};
+
+export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const session = authClient.useSession();
 	const { toast } = useAppToast();
 	const defaultForegroundColor = useThemeColor("default-foreground");
@@ -170,8 +174,8 @@ export default function CreateScreen() {
 
 	const goBack = () => {
 		fireHaptic();
-		if (router.canGoBack()) {
-			router.back();
+		if (onRequestClose) {
+			onRequestClose();
 			return;
 		}
 		router.replace("/");

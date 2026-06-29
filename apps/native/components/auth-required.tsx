@@ -1,6 +1,6 @@
-import { Redirect } from "expo-router";
+import { useRouter } from "expo-router";
 import { Spinner } from "heroui-native";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
@@ -12,18 +12,21 @@ type AuthRequiredProps = {
 };
 
 export function AuthRequired({ children, redirectTo }: AuthRequiredProps) {
+	const router = useRouter();
 	const session = authClient.useSession();
 
-	if (session.isPending) {
+	useEffect(() => {
+		if (!session.isPending && !session.data?.user) {
+			router.replace(getLoginHref(redirectTo));
+		}
+	}, [redirectTo, router, session.data?.user, session.isPending]);
+
+	if (session.isPending || !session.data?.user) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background">
 				<Spinner />
 			</View>
 		);
-	}
-
-	if (!session.data?.user) {
-		return <Redirect href={getLoginHref(redirectTo)} />;
 	}
 
 	return children;

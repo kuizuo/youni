@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Button, Text, useThemeColor } from "heroui-native";
 import { useEffect } from "react";
 import { ScrollView, View } from "react-native";
@@ -8,22 +8,19 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { authClient } from "@/lib/auth-client";
-import { sanitizeAuthRedirect } from "@/lib/auth-navigation";
 
 export default function LoginScreen() {
 	const router = useRouter();
-	const params = useLocalSearchParams<{ redirectTo?: string | string[] }>();
 	const session = authClient.useSession();
 	const insets = useSafeAreaInsets();
 	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
-	const redirectTo = sanitizeAuthRedirect(params.redirectTo);
 
 	useEffect(() => {
 		if (session.data?.user) {
-			router.replace(redirectTo);
+			router.replace("/" as Href);
 		}
-	}, [redirectTo, router, session.data?.user]);
+	}, [router, session.data?.user]);
 
 	const goHome = () => {
 		router.replace("/" as Href);
@@ -65,7 +62,7 @@ export default function LoginScreen() {
 					<AuthPanel
 						onAuthenticated={async () => {
 							await session.refetch();
-							router.replace(redirectTo);
+							router.replace("/" as Href);
 						}}
 					/>
 

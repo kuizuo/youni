@@ -26,12 +26,12 @@
 	--color-default: hsl(240, 6%, 92%);
 	--color-default-foreground: hsl(240, 10%, 12%);
 	--color-default-hover: hsl(240, 6%, 88%);
-	--color-accent: hsl(348, 92%, 57%);
-	--color-accent-foreground: hsl(0, 0%, 100%);
-	--color-accent-hover: hsl(348, 86%, 51%);
-	--color-accent-soft: hsl(350, 100%, 96%);
-	--color-accent-soft-foreground: hsl(348, 86%, 44%);
-	--color-accent-soft-hover: hsl(350, 92%, 92%);
+	--color-accent: hsl(78, 91%, 58%);
+	--color-accent-foreground: hsl(70, 23%, 6%);
+	--color-accent-hover: hsl(78, 86%, 50%);
+	--color-accent-soft: hsl(78, 100%, 92%);
+	--color-accent-soft-foreground: hsl(80, 52%, 24%);
+	--color-accent-soft-hover: hsl(78, 86%, 86%);
 	--color-danger: hsl(348, 92%, 57%);
 	--color-danger-foreground: hsl(0, 0%, 100%);
 	--color-danger-hover: hsl(348, 86%, 51%);
@@ -51,7 +51,7 @@
 	--color-field-hover: hsl(0, 0%, 100%);
 	--color-field-focus: hsl(0, 0%, 100%);
 	--color-field-border-hover: hsl(240, 6%, 78%);
-	--color-field-border-focus: hsl(348, 92%, 57%);
+	--color-field-border-focus: hsl(78, 91%, 58%);
 	--color-segment: hsl(0, 0%, 100%);
 	--color-segment-foreground: hsl(240, 10%, 12%);
 	--color-border: hsl(240, 6%, 88%);
@@ -60,15 +60,15 @@
 	--color-separator: hsl(240, 6%, 90%);
 	--color-separator-secondary: hsl(240, 6%, 93%);
 	--color-separator-tertiary: hsl(240, 6%, 96%);
-	--color-focus: hsl(348, 92%, 57%);
-	--color-link: hsl(348, 86%, 44%);
+	--color-focus: hsl(78, 91%, 58%);
+	--color-link: hsl(80, 52%, 24%);
 	--color-background-secondary: hsl(0, 0%, 96%);
 	--color-background-tertiary: hsl(0, 0%, 93%);
 	--color-background-inverse: hsl(240, 10%, 12%);
 	--color-content2: hsl(0, 0%, 96%);
 	--color-content3: hsl(240, 6%, 90%);
-	--color-primary: hsl(348, 92%, 57%);
-	--color-primary-foreground: hsl(0, 0%, 100%);
+	--color-primary: hsl(78, 91%, 58%);
+	--color-primary-foreground: hsl(70, 23%, 6%);
 }
 
 :root {
@@ -77,8 +77,8 @@
 	--color-overlay-foreground: hsl(240, 10%, 12%);
 	--color-overlay-backdrop: hsla(240, 10%, 12%, 0.42);
 	--color-muted-foreground: hsl(240, 4%, 45%);
-	--color-focus: hsl(348, 92%, 57%);
-	--color-link: hsl(348, 86%, 44%);
+	--color-focus: hsl(78, 91%, 58%);
+	--color-link: hsl(80, 52%, 24%);
 	--color-background-secondary: hsl(0, 0%, 96%);
 	--color-background-tertiary: hsl(0, 0%, 93%);
 	--color-background-inverse: hsl(240, 10%, 12%);
@@ -94,8 +94,8 @@
 	--color-field-hover: hsl(0, 0%, 100%);
 	--color-field-focus: hsl(0, 0%, 100%);
 	--color-field-border-hover: hsl(240, 6%, 78%);
-	--color-field-border-focus: hsl(348, 92%, 57%);
-	--color-accent-soft-hover: hsl(350, 92%, 92%);
+	--color-field-border-focus: hsl(78, 91%, 58%);
+	--color-accent-soft-hover: hsl(78, 86%, 86%);
 	--color-danger-soft-foreground: hsl(348, 86%, 44%);
 	--color-danger-soft-hover: hsl(350, 92%, 92%);
 	--color-warning-soft: hsl(40, 100%, 94%);
@@ -120,4 +120,12 @@
 	--color-separator-tertiary: hsl(240, 6%, 96%);
 	--color-border-secondary: hsl(240, 6%, 92%);
 	--color-border-tertiary: hsl(240, 6%, 95%);
+}
+
+@layer theme {
+	:root {
+		--accent: #c6f432;
+		--accent-foreground: #11130c;
+		--surface-shadow: 0 0 0 0 transparent inset;
+	}
 }

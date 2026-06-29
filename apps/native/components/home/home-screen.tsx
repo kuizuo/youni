@@ -5,7 +5,7 @@ import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { Button, PressableFeedback, Text, useThemeColor } from "heroui-native";
 import { useMemo, useState } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NoteCard } from "@/components/note-card";
@@ -18,8 +18,11 @@ import { authClient } from "@/lib/auth-client";
 import { getLoginHref } from "@/lib/auth-navigation";
 import { orpc } from "@/utils/orpc";
 
-const HOME_TABS = ["关注", "发现"] as const;
-type HomeTab = (typeof HOME_TABS)[number];
+const HOME_TABS = [
+	{ id: "following", label: "关注" },
+	{ id: "discover", label: "发现" },
+] as const;
+type HomeTab = (typeof HOME_TABS)[number]["id"];
 
 export default function HomeScreen() {
 	const router = useRouter();
@@ -27,16 +30,16 @@ export default function HomeScreen() {
 	const insets = useSafeAreaInsets();
 	const mutedColor = useThemeColor("muted");
 	const foregroundColor = useThemeColor("foreground");
-	const [activeTab, setActiveTab] = useState<HomeTab>("发现");
+	const [activeTab, setActiveTab] = useState<HomeTab>("discover");
 	const input = useMemo(() => ({ limit: 30 }), []);
 	const discoverFeed = useQuery(orpc.social.feed.queryOptions({ input }));
 	const followingFeed = useQuery({
 		...orpc.social.followingFeed.queryOptions({ input }),
-		enabled: activeTab === "关注" && Boolean(session.data?.user),
+		enabled: activeTab === "following" && Boolean(session.data?.user),
 	});
-	const activeFeed = activeTab === "关注" ? followingFeed : discoverFeed;
+	const activeFeed = activeTab === "following" ? followingFeed : discoverFeed;
 	const notes = activeFeed.data ?? [];
-	const isFollowingGuest = activeTab === "关注" && !session.data?.user;
+	const isFollowingGuest = activeTab === "following" && !session.data?.user;
 	const topBar = (
 		<View
 			className="bg-background px-2 pb-3"
@@ -46,21 +49,21 @@ export default function HomeScreen() {
 				<View className="w-12" />
 				<View className="flex-row items-center gap-9">
 					{HOME_TABS.map((item) => {
-						const active = item === activeTab;
+						const active = item.id === activeTab;
 						return (
 							<PressableFeedback
-								key={item}
+								key={item.id}
 								accessibilityRole="tab"
 								accessibilityState={active ? { selected: true } : undefined}
 								className="h-14 items-center justify-center px-1"
-								onPress={() => setActiveTab(item)}
+								onPress={() => setActiveTab(item.id)}
 							>
 								<Text.Heading
 									type="h4"
 									weight={active ? "bold" : "normal"}
 									className={active ? "text-foreground" : "text-muted"}
 								>
-									{item}
+									{item.label}
 								</Text.Heading>
 								<View
 									className={
@@ -84,7 +87,7 @@ export default function HomeScreen() {
 					<Ionicons
 						name="search-outline"
 						size={30}
-						color={activeTab === "发现" ? foregroundColor : mutedColor}
+						color={activeTab === "discover" ? foregroundColor : mutedColor}
 					/>
 				</Button>
 			</View>
@@ -114,7 +117,7 @@ export default function HomeScreen() {
 				}}
 				contentContainerStyle={{
 					paddingTop: 8,
-					paddingBottom: 128,
+					paddingBottom: Platform.OS === "ios" ? 32 : 128,
 					paddingHorizontal: 4,
 				}}
 				ListEmptyComponent={
@@ -136,18 +139,22 @@ export default function HomeScreen() {
 					) : (
 						<EmptyState
 							icon={
-								activeTab === "关注" ? "people-outline" : "sparkles-outline"
+								activeTab === "following"
+									? "people-outline"
+									: "sparkles-outline"
 							}
-							title={activeTab === "关注" ? "还没有关注动态" : "还没有内容"}
+							title={
+								activeTab === "following" ? "还没有关注动态" : "还没有内容"
+							}
 							description={
-								activeTab === "关注"
+								activeTab === "following"
 									? "关注几个感兴趣的博主后，这里会显示他们的新内容。"
 									: "发布第一篇图文后，这里会出现新的灵感。"
 							}
-							actionLabel={activeTab === "关注" ? "去发现" : "去发布"}
+							actionLabel={activeTab === "following" ? "去发现" : "去发布"}
 							onAction={() =>
-								activeTab === "关注"
-									? setActiveTab("发现")
+								activeTab === "following"
+									? setActiveTab("discover")
 									: router.push(
 											session.data?.user
 												? ("/publish" as Href)
