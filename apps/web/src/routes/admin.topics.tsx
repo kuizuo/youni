@@ -1,10 +1,11 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
+import type { PaginationState } from "@tanstack/react-table";
 import type { FormEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
 
@@ -31,17 +32,32 @@ function AdminTopicsRoute() {
 		select: (state) => state.location.pathname,
 	});
 	const [keyword, setKeyword] = useState("");
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
 	const [formMode, setFormMode] = useState<TopicFormMode>("create");
 	const [form, setForm] = useState<TopicFormState>(emptyTopicForm);
 	const [formMessage, setFormMessage] = useState<string | null>(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const input = useMemo(
-		() => ({ keyword: keyword.trim() || undefined, limit: 100 }),
-		[keyword],
+		() => ({
+			keyword: keyword.trim() || undefined,
+			limit: pagination.pageSize,
+			offset: pagination.pageIndex * pagination.pageSize,
+		}),
+		[keyword, pagination.pageIndex, pagination.pageSize],
 	);
-	const topics = useQuery(orpc.admin.topics.queryOptions({ input }));
+	const topics = useQuery({
+		...orpc.admin.topics.queryOptions({ input }),
+		placeholderData: keepPreviousData,
+	});
 	const saveMutation = useMutation(orpc.admin.saveTopic.mutationOptions());
 	const deleteMutation = useMutation(orpc.admin.deleteTopic.mutationOptions());
+	const updateKeyword = useCallback((value: string) => {
+		setKeyword(value);
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
+	}, []);
 
 	const resetForm = useCallback(() => {
 		setFormMode("create");
@@ -109,7 +125,7 @@ function AdminTopicsRoute() {
 			<TopicFilters
 				keyword={keyword}
 				onCreateTopic={openCreateDrawer}
-				onKeywordChange={setKeyword}
+				onKeywordChange={updateKeyword}
 			/>
 
 			<TopicFormDrawer
@@ -126,7 +142,9 @@ function AdminTopicsRoute() {
 			<TopicTable
 				isDeletePending={deleteMutation.isPending}
 				isFetching={topics.isFetching}
-				topics={(topics.data ?? []) as AdminTopicListItem[]}
+				pagination={pagination}
+				topics={(topics.data?.items ?? []) as AdminTopicListItem[]}
+				total={topics.data?.total ?? 0}
 				onDelete={deleteTopic}
 				onEdit={startEdit}
 				onOpenTopic={(item) =>
@@ -135,6 +153,7 @@ function AdminTopicsRoute() {
 						params: { topicId: item.id },
 					})
 				}
+				onPaginationChange={setPagination}
 			/>
 		</AdminPage>
 	);

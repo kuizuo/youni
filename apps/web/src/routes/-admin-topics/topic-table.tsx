@@ -1,20 +1,26 @@
 import { Pencil, TrashBin } from "@gravity-ui/icons";
 import type { SortDescriptor } from "@heroui/react";
-import { Button, Pagination, Popover, Table } from "@heroui/react";
+import { Button, Popover, Table } from "@heroui/react";
 import {
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
+	type OnChangeFn,
+	type PaginationState,
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import {
+	AdminTablePagination,
+	defaultTablePagination,
+	normalizeTablePaginationUpdater,
+} from "@/components/admin-table-pagination";
+import { AdminTableEmptyState } from "@/components/admin-table-state";
 
 import type { AdminTopicListItem } from "./types";
-
-const pageSize = 5;
 
 const columnHelper = createColumnHelper<AdminTopicListItem>();
 
@@ -49,16 +55,42 @@ export function TopicTable({
 	onDelete,
 	onEdit,
 	onOpenTopic,
+	onPaginationChange,
+	pagination,
 	topics,
+	total,
 }: {
 	isDeletePending: boolean;
 	isFetching: boolean;
 	onDelete: (item: AdminTopicListItem) => Promise<void> | void;
 	onEdit: (item: AdminTopicListItem) => void;
 	onOpenTopic?: (item: AdminTopicListItem) => void;
+	onPaginationChange?: (pagination: PaginationState) => void;
+	pagination?: PaginationState;
 	topics: AdminTopicListItem[];
+	total?: number;
 }) {
+	const [localPagination, setLocalPagination] = useState<PaginationState>(
+		defaultTablePagination,
+	);
 	const [sorting, setSorting] = useState<SortingState>([]);
+	const isPaginationControlled =
+		Boolean(pagination && onPaginationChange) && typeof total === "number";
+	const currentPagination = pagination ?? localPagination;
+	const totalItems = total ?? topics.length;
+	const handlePaginationChange = useCallback<OnChangeFn<PaginationState>>(
+		(updater) => {
+			const next = normalizeTablePaginationUpdater(updater, currentPagination);
+
+			if (isPaginationControlled) {
+				onPaginationChange?.(next);
+				return;
+			}
+
+			setLocalPagination(next);
+		},
+		[currentPagination, isPaginationControlled, onPaginationChange],
+	);
 	const columns = useMemo(
 		() => [
 			columnHelper.accessor("name", {
@@ -102,21 +134,13 @@ export function TopicTable({
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
-		initialState: { pagination: { pageSize } },
+		manualPagination: isPaginationControlled,
+		onPaginationChange: handlePaginationChange,
 		onSortingChange: setSorting,
-		state: { sorting },
+		pageCount: Math.max(Math.ceil(totalItems / currentPagination.pageSize), 1),
+		state: { pagination: currentPagination, sorting },
 	});
 	const sortDescriptor = useMemo(() => toSortDescriptor(sorting), [sorting]);
-	const { pageIndex } = table.getState().pagination;
-	const pageCount = table.getPageCount();
-	const pages = useMemo(
-		() => Array.from({ length: pageCount }, (_, index) => index + 1),
-		[pageCount],
-	);
-	const start = topics.length === 0 ? 0 : pageIndex * pageSize + 1;
-	const end = Math.min((pageIndex + 1) * pageSize, topics.length);
-	const currentPage = pageIndex + 1;
-	const totalPages = Math.max(pageCount, 1);
 
 	return (
 		<Table>
@@ -156,13 +180,14 @@ export function TopicTable({
 					</Table.Header>
 					<Table.Body
 						renderEmptyState={() => (
-							<span className="text-muted text-sm">
-								{isFetching ? "正在加载话题" : "暂无话题"}
-							</span>
+							<AdminTableEmptyState
+								emptyText="暂无话题"
+								isLoading={isFetching}
+							/>
 						)}
 					>
 						{table.getRowModel().rows.map((row) => (
-							<Table.Row id={row.original.id} key={row.id}>
+							<Table.Row id={row.original.id} key={row.original.id}>
 								{row.getVisibleCells().map((cell) => (
 									<Table.Cell key={cell.id}>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -173,51 +198,18 @@ export function TopicTable({
 					</Table.Body>
 				</Table.Content>
 			</Table.ScrollContainer>
-			<Table.Footer className="flex flex-col gap-3 border-border border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-				<div className="flex flex-wrap items-center gap-3 text-muted text-sm">
-					<Pagination.Summary>
-						{topics.length > 0
-							? `显示 ${start}-${end}，共 ${topics.length} 个话题`
-							: "暂无话题"}
-					</Pagination.Summary>
-					<span className="hidden h-4 w-px bg-border sm:block" />
-					<span className="tabular-nums">
-						第 {currentPage} / {totalPages} 页
-					</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<Button
-						size="sm"
-						variant="secondary"
-						isDisabled={!table.getCanPreviousPage()}
-						onPress={() => table.previousPage()}
-					>
-						上一页
-					</Button>
-					<div className="flex items-center gap-1">
-						{pages.map((page) => (
-							<Button
-								key={page}
-								size="sm"
-								variant={pageIndex === page - 1 ? "primary" : "tertiary"}
-								isIconOnly
-								aria-label={`第 ${page} 页`}
-								onPress={() => table.setPageIndex(page - 1)}
-							>
-								{page}
-							</Button>
-						))}
-					</div>
-					<Button
-						size="sm"
-						variant="secondary"
-						isDisabled={!table.getCanNextPage()}
-						onPress={() => table.nextPage()}
-					>
-						下一页
-					</Button>
-				</div>
-			</Table.Footer>
+			<AdminTablePagination
+				emptyText="暂无话题"
+				itemLabel="个话题"
+				onPageIndexChange={(pageIndex) =>
+					handlePaginationChange({ ...currentPagination, pageIndex })
+				}
+				onPageSizeChange={(pageSize) =>
+					handlePaginationChange({ pageIndex: 0, pageSize })
+				}
+				table={table}
+				total={totalItems}
+			/>
 		</Table>
 	);
 }

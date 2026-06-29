@@ -49,7 +49,8 @@ const adminListInput = z.object({
 	status: z
 		.enum(["draft", "audit", "published", "rejected", "hidden"])
 		.optional(),
-	limit: z.number().int().min(1).max(100).default(50),
+	limit: z.number().int().min(1).max(200).default(10),
+	offset: z.number().int().min(0).default(0),
 });
 
 const idInput = z.object({ id: z.string().min(1) });
@@ -68,7 +69,14 @@ const topicInput = z.object({
 const userListInput = z.object({
 	keyword: z.string().trim().optional(),
 	status: userStatusInput.optional(),
-	limit: z.number().int().min(1).max(100).default(50),
+	limit: z.number().int().min(1).max(200).default(10),
+	offset: z.number().int().min(0).default(0),
+});
+
+const topicListInput = z.object({
+	keyword: z.string().trim().optional(),
+	limit: z.number().int().min(1).max(200).default(10),
+	offset: z.number().int().min(0).default(0),
 });
 
 const userStatusChangeInput = z.object({
@@ -463,6 +471,9 @@ export const adminRouter = {
 		].filter(Boolean);
 
 		const whereClause = conditions.length ? and(...conditions) : undefined;
+		const [totalRow] = whereClause
+			? await db.select({ value: count() }).from(note).where(whereClause)
+			: await db.select({ value: count() }).from(note);
 		const rows = whereClause
 			? await db
 					.select({
@@ -489,6 +500,7 @@ export const adminRouter = {
 					.where(whereClause)
 					.orderBy(desc(note.createdAt))
 					.limit(input.limit)
+					.offset(input.offset)
 			: await db
 					.select({
 						id: note.id,
@@ -512,9 +524,13 @@ export const adminRouter = {
 					.from(note)
 					.innerJoin(user, eq(note.userId, user.id))
 					.orderBy(desc(note.createdAt))
-					.limit(input.limit);
+					.limit(input.limit)
+					.offset(input.offset);
 
-		return enrichNoteRows(db, rows);
+		return {
+			items: await enrichNoteRows(db, rows),
+			total: toNumber(totalRow?.value),
+		};
 	}),
 
 	noteDetail: adminProcedure.input(idInput).handler(async ({ input }) => {
@@ -629,9 +645,15 @@ export const adminRouter = {
 		return { ok: true };
 	}),
 
-	topics: adminProcedure.input(userListInput).handler(async ({ input }) => {
+	topics: adminProcedure.input(topicListInput).handler(async ({ input }) => {
 		const db = createDb();
-		const rows = input.keyword
+		const whereClause = input.keyword
+			? ilike(topic.name, `%${input.keyword}%`)
+			: undefined;
+		const [totalRow] = whereClause
+			? await db.select({ value: count() }).from(topic).where(whereClause)
+			: await db.select({ value: count() }).from(topic);
+		const rows = whereClause
 			? await db
 					.select({
 						id: topic.id,
@@ -639,9 +661,10 @@ export const adminRouter = {
 						createdAt: topic.createdAt,
 					})
 					.from(topic)
-					.where(ilike(topic.name, `%${input.keyword}%`))
+					.where(whereClause)
 					.orderBy(desc(topic.createdAt))
 					.limit(input.limit)
+					.offset(input.offset)
 			: await db
 					.select({
 						id: topic.id,
@@ -650,9 +673,12 @@ export const adminRouter = {
 					})
 					.from(topic)
 					.orderBy(desc(topic.createdAt))
-					.limit(input.limit);
+					.limit(input.limit)
+					.offset(input.offset);
 
-		if (rows.length === 0) return [];
+		if (rows.length === 0) {
+			return { items: [], total: toNumber(totalRow?.value) };
+		}
 		const counts = await db
 			.select({ topicId: noteTopic.topicId, value: count() })
 			.from(noteTopic)
@@ -667,10 +693,13 @@ export const adminRouter = {
 			counts.map((row) => [row.topicId, toNumber(row.value)]),
 		);
 
-		return rows.map((row) => ({
-			...row,
-			noteCount: countByTopic.get(row.id) ?? 0,
-		}));
+		return {
+			items: rows.map((row) => ({
+				...row,
+				noteCount: countByTopic.get(row.id) ?? 0,
+			})),
+			total: toNumber(totalRow?.value),
+		};
 	}),
 
 	topicDetail: adminProcedure.input(idInput).handler(async ({ input }) => {
@@ -773,6 +802,9 @@ export const adminRouter = {
 				: undefined,
 		].filter(Boolean);
 		const whereClause = conditions.length ? and(...conditions) : undefined;
+		const [totalRow] = whereClause
+			? await db.select({ value: count() }).from(user).where(whereClause)
+			: await db.select({ value: count() }).from(user);
 		const rows = whereClause
 			? await db
 					.select({
@@ -792,6 +824,7 @@ export const adminRouter = {
 					.where(whereClause)
 					.orderBy(desc(user.createdAt))
 					.limit(input.limit)
+					.offset(input.offset)
 			: await db
 					.select({
 						id: user.id,
@@ -808,9 +841,12 @@ export const adminRouter = {
 					})
 					.from(user)
 					.orderBy(desc(user.createdAt))
-					.limit(input.limit);
+					.limit(input.limit)
+					.offset(input.offset);
 
-		if (rows.length === 0) return [];
+		if (rows.length === 0) {
+			return { items: [], total: toNumber(totalRow?.value) };
+		}
 		const userIds = rows.map((row) => row.id);
 		const [noteRows, followerRows, followingRows] = await Promise.all([
 			db
@@ -840,12 +876,15 @@ export const adminRouter = {
 			followingRows.map((row) => [row.userId, toNumber(row.value)]),
 		);
 
-		return rows.map((row) => ({
-			...row,
-			noteCount: noteCountByUser.get(row.id) ?? 0,
-			followerCount: followerCountByUser.get(row.id) ?? 0,
-			followingCount: followingCountByUser.get(row.id) ?? 0,
-		}));
+		return {
+			items: rows.map((row) => ({
+				...row,
+				noteCount: noteCountByUser.get(row.id) ?? 0,
+				followerCount: followerCountByUser.get(row.id) ?? 0,
+				followingCount: followingCountByUser.get(row.id) ?? 0,
+			})),
+			total: toNumber(totalRow?.value),
+		};
 	}),
 
 	userDetail: adminProcedure.input(idInput).handler(async ({ input }) => {

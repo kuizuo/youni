@@ -1,10 +1,11 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
+import type { PaginationState } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
 
 import { AdminPage } from "@/components/admin-shell";
@@ -24,19 +25,44 @@ function AdminNotesRoute() {
 	});
 	const [keyword, setKeyword] = useState("");
 	const [statusFilter, setStatusFilter] = useState<NoteStatus | "">("");
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
 	const input = useMemo(
 		() => ({
 			keyword: keyword.trim() || undefined,
 			status: statusFilter || undefined,
-			limit: 100,
+			limit: pagination.pageSize,
+			offset: pagination.pageIndex * pagination.pageSize,
 		}),
-		[keyword, statusFilter],
+		[keyword, pagination.pageIndex, pagination.pageSize, statusFilter],
 	);
-	const notes = useQuery(orpc.admin.notes.queryOptions({ input }));
+	const notes = useQuery({
+		...orpc.admin.notes.queryOptions({ input }),
+		placeholderData: keepPreviousData,
+	});
 	const statusMutation = useMutation(
 		orpc.admin.updateNoteStatus.mutationOptions(),
 	);
 	const deleteMutation = useMutation(orpc.admin.deleteNote.mutationOptions());
+	const resetPage = useCallback(() => {
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
+	}, []);
+	const updateKeyword = useCallback(
+		(value: string) => {
+			setKeyword(value);
+			resetPage();
+		},
+		[resetPage],
+	);
+	const updateStatusFilter = useCallback(
+		(value: NoteStatus | "") => {
+			setStatusFilter(value);
+			resetPage();
+		},
+		[resetPage],
+	);
 
 	const refetchNotes = useCallback(async () => {
 		await notes.refetch();
@@ -75,15 +101,15 @@ function AdminNotesRoute() {
 			<NoteFilters
 				keyword={keyword}
 				statusFilter={statusFilter}
-				onKeywordChange={setKeyword}
-				onStatusChange={setStatusFilter}
+				onKeywordChange={updateKeyword}
+				onStatusChange={updateStatusFilter}
 			/>
 
 			<NoteTable
 				isDeletePending={deleteMutation.isPending}
 				isFetching={notes.isFetching}
 				isStatusBusy={statusMutation.isPending}
-				notes={(notes.data ?? []) as AdminNoteListItem[]}
+				notes={(notes.data?.items ?? []) as AdminNoteListItem[]}
 				onDelete={deleteNote}
 				onOpenNote={(item) =>
 					navigate({ to: "/admin/notes/$noteId", params: { noteId: item.id } })
@@ -91,7 +117,10 @@ function AdminNotesRoute() {
 				onOpenUser={(userId) =>
 					navigate({ to: "/admin/users/$userId", params: { userId } })
 				}
+				onPaginationChange={setPagination}
 				onUpdateStatus={updateStatus}
+				pagination={pagination}
+				total={notes.data?.total ?? 0}
 			/>
 		</AdminPage>
 	);

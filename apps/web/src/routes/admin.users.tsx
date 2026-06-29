@@ -1,10 +1,11 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
+import type { PaginationState } from "@tanstack/react-table";
 import { env } from "@youni/env/web";
 import type { FormEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -39,6 +40,10 @@ function AdminUsersRoute() {
 	});
 	const [keyword, setKeyword] = useState("");
 	const [statusFilter, setStatusFilter] = useState<UserStatus | "">("");
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
 	const [formMode, setFormMode] = useState<UserFormMode>("create");
 	const [form, setForm] = useState<UserFormState>(emptyForm);
 	const [formMessage, setFormMessage] = useState<string | null>(null);
@@ -47,12 +52,16 @@ function AdminUsersRoute() {
 	const input = useMemo(
 		() => ({
 			keyword: keyword.trim() || undefined,
-			limit: 100,
+			limit: pagination.pageSize,
+			offset: pagination.pageIndex * pagination.pageSize,
 			status: statusFilter || undefined,
 		}),
-		[keyword, statusFilter],
+		[keyword, pagination.pageIndex, pagination.pageSize, statusFilter],
 	);
-	const users = useQuery(orpc.admin.users.queryOptions({ input }));
+	const users = useQuery({
+		...orpc.admin.users.queryOptions({ input }),
+		placeholderData: keepPreviousData,
+	});
 	const admin = useQuery(orpc.admin.me.queryOptions());
 	const createMutation = useMutation(orpc.admin.createUser.mutationOptions());
 	const updateMutation = useMutation(orpc.admin.updateUser.mutationOptions());
@@ -71,6 +80,23 @@ function AdminUsersRoute() {
 		statusMutation.isPending ||
 		deleteMutation.isPending ||
 		restoreMutation.isPending;
+	const resetPage = useCallback(() => {
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
+	}, []);
+	const updateKeyword = useCallback(
+		(value: string) => {
+			setKeyword(value);
+			resetPage();
+		},
+		[resetPage],
+	);
+	const updateStatusFilter = useCallback(
+		(value: UserStatus | "") => {
+			setStatusFilter(value);
+			resetPage();
+		},
+		[resetPage],
+	);
 
 	const resetForm = useCallback(() => {
 		setFormMode("create");
@@ -223,9 +249,9 @@ function AdminUsersRoute() {
 			<UserFilters
 				keyword={keyword}
 				statusFilter={statusFilter}
-				onKeywordChange={setKeyword}
+				onKeywordChange={updateKeyword}
 				onCreateUser={openCreateDrawer}
-				onStatusChange={setStatusFilter}
+				onStatusChange={updateStatusFilter}
 			/>
 
 			<UserFormDrawer
@@ -249,11 +275,14 @@ function AdminUsersRoute() {
 				isDeletePending={deleteMutation.isPending}
 				isFetching={users.isFetching}
 				isStatusBusy={isStatusBusy}
-				users={users.data ?? []}
+				pagination={pagination}
+				total={users.data?.total ?? 0}
+				users={(users.data?.items ?? []) as AdminUserListItem[]}
 				onEdit={startEdit}
 				onOpenUser={(item) =>
 					navigate({ to: "/admin/users/$userId", params: { userId: item.id } })
 				}
+				onPaginationChange={setPagination}
 				onUpdateStatus={updateStatus}
 			/>
 		</AdminPage>
