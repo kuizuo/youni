@@ -26,6 +26,10 @@ const connectionsInput = profileInput.extend({
 	type: z.enum(["following", "followers"]),
 	limit: z.number().int().min(1).max(60).default(30),
 });
+const meFeedInput = z.object({
+	tab: z.enum(["notes", "collections", "liked"]),
+	limit: z.number().int().min(1).max(60).default(30),
+});
 const listInput = z.object({
 	keyword: z.string().trim().optional(),
 	limit: z.number().int().min(1).max(60).default(30),
@@ -394,6 +398,46 @@ async function getProfile(userId: string, viewerId?: string) {
 	};
 }
 
+async function getMeFeedRows(
+	userId: string,
+	tab: z.infer<typeof meFeedInput>["tab"],
+	limit: number,
+) {
+	if (tab === "notes") {
+		return selectNoteRows(and(eq(note.userId, userId))).then((items) =>
+			items.slice(0, limit),
+		);
+	}
+
+	if (tab === "collections") {
+		return createDb()
+			.select(noteRowFields)
+			.from(noteCollection)
+			.innerJoin(note, eq(noteCollection.noteId, note.id))
+			.innerJoin(user, eq(note.userId, user.id))
+			.where(eq(noteCollection.userId, userId))
+			.orderBy(desc(noteCollection.createdAt))
+			.limit(limit);
+	}
+
+	return createDb()
+		.select(noteRowFields)
+		.from(noteLike)
+		.innerJoin(note, eq(noteLike.noteId, note.id))
+		.innerJoin(user, eq(note.userId, user.id))
+		.where(
+			and(
+				eq(noteLike.userId, userId),
+				or(
+					and(eq(note.status, "published"), eq(note.visibility, "public")),
+					eq(note.userId, userId),
+				),
+			),
+		)
+		.orderBy(desc(noteLike.createdAt))
+		.limit(limit);
+}
+
 export const socialRouter = {
 	feed: publicProcedure.input(listInput).handler(async ({ input, context }) => {
 		let topicNoteIds: string[] = [];
@@ -690,6 +734,19 @@ export const socialRouter = {
 			liked,
 		};
 	}),
+
+	meProfile: protectedProcedure.handler(async ({ context }) => {
+		const userId = context.session.user.id;
+		return getProfile(userId, userId);
+	}),
+
+	meFeed: protectedProcedure
+		.input(meFeedInput)
+		.handler(async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const rows = await getMeFeedRows(userId, input.tab, input.limit);
+			return hydrateNotes(rows, userId);
+		}),
 
 	drafts: protectedProcedure.handler(async ({ context }) => {
 		const userId = context.session.user.id;
