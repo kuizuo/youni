@@ -18,8 +18,10 @@ import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { authClient } from "@/lib/auth-client";
+import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -50,19 +52,20 @@ export default function SettingsScreen() {
 	const [gender, setGender] = useState<"female" | "male" | "unknown">(
 		"unknown",
 	);
+	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
 	useEffect(() => {
 		if (!profile) return;
 		setName(profile.name ?? "");
 		setHandle(profile.handle ?? "");
 		setBio(profile.bio ?? "");
-		setAvatarUrl(profile.image ?? "");
+		setAvatarUrl(profile.image ?? user?.image ?? "");
 		setGender(
 			profile.gender === "male" || profile.gender === "female"
 				? profile.gender
 				: "unknown",
 		);
-	}, [profile]);
+	}, [profile, user]);
 
 	const updateProfile = useMutation(
 		orpc.social.updateProfile.mutationOptions({
@@ -96,6 +99,27 @@ export default function SettingsScreen() {
 			image: avatarUrl.trim(),
 			gender,
 		});
+	};
+
+	const chooseAvatar = async () => {
+		fireHaptic();
+		setIsUploadingAvatar(true);
+		try {
+			const uploaded = await pickAndUploadAvatar();
+			if (uploaded) {
+				setAvatarUrl(uploaded.url);
+				toast.show({ variant: "success", label: "头像已上传，保存后生效" });
+			}
+		} catch (error) {
+			if (isRequestTimeoutError(error)) return;
+			toast.show({
+				variant: "danger",
+				label: "头像上传失败",
+				description: error instanceof Error ? error.message : undefined,
+			});
+		} finally {
+			setIsUploadingAvatar(false);
+		}
 	};
 
 	const signOut = () => {
@@ -140,16 +164,15 @@ export default function SettingsScreen() {
 					<View className="flex-row items-center justify-between gap-3">
 						<View className="min-w-0 flex-1">
 							<Text.Paragraph weight="bold">编辑主页</Text.Paragraph>
-							<Text.Paragraph type="body-sm" color="muted">
-								修改头像、昵称、用户名和简介
-							</Text.Paragraph>
 						</View>
-						<Avatar size="md" alt={name || displayName}>
-							{avatarUrl ? <Avatar.Image source={{ uri: avatarUrl }} /> : null}
-							<Avatar.Fallback>
-								{(name || displayName).slice(0, 1)}
-							</Avatar.Fallback>
-						</Avatar>
+						<EditableAvatar
+							alt={name || displayName}
+							image={avatarUrl}
+							initial={(name || displayName).slice(0, 1)}
+							isDisabled={updateProfile.isPending}
+							isUploading={isUploadingAvatar}
+							onPress={chooseAvatar}
+						/>
 					</View>
 
 					<TextField isRequired>
@@ -169,18 +192,6 @@ export default function SettingsScreen() {
 							onChangeText={setHandle}
 							autoCapitalize="none"
 							placeholder="letters_and_numbers"
-							placeholderTextColor={mutedColor}
-						/>
-					</TextField>
-
-					<TextField>
-						<Label>头像链接</Label>
-						<Input
-							value={avatarUrl}
-							onChangeText={setAvatarUrl}
-							autoCapitalize="none"
-							keyboardType="url"
-							placeholder="https://..."
 							placeholderTextColor={mutedColor}
 						/>
 					</TextField>
@@ -224,7 +235,9 @@ export default function SettingsScreen() {
 						variant="primary"
 						className="rounded-full"
 						feedbackVariant="scale-ripple"
-						isDisabled={updateProfile.isPending || me.isLoading}
+						isDisabled={
+							updateProfile.isPending || isUploadingAvatar || me.isLoading
+						}
 						onPress={saveProfile}
 					>
 						{updateProfile.isPending ? (

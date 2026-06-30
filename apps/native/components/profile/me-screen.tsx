@@ -40,6 +40,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NoteCard } from "@/components/note-card";
+import { EditableAvatar } from "@/components/profile/editable-avatar";
 import { ProfileMenuDrawer } from "@/components/profile/profile-menu-drawer";
 import {
 	EmptyState,
@@ -47,6 +48,7 @@ import {
 	FeedSkeleton,
 } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
+import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
 import { useAppToast } from "@/utils/app-toast";
@@ -566,7 +568,7 @@ export default function MeScreen() {
 			/>
 
 			<BottomSheet isOpen={isEditOpen} onOpenChange={setIsEditOpen}>
-				<BottomSheet.Portal>
+				<BottomSheet.Portal disableFullWindowOverlay>
 					<BottomSheet.Overlay />
 					<BottomSheet.Content
 						snapPoints={["86%"]}
@@ -786,6 +788,7 @@ function EditProfileSheet({
 	const [gender, setGender] = useState<"female" | "male" | "unknown">(
 		"unknown",
 	);
+	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const updateProfile = useMutation(
 		orpc.social.updateProfile.mutationOptions({
 			onSuccess: async () => {
@@ -807,13 +810,34 @@ function EditProfileSheet({
 		setName(profile?.name ?? user?.name ?? "");
 		setHandle(profile?.handle ?? "");
 		setBio(profile?.bio ?? "");
-		setAvatarUrl(profile?.image ?? "");
+		setAvatarUrl(profile?.image ?? user?.image ?? "");
 		setGender(
 			profile?.gender === "male" || profile?.gender === "female"
 				? profile.gender
 				: "unknown",
 		);
 	}, [profile, user]);
+
+	const chooseAvatar = async () => {
+		fireHaptic();
+		setIsUploadingAvatar(true);
+		try {
+			const uploaded = await pickAndUploadAvatar();
+			if (uploaded) {
+				setAvatarUrl(uploaded.url);
+				toast.show({ variant: "success", label: "头像已上传，保存后生效" });
+			}
+		} catch (error) {
+			if (isRequestTimeoutError(error)) return;
+			toast.show({
+				variant: "danger",
+				label: "头像上传失败",
+				description: error instanceof Error ? error.message : undefined,
+			});
+		} finally {
+			setIsUploadingAvatar(false);
+		}
+	};
 
 	const saveProfile = () => {
 		fireHaptic();
@@ -845,12 +869,14 @@ function EditProfileSheet({
 			>
 				<View className="gap-4 px-4">
 					<View className="flex-row items-center gap-3">
-						<Avatar size="md" alt={name || displayName}>
-							{avatarUrl ? <Avatar.Image source={{ uri: avatarUrl }} /> : null}
-							<Avatar.Fallback>
-								{(name || displayName).slice(0, 1)}
-							</Avatar.Fallback>
-						</Avatar>
+						<EditableAvatar
+							alt={name || displayName}
+							image={avatarUrl}
+							initial={(name || displayName).slice(0, 1)}
+							isDisabled={updateProfile.isPending}
+							isUploading={isUploadingAvatar}
+							onPress={chooseAvatar}
+						/>
 						<View className="min-w-0 flex-1">
 							<Text.Paragraph weight="bold" numberOfLines={1}>
 								{name || displayName}
@@ -882,20 +908,6 @@ function EditProfileSheet({
 							onChangeText={setHandle}
 							onFocus={onFocus}
 							placeholder="letters_and_numbers"
-							placeholderTextColor={mutedColor}
-						/>
-					</TextField>
-
-					<TextField>
-						<Label>头像链接</Label>
-						<Input
-							value={avatarUrl}
-							autoCapitalize="none"
-							keyboardType="url"
-							onBlur={onBlur}
-							onChangeText={setAvatarUrl}
-							onFocus={onFocus}
-							placeholder="https://..."
 							placeholderTextColor={mutedColor}
 						/>
 					</TextField>
@@ -941,7 +953,7 @@ function EditProfileSheet({
 						variant="primary"
 						className="rounded-full"
 						feedbackVariant="scale-ripple"
-						isDisabled={updateProfile.isPending}
+						isDisabled={updateProfile.isPending || isUploadingAvatar}
 						onPress={saveProfile}
 					>
 						{updateProfile.isPending ? (

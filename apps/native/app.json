@@ -24,7 +24,13 @@
 			],
 			"expo-font",
 			"expo-notifications",
-			"expo-web-browser"
+			"expo-web-browser",
+			[
+				"expo-image-picker",
+				{
+					"photosPermission": "允许 Youni 从相册选择头像。"
+				}
+			]
 		],
 		"experiments": {
 			"typedRoutes": true,

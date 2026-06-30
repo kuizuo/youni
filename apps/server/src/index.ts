@@ -38,6 +38,7 @@ const avatarPrefix = "avatar/";
 const avatarMaxSize = 2 * 1024 * 1024;
 const avatarContentTypes = new Map([
 	["image/jpeg", "jpg"],
+	["image/jpg", "jpg"],
 	["image/png", "png"],
 	["image/webp", "webp"],
 	["image/gif", "gif"],
@@ -89,12 +90,29 @@ async function assertBackofficeAccess(c: HonoContext) {
 	return account;
 }
 
-app.post("/admin/uploads/avatar", async (c) => {
-	const account = await assertBackofficeAccess(c);
-	if (!account) {
-		return c.json({ message: "没有权限上传头像" }, 403);
+async function assertActiveUploadAccess(c: HonoContext) {
+	const context = await createContext({ context: c });
+	if (!context.session?.user) {
+		return null;
 	}
 
+	const [account] = await createDb()
+		.select({
+			id: user.id,
+			status: user.status,
+		})
+		.from(user)
+		.where(eq(user.id, context.session.user.id))
+		.limit(1);
+
+	if (!account || account.status !== "active") {
+		return null;
+	}
+
+	return account;
+}
+
+async function uploadAvatarFromRequest(c: HonoContext) {
 	if (!env.YOUNI_BUCKET) {
 		return c.json({ message: "头像存储尚未配置" }, 503);
 	}
@@ -129,6 +147,24 @@ app.post("/admin/uploads/avatar", async (c) => {
 		key,
 		url: new URL(`/uploads/avatar/${fileName}`, c.req.url).toString(),
 	});
+}
+
+app.post("/admin/uploads/avatar", async (c) => {
+	const account = await assertBackofficeAccess(c);
+	if (!account) {
+		return c.json({ message: "没有权限上传头像" }, 403);
+	}
+
+	return uploadAvatarFromRequest(c);
+});
+
+app.post("/uploads/avatar", async (c) => {
+	const account = await assertActiveUploadAccess(c);
+	if (!account) {
+		return c.json({ message: "请先登录后再上传头像" }, 401);
+	}
+
+	return uploadAvatarFromRequest(c);
 });
 
 app.get("/uploads/avatar/:fileName", async (c) => {
