@@ -47,12 +47,7 @@ export default function DraftsScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			<ProfilePageHeader
-				title="我的草稿"
-				subtitle={
-					items.length > 0 ? `${items.length} 篇未发布` : "继续编辑未完成内容"
-				}
-			/>
+			<ProfilePageHeader title="我的草稿" />
 			<ScrollView
 				contentInsetAdjustmentBehavior="automatic"
 				refreshControl={

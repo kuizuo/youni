@@ -61,6 +61,14 @@ function openNotificationTarget(data: NotificationData) {
 		return;
 	}
 
+	if (targetType === "chat" && targetId) {
+		router.push({
+			pathname: "/chat/[id]",
+			params: { id: targetId },
+		} as unknown as Href);
+		return;
+	}
+
 	router.push("/messages" as Href);
 }
 

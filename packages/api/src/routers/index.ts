@@ -2,6 +2,7 @@ import type { RouterClient } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
 import { adminRouter } from "./admin";
+import { messagesRouter } from "./messages";
 import { notificationsRouter } from "./notifications";
 import { socialRouter } from "./social";
 
@@ -16,6 +17,7 @@ export const appRouter = {
 		};
 	}),
 	admin: adminRouter,
+	messages: messagesRouter,
 	notifications: notificationsRouter,
 	social: socialRouter,
 };

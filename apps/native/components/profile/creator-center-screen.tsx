@@ -24,7 +24,7 @@ export default function CreatorCenterScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			<ProfilePageHeader title="创作者中心" subtitle="你的内容数据总览" />
+			<ProfilePageHeader title="创作者中心" />
 			<ScrollView
 				contentInsetAdjustmentBehavior="automatic"
 				refreshControl={

@@ -41,6 +41,8 @@ function StackLayout() {
 	return (
 		<Stack screenOptions={{ headerShown: false }}>
 			<Stack.Screen name="(tabs)" />
+			<Stack.Screen name="add-friend" />
+			<Stack.Screen name="chat/[id]" />
 			<Stack.Screen name="creator-center" />
 			<Stack.Screen name="drafts" />
 			<Stack.Screen name="history" />
@@ -49,8 +51,10 @@ function StackLayout() {
 			<Stack.Screen name="login" />
 			<Stack.Screen name="preview" />
 			<Stack.Screen name="publish" />
+			<Stack.Screen name="scan" />
 			<Stack.Screen name="search" />
 			<Stack.Screen name="settings" />
+			<Stack.Screen name="user-connections" />
 			<Stack.Screen name="modal" options={{ presentation: "modal" }} />
 		</Stack>
 	);

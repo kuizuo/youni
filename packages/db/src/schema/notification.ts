@@ -25,6 +25,7 @@ export const notificationType = pgEnum("notification_type", [
 	"comment",
 	"mention",
 	"follow",
+	"message",
 	"announcement",
 	"event",
 	"system",

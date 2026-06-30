@@ -22,6 +22,10 @@ import { notifyFollow, notifyNoteOwner } from "../lib/notifications";
 
 const idInput = z.object({ id: z.string().min(1) });
 const profileInput = z.object({ userId: z.string().min(1) });
+const connectionsInput = profileInput.extend({
+	type: z.enum(["following", "followers"]),
+	limit: z.number().int().min(1).max(60).default(30),
+});
 const listInput = z.object({
 	keyword: z.string().trim().optional(),
 	limit: z.number().int().min(1).max(60).default(30),
@@ -521,6 +525,42 @@ export const socialRouter = {
 
 			return Promise.all(
 				rows.map((row) => getProfile(row.id, context.session?.user.id)),
+			);
+		}),
+
+	connections: publicProcedure
+		.input(connectionsInput)
+		.handler(async ({ input, context }) => {
+			const db = createDb();
+			const rows =
+				input.type === "following"
+					? await db
+							.select({ userId: follow.followingId })
+							.from(follow)
+							.innerJoin(user, eq(follow.followingId, user.id))
+							.where(
+								and(
+									eq(follow.followerId, input.userId),
+									eq(user.status, "active"),
+								),
+							)
+							.orderBy(desc(follow.createdAt))
+							.limit(input.limit)
+					: await db
+							.select({ userId: follow.followerId })
+							.from(follow)
+							.innerJoin(user, eq(follow.followerId, user.id))
+							.where(
+								and(
+									eq(follow.followingId, input.userId),
+									eq(user.status, "active"),
+								),
+							)
+							.orderBy(desc(follow.createdAt))
+							.limit(input.limit);
+
+			return Promise.all(
+				rows.map((row) => getProfile(row.userId, context.session?.user.id)),
 			);
 		}),
 

@@ -4,6 +4,9 @@ import { closeDb, createDb } from "./index";
 import {
 	account,
 	comment,
+	directConversation,
+	directConversationParticipant,
+	directMessage,
 	follow,
 	note,
 	noteCollection,
@@ -258,6 +261,51 @@ const seedNotes = [
 	},
 ];
 
+const seedConversations = [
+	{
+		id: "seed-conversation-lin-momo",
+		members: ["lin", "momo"] as const,
+		messages: [
+			{
+				id: "seed-message-lin-momo-1",
+				senderKey: "momo",
+				content: "你那条手机拍照技巧很有用，我今晚试了一下。",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 40),
+			},
+			{
+				id: "seed-message-lin-momo-2",
+				senderKey: "lin",
+				content: "先找干净光线就会好很多，拍完可以发我看看。",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 36),
+			},
+			{
+				id: "seed-message-lin-momo-3",
+				senderKey: "momo",
+				content: "好，我明天整理一下城市散步路线也发你。",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 28),
+			},
+		],
+	},
+	{
+		id: "seed-conversation-lin-ash",
+		members: ["lin", "ash"] as const,
+		messages: [
+			{
+				id: "seed-message-lin-ash-1",
+				senderKey: "ash",
+				content: "周末早午餐那篇你要不要一起补几张图？",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 3),
+			},
+			{
+				id: "seed-message-lin-ash-2",
+				senderKey: "lin",
+				content: "可以，我有一组咖啡店照片，晚上发你。",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 2.8),
+			},
+		],
+	},
+];
+
 async function ensureUser(
 	db: ReturnType<typeof createDb>,
 	item: (typeof seedUsers)[number],
@@ -330,7 +378,22 @@ async function main() {
 	const db = createDb();
 
 	const seedNoteIds = seedNotes.map((item) => item.id);
+	const seedConversationIds = seedConversations.map((item) => item.id);
 
+	await db
+		.delete(directMessage)
+		.where(inArray(directMessage.conversationId, seedConversationIds));
+	await db
+		.delete(directConversationParticipant)
+		.where(
+			inArray(
+				directConversationParticipant.conversationId,
+				seedConversationIds,
+			),
+		);
+	await db
+		.delete(directConversation)
+		.where(inArray(directConversation.id, seedConversationIds));
 	await db.delete(noteLike).where(inArray(noteLike.noteId, seedNoteIds));
 	await db
 		.delete(noteCollection)
@@ -520,6 +583,52 @@ async function main() {
 			{ followerId: momo, followingId: ash },
 		])
 		.onConflictDoNothing();
+
+	for (const item of seedConversations) {
+		const memberIds = item.members.map((key) => userIds.get(key));
+		if (memberIds.some((id) => !id)) {
+			throw new Error(`Missing conversation members for ${item.id}`);
+		}
+		const typedMemberIds = memberIds as [string, string];
+		const updatedAt =
+			item.messages.at(-1)?.createdAt ??
+			new Date(now.getTime() - 1000 * 60 * 5);
+
+		await db.insert(directConversation).values({
+			id: item.id,
+			memberKey: [...typedMemberIds].sort().join(":"),
+			createdAt: item.messages[0]?.createdAt ?? updatedAt,
+			updatedAt,
+		});
+		await db
+			.insert(directConversationParticipant)
+			.values(
+				typedMemberIds.map((userId) => ({
+					conversationId: item.id,
+					userId,
+					lastReadAt: userId === lin ? updatedAt : null,
+					createdAt: item.messages[0]?.createdAt ?? updatedAt,
+					updatedAt,
+				})),
+			)
+			.onConflictDoNothing();
+		await db.insert(directMessage).values(
+			item.messages.map((message) => {
+				const senderId = userIds.get(message.senderKey);
+				if (!senderId) {
+					throw new Error(`Missing sender ${message.senderKey}`);
+				}
+				return {
+					id: message.id,
+					conversationId: item.id,
+					senderId,
+					content: message.content,
+					createdAt: message.createdAt,
+					updatedAt: message.createdAt,
+				};
+			}),
+		);
+	}
 
 	console.log("Seed completed");
 	console.log(`Admin: admin@youni.local / ${adminPassword}`);

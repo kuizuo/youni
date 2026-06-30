@@ -108,9 +108,6 @@ export default function HistoryScreen() {
 		<View className="flex-1 bg-background">
 			<ProfilePageHeader
 				title="浏览记录"
-				subtitle={
-					items.length > 0 ? `${items.length} 条记录` : "打开笔记后会记录在这里"
-				}
 				action={
 					items.length > 0 ? (
 						<Button

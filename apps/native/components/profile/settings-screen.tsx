@@ -1,29 +1,39 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
 	Avatar,
 	Button,
+	Input,
+	Label,
 	Spinner,
 	Surface,
 	Text,
+	TextArea,
+	TextField,
 	useThemeColor,
 } from "heroui-native";
+import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { authClient } from "@/lib/auth-client";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
+import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export default function SettingsScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const session = authClient.useSession();
+	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
+	const accentForegroundColor = useThemeColor("accent-foreground");
+	const defaultForegroundColor = useThemeColor("default-foreground");
 	const me = useQuery({
 		...orpc.social.me.queryOptions(),
 		enabled: Boolean(session.data?.user),
@@ -33,6 +43,60 @@ export default function SettingsScreen() {
 	const displayName = profile?.name ?? user?.name ?? "我";
 	const displayHandle = profile?.handle ? `@${profile.handle}` : user?.email;
 	const image = profile?.image ?? user?.image;
+	const [name, setName] = useState("");
+	const [handle, setHandle] = useState("");
+	const [bio, setBio] = useState("");
+	const [avatarUrl, setAvatarUrl] = useState("");
+	const [gender, setGender] = useState<"female" | "male" | "unknown">(
+		"unknown",
+	);
+
+	useEffect(() => {
+		if (!profile) return;
+		setName(profile.name ?? "");
+		setHandle(profile.handle ?? "");
+		setBio(profile.bio ?? "");
+		setAvatarUrl(profile.image ?? "");
+		setGender(
+			profile.gender === "male" || profile.gender === "female"
+				? profile.gender
+				: "unknown",
+		);
+	}, [profile]);
+
+	const updateProfile = useMutation(
+		orpc.social.updateProfile.mutationOptions({
+			onSuccess: async () => {
+				await me.refetch();
+				await queryClient.refetchQueries();
+				toast.show({ variant: "success", label: "资料已保存" });
+			},
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({
+					variant: "danger",
+					label: "保存失败",
+					description: error.message,
+				});
+			},
+		}),
+	);
+
+	const saveProfile = () => {
+		fireHaptic();
+		if (!name.trim()) {
+			toast.show({ variant: "warning", label: "请输入昵称" });
+			return;
+		}
+
+		updateProfile.mutate({
+			name: name.trim(),
+			handle: handle.trim(),
+			bio: bio.trim(),
+			image: avatarUrl.trim(),
+			gender,
+		});
+	};
 
 	const signOut = () => {
 		fireHaptic();
@@ -43,7 +107,7 @@ export default function SettingsScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			<ProfilePageHeader title="设置" subtitle="账号和资料" />
+			<ProfilePageHeader title="设置" />
 			<ScrollView
 				contentInsetAdjustmentBehavior="automatic"
 				contentContainerClassName="gap-4 px-4 pt-4"
@@ -70,33 +134,150 @@ export default function SettingsScreen() {
 						</View>
 						{me.isLoading ? <Spinner size="sm" /> : null}
 					</View>
+				</Surface>
+
+				<Surface className="gap-4 rounded-3xl p-4">
+					<View className="flex-row items-center justify-between gap-3">
+						<View className="min-w-0 flex-1">
+							<Text.Paragraph weight="bold">编辑主页</Text.Paragraph>
+							<Text.Paragraph type="body-sm" color="muted">
+								修改头像、昵称、用户名和简介
+							</Text.Paragraph>
+						</View>
+						<Avatar size="md" alt={name || displayName}>
+							{avatarUrl ? <Avatar.Image source={{ uri: avatarUrl }} /> : null}
+							<Avatar.Fallback>
+								{(name || displayName).slice(0, 1)}
+							</Avatar.Fallback>
+						</Avatar>
+					</View>
+
+					<TextField isRequired>
+						<Label>昵称</Label>
+						<Input
+							value={name}
+							onChangeText={setName}
+							placeholder="你的昵称"
+							placeholderTextColor={mutedColor}
+						/>
+					</TextField>
+
+					<TextField>
+						<Label>用户名</Label>
+						<Input
+							value={handle}
+							onChangeText={setHandle}
+							autoCapitalize="none"
+							placeholder="letters_and_numbers"
+							placeholderTextColor={mutedColor}
+						/>
+					</TextField>
+
+					<TextField>
+						<Label>头像链接</Label>
+						<Input
+							value={avatarUrl}
+							onChangeText={setAvatarUrl}
+							autoCapitalize="none"
+							keyboardType="url"
+							placeholder="https://..."
+							placeholderTextColor={mutedColor}
+						/>
+					</TextField>
+
+					<TextField>
+						<Label>简介</Label>
+						<TextArea
+							value={bio}
+							onChangeText={setBio}
+							placeholder="一句话介绍你分享的内容"
+							placeholderTextColor={mutedColor}
+							className="min-h-24"
+							maxLength={160}
+						/>
+					</TextField>
+
+					<View className="gap-2">
+						<Text.Paragraph type="body-sm" weight="semibold">
+							性别
+						</Text.Paragraph>
+						<View className="flex-row rounded-full bg-content2 p-1">
+							<GenderButton
+								isActive={gender === "unknown"}
+								label="不展示"
+								onPress={() => setGender("unknown")}
+							/>
+							<GenderButton
+								isActive={gender === "female"}
+								label="女"
+								onPress={() => setGender("female")}
+							/>
+							<GenderButton
+								isActive={gender === "male"}
+								label="男"
+								onPress={() => setGender("male")}
+							/>
+						</View>
+					</View>
+
 					<Button
-						variant="outline"
+						variant="primary"
 						className="rounded-full"
 						feedbackVariant="scale-ripple"
-						onPress={() => router.replace("/me" as Href)}
+						isDisabled={updateProfile.isPending || me.isLoading}
+						onPress={saveProfile}
 					>
-						<Ionicons name="person-outline" size={18} color={mutedColor} />
-						<Button.Label>查看个人主页</Button.Label>
+						{updateProfile.isPending ? (
+							<Spinner size="sm" color={accentForegroundColor} />
+						) : (
+							<Ionicons
+								name="checkmark-outline"
+								size={18}
+								color={accentForegroundColor}
+							/>
+						)}
+						<Button.Label>
+							{updateProfile.isPending ? "保存中" : "保存资料"}
+						</Button.Label>
 					</Button>
 				</Surface>
 
-				<Surface className="gap-3 rounded-3xl p-4">
-					<Text.Paragraph weight="bold">账号</Text.Paragraph>
-					<Text.Paragraph type="body-sm" color="muted" selectable>
-						{user?.email ?? "当前账号"}
-					</Text.Paragraph>
-					<Button
-						variant="danger-soft"
-						className="rounded-full"
-						feedbackVariant="scale-ripple"
-						onPress={signOut}
-					>
-						<Ionicons name="log-out-outline" size={18} color={dangerColor} />
-						<Button.Label>退出登录</Button.Label>
-					</Button>
-				</Surface>
+				<Button
+					variant="danger-soft"
+					className="rounded-full"
+					feedbackVariant="scale-ripple"
+					onPress={signOut}
+				>
+					<Ionicons
+						name="log-out-outline"
+						size={18}
+						color={dangerColor || defaultForegroundColor}
+					/>
+					<Button.Label>退出登录</Button.Label>
+				</Button>
 			</ScrollView>
 		</View>
+	);
+}
+
+function GenderButton({
+	isActive,
+	label,
+	onPress,
+}: {
+	isActive: boolean;
+	label: string;
+	onPress: () => void;
+}) {
+	return (
+		<Button
+			size="sm"
+			variant={isActive ? "primary" : "ghost"}
+			className="h-9 flex-1 rounded-full"
+			feedbackVariant="scale-ripple"
+			onPress={onPress}
+		>
+			<Button.Label>{label}</Button.Label>
+		</Button>
 	);
 }

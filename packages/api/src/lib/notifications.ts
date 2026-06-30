@@ -15,6 +15,7 @@ type NotificationType =
 	| "event"
 	| "follow"
 	| "like"
+	| "message"
 	| "mention"
 	| "system";
 
@@ -188,6 +189,46 @@ export async function notifyFollow({
 		body: actor.bio || "点击查看 TA 的主页",
 		targetType: "user",
 		targetId: actorId,
+	});
+}
+
+export async function notifyMessage({
+	actorId,
+	conversationId,
+	preview,
+	recipientId,
+}: {
+	actorId: string;
+	conversationId: string;
+	preview: string;
+	recipientId: string;
+}) {
+	if (actorId === recipientId) {
+		return null;
+	}
+
+	const db = createDb();
+	const [actor] = await db
+		.select({
+			name: user.name,
+		})
+		.from(user)
+		.where(eq(user.id, actorId))
+		.limit(1);
+
+	if (!actor) {
+		return null;
+	}
+
+	return createNotification({
+		recipientId,
+		actorId,
+		type: "message",
+		category: "system",
+		title: `${actor.name} 发来一条私信`,
+		body: preview || "点击查看聊天",
+		targetType: "chat",
+		targetId: conversationId,
 	});
 }
 

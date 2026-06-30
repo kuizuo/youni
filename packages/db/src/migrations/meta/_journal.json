@@ -1,41 +1,48 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1782181325390,
-      "tag": "0000_skinny_chronomancer",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1782185194453,
-      "tag": "0001_rapid_warhawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1782240565587,
-      "tag": "0002_mushy_cargill",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1782575864184,
-      "tag": "0003_grey_silver_fox",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1782754052985,
-      "tag": "0004_marvelous_reaper",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1782181325390,
+			"tag": "0000_skinny_chronomancer",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1782185194453,
+			"tag": "0001_rapid_warhawk",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1782240565587,
+			"tag": "0002_mushy_cargill",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1782575864184,
+			"tag": "0003_grey_silver_fox",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1782754052985,
+			"tag": "0004_marvelous_reaper",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1782756577237,
+			"tag": "0005_tough_zuras",
+			"breakpoints": true
+		}
+	]
 }
