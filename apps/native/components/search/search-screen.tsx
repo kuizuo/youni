@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import {
 	Avatar,
 	Button,
@@ -12,7 +13,7 @@ import {
 	useThemeColor,
 } from "heroui-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, ScrollView, View } from "react-native";
+import { Alert, FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState, ErrorState } from "@/components/social-states";
@@ -35,6 +36,9 @@ const QUICK_WORDS = [
 	"咖啡",
 ] as const;
 
+const SEARCH_HISTORY_LIMIT = 8;
+const SEARCH_HISTORY_STORAGE_KEY = "youni.search.history";
+
 type UserSearchItem = {
 	id: string;
 	name: string;
@@ -50,9 +54,48 @@ type UserSearchItem = {
 };
 
 let searchHistoryCache: string[] = [];
+let hasLoadedSearchHistory = false;
 
 function getRouteParam(value: string | string[] | undefined) {
 	return Array.isArray(value) ? value[0] : value;
+}
+
+function readSearchHistoryValue(value: unknown) {
+	if (!Array.isArray(value)) return [];
+	return uniqueWords(
+		value.filter((item): item is string => typeof item === "string"),
+		SEARCH_HISTORY_LIMIT,
+	);
+}
+
+async function loadSearchHistory() {
+	if (hasLoadedSearchHistory) return searchHistoryCache;
+
+	try {
+		const value = await SecureStore.getItemAsync(SEARCH_HISTORY_STORAGE_KEY);
+		if (!value) return searchHistoryCache;
+
+		searchHistoryCache = readSearchHistoryValue(JSON.parse(value));
+		return searchHistoryCache;
+	} catch {
+		return searchHistoryCache;
+	} finally {
+		hasLoadedSearchHistory = true;
+	}
+}
+
+function persistSearchHistory(items: string[]) {
+	searchHistoryCache = items;
+
+	const writeHistory =
+		items.length > 0
+			? SecureStore.setItemAsync(
+					SEARCH_HISTORY_STORAGE_KEY,
+					JSON.stringify(items),
+				)
+			: SecureStore.deleteItemAsync(SEARCH_HISTORY_STORAGE_KEY);
+
+	void writeHistory.catch(() => undefined);
 }
 
 export default function SearchScreen() {
@@ -69,9 +112,11 @@ export default function SearchScreen() {
 	const foregroundColor = useThemeColor("foreground");
 	const accentColor = useThemeColor("accent");
 	const handledExternalSearch = useRef<string | null>(null);
+	const historyRevision = useRef(0);
 	const [keyword, setKeyword] = useState("");
 	const [activeKeyword, setActiveKeyword] = useState("");
 	const [recentWords, setRecentWords] = useState<string[]>(searchHistoryCache);
+	const [isEditingHistory, setIsEditingHistory] = useState(false);
 	const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
 	const hasActiveSearch = activeKeyword.length > 0;
 	const normalizedKeyword = keyword.trim();
@@ -91,19 +136,52 @@ export default function SearchScreen() {
 	);
 	const currentUserId = session.data?.user?.id;
 
-	const applyKeyword = useCallback((value: string) => {
-		const nextKeyword = value.trim();
-		if (!nextKeyword) return;
+	const updateRecentWords = useCallback(
+		(updater: (items: string[]) => string[]) => {
+			historyRevision.current += 1;
+			setRecentWords((items) => {
+				const nextItems = updater(items);
+				persistSearchHistory(nextItems);
+				return nextItems;
+			});
+		},
+		[],
+	);
 
-		fireHaptic();
-		setKeyword(nextKeyword);
-		setActiveKeyword(nextKeyword);
-		setRecentWords((items) => {
-			const nextItems = uniqueWords([nextKeyword, ...items], 8);
-			searchHistoryCache = nextItems;
-			return nextItems;
+	const applyKeyword = useCallback(
+		(value: string) => {
+			const nextKeyword = value.trim();
+			if (!nextKeyword) return;
+
+			fireHaptic();
+			setKeyword(nextKeyword);
+			setActiveKeyword(nextKeyword);
+			updateRecentWords((items) =>
+				uniqueWords([nextKeyword, ...items], SEARCH_HISTORY_LIMIT),
+			);
+		},
+		[updateRecentWords],
+	);
+
+	useEffect(() => {
+		let isMounted = true;
+		const revision = historyRevision.current;
+
+		loadSearchHistory().then((items) => {
+			if (!isMounted || historyRevision.current !== revision) return;
+			setRecentWords(items);
 		});
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
+
+	useEffect(() => {
+		if (recentWords.length === 0) {
+			setIsEditingHistory(false);
+		}
+	}, [recentWords.length]);
 
 	useEffect(() => {
 		const nextKeyword = getRouteParam(params.keyword)?.trim();
@@ -152,10 +230,35 @@ export default function SearchScreen() {
 		setActiveKeyword("");
 	};
 
-	const clearHistory = () => {
+	const startEditingHistory = () => {
 		fireHaptic();
-		searchHistoryCache = [];
-		setRecentWords([]);
+		setIsEditingHistory(true);
+	};
+
+	const finishEditingHistory = () => {
+		fireHaptic();
+		setIsEditingHistory(false);
+	};
+
+	const deleteHistoryWord = (word: string) => {
+		fireHaptic();
+		updateRecentWords((items) => items.filter((item) => item !== word));
+	};
+
+	const clearHistory = () => {
+		if (recentWords.length === 0) return;
+
+		Alert.alert("全部删除历史记录", "删除后不能恢复。", [
+			{ text: "取消", style: "cancel" },
+			{
+				text: "全部删除",
+				style: "destructive",
+				onPress: () => {
+					fireHaptic();
+					updateRecentWords(() => []);
+				},
+			},
+		]);
 	};
 
 	const requireLogin = () => {
@@ -290,11 +393,15 @@ export default function SearchScreen() {
 			) : (
 				<SearchHome
 					bottomInset={insets.bottom}
+					isEditingHistory={isEditingHistory}
 					mutedColor={mutedColor}
 					quickWords={quickWords}
 					recentWords={recentWords}
 					onClearHistory={clearHistory}
+					onDeleteHistoryWord={deleteHistoryWord}
+					onFinishEditingHistory={finishEditingHistory}
 					onPressWord={applyKeyword}
+					onStartEditingHistory={startEditingHistory}
 				/>
 			)}
 		</View>
@@ -435,16 +542,24 @@ function UserMetric({ label, value }: { label: string; value: number }) {
 
 function SearchHome({
 	bottomInset,
+	isEditingHistory,
 	mutedColor,
 	onClearHistory,
+	onDeleteHistoryWord,
+	onFinishEditingHistory,
 	onPressWord,
+	onStartEditingHistory,
 	quickWords,
 	recentWords,
 }: {
 	bottomInset: number;
+	isEditingHistory: boolean;
 	mutedColor: string;
 	onClearHistory: () => void;
+	onDeleteHistoryWord: (word: string) => void;
+	onFinishEditingHistory: () => void;
 	onPressWord: (word: string) => void;
+	onStartEditingHistory: () => void;
 	quickWords: readonly string[];
 	recentWords: readonly string[];
 }) {
@@ -459,20 +574,51 @@ function SearchHome({
 				<View className="gap-3">
 					<View className="flex-row items-center justify-between">
 						<Text.Paragraph weight="semibold" className="text-foreground">
-							最近搜索
+							历史记录
 						</Text.Paragraph>
-						<Button
-							isIconOnly
-							size="sm"
-							variant="ghost"
-							className="h-9 w-9 rounded-full"
-							accessibilityLabel="清空搜索历史"
-							onPress={onClearHistory}
-						>
-							<Ionicons name="trash-outline" size={17} color={mutedColor} />
-						</Button>
+						{isEditingHistory ? (
+							<View className="flex-row items-center gap-3">
+								<Button
+									size="sm"
+									variant="ghost"
+									className="h-9 rounded-full px-2"
+									feedbackVariant="scale-ripple"
+									accessibilityLabel="全部删除搜索历史"
+									onPress={onClearHistory}
+								>
+									<Button.Label className="text-muted">全部删除</Button.Label>
+								</Button>
+								<View className="h-4 w-px bg-border" />
+								<Button
+									size="sm"
+									variant="ghost"
+									className="h-9 rounded-full px-2"
+									feedbackVariant="scale-ripple"
+									accessibilityLabel="完成编辑搜索历史"
+									onPress={onFinishEditingHistory}
+								>
+									<Button.Label className="text-muted">完成</Button.Label>
+								</Button>
+							</View>
+						) : (
+							<Button
+								isIconOnly
+								size="sm"
+								variant="ghost"
+								className="h-9 w-9 rounded-full"
+								accessibilityLabel="编辑搜索历史"
+								onPress={onStartEditingHistory}
+							>
+								<Ionicons name="trash-outline" size={17} color={mutedColor} />
+							</Button>
+						)}
 					</View>
-					<WordWrap words={recentWords} onPressWord={onPressWord} />
+					<WordWrap
+						isEditing={isEditingHistory}
+						words={recentWords}
+						onDeleteWord={onDeleteHistoryWord}
+						onPressWord={onPressWord}
+					/>
 				</View>
 			) : null}
 
@@ -487,26 +633,54 @@ function SearchHome({
 }
 
 function WordWrap({
+	isEditing = false,
+	onDeleteWord,
 	onPressWord,
 	words,
 }: {
+	isEditing?: boolean;
+	onDeleteWord?: (word: string) => void;
 	onPressWord: (word: string) => void;
 	words: readonly string[];
 }) {
+	const mutedColor = useThemeColor("muted");
+
 	return (
 		<View className="flex-row flex-wrap gap-2">
-			{words.map((item) => (
-				<Button
-					key={item}
-					size="sm"
-					variant="secondary"
-					className="rounded-full px-4"
-					feedbackVariant="scale-ripple"
-					onPress={() => onPressWord(item)}
-				>
-					<Button.Label>{item}</Button.Label>
-				</Button>
-			))}
+			{words.map((item) =>
+				isEditing ? (
+					<View
+						key={item}
+						className="h-10 flex-row items-center rounded-full border border-border bg-content2 pr-1 pl-4"
+					>
+						<Text.Paragraph numberOfLines={1} className="text-foreground">
+							{item}
+						</Text.Paragraph>
+						<Button
+							isIconOnly
+							size="sm"
+							variant="ghost"
+							className="h-8 w-8 rounded-full"
+							feedbackVariant="scale-ripple"
+							accessibilityLabel={`删除搜索历史 ${item}`}
+							onPress={() => onDeleteWord?.(item)}
+						>
+							<Ionicons name="close-outline" size={17} color={mutedColor} />
+						</Button>
+					</View>
+				) : (
+					<Button
+						key={item}
+						size="sm"
+						variant="secondary"
+						className="rounded-full px-4"
+						feedbackVariant="scale-ripple"
+						onPress={() => onPressWord(item)}
+					>
+						<Button.Label>{item}</Button.Label>
+					</Button>
+				),
+			)}
 		</View>
 	);
 }
