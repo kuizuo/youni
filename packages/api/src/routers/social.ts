@@ -18,6 +18,17 @@ import {
 	protectedProcedure,
 	publicProcedure,
 } from "../index";
+import {
+	type ContentNoteRow,
+	createContentNote,
+	getDraftContentNoteById,
+	hydrateContentNotes,
+	listDraftContentNotes,
+	listMeContentNoteRows,
+	listViewedContentNoteRows,
+	selectContentNoteRows,
+	updateDraftContentNote,
+} from "../lib/content-notes";
 import { notifyFollow, notifyNoteOwner } from "../lib/notifications";
 
 const idInput = z.object({ id: z.string().min(1) });
@@ -91,225 +102,8 @@ const profileUpdateInput = z.object({
 	image: z.string().trim().url().optional().or(z.literal("")),
 });
 
-type NoteRow = {
-	id: string;
-	title: string;
-	content: string;
-	images: string[];
-	cover: string | null;
-	locationName: string | null;
-	visibility: "public" | "followers" | "private";
-	components: Array<{
-		options?: string[];
-		title: string;
-		type: "file" | "poll";
-		value?: string;
-	}>;
-	advancedOptions: {
-		allowComment: boolean;
-		allowShare: boolean;
-		contentDisclosure?: string | null;
-		isOriginal: boolean;
-	};
-	status: "audit" | "draft" | "published" | "rejected" | "hidden";
-	rejectionReason: string | null;
-	publishedAt: Date | null;
-	draftSavedAt: Date | null;
-	createdAt: Date;
-	updatedAt: Date;
-	userId: string;
-	authorName: string;
-	authorImage: string | null;
-	authorHandle: string | null;
-};
-type NoteMutationInput = z.infer<typeof noteCreateInput>;
-
-const noteRowFields = {
-	id: note.id,
-	title: note.title,
-	content: note.content,
-	images: note.images,
-	cover: note.cover,
-	locationName: note.locationName,
-	visibility: note.visibility,
-	components: note.components,
-	advancedOptions: note.advancedOptions,
-	status: note.status,
-	rejectionReason: note.rejectionReason,
-	publishedAt: note.publishedAt,
-	draftSavedAt: note.draftSavedAt,
-	createdAt: note.createdAt,
-	updatedAt: note.updatedAt,
-	userId: note.userId,
-	authorName: user.name,
-	authorImage: user.image,
-	authorHandle: user.handle,
-};
-
-function uniqueTopics(values: string[]) {
-	return Array.from(
-		new Set(
-			values
-				.map((value) => value.trim().replace(/^#/, ""))
-				.filter((value) => value.length > 0),
-		),
-	).slice(0, 8);
-}
-
 function toNumber(value: unknown) {
 	return Number(value ?? 0);
-}
-
-function getMissingPublishItems(
-	input: NoteMutationInput,
-	topicNames: string[],
-) {
-	return [
-		input.images[0] ? null : "图片",
-		input.title.trim() ? null : "标题",
-		input.content.trim() ? null : "正文",
-		topicNames.length > 0 ? null : "话题",
-	].filter((item): item is string => Boolean(item));
-}
-
-function assertPublishReady(input: NoteMutationInput, topicNames: string[]) {
-	const missingItems = getMissingPublishItems(input, topicNames);
-	if (missingItems.length > 0) {
-		throw new ORPCError("BAD_REQUEST", {
-			message: `还差：${missingItems.join("、")}`,
-		});
-	}
-}
-
-async function hydrateNotes(rows: NoteRow[], viewerId?: string) {
-	if (rows.length === 0) {
-		return [];
-	}
-
-	const db = createDb();
-	const noteIds = rows.map((row) => row.id);
-	const authorIds = Array.from(new Set(rows.map((row) => row.userId)));
-
-	const [
-		topicRows,
-		likeRows,
-		collectionRows,
-		commentRows,
-		likedRows,
-		collectedRows,
-		followingRows,
-	] = await Promise.all([
-		db
-			.select({ noteId: noteTopic.noteId, name: topic.name })
-			.from(noteTopic)
-			.innerJoin(topic, eq(noteTopic.topicId, topic.id))
-			.where(inArray(noteTopic.noteId, noteIds)),
-		db
-			.select({ noteId: noteLike.noteId, value: count() })
-			.from(noteLike)
-			.where(inArray(noteLike.noteId, noteIds))
-			.groupBy(noteLike.noteId),
-		db
-			.select({ noteId: noteCollection.noteId, value: count() })
-			.from(noteCollection)
-			.where(inArray(noteCollection.noteId, noteIds))
-			.groupBy(noteCollection.noteId),
-		db
-			.select({ noteId: comment.noteId, value: count() })
-			.from(comment)
-			.where(inArray(comment.noteId, noteIds))
-			.groupBy(comment.noteId),
-		viewerId
-			? db
-					.select({ noteId: noteLike.noteId })
-					.from(noteLike)
-					.where(
-						and(
-							inArray(noteLike.noteId, noteIds),
-							eq(noteLike.userId, viewerId),
-						),
-					)
-			: Promise.resolve([]),
-		viewerId
-			? db
-					.select({ noteId: noteCollection.noteId })
-					.from(noteCollection)
-					.where(
-						and(
-							inArray(noteCollection.noteId, noteIds),
-							eq(noteCollection.userId, viewerId),
-						),
-					)
-			: Promise.resolve([]),
-		viewerId
-			? db
-					.select({ followingId: follow.followingId })
-					.from(follow)
-					.where(
-						and(
-							inArray(follow.followingId, authorIds),
-							eq(follow.followerId, viewerId),
-						),
-					)
-			: Promise.resolve([]),
-	]);
-
-	const topicsByNote = new Map<string, string[]>();
-	for (const row of topicRows) {
-		topicsByNote.set(row.noteId, [
-			...(topicsByNote.get(row.noteId) ?? []),
-			row.name,
-		]);
-	}
-
-	const likesByNote = new Map(
-		likeRows.map((row) => [row.noteId, toNumber(row.value)]),
-	);
-	const collectionsByNote = new Map(
-		collectionRows.map((row) => [row.noteId, toNumber(row.value)]),
-	);
-	const commentsByNote = new Map(
-		commentRows.map((row) => [row.noteId, toNumber(row.value)]),
-	);
-	const likedSet = new Set(likedRows.map((row) => row.noteId));
-	const collectedSet = new Set(collectedRows.map((row) => row.noteId));
-	const followingSet = new Set(followingRows.map((row) => row.followingId));
-
-	return rows.map((row) => ({
-		...row,
-		topics: topicsByNote.get(row.id) ?? [],
-		likedCount: likesByNote.get(row.id) ?? 0,
-		collectedCount: collectionsByNote.get(row.id) ?? 0,
-		commentCount: commentsByNote.get(row.id) ?? 0,
-		liked: likedSet.has(row.id),
-		collected: collectedSet.has(row.id),
-		author: {
-			id: row.userId,
-			name: row.authorName,
-			image: row.authorImage,
-			handle: row.authorHandle,
-			isFollowing: followingSet.has(row.userId),
-		},
-	}));
-}
-
-async function selectNoteRows(whereClause?: ReturnType<typeof and>) {
-	const db = createDb();
-
-	if (whereClause) {
-		return db
-			.select(noteRowFields)
-			.from(note)
-			.innerJoin(user, eq(note.userId, user.id))
-			.where(whereClause)
-			.orderBy(desc(note.createdAt));
-	}
-
-	return db
-		.select(noteRowFields)
-		.from(note)
-		.innerJoin(user, eq(note.userId, user.id))
-		.orderBy(desc(note.createdAt));
 }
 
 async function recordNoteView(noteId: string, userId: string) {
@@ -398,46 +192,6 @@ async function getProfile(userId: string, viewerId?: string) {
 	};
 }
 
-async function getMeFeedRows(
-	userId: string,
-	tab: z.infer<typeof meFeedInput>["tab"],
-	limit: number,
-) {
-	if (tab === "notes") {
-		return selectNoteRows(and(eq(note.userId, userId))).then((items) =>
-			items.slice(0, limit),
-		);
-	}
-
-	if (tab === "collections") {
-		return createDb()
-			.select(noteRowFields)
-			.from(noteCollection)
-			.innerJoin(note, eq(noteCollection.noteId, note.id))
-			.innerJoin(user, eq(note.userId, user.id))
-			.where(eq(noteCollection.userId, userId))
-			.orderBy(desc(noteCollection.createdAt))
-			.limit(limit);
-	}
-
-	return createDb()
-		.select(noteRowFields)
-		.from(noteLike)
-		.innerJoin(note, eq(noteLike.noteId, note.id))
-		.innerJoin(user, eq(note.userId, user.id))
-		.where(
-			and(
-				eq(noteLike.userId, userId),
-				or(
-					and(eq(note.status, "published"), eq(note.visibility, "public")),
-					eq(note.userId, userId),
-				),
-			),
-		)
-		.orderBy(desc(noteLike.createdAt))
-		.limit(limit);
-}
-
 export const socialRouter = {
 	feed: publicProcedure.input(listInput).handler(async ({ input, context }) => {
 		let topicNoteIds: string[] = [];
@@ -468,8 +222,11 @@ export const socialRouter = {
 					keywordClause,
 				)
 			: and(eq(note.status, "published"), eq(note.visibility, "public"));
-		const rows = (await selectNoteRows(whereClause)).slice(0, input.limit);
-		return hydrateNotes(rows, context.session?.user.id);
+		const rows = (await selectContentNoteRows(whereClause)).slice(
+			0,
+			input.limit,
+		);
+		return hydrateContentNotes(rows, context.session?.user.id);
 	}),
 
 	followingFeed: protectedProcedure
@@ -487,7 +244,7 @@ export const socialRouter = {
 			}
 
 			const rows = (
-				await selectNoteRows(
+				await selectContentNoteRows(
 					and(
 						eq(note.status, "published"),
 						inArray(note.userId, followingIds),
@@ -496,7 +253,7 @@ export const socialRouter = {
 				)
 			).slice(0, input.limit);
 
-			return hydrateNotes(rows, context.session.user.id);
+			return hydrateContentNotes(rows, context.session.user.id);
 		}),
 
 	topics: publicProcedure.input(listInput).handler(async ({ input }) => {
@@ -609,7 +366,7 @@ export const socialRouter = {
 		}),
 
 	byId: publicProcedure.input(idInput).handler(async ({ input, context }) => {
-		const [row] = await selectNoteRows(
+		const [row] = await selectContentNoteRows(
 			context.session?.user.id
 				? and(
 						eq(note.id, input.id),
@@ -629,7 +386,7 @@ export const socialRouter = {
 			throw new ORPCError("NOT_FOUND");
 		}
 
-		const [item] = await hydrateNotes([row], context.session?.user.id);
+		const [item] = await hydrateContentNotes([row], context.session?.user.id);
 		const db = createDb();
 		const comments = await db
 			.select({
@@ -659,7 +416,7 @@ export const socialRouter = {
 		.handler(async ({ input, context }) => {
 			const profile = await getProfile(input.userId, context.session?.user.id);
 			const rows = (
-				await selectNoteRows(
+				await selectContentNoteRows(
 					and(
 						eq(note.userId, input.userId),
 						eq(note.status, "published"),
@@ -669,7 +426,7 @@ export const socialRouter = {
 			).slice(0, 30);
 			return {
 				profile,
-				notes: await hydrateNotes(rows, context.session?.user.id),
+				notes: await hydrateContentNotes(rows, context.session?.user.id),
 			};
 		}),
 
@@ -677,39 +434,17 @@ export const socialRouter = {
 		const userId = context.session.user.id;
 		const [profile, rows, collectedRows, likedRows] = await Promise.all([
 			getProfile(userId, userId),
-			selectNoteRows(and(eq(note.userId, userId))).then((items) =>
+			listMeContentNoteRows(userId, "notes", 30).then((items) =>
 				items.slice(0, 30),
 			),
-			createDb()
-				.select(noteRowFields)
-				.from(noteCollection)
-				.innerJoin(note, eq(noteCollection.noteId, note.id))
-				.innerJoin(user, eq(note.userId, user.id))
-				.where(eq(noteCollection.userId, userId))
-				.orderBy(desc(noteCollection.createdAt))
-				.limit(30),
-			createDb()
-				.select(noteRowFields)
-				.from(noteLike)
-				.innerJoin(note, eq(noteLike.noteId, note.id))
-				.innerJoin(user, eq(note.userId, user.id))
-				.where(
-					and(
-						eq(noteLike.userId, userId),
-						or(
-							and(eq(note.status, "published"), eq(note.visibility, "public")),
-							eq(note.userId, userId),
-						),
-					),
-				)
-				.orderBy(desc(noteLike.createdAt))
-				.limit(30),
+			listMeContentNoteRows(userId, "collections", 30),
+			listMeContentNoteRows(userId, "liked", 30),
 		]);
-		const rowById = new Map<string, NoteRow>();
+		const rowById = new Map<string, ContentNoteRow>();
 		for (const row of [...rows, ...collectedRows, ...likedRows]) {
 			rowById.set(row.id, row);
 		}
-		const hydratedRows = await hydrateNotes(
+		const hydratedRows = await hydrateContentNotes(
 			Array.from(rowById.values()),
 			userId,
 		);
@@ -744,110 +479,30 @@ export const socialRouter = {
 		.input(meFeedInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
-			const rows = await getMeFeedRows(userId, input.tab, input.limit);
-			return hydrateNotes(rows, userId);
+			const rows = await listMeContentNoteRows(userId, input.tab, input.limit);
+			return hydrateContentNotes(rows, userId);
 		}),
 
 	drafts: protectedProcedure.handler(async ({ context }) => {
-		const userId = context.session.user.id;
-		const rows = await createDb()
-			.select(noteRowFields)
-			.from(note)
-			.innerJoin(user, eq(note.userId, user.id))
-			.where(and(eq(note.userId, userId), eq(note.status, "draft")))
-			.orderBy(desc(note.draftSavedAt), desc(note.updatedAt))
-			.limit(60);
-
-		return hydrateNotes(rows, userId);
+		return listDraftContentNotes(context.session.user.id);
 	}),
 
 	draftById: protectedProcedure
 		.input(idInput)
 		.handler(async ({ input, context }) => {
-			const [row] = await selectNoteRows(
-				and(
-					eq(note.id, input.id),
-					eq(note.userId, context.session.user.id),
-					eq(note.status, "draft"),
-				),
-			);
-
-			if (!row) {
-				throw new ORPCError("NOT_FOUND");
-			}
-
-			const [item] = await hydrateNotes([row], context.session.user.id);
-			return item;
+			return getDraftContentNoteById({
+				id: input.id,
+				userId: context.session.user.id,
+			});
 		}),
 
 	updateDraft: activeUserProcedure
 		.input(draftUpdateInput)
 		.handler(async ({ input, context }) => {
-			const db = createDb();
-			const [existing] = await db
-				.select({ id: note.id })
-				.from(note)
-				.where(
-					and(
-						eq(note.id, input.id),
-						eq(note.userId, context.session.user.id),
-						eq(note.status, "draft"),
-					),
-				)
-				.limit(1);
-
-			if (!existing) {
-				throw new ORPCError("NOT_FOUND");
-			}
-
-			const topicNames = uniqueTopics(input.topics);
-			const status = input.submitMode === "draft" ? "draft" : "audit";
-			const cover = input.images[0];
-			const title = input.title.trim();
-			const content = input.content.trim();
-
-			if (input.submitMode === "publish") {
-				assertPublishReady(input, topicNames);
-			}
-
-			await db
-				.update(note)
-				.set({
-					title: title || "未命名草稿",
-					content,
-					images: input.images,
-					cover: cover ?? null,
-					locationName: input.locationName || null,
-					visibility: input.visibility,
-					components: input.components,
-					advancedOptions: input.advancedOptions,
-					status,
-					draftSavedAt: status === "draft" ? new Date() : null,
-				})
-				.where(eq(note.id, input.id));
-
-			await db.delete(noteTopic).where(eq(noteTopic.noteId, input.id));
-			for (const name of topicNames) {
-				await db.insert(topic).values({ name }).onConflictDoNothing();
-			}
-
-			if (topicNames.length > 0) {
-				const topicRows = await db
-					.select({ id: topic.id })
-					.from(topic)
-					.where(inArray(topic.name, topicNames));
-				await db
-					.insert(noteTopic)
-					.values(
-						topicRows.map((row) => ({
-							noteId: input.id,
-							topicId: row.id,
-						})),
-					)
-					.onConflictDoNothing();
-			}
-
-			return { id: input.id, status };
+			return updateDraftContentNote({
+				input,
+				userId: context.session.user.id,
+			});
 		}),
 
 	creatorStats: protectedProcedure.handler(async ({ context }) => {
@@ -902,26 +557,8 @@ export const socialRouter = {
 		.input(listInput)
 		.handler(async ({ input, context }) => {
 			const userId = context.session.user.id;
-			const rows = await createDb()
-				.select({
-					...noteRowFields,
-					viewedAt: noteViewHistory.viewedAt,
-				})
-				.from(noteViewHistory)
-				.innerJoin(note, eq(noteViewHistory.noteId, note.id))
-				.innerJoin(user, eq(note.userId, user.id))
-				.where(
-					and(
-						eq(noteViewHistory.userId, userId),
-						or(
-							and(eq(note.status, "published"), eq(note.visibility, "public")),
-							eq(note.userId, userId),
-						),
-					),
-				)
-				.orderBy(desc(noteViewHistory.viewedAt))
-				.limit(input.limit);
-			const hydratedRows = await hydrateNotes(rows, userId);
+			const rows = await listViewedContentNoteRows(userId, input.limit);
+			const hydratedRows = await hydrateContentNotes(rows, userId);
 			const viewedAtById = new Map(rows.map((row) => [row.id, row.viewedAt]));
 
 			return hydratedRows.map((item) => ({
@@ -974,54 +611,10 @@ export const socialRouter = {
 	create: activeUserProcedure
 		.input(noteCreateInput)
 		.handler(async ({ input, context }) => {
-			const db = createDb();
-			const topicNames = uniqueTopics(input.topics);
-			const cover = input.images[0];
-			const title = input.title.trim();
-			const content = input.content.trim();
-			const status = input.submitMode === "draft" ? "draft" : "audit";
-
-			if (input.submitMode === "publish") {
-				assertPublishReady(input, topicNames);
-			}
-
-			const [createdNote] = await db
-				.insert(note)
-				.values({
-					title: title || "未命名草稿",
-					content,
-					images: input.images,
-					cover: cover ?? null,
-					locationName: input.locationName || null,
-					visibility: input.visibility,
-					components: input.components,
-					advancedOptions: input.advancedOptions,
-					status,
-					draftSavedAt: status === "draft" ? new Date() : null,
-					userId: context.session.user.id,
-				})
-				.returning({ id: note.id });
-			if (!createdNote) {
-				throw new ORPCError("INTERNAL_SERVER_ERROR");
-			}
-			const noteId = createdNote.id;
-
-			for (const name of topicNames) {
-				await db.insert(topic).values({ name }).onConflictDoNothing();
-			}
-
-			if (topicNames.length > 0) {
-				const topicRows = await db
-					.select({ id: topic.id })
-					.from(topic)
-					.where(inArray(topic.name, topicNames));
-				await db
-					.insert(noteTopic)
-					.values(topicRows.map((row) => ({ noteId, topicId: row.id })))
-					.onConflictDoNothing();
-			}
-
-			return { id: noteId, status };
+			return createContentNote({
+				input,
+				userId: context.session.user.id,
+			});
 		}),
 
 	toggleLike: activeUserProcedure

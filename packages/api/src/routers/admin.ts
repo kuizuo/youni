@@ -5,7 +5,6 @@ import {
 	comment,
 	follow,
 	note,
-	noteCollection,
 	noteLike,
 	noteTopic,
 	topic,
@@ -16,6 +15,14 @@ import { and, count, desc, eq, ilike, inArray, ne, or } from "drizzle-orm";
 import z from "zod";
 
 import { protectedProcedure } from "../index";
+import {
+	deleteContentNote,
+	getAdminContentNoteDetail,
+	listAdminContentNotes,
+	listAdminContentNotesByTopic,
+	listAdminContentNotesByUser,
+	updateContentNoteStatus,
+} from "../lib/content-notes";
 
 const userRoleInput = z.enum(["admin", "operator", "user"]);
 const userStatusInput = z.enum(["active", "disabled", "deleted"]);
@@ -281,68 +288,6 @@ async function getUserForAdmin(id: string) {
 	return target;
 }
 
-async function enrichNoteRows<
-	T extends {
-		id: string;
-	},
->(db: ReturnType<typeof createDb>, rows: T[]) {
-	if (rows.length === 0) return [];
-
-	const noteIds = rows.map((row) => row.id);
-	const [topicRows, likeRows, commentRows, collectionRows] = await Promise.all([
-		db
-			.select({ noteId: noteTopic.noteId, id: topic.id, name: topic.name })
-			.from(noteTopic)
-			.innerJoin(topic, eq(noteTopic.topicId, topic.id))
-			.where(inArray(noteTopic.noteId, noteIds)),
-		db
-			.select({ noteId: noteLike.noteId, value: count() })
-			.from(noteLike)
-			.where(inArray(noteLike.noteId, noteIds))
-			.groupBy(noteLike.noteId),
-		db
-			.select({ noteId: comment.noteId, value: count() })
-			.from(comment)
-			.where(inArray(comment.noteId, noteIds))
-			.groupBy(comment.noteId),
-		db
-			.select({ noteId: noteCollection.noteId, value: count() })
-			.from(noteCollection)
-			.where(inArray(noteCollection.noteId, noteIds))
-			.groupBy(noteCollection.noteId),
-	]);
-
-	const topicsByNote = new Map<string, { id: string; name: string }[]>();
-	for (const row of topicRows) {
-		topicsByNote.set(row.noteId, [
-			...(topicsByNote.get(row.noteId) ?? []),
-			{ id: row.id, name: row.name },
-		]);
-	}
-
-	const likesByNote = new Map(
-		likeRows.map((row) => [row.noteId, toNumber(row.value)]),
-	);
-	const commentsByNote = new Map(
-		commentRows.map((row) => [row.noteId, toNumber(row.value)]),
-	);
-	const collectionsByNote = new Map(
-		collectionRows.map((row) => [row.noteId, toNumber(row.value)]),
-	);
-
-	return rows.map((row) => {
-		const topics = topicsByNote.get(row.id) ?? [];
-		return {
-			...row,
-			topics: topics.map((item) => item.name),
-			topicDetails: topics,
-			likedCount: likesByNote.get(row.id) ?? 0,
-			commentCount: commentsByNote.get(row.id) ?? 0,
-			collectedCount: collectionsByNote.get(row.id) ?? 0,
-		};
-	});
-}
-
 export const adminRouter = {
 	me: adminProcedure.handler(async ({ context }) => {
 		const [profile] = await createDb()
@@ -459,190 +404,21 @@ export const adminRouter = {
 	}),
 
 	notes: adminProcedure.input(adminListInput).handler(async ({ input }) => {
-		const db = createDb();
-		const conditions = [
-			input.status ? eq(note.status, input.status) : undefined,
-			input.keyword
-				? or(
-						ilike(note.title, `%${input.keyword}%`),
-						ilike(note.content, `%${input.keyword}%`),
-					)
-				: undefined,
-		].filter(Boolean);
-
-		const whereClause = conditions.length ? and(...conditions) : undefined;
-		const [totalRow] = whereClause
-			? await db.select({ value: count() }).from(note).where(whereClause)
-			: await db.select({ value: count() }).from(note);
-		const rows = whereClause
-			? await db
-					.select({
-						id: note.id,
-						title: note.title,
-						content: note.content,
-						cover: note.cover,
-						images: note.images,
-						locationName: note.locationName,
-						visibility: note.visibility,
-						components: note.components,
-						advancedOptions: note.advancedOptions,
-						status: note.status,
-						rejectionReason: note.rejectionReason,
-						createdAt: note.createdAt,
-						publishedAt: note.publishedAt,
-						draftSavedAt: note.draftSavedAt,
-						userId: note.userId,
-						authorName: user.name,
-						authorEmail: user.email,
-					})
-					.from(note)
-					.innerJoin(user, eq(note.userId, user.id))
-					.where(whereClause)
-					.orderBy(desc(note.createdAt))
-					.limit(input.limit)
-					.offset(input.offset)
-			: await db
-					.select({
-						id: note.id,
-						title: note.title,
-						content: note.content,
-						cover: note.cover,
-						images: note.images,
-						locationName: note.locationName,
-						visibility: note.visibility,
-						components: note.components,
-						advancedOptions: note.advancedOptions,
-						status: note.status,
-						rejectionReason: note.rejectionReason,
-						createdAt: note.createdAt,
-						publishedAt: note.publishedAt,
-						draftSavedAt: note.draftSavedAt,
-						userId: note.userId,
-						authorName: user.name,
-						authorEmail: user.email,
-					})
-					.from(note)
-					.innerJoin(user, eq(note.userId, user.id))
-					.orderBy(desc(note.createdAt))
-					.limit(input.limit)
-					.offset(input.offset);
-
-		return {
-			items: await enrichNoteRows(db, rows),
-			total: toNumber(totalRow?.value),
-		};
+		return listAdminContentNotes(input);
 	}),
 
 	noteDetail: adminProcedure.input(idInput).handler(async ({ input }) => {
-		const db = createDb();
-		const [row] = await db
-			.select({
-				id: note.id,
-				title: note.title,
-				content: note.content,
-				cover: note.cover,
-				images: note.images,
-				locationName: note.locationName,
-				visibility: note.visibility,
-				components: note.components,
-				advancedOptions: note.advancedOptions,
-				status: note.status,
-				rejectionReason: note.rejectionReason,
-				createdAt: note.createdAt,
-				updatedAt: note.updatedAt,
-				publishedAt: note.publishedAt,
-				draftSavedAt: note.draftSavedAt,
-				userId: note.userId,
-				authorName: user.name,
-				authorEmail: user.email,
-				authorImage: user.image,
-				authorHandle: user.handle,
-			})
-			.from(note)
-			.innerJoin(user, eq(note.userId, user.id))
-			.where(eq(note.id, input.id))
-			.limit(1);
-
-		if (!row) {
-			throw new ORPCError("NOT_FOUND");
-		}
-
-		const [detail] = await enrichNoteRows(db, [row]);
-		const [comments, likedUsers, collectedUsers] = await Promise.all([
-			db
-				.select({
-					id: comment.id,
-					content: comment.content,
-					createdAt: comment.createdAt,
-					authorId: user.id,
-					authorName: user.name,
-					authorEmail: user.email,
-					authorImage: user.image,
-				})
-				.from(comment)
-				.innerJoin(user, eq(comment.userId, user.id))
-				.where(eq(comment.noteId, input.id))
-				.orderBy(desc(comment.createdAt))
-				.limit(50),
-			db
-				.select({
-					userId: user.id,
-					name: user.name,
-					email: user.email,
-					image: user.image,
-					createdAt: noteLike.createdAt,
-				})
-				.from(noteLike)
-				.innerJoin(user, eq(noteLike.userId, user.id))
-				.where(eq(noteLike.noteId, input.id))
-				.orderBy(desc(noteLike.createdAt))
-				.limit(20),
-			db
-				.select({
-					userId: user.id,
-					name: user.name,
-					email: user.email,
-					image: user.image,
-					createdAt: noteCollection.createdAt,
-				})
-				.from(noteCollection)
-				.innerJoin(user, eq(noteCollection.userId, user.id))
-				.where(eq(noteCollection.noteId, input.id))
-				.orderBy(desc(noteCollection.createdAt))
-				.limit(20),
-		]);
-
-		return {
-			...detail,
-			comments,
-			likedUsers,
-			collectedUsers,
-		};
+		return getAdminContentNoteDetail(input.id);
 	}),
 
 	updateNoteStatus: adminProcedure
 		.input(statusInput)
 		.handler(async ({ input }) => {
-			const db = createDb();
-			const [updated] = await db
-				.update(note)
-				.set({
-					status: input.status,
-					rejectionReason:
-						input.status === "rejected"
-							? input.rejectionReason || "内容未通过审核"
-							: null,
-					publishedAt: input.status === "published" ? new Date() : null,
-				})
-				.where(eq(note.id, input.id))
-				.returning();
-			return updated;
+			return updateContentNoteStatus(input);
 		}),
 
 	deleteNote: adminProcedure.input(idInput).handler(async ({ input }) => {
-		const db = createDb();
-		await db.delete(note).where(eq(note.id, input.id));
-		return { ok: true };
+		return deleteContentNote(input.id);
 	}),
 
 	topics: adminProcedure.input(topicListInput).handler(async ({ input }) => {
@@ -719,34 +495,7 @@ export const adminRouter = {
 			throw new ORPCError("NOT_FOUND");
 		}
 
-		const rows = await db
-			.select({
-				id: note.id,
-				title: note.title,
-				content: note.content,
-				cover: note.cover,
-				images: note.images,
-				locationName: note.locationName,
-				visibility: note.visibility,
-				components: note.components,
-				advancedOptions: note.advancedOptions,
-				status: note.status,
-				rejectionReason: note.rejectionReason,
-				createdAt: note.createdAt,
-				publishedAt: note.publishedAt,
-				draftSavedAt: note.draftSavedAt,
-				userId: note.userId,
-				authorName: user.name,
-				authorEmail: user.email,
-			})
-			.from(noteTopic)
-			.innerJoin(note, eq(noteTopic.noteId, note.id))
-			.innerJoin(user, eq(note.userId, user.id))
-			.where(eq(noteTopic.topicId, input.id))
-			.orderBy(desc(note.createdAt))
-			.limit(100);
-
-		const notes = await enrichNoteRows(db, rows);
+		const notes = await listAdminContentNotesByTopic(input.id);
 		return {
 			topic: {
 				...topicRow,
@@ -911,75 +660,45 @@ export const adminRouter = {
 			throw new ORPCError("NOT_FOUND");
 		}
 
-		const [
-			noteRows,
-			[followerCountRow],
-			[followingCountRow],
-			followers,
-			following,
-		] = await Promise.all([
-			db
-				.select({
-					id: note.id,
-					title: note.title,
-					content: note.content,
-					cover: note.cover,
-					images: note.images,
-					locationName: note.locationName,
-					visibility: note.visibility,
-					components: note.components,
-					advancedOptions: note.advancedOptions,
-					status: note.status,
-					rejectionReason: note.rejectionReason,
-					createdAt: note.createdAt,
-					publishedAt: note.publishedAt,
-					draftSavedAt: note.draftSavedAt,
-					userId: note.userId,
-					authorName: user.name,
-					authorEmail: user.email,
-				})
-				.from(note)
-				.innerJoin(user, eq(note.userId, user.id))
-				.where(eq(note.userId, input.id))
-				.orderBy(desc(note.createdAt))
-				.limit(100),
-			db
-				.select({ value: count() })
-				.from(follow)
-				.where(eq(follow.followingId, input.id)),
-			db
-				.select({ value: count() })
-				.from(follow)
-				.where(eq(follow.followerId, input.id)),
-			db
-				.select({
-					userId: user.id,
-					name: user.name,
-					email: user.email,
-					image: user.image,
-					createdAt: follow.createdAt,
-				})
-				.from(follow)
-				.innerJoin(user, eq(follow.followerId, user.id))
-				.where(eq(follow.followingId, input.id))
-				.orderBy(desc(follow.createdAt))
-				.limit(20),
-			db
-				.select({
-					userId: user.id,
-					name: user.name,
-					email: user.email,
-					image: user.image,
-					createdAt: follow.createdAt,
-				})
-				.from(follow)
-				.innerJoin(user, eq(follow.followingId, user.id))
-				.where(eq(follow.followerId, input.id))
-				.orderBy(desc(follow.createdAt))
-				.limit(20),
-		]);
+		const [[followerCountRow], [followingCountRow], followers, following] =
+			await Promise.all([
+				db
+					.select({ value: count() })
+					.from(follow)
+					.where(eq(follow.followingId, input.id)),
+				db
+					.select({ value: count() })
+					.from(follow)
+					.where(eq(follow.followerId, input.id)),
+				db
+					.select({
+						userId: user.id,
+						name: user.name,
+						email: user.email,
+						image: user.image,
+						createdAt: follow.createdAt,
+					})
+					.from(follow)
+					.innerJoin(user, eq(follow.followerId, user.id))
+					.where(eq(follow.followingId, input.id))
+					.orderBy(desc(follow.createdAt))
+					.limit(20),
+				db
+					.select({
+						userId: user.id,
+						name: user.name,
+						email: user.email,
+						image: user.image,
+						createdAt: follow.createdAt,
+					})
+					.from(follow)
+					.innerJoin(user, eq(follow.followingId, user.id))
+					.where(eq(follow.followerId, input.id))
+					.orderBy(desc(follow.createdAt))
+					.limit(20),
+			]);
 
-		const notes = await enrichNoteRows(db, noteRows);
+		const notes = await listAdminContentNotesByUser(input.id);
 
 		return {
 			user: {
