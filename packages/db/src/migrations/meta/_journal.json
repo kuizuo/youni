@@ -43,6 +43,13 @@
 			"when": 1782756577237,
 			"tag": "0005_tough_zuras",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1782888069970,
+			"tag": "0006_youthful_talon",
+			"breakpoints": true
 		}
 	]
 }

@@ -5,11 +5,11 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
-import type { PaginationState } from "@tanstack/react-table";
 import type { FormEvent } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { AdminPage } from "@/components/admin-shell";
+import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { orpc } from "@/utils/orpc";
 import { TopicFilters } from "./-admin-topics/topic-filters";
 import { TopicFormDrawer } from "./-admin-topics/topic-form-drawer";
@@ -31,33 +31,17 @@ function AdminTopicsRoute() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const [keyword, setKeyword] = useState("");
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 10,
-	});
+	const list = useAdminListWorkflow();
 	const [formMode, setFormMode] = useState<TopicFormMode>("create");
 	const [form, setForm] = useState<TopicFormState>(emptyTopicForm);
 	const [formMessage, setFormMessage] = useState<string | null>(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
-	const input = useMemo(
-		() => ({
-			keyword: keyword.trim() || undefined,
-			limit: pagination.pageSize,
-			offset: pagination.pageIndex * pagination.pageSize,
-		}),
-		[keyword, pagination.pageIndex, pagination.pageSize],
-	);
 	const topics = useQuery({
-		...orpc.admin.topics.queryOptions({ input }),
+		...orpc.admin.topics.queryOptions({ input: list.paginationInput }),
 		placeholderData: keepPreviousData,
 	});
 	const saveMutation = useMutation(orpc.admin.saveTopic.mutationOptions());
 	const deleteMutation = useMutation(orpc.admin.deleteTopic.mutationOptions());
-	const updateKeyword = useCallback((value: string) => {
-		setKeyword(value);
-		setPagination((current) => ({ ...current, pageIndex: 0 }));
-	}, []);
 
 	const resetForm = useCallback(() => {
 		setFormMode("create");
@@ -83,8 +67,8 @@ function AdminTopicsRoute() {
 	}, []);
 
 	const refetchTopics = useCallback(async () => {
-		await topics.refetch();
-	}, [topics]);
+		await list.refetchList(topics);
+	}, [list, topics]);
 
 	const submitForm = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -123,9 +107,9 @@ function AdminTopicsRoute() {
 	return (
 		<AdminPage title="话题管理">
 			<TopicFilters
-				keyword={keyword}
+				keyword={list.keyword}
 				onCreateTopic={openCreateDrawer}
-				onKeywordChange={updateKeyword}
+				onKeywordChange={list.updateKeyword}
 			/>
 
 			<TopicFormDrawer
@@ -142,7 +126,7 @@ function AdminTopicsRoute() {
 			<TopicTable
 				isDeletePending={deleteMutation.isPending}
 				isFetching={topics.isFetching}
-				pagination={pagination}
+				pagination={list.pagination}
 				topics={(topics.data?.items ?? []) as AdminTopicListItem[]}
 				total={topics.data?.total ?? 0}
 				onDelete={deleteTopic}
@@ -153,7 +137,7 @@ function AdminTopicsRoute() {
 						params: { topicId: item.id },
 					})
 				}
-				onPaginationChange={setPagination}
+				onPaginationChange={list.setPagination}
 			/>
 		</AdminPage>
 	);

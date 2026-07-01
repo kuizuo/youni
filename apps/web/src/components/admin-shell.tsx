@@ -20,10 +20,12 @@ import {
 import { AppLayout, Command, Navbar, Sidebar } from "@heroui-pro/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
+import type { AdminPermissionRequest } from "@youni/auth/permissions";
 import type { ComponentPropsWithRef, ComponentType, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import UserMenu from "@/components/user-menu";
+import { checkAdminRolePermission } from "@/lib/admin-permissions";
 import { orpc } from "@/utils/orpc";
 
 type AdminRouteTo =
@@ -38,6 +40,7 @@ type AdminNavItem = {
 	readonly href: AdminRouteTo;
 	readonly label: string;
 	readonly icon: ComponentType<{ className?: string }>;
+	readonly permission: AdminPermissionRequest;
 	readonly badge?: string;
 };
 
@@ -45,14 +48,40 @@ type AdminUser = {
 	readonly name?: string | null;
 	readonly email?: string | null;
 	readonly image?: string | null;
+	readonly role?: string | null;
 };
 
 const NAV_ITEMS: readonly AdminNavItem[] = [
-	{ href: "/admin", icon: ChartColumn, label: "概览" },
-	{ href: "/admin/notes", icon: FileText, label: "图文" },
-	{ href: "/admin/topics", icon: Hashtag, label: "话题" },
-	{ href: "/admin/users", icon: Persons, label: "用户" },
-	{ href: "/admin/settings", icon: Gear, label: "设置" },
+	{
+		href: "/admin",
+		icon: ChartColumn,
+		label: "概览",
+		permission: { dashboard: ["view"] },
+	},
+	{
+		href: "/admin/notes",
+		icon: FileText,
+		label: "图文",
+		permission: { note: ["list"] },
+	},
+	{
+		href: "/admin/topics",
+		icon: Hashtag,
+		label: "话题",
+		permission: { topic: ["list"] },
+	},
+	{
+		href: "/admin/users",
+		icon: Persons,
+		label: "用户",
+		permission: { user: ["list"] },
+	},
+	{
+		href: "/admin/settings",
+		icon: Gear,
+		label: "设置",
+		permission: { profile: ["view"] },
+	},
 ] as const;
 
 const SEARCH_ITEMS = [
@@ -62,6 +91,7 @@ const SEARCH_ITEMS = [
 		icon: ChartColumn,
 		keywords: "dashboard overview 指标 数据 最近图文",
 		label: "概览",
+		permission: { dashboard: ["view"] },
 	},
 	{
 		description: "搜索、筛选、审核、隐藏或删除图文。",
@@ -69,6 +99,7 @@ const SEARCH_ITEMS = [
 		icon: FileText,
 		keywords: "notes posts audit review publish hidden delete 图文 审核",
 		label: "图文管理",
+		permission: { note: ["list"] },
 	},
 	{
 		description: "新增、编辑、删除话题并查看使用量。",
@@ -76,6 +107,7 @@ const SEARCH_ITEMS = [
 		icon: Hashtag,
 		keywords: "topics hashtag edit create delete 话题",
 		label: "话题管理",
+		permission: { topic: ["list"] },
 	},
 	{
 		description: "查看用户资料、内容数据和账号状态。",
@@ -83,6 +115,7 @@ const SEARCH_ITEMS = [
 		icon: Persons,
 		keywords: "users accounts status disabled active 用户 账号",
 		label: "用户管理",
+		permission: { user: ["list"] },
 	},
 	{
 		description: "查看当前账号资料和后台权限。",
@@ -90,6 +123,7 @@ const SEARCH_ITEMS = [
 		icon: Gear,
 		keywords: "settings profile permission status logout 设置 账号 权限",
 		label: "设置",
+		permission: { profile: ["view"] },
 	},
 	{
 		description: "查看当前账号对外展示资料和后台身份。",
@@ -97,6 +131,7 @@ const SEARCH_ITEMS = [
 		icon: Persons,
 		keywords: "profile account avatar bio handle personal 个人 主页 资料",
 		label: "个人主页",
+		permission: { profile: ["view"] },
 	},
 ] as const satisfies readonly (AdminNavItem & {
 	readonly description: string;
@@ -127,6 +162,13 @@ export function AdminShell({ user, children }: AdminShellProps) {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
+	const visibleNavItems = useMemo(
+		() =>
+			NAV_ITEMS.filter((item) =>
+				checkAdminRolePermission(user.role, item.permission),
+			),
+		[user.role],
+	);
 	const navigateTo = useCallback(
 		(href: string) => {
 			void navigate({ to: href as AdminRouteTo });
@@ -140,7 +182,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
 			navigate={navigateTo}
 			navbar={<DashboardNavbar title={title} user={user} />}
 			scrollMode="content"
-			sidebar={<DashboardSidebar pathname={pathname} />}
+			sidebar={<DashboardSidebar items={visibleNavItems} pathname={pathname} />}
 			sidebarCollapsible="offcanvas"
 		>
 			<div className="min-h-full bg-background">{children}</div>
@@ -181,6 +223,13 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 	const navigate = useNavigate();
 	const searchState = useOverlayState();
 	const overview = useQuery(orpc.admin.overview.queryOptions());
+	const visibleSearchItems = useMemo(
+		() =>
+			SEARCH_ITEMS.filter((item) =>
+				checkAdminRolePermission(user.role, item.permission),
+			),
+		[user.role],
+	);
 	const navigateToAdminRoute = useCallback(
 		(href: AdminRouteTo) => {
 			void navigate({ to: href });
@@ -214,19 +263,22 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 					</h2>
 					<Navbar.Spacer />
 					<div className="flex items-center gap-2">
-						<IconButton
-							label="搜索"
-							size="sm"
-							tooltip="搜索后台页面"
-							variant="tertiary"
-							onPress={searchState.open}
-						>
-							<Magnifier className="size-4" />
-						</IconButton>
+						{visibleSearchItems.length > 0 ? (
+							<IconButton
+								label="搜索"
+								size="sm"
+								tooltip="搜索后台页面"
+								variant="tertiary"
+								onPress={searchState.open}
+							>
+								<Magnifier className="size-4" />
+							</IconButton>
+						) : null}
 						<NotificationButton
 							isLoading={overview.isLoading}
 							navigateTo={navigateToAdminRoute}
 							overview={overview.data}
+							role={user.role}
 						/>
 						<div className="border-separator border-l pl-2">
 							<UserMenu user={user} />
@@ -236,6 +288,7 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 			</Navbar>
 			<AdminSearchCommand
 				isOpen={searchState.isOpen}
+				items={visibleSearchItems}
 				navigateTo={navigateToAdminRoute}
 				onOpenChange={searchState.setOpen}
 			/>
@@ -243,14 +296,20 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 	);
 }
 
-function DashboardSidebar({ pathname }: { pathname: string }) {
+function DashboardSidebar({
+	items,
+	pathname,
+}: {
+	items: readonly AdminNavItem[];
+	pathname: string;
+}) {
 	return (
 		<>
 			<Sidebar>
-				<SidebarContents pathname={pathname} />
+				<SidebarContents items={items} pathname={pathname} />
 			</Sidebar>
 			<Sidebar.Mobile>
-				<SidebarContents idPrefix="mobile-" pathname={pathname} />
+				<SidebarContents idPrefix="mobile-" items={items} pathname={pathname} />
 			</Sidebar.Mobile>
 		</>
 	);
@@ -258,9 +317,11 @@ function DashboardSidebar({ pathname }: { pathname: string }) {
 
 function SidebarContents({
 	idPrefix = "",
+	items,
 	pathname,
 }: {
 	idPrefix?: string;
+	items: readonly AdminNavItem[];
 	pathname: string;
 }) {
 	return (
@@ -283,7 +344,7 @@ function SidebarContents({
 			<Sidebar.Content>
 				<Sidebar.Group>
 					<Sidebar.Menu aria-label="后台导航">
-						{NAV_ITEMS.map((item) => (
+						{items.map((item) => (
 							<SidebarNavItem
 								key={item.href}
 								idPrefix={idPrefix}
@@ -362,10 +423,15 @@ export function IconButton({
 
 function AdminSearchCommand({
 	isOpen,
+	items,
 	navigateTo,
 	onOpenChange,
 }: {
 	isOpen: boolean;
+	items: readonly (AdminNavItem & {
+		readonly description: string;
+		readonly keywords: string;
+	})[];
 	navigateTo: (href: AdminRouteTo) => void;
 	onOpenChange: (isOpen: boolean) => void;
 }) {
@@ -401,7 +467,7 @@ function AdminSearchCommand({
 							}}
 						>
 							<Command.Group heading="后台页面">
-								{SEARCH_ITEMS.map((item) => {
+								{items.map((item) => {
 									const Icon = item.icon;
 
 									return (
@@ -449,6 +515,7 @@ type NotificationItem = {
 	readonly icon: ComponentType<{ className?: string }>;
 	readonly id: string;
 	readonly label: string;
+	readonly permission: AdminPermissionRequest;
 	readonly tone: NotificationTone;
 };
 
@@ -462,15 +529,25 @@ function NotificationButton({
 	isLoading,
 	navigateTo,
 	overview,
+	role,
 }: {
 	isLoading: boolean;
 	navigateTo: (href: AdminRouteTo) => void;
 	overview?: NotificationOverview;
+	role?: string | null;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const rootRef = useRef<HTMLDivElement>(null);
-	const notifications = useMemo(() => getNotifications(overview), [overview]);
-	const pendingCount = overview?.auditCount ?? 0;
+	const notifications = useMemo(
+		() =>
+			getNotifications(overview).filter((item) =>
+				checkAdminRolePermission(role, item.permission),
+			),
+		[overview, role],
+	);
+	const pendingCount = checkAdminRolePermission(role, { note: ["list"] })
+		? (overview?.auditCount ?? 0)
+		: 0;
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -588,6 +665,7 @@ function getNotifications(overview?: NotificationOverview): NotificationItem[] {
 					icon: FileText,
 					id: "audit",
 					label: `${auditCount} 篇图文待审核`,
+					permission: { note: ["list"] },
 					tone: "warning",
 				}
 			: {
@@ -596,6 +674,7 @@ function getNotifications(overview?: NotificationOverview): NotificationItem[] {
 					icon: Check,
 					id: "audit-clear",
 					label: "审核队列已清空",
+					permission: { note: ["list"] },
 					tone: "success",
 				},
 		{
@@ -604,6 +683,7 @@ function getNotifications(overview?: NotificationOverview): NotificationItem[] {
 			icon: Comment,
 			id: "notes",
 			label: `共 ${noteCount} 篇图文`,
+			permission: { note: ["list"] },
 			tone: "accent",
 		},
 		{
@@ -612,6 +692,7 @@ function getNotifications(overview?: NotificationOverview): NotificationItem[] {
 			icon: Hashtag,
 			id: "topics",
 			label: "话题维护",
+			permission: { topic: ["list"] },
 			tone: "accent",
 		},
 		{
@@ -620,6 +701,7 @@ function getNotifications(overview?: NotificationOverview): NotificationItem[] {
 			icon: Persons,
 			id: "users",
 			label: `共 ${userCount} 位用户`,
+			permission: { user: ["list"] },
 			tone: "accent",
 		},
 	];

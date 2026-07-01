@@ -4,7 +4,13 @@ import * as schema from "@youni/db/schema/auth";
 import { env } from "@youni/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin as adminPlugin } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
+import {
+	adminAccessControl,
+	adminPermissionRoles,
+	backofficeUserRoleOptions,
+} from "./permissions";
 
 const isProduction = process.env.NODE_ENV === "production";
 const configuredOrigins =
@@ -56,12 +62,6 @@ export function createAuth() {
 		},
 		user: {
 			additionalFields: {
-				role: {
-					type: "string",
-					required: false,
-					defaultValue: "user",
-					input: false,
-				},
 				status: {
 					type: "string",
 					required: false,
@@ -88,12 +88,15 @@ export function createAuth() {
 				create: {
 					async before(session) {
 						const [owner] = await db
-							.select({ status: schema.user.status })
+							.select({
+								banned: schema.user.banned,
+								status: schema.user.status,
+							})
 							.from(schema.user)
 							.where(eq(schema.user.id, session.userId))
 							.limit(1);
 
-						if (!owner || owner.status === "deleted") {
+						if (!owner || owner.status !== "active" || owner.banned) {
 							return false;
 						}
 					},
@@ -123,6 +126,15 @@ export function createAuth() {
 			//   domain: "<your-workers-subdomain>",
 			// },
 		},
-		plugins: [expo()],
+		plugins: [
+			adminPlugin({
+				ac: adminAccessControl,
+				adminRoles: [...backofficeUserRoleOptions],
+				bannedUserMessage: "账号已被禁用，请联系管理员处理。",
+				defaultRole: "user",
+				roles: adminPermissionRoles,
+			}),
+			expo(),
+		],
 	});
 }

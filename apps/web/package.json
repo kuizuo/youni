@@ -36,6 +36,7 @@
 		"@tiptap/starter-kit": ">=3.23.6",
 		"@tiptap/suggestion": ">=3.23.6",
 		"@youni/api": "workspace:*",
+		"@youni/auth": "workspace:*",
 		"@youni/env": "workspace:*",
 		"@youni/ui": "workspace:*",
 		"ai": "catalog:",

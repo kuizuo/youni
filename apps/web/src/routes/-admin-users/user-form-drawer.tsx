@@ -6,10 +6,8 @@ import { userRoleLabel, userStatusLabel } from "@/components/admin-status";
 import {
 	genderLabel,
 	genderOptions,
-	manageableRoleOptions,
-	manageableStatusOptions,
-	roleOptions,
-	statusOptions,
+	getAvailableRoleOptions,
+	getAvailableStatusOptions,
 	type UserFormMode,
 	type UserFormState,
 	type UserRole,
@@ -50,11 +48,8 @@ export function UserFormDrawer({
 }) {
 	const isEdit = mode === "edit";
 	const isSelf = isEdit && form.id === currentUserId;
-	const availableRoleOptions =
-		currentRole === "admin" ? roleOptions : manageableRoleOptions;
-	const availableStatusOptions = isEdit
-		? statusOptions
-		: manageableStatusOptions;
+	const availableRoleOptions = getAvailableRoleOptions(currentRole);
+	const availableStatusOptions = getAvailableStatusOptions(isEdit);
 	const title = isEdit ? "编辑用户" : "创建用户";
 	const description = isEdit
 		? "修改资料、角色、状态或重置密码。"

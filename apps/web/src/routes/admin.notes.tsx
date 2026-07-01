@@ -5,10 +5,10 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
-import type { PaginationState } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback } from "react";
 
 import { AdminPage } from "@/components/admin-shell";
+import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { orpc } from "@/utils/orpc";
 import { NoteFilters } from "./-admin-notes/note-filters";
 import { NoteTable } from "./-admin-notes/note-table";
@@ -23,50 +23,18 @@ function AdminNotesRoute() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const [keyword, setKeyword] = useState("");
-	const [statusFilter, setStatusFilter] = useState<NoteStatus | "">("");
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 10,
-	});
-	const input = useMemo(
-		() => ({
-			keyword: keyword.trim() || undefined,
-			status: statusFilter || undefined,
-			limit: pagination.pageSize,
-			offset: pagination.pageIndex * pagination.pageSize,
-		}),
-		[keyword, pagination.pageIndex, pagination.pageSize, statusFilter],
-	);
+	const list = useAdminListWorkflow<NoteStatus>();
 	const notes = useQuery({
-		...orpc.admin.notes.queryOptions({ input }),
+		...orpc.admin.notes.queryOptions({ input: list.queryInput }),
 		placeholderData: keepPreviousData,
 	});
 	const statusMutation = useMutation(
 		orpc.admin.updateNoteStatus.mutationOptions(),
 	);
 	const deleteMutation = useMutation(orpc.admin.deleteNote.mutationOptions());
-	const resetPage = useCallback(() => {
-		setPagination((current) => ({ ...current, pageIndex: 0 }));
-	}, []);
-	const updateKeyword = useCallback(
-		(value: string) => {
-			setKeyword(value);
-			resetPage();
-		},
-		[resetPage],
-	);
-	const updateStatusFilter = useCallback(
-		(value: NoteStatus | "") => {
-			setStatusFilter(value);
-			resetPage();
-		},
-		[resetPage],
-	);
-
 	const refetchNotes = useCallback(async () => {
-		await notes.refetch();
-	}, [notes]);
+		await list.refetchList(notes);
+	}, [list, notes]);
 
 	const updateStatus = useCallback(
 		async (
@@ -99,10 +67,10 @@ function AdminNotesRoute() {
 	return (
 		<AdminPage title="图文管理">
 			<NoteFilters
-				keyword={keyword}
-				statusFilter={statusFilter}
-				onKeywordChange={updateKeyword}
-				onStatusChange={updateStatusFilter}
+				keyword={list.keyword}
+				statusFilter={list.statusFilter}
+				onKeywordChange={list.updateKeyword}
+				onStatusChange={list.updateStatusFilter}
 			/>
 
 			<NoteTable
@@ -117,9 +85,9 @@ function AdminNotesRoute() {
 				onOpenUser={(userId) =>
 					navigate({ to: "/admin/users/$userId", params: { userId } })
 				}
-				onPaginationChange={setPagination}
+				onPaginationChange={list.setPagination}
 				onUpdateStatus={updateStatus}
-				pagination={pagination}
+				pagination={list.pagination}
 				total={notes.data?.total ?? 0}
 			/>
 		</AdminPage>

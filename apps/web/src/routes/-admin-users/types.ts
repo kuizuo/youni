@@ -1,11 +1,21 @@
-export const roleOptions = ["admin", "operator", "user"] as const;
-export const manageableRoleOptions = ["user"] as const;
-export const statusOptions = ["active", "disabled", "deleted"] as const;
-export const manageableStatusOptions = ["active", "disabled"] as const;
+import {
+	type AdminUserRole,
+	type AdminUserStatus,
+	adminUserRoleOptions,
+	adminUserStatusOptions,
+	canManageUserRole,
+	getAssignableUserRoles,
+	getCreatableUserStatuses,
+	parseAdminUserRole,
+	parseAdminUserStatus,
+} from "@youni/api/admin-user-governance";
+
+export const roleOptions = adminUserRoleOptions;
+export const statusOptions = adminUserStatusOptions;
 export const genderOptions = ["unknown", "male", "female"] as const;
 
-export type UserRole = (typeof roleOptions)[number];
-export type UserStatus = (typeof statusOptions)[number];
+export type UserRole = AdminUserRole;
+export type UserStatus = AdminUserStatus;
 export type Gender = (typeof genderOptions)[number];
 export type UserFormMode = "create" | "edit";
 
@@ -72,18 +82,23 @@ export function canManageItem(
 	currentRole: UserRole | undefined,
 	itemRole: string,
 ) {
-	if (currentRole === "admin") return true;
-	return currentRole === "operator" && itemRole === "user";
+	return canManageUserRole(currentRole, itemRole);
+}
+
+export function getAvailableRoleOptions(currentRole: UserRole | undefined) {
+	return getAssignableUserRoles(currentRole);
+}
+
+export function getAvailableStatusOptions(isEdit: boolean) {
+	return isEdit ? statusOptions : getCreatableUserStatuses();
 }
 
 export function toUserRole(value: string): UserRole {
-	return roleOptions.includes(value as UserRole) ? (value as UserRole) : "user";
+	return parseAdminUserRole(value) ?? "user";
 }
 
 export function toUserStatus(value: string): UserStatus {
-	return statusOptions.includes(value as UserStatus)
-		? (value as UserStatus)
-		: "active";
+	return parseAdminUserStatus(value) ?? "active";
 }
 
 export function toGender(value: string | null | undefined): Gender {

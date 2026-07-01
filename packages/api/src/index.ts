@@ -15,6 +15,7 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 	}
 	const [account] = await createDb()
 		.select({
+			banned: user.banned,
 			id: user.id,
 			email: user.email,
 			role: user.role,
@@ -24,7 +25,7 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 		.where(eq(user.id, context.session.user.id))
 		.limit(1);
 
-	if (!account || account.status === "deleted") {
+	if (!account || account.status !== "active" || account.banned) {
 		throw new ORPCError("UNAUTHORIZED");
 	}
 

@@ -5,12 +5,14 @@ import { userStatusLabel } from "@/components/admin-status";
 import { statusOptions, type UserStatus } from "./types";
 
 export function UserFilters({
+	canCreateUser = true,
 	keyword,
 	onCreateUser,
 	onKeywordChange,
 	onStatusChange,
 	statusFilter,
 }: {
+	canCreateUser?: boolean;
 	keyword: string;
 	onCreateUser: () => void;
 	onKeywordChange: (value: string) => void;
@@ -75,10 +77,12 @@ export function UserFilters({
 				) : null}
 			</div>
 
-			<Button onPress={onCreateUser}>
-				<Plus className="size-4" />
-				新建用户
-			</Button>
+			{canCreateUser ? (
+				<Button onPress={onCreateUser}>
+					<Plus className="size-4" />
+					新建用户
+				</Button>
+			) : null}
 		</div>
 	);
 }

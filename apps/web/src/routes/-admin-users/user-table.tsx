@@ -62,6 +62,10 @@ function toSortingState(descriptor: SortDescriptor): SortingState {
 }
 
 export function UserTable({
+	canBanUsers = true,
+	canDeleteUsers = true,
+	canRestoreUsers = true,
+	canUpdateUsers = true,
 	currentRole,
 	currentUserId,
 	isDeletePending,
@@ -75,6 +79,10 @@ export function UserTable({
 	total,
 	users,
 }: {
+	canBanUsers?: boolean;
+	canDeleteUsers?: boolean;
+	canRestoreUsers?: boolean;
+	canUpdateUsers?: boolean;
 	currentRole?: UserRole;
 	currentUserId?: string;
 	isDeletePending: boolean;
@@ -112,8 +120,10 @@ export function UserTable({
 		},
 		[currentPagination, isPaginationControlled, onPaginationChange],
 	);
-	const columns = useMemo(
-		() => [
+	const hasUserActions =
+		canUpdateUsers || canBanUsers || canDeleteUsers || canRestoreUsers;
+	const columns = useMemo(() => {
+		const baseColumns = [
 			columnHelper.accessor("name", {
 				cell: (info) => (
 					<UserIdentityCell user={info.row.original} onOpenUser={onOpenUser} />
@@ -153,6 +163,14 @@ export function UserTable({
 				header: "创建时间",
 				id: "createdAt",
 			}),
+		];
+
+		if (!hasUserActions) {
+			return baseColumns;
+		}
+
+		return [
+			...baseColumns,
 			columnHelper.display({
 				cell: (info) => {
 					const item = info.row.original;
@@ -160,10 +178,14 @@ export function UserTable({
 					const isSelf = item.id === currentUserId;
 					const isDeleted = item.status === "deleted";
 					const nextStatus = item.status === "active" ? "disabled" : "active";
+					const canChangeStatus = isDeleted ? canRestoreUsers : canBanUsers;
 
 					return (
 						<UserActionsCell
+							canChangeStatus={canChangeStatus}
+							canDelete={canDeleteUsers}
 							canManage={canManage}
+							canUpdate={canUpdateUsers}
 							isDeletePending={isDeletePending}
 							isDeleted={isDeleted}
 							isSelf={isSelf}
@@ -179,17 +201,21 @@ export function UserTable({
 				header: "操作",
 				id: "actions",
 			}),
-		],
-		[
-			currentRole,
-			currentUserId,
-			isDeletePending,
-			isStatusBusy,
-			onEdit,
-			onOpenUser,
-			onUpdateStatus,
-		],
-	);
+		];
+	}, [
+		canBanUsers,
+		canDeleteUsers,
+		canRestoreUsers,
+		canUpdateUsers,
+		currentRole,
+		currentUserId,
+		hasUserActions,
+		isDeletePending,
+		isStatusBusy,
+		onEdit,
+		onOpenUser,
+		onUpdateStatus,
+	]);
 	const table = useReactTable({
 		columns,
 		data: users,
@@ -323,7 +349,10 @@ function UserStatsCell({ user }: { user: AdminUserListItem }) {
 }
 
 function UserActionsCell({
+	canChangeStatus,
+	canDelete,
 	canManage,
+	canUpdate,
 	isDeletePending,
 	isDeleted,
 	isSelf,
@@ -333,7 +362,10 @@ function UserActionsCell({
 	onEdit,
 	onUpdateStatus,
 }: {
+	canChangeStatus: boolean;
+	canDelete: boolean;
 	canManage: boolean;
+	canUpdate: boolean;
 	isDeletePending: boolean;
 	isDeleted: boolean;
 	isSelf: boolean;
@@ -356,74 +388,80 @@ function UserActionsCell({
 
 	return (
 		<div className="flex justify-end gap-2">
-			<Button
-				size="sm"
-				variant="tertiary"
-				isIconOnly
-				aria-label="编辑"
-				isDisabled={!canManage}
-				onPress={() => onEdit(item)}
-			>
-				<Pencil className="size-4" />
-			</Button>
-			<Button
-				size="sm"
-				variant={item.status === "active" ? "outline" : "secondary"}
-				isIconOnly
-				aria-label={statusActionLabel}
-				isDisabled={!canManage || isSelf || isStatusBusy}
-				isPending={isStatusBusy}
-				onPress={() => onUpdateStatus(item, nextStatus)}
-			>
-				<StatusActionIcon className="size-4" />
-			</Button>
-			<Popover isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-				<Popover.Trigger>
-					<Button
-						size="sm"
-						variant="danger"
-						isIconOnly
-						aria-label="删除"
-						isDisabled={!canManage || isSelf || isDeleted || isStatusBusy}
-						isPending={isDeletePending}
-					>
-						<TrashBin className="size-4" />
-					</Button>
-				</Popover.Trigger>
-				<Popover.Content className="w-72" placement="top" offset={10}>
-					<Popover.Arrow />
-					<Popover.Dialog aria-label="确认删除用户" className="space-y-3 p-3">
-						<div>
-							<Popover.Heading className="font-medium text-sm">
-								确认删除用户
-							</Popover.Heading>
-							<p className="mt-1 text-muted text-sm">
-								{`将软删除用户「${item.name}」，删除后该账号将不能再登录。历史内容不会被清空。`}
-							</p>
-						</div>
-						<div className="flex justify-end gap-2">
-							<Button
-								size="sm"
-								variant="tertiary"
-								onPress={() => setIsDeleteOpen(false)}
-							>
-								取消
-							</Button>
-							<Button
-								size="sm"
-								variant="danger"
-								isPending={isDeletePending}
-								onPress={async () => {
-									await onUpdateStatus(item, "deleted");
-									setIsDeleteOpen(false);
-								}}
-							>
-								确认删除
-							</Button>
-						</div>
-					</Popover.Dialog>
-				</Popover.Content>
-			</Popover>
+			{canUpdate ? (
+				<Button
+					size="sm"
+					variant="tertiary"
+					isIconOnly
+					aria-label="编辑"
+					isDisabled={!canManage}
+					onPress={() => onEdit(item)}
+				>
+					<Pencil className="size-4" />
+				</Button>
+			) : null}
+			{canChangeStatus ? (
+				<Button
+					size="sm"
+					variant={item.status === "active" ? "outline" : "secondary"}
+					isIconOnly
+					aria-label={statusActionLabel}
+					isDisabled={!canManage || isSelf || isStatusBusy}
+					isPending={isStatusBusy}
+					onPress={() => onUpdateStatus(item, nextStatus)}
+				>
+					<StatusActionIcon className="size-4" />
+				</Button>
+			) : null}
+			{canDelete && !isDeleted ? (
+				<Popover isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+					<Popover.Trigger>
+						<Button
+							size="sm"
+							variant="danger"
+							isIconOnly
+							aria-label="删除"
+							isDisabled={!canManage || isSelf || isStatusBusy}
+							isPending={isDeletePending}
+						>
+							<TrashBin className="size-4" />
+						</Button>
+					</Popover.Trigger>
+					<Popover.Content className="w-72" placement="top" offset={10}>
+						<Popover.Arrow />
+						<Popover.Dialog aria-label="确认删除用户" className="space-y-3 p-3">
+							<div>
+								<Popover.Heading className="font-medium text-sm">
+									确认删除用户
+								</Popover.Heading>
+								<p className="mt-1 text-muted text-sm">
+									{`将软删除用户「${item.name}」，删除后该账号将不能再登录。历史内容不会被清空。`}
+								</p>
+							</div>
+							<div className="flex justify-end gap-2">
+								<Button
+									size="sm"
+									variant="tertiary"
+									onPress={() => setIsDeleteOpen(false)}
+								>
+									取消
+								</Button>
+								<Button
+									size="sm"
+									variant="danger"
+									isPending={isDeletePending}
+									onPress={async () => {
+										await onUpdateStatus(item, "deleted");
+										setIsDeleteOpen(false);
+									}}
+								>
+									确认删除
+								</Button>
+							</div>
+						</Popover.Dialog>
+					</Popover.Content>
+				</Popover>
+			) : null}
 		</div>
 	);
 }

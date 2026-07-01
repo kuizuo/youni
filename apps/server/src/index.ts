@@ -8,6 +8,7 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@youni/api/context";
 import { appRouter } from "@youni/api/routers/index";
 import { createAuth } from "@youni/auth";
+import { hasAdminPermission } from "@youni/auth/permissions";
 import { createDb } from "@youni/db";
 import { user } from "@youni/db/schema/index";
 import { env } from "@youni/env/server";
@@ -61,6 +62,16 @@ app.use(
 	}),
 );
 
+app.use("/api/auth/admin/*", async (c, next) => {
+	const path = new URL(c.req.url).pathname;
+
+	if (path.endsWith("/has-permission")) {
+		return next();
+	}
+
+	return c.json({ message: "请使用后台业务接口管理用户" }, 403);
+});
+
 app.on(["POST", "GET"], "/api/auth/*", (c) => createAuth().handler(c.req.raw));
 
 async function assertBackofficeAccess(c: HonoContext) {
@@ -71,6 +82,7 @@ async function assertBackofficeAccess(c: HonoContext) {
 
 	const [account] = await createDb()
 		.select({
+			banned: user.banned,
 			id: user.id,
 			role: user.role,
 			status: user.status,
@@ -82,7 +94,8 @@ async function assertBackofficeAccess(c: HonoContext) {
 	if (
 		!account ||
 		account.status !== "active" ||
-		(account.role !== "admin" && account.role !== "operator")
+		account.banned ||
+		!hasAdminPermission(account.role, { backoffice: ["access"] })
 	) {
 		return null;
 	}
@@ -98,6 +111,7 @@ async function assertActiveUploadAccess(c: HonoContext) {
 
 	const [account] = await createDb()
 		.select({
+			banned: user.banned,
 			id: user.id,
 			status: user.status,
 		})
@@ -105,7 +119,7 @@ async function assertActiveUploadAccess(c: HonoContext) {
 		.where(eq(user.id, context.session.user.id))
 		.limit(1);
 
-	if (!account || account.status !== "active") {
+	if (!account || account.status !== "active" || account.banned) {
 		return null;
 	}
 

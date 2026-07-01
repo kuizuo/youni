@@ -5,11 +5,12 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
-import type { PaginationState } from "@tanstack/react-table";
 import { env } from "@youni/env/web";
 import type { FormEvent } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { AdminPage } from "@/components/admin-shell";
+import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
+import { getUserManagementPermissions } from "@/lib/admin-permissions";
 import { orpc } from "@/utils/orpc";
 
 import {
@@ -38,28 +39,14 @@ function AdminUsersRoute() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const [keyword, setKeyword] = useState("");
-	const [statusFilter, setStatusFilter] = useState<UserStatus | "">("");
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 10,
-	});
+	const list = useAdminListWorkflow<UserStatus>();
 	const [formMode, setFormMode] = useState<UserFormMode>("create");
 	const [form, setForm] = useState<UserFormState>(emptyForm);
 	const [formMessage, setFormMessage] = useState<string | null>(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-	const input = useMemo(
-		() => ({
-			keyword: keyword.trim() || undefined,
-			limit: pagination.pageSize,
-			offset: pagination.pageIndex * pagination.pageSize,
-			status: statusFilter || undefined,
-		}),
-		[keyword, pagination.pageIndex, pagination.pageSize, statusFilter],
-	);
 	const users = useQuery({
-		...orpc.admin.users.queryOptions({ input }),
+		...orpc.admin.users.queryOptions({ input: list.queryInput }),
 		placeholderData: keepPreviousData,
 	});
 	const admin = useQuery(orpc.admin.me.queryOptions());
@@ -75,29 +62,12 @@ function AdminUsersRoute() {
 
 	const currentRole = admin.data?.role as UserRole | undefined;
 	const currentUserId = admin.data?.user.id;
+	const userPermissions = getUserManagementPermissions(currentRole);
 	const isSubmitting = createMutation.isPending || updateMutation.isPending;
 	const isStatusBusy =
 		statusMutation.isPending ||
 		deleteMutation.isPending ||
 		restoreMutation.isPending;
-	const resetPage = useCallback(() => {
-		setPagination((current) => ({ ...current, pageIndex: 0 }));
-	}, []);
-	const updateKeyword = useCallback(
-		(value: string) => {
-			setKeyword(value);
-			resetPage();
-		},
-		[resetPage],
-	);
-	const updateStatusFilter = useCallback(
-		(value: UserStatus | "") => {
-			setStatusFilter(value);
-			resetPage();
-		},
-		[resetPage],
-	);
-
 	const resetForm = useCallback(() => {
 		setFormMode("create");
 		setForm(emptyForm);
@@ -105,9 +75,10 @@ function AdminUsersRoute() {
 	}, []);
 
 	const openCreateDrawer = useCallback(() => {
+		if (!userPermissions.canCreate) return;
 		resetForm();
 		setIsFormOpen(true);
-	}, [resetForm]);
+	}, [resetForm, userPermissions.canCreate]);
 
 	const closeFormDrawer = useCallback(() => {
 		setIsFormOpen(false);
@@ -116,6 +87,7 @@ function AdminUsersRoute() {
 
 	const startEdit = useCallback(
 		(item: AdminUserListItem) => {
+			if (!userPermissions.canUpdate) return;
 			if (!canManageItem(currentRole, item.role)) return;
 			setFormMode("edit");
 			setForm({
@@ -133,12 +105,12 @@ function AdminUsersRoute() {
 			setFormMessage(null);
 			setIsFormOpen(true);
 		},
-		[currentRole],
+		[currentRole, userPermissions.canUpdate],
 	);
 
 	const refetchUsers = useCallback(async () => {
-		await users.refetch();
-	}, [users]);
+		await list.refetchList(users);
+	}, [list, users]);
 
 	const submitForm = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -247,11 +219,12 @@ function AdminUsersRoute() {
 	return (
 		<AdminPage title="用户管理">
 			<UserFilters
-				keyword={keyword}
-				statusFilter={statusFilter}
-				onKeywordChange={updateKeyword}
+				canCreateUser={userPermissions.canCreate}
+				keyword={list.keyword}
+				statusFilter={list.statusFilter}
+				onKeywordChange={list.updateKeyword}
 				onCreateUser={openCreateDrawer}
-				onStatusChange={updateStatusFilter}
+				onStatusChange={list.updateStatusFilter}
 			/>
 
 			<UserFormDrawer
@@ -270,19 +243,23 @@ function AdminUsersRoute() {
 			/>
 
 			<UserTable
+				canBanUsers={userPermissions.canBan}
+				canDeleteUsers={userPermissions.canDelete}
+				canRestoreUsers={userPermissions.canRestore}
+				canUpdateUsers={userPermissions.canUpdate}
 				currentRole={currentRole}
 				currentUserId={currentUserId}
 				isDeletePending={deleteMutation.isPending}
 				isFetching={users.isFetching}
 				isStatusBusy={isStatusBusy}
-				pagination={pagination}
+				pagination={list.pagination}
 				total={users.data?.total ?? 0}
 				users={(users.data?.items ?? []) as AdminUserListItem[]}
 				onEdit={startEdit}
 				onOpenUser={(item) =>
 					navigate({ to: "/admin/users/$userId", params: { userId: item.id } })
 				}
-				onPaginationChange={setPagination}
+				onPaginationChange={list.setPagination}
 				onUpdateStatus={updateStatus}
 			/>
 		</AdminPage>
