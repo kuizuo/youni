@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "building-native-ui": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/building-native-ui/SKILL.md",
+      "computedHash": "bed8dace471bc68d4d6e588fa4d72eedac54afe9f4a34ed9921da3ff994463a0"
+    },
     "heroui-native": {
       "source": "heroui-inc/heroui",
       "sourceType": "github",
@@ -12,6 +18,12 @@
       "sourceType": "github",
       "skillPath": "skills/heroui-react/SKILL.md",
       "computedHash": "c9e1bb41fbc3cee782faae08bd465ae05cd685a6ed7cc3392464fdf29b3ab467"
+    },
+    "native-data-fetching": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/native-data-fetching/SKILL.md",
+      "computedHash": "b4c14fb97506495f15840ca1ab01b8d57c9a44f47f5b851d49a9c5796cc251d1"
     }
   }
 }
