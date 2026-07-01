@@ -1,7 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Href } from "expo-router";
-import { router, useLocalSearchParams } from "expo-router";
 import {
 	Button,
 	PressableFeedback,
@@ -9,7 +6,7 @@ import {
 	Text,
 	useThemeColor,
 } from "heroui-native";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import {
 	Image,
 	KeyboardAvoidingView,
@@ -21,18 +18,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/social-states";
-import { authClient } from "@/lib/auth-client";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
-import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
-import { isRequestTimeoutError } from "@/utils/request-timeout";
-
-const SAMPLE_IMAGES = [
-	"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
-	"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
-	"https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=900&q=80",
-	"https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=900&q=80",
-];
+import { useCreateComposer } from "./use-create-composer";
 
 const TOPIC_PRESETS = ["综艺推荐", "爆笑综艺", "看剧"];
 const TOPIC_SUGGESTIONS = [
@@ -58,312 +45,29 @@ const OPTION_ROWS = [
 ] as const;
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
-type NoteVisibility = "followers" | "private" | "public";
-type PublishSubmitMode = "draft" | "publish";
-type NoteComponent = {
-	options?: string[];
-	title: string;
-	type: "file" | "poll";
-	value?: string;
-};
-type AdvancedOptions = {
-	allowComment: boolean;
-	allowShare: boolean;
-	contentDisclosure?: string;
-	isOriginal: boolean;
-};
-
-const DEFAULT_ADVANCED_OPTIONS: AdvancedOptions = {
-	allowComment: true,
-	allowShare: true,
-	isOriginal: true,
-};
 
 type CreateScreenProps = {
 	onRequestClose?: () => void;
 };
 
 export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
-	const params = useLocalSearchParams<{ draftId?: string | string[] }>();
-	const session = authClient.useSession();
-	const { toast } = useAppToast();
 	const defaultForegroundColor = useThemeColor("default-foreground");
 	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
 	const insets = useSafeAreaInsets();
-	const [hasAuthenticated, setHasAuthenticated] = useState(false);
-	const [title, setTitle] = useState("");
-	const [content, setContent] = useState("");
-	const [imageUrls, setImageUrls] = useState<string[]>([]);
-	const [topics, setTopics] = useState<string[]>([]);
-	const [locationName, setLocationName] = useState("");
-	const [visibility, setVisibility] = useState<NoteVisibility>("public");
-	const [components, setComponents] = useState<NoteComponent[]>([]);
-	const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>(
-		DEFAULT_ADVANCED_OPTIONS,
-	);
-	const [pendingSubmitMode, setPendingSubmitMode] =
-		useState<PublishSubmitMode | null>(null);
-	const [hydratedDraftId, setHydratedDraftId] = useState<null | string>(null);
-	const rawDraftId = params.draftId;
-	const draftId = Array.isArray(rawDraftId) ? rawDraftId[0] : rawDraftId;
-	const isEditingDraft = Boolean(draftId);
-	const isAuthenticated = Boolean(session.data?.user) || hasAuthenticated;
+	const composer = useCreateComposer({ onRequestClose });
+	const primaryImageUrl = composer.imageUrls[0];
 
-	useEffect(() => {
-		if (session.data?.user) {
-			setHasAuthenticated(true);
-		}
-	}, [session.data?.user]);
-
-	const missingItems = useMemo(
-		() =>
-			[
-				imageUrls.length === 0 ? "图片" : null,
-				title.trim().length === 0 ? "标题" : null,
-				content.trim().length === 0 ? "正文" : null,
-				topics.length === 0 ? "话题" : null,
-			].filter((item): item is string => Boolean(item)),
-		[content, imageUrls.length, title, topics.length],
-	);
-	const canPublish = missingItems.length === 0;
-	const visibilityLabel =
-		visibility === "public"
-			? "公开可见"
-			: visibility === "followers"
-				? "仅关注者可见"
-				: "仅自己可见";
-	const componentLabel =
-		components.length > 0 ? `已添加 ${components.length} 个` : "可添加文件";
-	const advancedLabel = advancedOptions.allowComment ? "评论开启" : "评论关闭";
-	const draftQuery = useQuery({
-		...orpc.social.draftById.queryOptions({
-			input: { id: draftId || "missing" },
-		}),
-		enabled: Boolean(draftId && isAuthenticated),
-	});
-	const resetForm = () => {
-		setTitle("");
-		setContent("");
-		setImageUrls([]);
-		setTopics([]);
-		setLocationName("");
-		setVisibility("public");
-		setComponents([]);
-		setAdvancedOptions(DEFAULT_ADVANCED_OPTIONS);
-		setHydratedDraftId(null);
-	};
-
-	const createMutation = useMutation(
-		orpc.social.create.mutationOptions({
-			onSuccess: async (_result, variables) => {
-				resetForm();
-				await queryClient.refetchQueries();
-				const isDraft = variables.submitMode === "draft";
-				toast.show({
-					variant: "success",
-					label: isDraft ? "已保存草稿" : "已提交审核",
-					description: isDraft
-						? "草稿已保存到你的主页。"
-						: "审核通过后会出现在发现页。",
-				});
-				router.replace("/me" as Href);
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({
-					variant: "danger",
-					label: "发布失败",
-					description: error.message,
-				});
-			},
-			onSettled: () => {
-				setPendingSubmitMode(null);
-			},
-		}),
-	);
-	const updateDraftMutation = useMutation(
-		orpc.social.updateDraft.mutationOptions({
-			onSuccess: async (_result, variables) => {
-				resetForm();
-				await queryClient.refetchQueries();
-				const isDraft = variables.submitMode === "draft";
-				toast.show({
-					variant: "success",
-					label: isDraft ? "草稿已保存" : "已提交审核",
-					description: isDraft
-						? "修改已保存到我的草稿。"
-						: "审核通过后会出现在发现页。",
-				});
-				router.replace((isDraft ? "/drafts" : "/me") as Href);
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({
-					variant: "danger",
-					label: pendingSubmitMode === "draft" ? "保存失败" : "发布失败",
-					description: error.message,
-				});
-			},
-			onSettled: () => {
-				setPendingSubmitMode(null);
-			},
-		}),
-	);
-
-	useEffect(() => {
-		if (!draftId || !draftQuery.data || hydratedDraftId === draftId) return;
-		setTitle(draftQuery.data.title ?? "");
-		setContent(draftQuery.data.content ?? "");
-		setImageUrls(draftQuery.data.images ?? []);
-		setTopics(draftQuery.data.topics ?? []);
-		setLocationName(draftQuery.data.locationName ?? "");
-		setVisibility(draftQuery.data.visibility ?? "public");
-		setComponents(draftQuery.data.components ?? []);
-		setAdvancedOptions({
-			...DEFAULT_ADVANCED_OPTIONS,
-			...draftQuery.data.advancedOptions,
-			contentDisclosure:
-				draftQuery.data.advancedOptions.contentDisclosure ?? undefined,
-		});
-		setHydratedDraftId(draftId);
-	}, [draftId, draftQuery.data, hydratedDraftId]);
-
-	const buildPayload = (submitMode: PublishSubmitMode) => ({
-		title: title.trim(),
-		content: content.trim(),
-		images: imageUrls,
-		topics,
-		locationName: locationName || undefined,
-		visibility,
-		components,
-		advancedOptions,
-		submitMode,
-	});
-	const isSubmitting =
-		createMutation.isPending || updateDraftMutation.isPending;
-	const submitNote = (submitMode: PublishSubmitMode) => {
-		const payload = buildPayload(submitMode);
-		if (draftId) {
-			updateDraftMutation.mutate({ id: draftId, ...payload });
-			return;
-		}
-		createMutation.mutate(payload);
-	};
-
-	const goBack = () => {
-		fireHaptic();
-		if (onRequestClose) {
-			onRequestClose();
-			return;
-		}
-		router.replace((draftId ? "/drafts" : "/") as Href);
-	};
-
-	const addImage = () => {
-		fireHaptic();
-		const nextImage = SAMPLE_IMAGES[imageUrls.length % SAMPLE_IMAGES.length];
-		setImageUrls((current) =>
-			current.includes(nextImage)
-				? current
-				: [...current, nextImage].slice(0, 9),
-		);
-	};
-
-	const removeImage = (url: string) => {
-		fireHaptic();
-		setImageUrls((current) => current.filter((item) => item !== url));
-	};
-
-	const toggleTopic = (topic: string) => {
-		fireHaptic();
-		setTopics((current) =>
-			current.includes(topic)
-				? current.filter((item) => item !== topic)
-				: [...current, topic].slice(0, 8),
-		);
-	};
-
-	const saveDraft = () => {
-		fireHaptic();
-		if (isSubmitting) return;
-		if (!isAuthenticated) {
-			toast.show({
-				variant: "warning",
-				label: "登录后再保存",
-				description: "请先登录账号，再保存草稿。",
-			});
-			return;
-		}
-		setPendingSubmitMode("draft");
-		submitNote("draft");
-	};
-
-	const publish = () => {
-		fireHaptic();
-		if (isSubmitting) return;
-
-		if (!isAuthenticated) {
-			toast.show({
-				variant: "warning",
-				label: "登录后再发布",
-				description: "请先登录账号，再提交笔记。",
-			});
-			return;
-		}
-
-		if (!canPublish) {
-			toast.show({
-				variant: "warning",
-				label: "还不能发布",
-				description: `还差：${missingItems.join("、")}`,
-			});
-			return;
-		}
-
-		setPendingSubmitMode("publish");
-		submitNote("publish");
-	};
-
-	const cycleVisibility = () => {
-		fireHaptic();
-		setVisibility((value) => {
-			if (value === "public") return "followers";
-			if (value === "followers") return "private";
-			return "public";
-		});
-	};
-
-	const toggleFileComponent = () => {
-		fireHaptic();
-		setComponents((current) =>
-			current.length > 0
-				? []
-				: [
-						{
-							type: "file",
-							title: "可添加文件",
-							value: "发布页组件占位",
-						},
-					],
-		);
-	};
-
-	const toggleAllowComment = () => {
-		fireHaptic();
-		setAdvancedOptions((current) => ({
-			...current,
-			allowComment: !current.allowComment,
-		}));
-	};
-
-	if (isEditingDraft && (draftQuery.isLoading || !draftQuery.data)) {
+	if (
+		composer.isEditingDraft &&
+		(composer.draftQuery.isLoading || !composer.draftQuery.data)
+	) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background">
-				{draftQuery.isError ? (
+				{composer.draftQuery.isError ? (
 					<ErrorState
 						description="草稿暂时没有加载出来，请稍后重试。"
-						onRetry={() => draftQuery.refetch()}
+						onRetry={() => composer.draftQuery.refetch()}
 					/>
 				) : (
 					<Spinner />
@@ -383,7 +87,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 						accessibilityLabel="返回"
 						accessibilityRole="button"
 						hitSlop={10}
-						onPress={goBack}
+						onPress={composer.goBack}
 						className="size-11 items-center justify-center rounded-full"
 					>
 						<Ionicons name="chevron-back" size={34} color={mutedColor} />
@@ -400,16 +104,18 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 				>
 					<View className="flex-row gap-3">
 						<MediaTile
-							imageUrl={imageUrls[0]}
+							imageUrl={primaryImageUrl}
 							label="分享画面会显示在首页这里"
 							onPress={
-								imageUrls[0] ? () => removeImage(imageUrls[0]) : addImage
+								primaryImageUrl
+									? () => composer.removeImage(primaryImageUrl)
+									: composer.addImage
 							}
 						/>
 						<PressableFeedback
 							accessibilityLabel="添加图片"
 							accessibilityRole="button"
-							onPress={addImage}
+							onPress={composer.addImage}
 							className="h-28 w-28 items-center justify-center rounded-2xl border border-border bg-content2"
 						>
 							<Ionicons name="add" size={54} color={mutedColor} />
@@ -418,8 +124,8 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 
 					<View className="gap-3">
 						<TextInput
-							value={title}
-							onChangeText={setTitle}
+							value={composer.title}
+							onChangeText={composer.setTitle}
 							placeholder="添加标题"
 							placeholderTextColor={mutedColor}
 							maxLength={80}
@@ -435,8 +141,8 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 						/>
 						<View className="flex-row items-start gap-2">
 							<TextInput
-								value={content}
-								onChangeText={setContent}
+								value={composer.content}
+								onChangeText={composer.setContent}
 								placeholder="添加正文或发语音"
 								placeholderTextColor={mutedColor}
 								multiline
@@ -466,7 +172,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 									<SuggestionChip
 										key={topic}
 										label={`#${topic}`}
-										onPress={() => toggleTopic(topic)}
+										onPress={() => composer.toggleTopic(topic)}
 									/>
 								),
 							)}
@@ -477,8 +183,8 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 									key={action.label}
 									icon={action.icon}
 									label={action.label}
-									onPress={() => toggleTopic(action.label)}
-									isActive={topics.includes(action.label)}
+									onPress={() => composer.toggleTopic(action.label)}
+									isActive={composer.topics.includes(action.label)}
 								/>
 							))}
 						</View>
@@ -488,19 +194,19 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 						{OPTION_ROWS.map((row) => {
 							const value =
 								row.label === "公开可见"
-									? visibilityLabel
+									? composer.visibilityLabel
 									: row.label === "添加组件"
-										? componentLabel
+										? composer.componentLabel
 										: row.label === "高级选项"
-											? advancedLabel
-											: locationName || undefined;
+											? composer.advancedLabel
+											: composer.locationName || undefined;
 							const onPress =
 								row.label === "公开可见"
-									? cycleVisibility
+									? composer.cycleVisibility
 									: row.label === "添加组件"
-										? toggleFileComponent
+										? composer.toggleFileComponent
 										: row.label === "高级选项"
-											? toggleAllowComment
+											? composer.toggleAllowComment
 											: undefined;
 
 							return (
@@ -523,7 +229,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 												<SuggestionChip
 													key={suggestion}
 													label={suggestion}
-													onPress={() => setLocationName(suggestion)}
+													onPress={() => composer.setLocationName(suggestion)}
 												/>
 											))}
 										</ScrollView>
@@ -553,25 +259,29 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					}}
 				>
 					<Button
-						onPress={saveDraft}
+						onPress={composer.saveDraft}
 						size="lg"
 						variant="outline"
 						feedbackVariant="scale-ripple"
-						isDisabled={isSubmitting}
+						isDisabled={composer.isSubmitting}
 						className="h-14 flex-1 rounded-full"
 					>
-						{pendingSubmitMode === "draft" ? <Spinner size="sm" /> : null}
+						{composer.pendingSubmitMode === "draft" ? (
+							<Spinner size="sm" />
+						) : null}
 						<Button.Label>存草稿</Button.Label>
 					</Button>
 					<Button
-						onPress={publish}
+						onPress={composer.publish}
 						size="lg"
 						variant="primary"
 						feedbackVariant="scale-ripple"
-						isDisabled={isSubmitting}
+						isDisabled={composer.isSubmitting}
 						className="h-14 flex-[2] rounded-full"
 					>
-						{pendingSubmitMode === "publish" ? <Spinner size="sm" /> : null}
+						{composer.pendingSubmitMode === "publish" ? (
+							<Spinner size="sm" />
+						) : null}
 						<Button.Label>发布笔记</Button.Label>
 					</Button>
 				</View>
