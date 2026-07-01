@@ -1,5 +1,4 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { type Href, router } from "expo-router";
 import {
 	cn,
 	PressableFeedback,
@@ -11,9 +10,8 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SingleColorIcon } from "@/components/icons/single-color";
-import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
 import { TABS } from "@/lib/config/tabs";
+import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
 export const TAB_BAR_SAFE_OFFSET_ADDON_PX = 12;
@@ -21,7 +19,7 @@ export const TAB_BAR_SAFE_OFFSET_ADDON_PX = 12;
 export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 	const insets = useSafeAreaInsets();
 	const backgroundColor = useThemeColor("background");
-	const session = authClient.useSession();
+	const socialNavigation = useSocialNavigation();
 
 	return (
 		<View
@@ -49,19 +47,14 @@ export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 					const handlePress = (): void => {
 						fireHaptic();
 						if (config.isCreateAction) {
-							if (!session.data?.user) {
-								router.push(getLoginHref("/publish"));
-								return;
-							}
-							router.push("/publish" as Href);
+							socialNavigation.openPublish();
 							return;
 						}
 
 						if (
 							(config.name === "messages" || config.name === "me") &&
-							!session.data?.user
+							!socialNavigation.requireLogin(`/${config.name}`)
 						) {
-							router.push(getLoginHref(`/${config.name}`));
 							return;
 						}
 

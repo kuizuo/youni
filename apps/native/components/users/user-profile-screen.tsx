@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -22,12 +22,9 @@ import {
 	ErrorState,
 	FeedSkeleton,
 } from "@/components/social-states";
-import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
+import { useSocialActions } from "@/lib/social/use-social-actions";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
-import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
-import { isRequestTimeoutError } from "@/utils/request-timeout";
+import { orpc } from "@/utils/orpc";
 
 const PROFILE_HERO_COLOR = "#728894";
 const PROFILE_HEADER_HEIGHT = 330;
@@ -46,49 +43,19 @@ export default function UserProfileScreen() {
 	const id = getRouteParam(params.id) ?? "";
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
-	const session = authClient.useSession();
-	const { toast } = useAppToast();
+	const socialActions = useSocialActions();
 	const mutedColor = useThemeColor("muted");
 	const accentForegroundColor = useThemeColor("accent-foreground");
-	const currentUserId = session.data?.user?.id;
 
 	const profile = useQuery({
 		...orpc.social.profile.queryOptions({ input: { userId: id || "missing" } }),
 		enabled: Boolean(id),
 	});
-	const followMutation = useMutation(
-		orpc.social.toggleFollow.mutationOptions({
-			onSuccess: async (result) => {
-				await profile.refetch();
-				queryClient.refetchQueries();
-				toast.show({ label: result.following ? "已关注" : "已取消关注" });
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
-	const startChatMutation = useMutation(
-		orpc.messages.start.mutationOptions({
-			onSuccess: (result) => {
-				queryClient.refetchQueries();
-				router.push({
-					pathname: "/chat/[id]",
-					params: { id: result.id },
-				} as unknown as Href);
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
 
 	const profileData = profile.data?.profile;
 	const notes = useMemo(() => profile.data?.notes ?? [], [profile.data?.notes]);
 	const feedItems = useMemo(() => createTwoColumnFeed(notes), [notes]);
-	const isSelf = currentUserId === id;
+	const isSelf = socialActions.currentUserId === id;
 	const displayName = profileData?.name ?? "用户";
 	const displayHandle = profileData?.handle
 		? `@${profileData.handle}`
@@ -96,31 +63,31 @@ export default function UserProfileScreen() {
 	const isFollowing = Boolean(profileData?.isFollowing);
 	const topChromeHeight = insets.top + 72;
 
-	const requireLogin = () => {
-		if (session.data?.user) return true;
-		router.push(getLoginHref(`/user/${id}`));
-		return false;
-	};
-
 	const toggleFollow = () => {
-		if (!id || isSelf || !requireLogin()) return;
-		followMutation.mutate({ userId: id });
+		if (!id || isSelf) return;
+		socialActions.toggleFollow(
+			{ userId: id },
+			{
+				onSuccess: async () => {
+					await profile.refetch();
+				},
+				redirectTo: `/user/${id}`,
+			},
+		);
 	};
 
 	const openChat = () => {
-		if (!id || isSelf || !requireLogin()) return;
-		startChatMutation.mutate({ userId: id });
+		if (!id || isSelf) return;
+		socialActions.startChat({ userId: id }, { redirectTo: `/user/${id}` });
 	};
 
 	const openConnections = (type: "followers" | "following") => {
-		router.push({
-			pathname: "/user-connections",
-			params: {
-				type,
-				userId: id,
-				title: displayName,
-			},
-		} as unknown as Href);
+		socialActions.goTo({
+			type: "userConnections",
+			userId: id,
+			view: type,
+			title: displayName,
+		});
 	};
 
 	if (profile.isError) {
@@ -254,10 +221,10 @@ export default function UserProfileScreen() {
 										variant={isFollowing ? "secondary" : "primary"}
 										className="flex-1 rounded-full"
 										feedbackVariant="scale-ripple"
-										isDisabled={followMutation.isPending}
+										isDisabled={socialActions.mutations.follow.isPending}
 										onPress={toggleFollow}
 									>
-										{followMutation.isPending ? (
+										{socialActions.mutations.follow.isPending ? (
 											<Spinner size="sm" />
 										) : (
 											<Ionicons
@@ -280,10 +247,10 @@ export default function UserProfileScreen() {
 										variant="secondary"
 										className="flex-1 rounded-full bg-white/15"
 										feedbackVariant="scale-ripple"
-										isDisabled={startChatMutation.isPending}
+										isDisabled={socialActions.mutations.startChat.isPending}
 										onPress={openChat}
 									>
-										{startChatMutation.isPending ? (
+										{socialActions.mutations.startChat.isPending ? (
 											<Spinner size="sm" />
 										) : (
 											<Ionicons

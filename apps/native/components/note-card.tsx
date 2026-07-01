@@ -1,7 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation } from "@tanstack/react-query";
-import type { Href } from "expo-router";
-import { useRouter } from "expo-router";
 import {
 	Button,
 	Card,
@@ -16,11 +13,8 @@ import {
 import { type ComponentProps, useEffect, useState } from "react";
 import { Image, Platform } from "react-native";
 
-import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
+import { useSocialActions } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
-import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 type NoteCardProps = {
 	compact?: boolean;
@@ -54,8 +48,7 @@ function getStatusLabel(status?: NoteCardProps["note"]["status"]) {
 }
 
 export function NoteCard({ compact = false, note }: NoteCardProps) {
-	const router = useRouter();
-	const session = authClient.useSession();
+	const socialActions = useSocialActions();
 	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
@@ -85,77 +78,32 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	]);
 
 	const openDetail = () => {
-		router.push({
-			pathname: "/note/[id]",
-			params: { id: note.id },
-		} as unknown as Href);
+		socialActions.goTo({ type: "note", id: note.id });
 	};
 
 	const openAuthor = () => {
-		router.push({
-			pathname: "/user/[id]",
-			params: { id: note.author.id },
-		} as unknown as Href);
+		socialActions.goTo({ type: "user", id: note.author.id });
 	};
-
-	const requireLogin = () => {
-		if (session.data?.user) return true;
-		router.push(getLoginHref("/"));
-		return false;
-	};
-
-	const likeMutation = useMutation(
-		orpc.social.toggleLike.mutationOptions({
-			onSuccess: (result) => {
-				setLiked(result.liked);
-				setLikedCount(result.likedCount);
-				queryClient.refetchQueries();
-			},
-			onError: (error) => {
-				setLiked(Boolean(note.liked));
-				setLikedCount(note.likedCount);
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
-	const collectMutation = useMutation(
-		orpc.social.toggleCollect.mutationOptions({
-			onSuccess: (result) => {
-				setCollected(result.collected);
-				setCollectedCount(result.collectedCount);
-				queryClient.refetchQueries();
-				toast.show({ label: result.collected ? "已收藏" : "已取消收藏" });
-			},
-			onError: (error) => {
-				setCollected(Boolean(note.collected));
-				setCollectedCount(note.collectedCount ?? 0);
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
-	const followMutation = useMutation(
-		orpc.social.toggleFollow.mutationOptions({
-			onSuccess: (result) => {
-				setAuthorFollowing(result.following);
-				queryClient.refetchQueries();
-				toast.show({ label: result.following ? "已关注" : "已取消关注" });
-			},
-			onError: (error) => {
-				setAuthorFollowing(Boolean(note.author.isFollowing));
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
 
 	const toggleLike = () => {
-		if (!requireLogin()) return;
+		if (!socialActions.requireLogin("/")) return;
 		const nextLiked = !liked;
 		setLiked(nextLiked);
 		setLikedCount((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
-		likeMutation.mutate({ id: note.id });
+		socialActions.toggleLike(
+			{ id: note.id },
+			{
+				onError: () => {
+					setLiked(Boolean(note.liked));
+					setLikedCount(note.likedCount);
+				},
+				onSuccess: (result) => {
+					setLiked(result.liked);
+					setLikedCount(result.likedCount);
+				},
+				redirectTo: "/",
+			},
+		);
 	};
 
 	const openActionMenu = () => {
@@ -176,18 +124,42 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 
 	const toggleCollect = () => {
 		closeActionMenu();
-		if (!requireLogin()) return;
+		if (!socialActions.requireLogin("/")) return;
 		const nextCollected = !collected;
 		setCollected(nextCollected);
 		setCollectedCount((count) => Math.max(0, count + (nextCollected ? 1 : -1)));
-		collectMutation.mutate({ id: note.id });
+		socialActions.toggleCollect(
+			{ id: note.id },
+			{
+				onError: () => {
+					setCollected(Boolean(note.collected));
+					setCollectedCount(note.collectedCount ?? 0);
+				},
+				onSuccess: (result) => {
+					setCollected(result.collected);
+					setCollectedCount(result.collectedCount);
+				},
+				redirectTo: "/",
+			},
+		);
 	};
 
 	const toggleFollow = () => {
 		closeActionMenu();
-		if (!requireLogin()) return;
+		if (!socialActions.requireLogin("/")) return;
 		setAuthorFollowing((value) => !value);
-		followMutation.mutate({ userId: note.author.id });
+		socialActions.toggleFollow(
+			{ userId: note.author.id },
+			{
+				onError: () => {
+					setAuthorFollowing(Boolean(note.author.isFollowing));
+				},
+				onSuccess: (result) => {
+					setAuthorFollowing(result.following);
+				},
+				redirectTo: "/",
+			},
+		);
 	};
 
 	const openActionMenuDetail = () => {
@@ -202,7 +174,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 
 	const statusLabel = getStatusLabel(note.status);
 	const visibleTopics = note.topics?.slice(0, 3) ?? [];
-	const isSelf = session.data?.user?.id === note.author.id;
+	const isSelf = socialActions.currentUserId === note.author.id;
 	const isWeb = Platform.OS === "web";
 	const contextMenuProps = isWeb
 		? {
@@ -371,9 +343,9 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 							authorName={note.author.name}
 							collected={collected}
 							collectedCount={collectedCount}
-							collectPending={collectMutation.isPending}
+							collectPending={socialActions.mutations.collect.isPending}
 							following={authorFollowing}
-							followPending={followMutation.isPending}
+							followPending={socialActions.mutations.follow.isPending}
 							isSelf={isSelf}
 							noteTitle={note.title}
 							onClose={closeActionMenu}
@@ -400,9 +372,9 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 				authorName={note.author.name}
 				collected={collected}
 				collectedCount={collectedCount}
-				collectPending={collectMutation.isPending}
+				collectPending={socialActions.mutations.collect.isPending}
 				following={authorFollowing}
-				followPending={followMutation.isPending}
+				followPending={socialActions.mutations.follow.isPending}
 				isSelf={isSelf}
 				noteTitle={note.title}
 				onClose={closeActionMenu}

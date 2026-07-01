@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
+import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { orpc } from "@/utils/orpc";
 
@@ -63,6 +63,7 @@ export default function MessagesScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const session = authClient.useSession();
+	const socialNavigation = useSocialNavigation();
 	const foregroundColor = useThemeColor("foreground");
 	const [menuVisible, setMenuVisible] = useState(false);
 	const isAuthenticated = Boolean(session.data?.user);
@@ -155,7 +156,10 @@ export default function MessagesScreen() {
 							onAction={() =>
 								isAuthenticated
 									? router.replace("/" as Href)
-									: router.push(getLoginHref("/messages"))
+									: socialNavigation.goTo({
+											type: "login",
+											redirectTo: "/messages",
+										})
 							}
 						/>
 					)
@@ -200,16 +204,13 @@ export default function MessagesScreen() {
 }
 
 function ConversationRow({ item }: { item: ConversationItem }) {
-	const router = useRouter();
+	const socialNavigation = useSocialNavigation();
 	const mutedColor = useThemeColor("muted");
 	const lastMessage = item.lastMessage?.content ?? "还没有消息";
 
 	const openChat = () => {
 		fireHaptic();
-		router.push({
-			pathname: "/chat/[id]",
-			params: { id: item.id },
-		} as unknown as Href);
+		socialNavigation.goTo({ type: "chat", id: item.id });
 	};
 
 	return (

@@ -1,10 +1,14 @@
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
-import { type Href, router } from "expo-router";
+import { router } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
+import {
+	getNotificationIntent,
+	toSocialHref,
+} from "@/lib/social/navigation-intents";
 import { client } from "@/utils/orpc";
 
 Notifications.setNotificationHandler({
@@ -32,44 +36,12 @@ function getPlatform() {
 	return "unknown";
 }
 
-function getString(value: unknown) {
-	return typeof value === "string" && value.length > 0 ? value : null;
-}
-
 function hasNotificationPermission(value: unknown) {
 	return (value as { granted?: boolean }).granted === true;
 }
 
 function openNotificationTarget(data: NotificationData) {
-	const targetType = getString(data.targetType);
-	const targetId = getString(data.targetId);
-	const noteId = getString(data.noteId);
-
-	if (targetType === "note" && (noteId || targetId)) {
-		router.push({
-			pathname: "/note/[id]",
-			params: { id: noteId ?? targetId },
-		} as unknown as Href);
-		return;
-	}
-
-	if (targetType === "user" && targetId) {
-		router.push({
-			pathname: "/user/[id]",
-			params: { id: targetId },
-		} as unknown as Href);
-		return;
-	}
-
-	if (targetType === "chat" && targetId) {
-		router.push({
-			pathname: "/chat/[id]",
-			params: { id: targetId },
-		} as unknown as Href);
-		return;
-	}
-
-	router.push("/messages" as Href);
+	router.push(toSocialHref(getNotificationIntent(data)));
 }
 
 async function getExpoPushToken() {

@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	Avatar,
@@ -22,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
+import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
@@ -51,6 +51,7 @@ export default function ChatDetailScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const session = authClient.useSession();
+	const socialNavigation = useSocialNavigation();
 	const { toast } = useAppToast();
 	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
@@ -134,10 +135,7 @@ export default function ChatDetailScreen() {
 							className="rounded-full"
 							accessibilityLabel="查看主页"
 							onPress={() =>
-								router.push({
-									pathname: "/user/[id]",
-									params: { id: peer.id },
-								} as unknown as Href)
+								socialNavigation.goTo({ type: "user", id: peer.id })
 							}
 						>
 							<Ionicons

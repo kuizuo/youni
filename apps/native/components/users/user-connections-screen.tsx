@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Href } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	Avatar,
@@ -16,11 +15,8 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState, ErrorState } from "@/components/social-states";
-import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
-import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
-import { isRequestTimeoutError } from "@/utils/request-timeout";
+import { useSocialActions } from "@/lib/social/use-social-actions";
+import { orpc } from "@/utils/orpc";
 
 type ConnectionType = "following" | "followers";
 type ConnectionUser = {
@@ -52,7 +48,9 @@ export default function UserConnectionsScreen() {
 	const userId = getRouteParam(params.userId) ?? "";
 	const title = getRouteParam(params.title) ?? "用户";
 	const mutedColor = useThemeColor("muted");
+	const socialActions = useSocialActions();
 	const [activeType, setActiveType] = useState<ConnectionType>(initialType);
+	const [pendingFollowId, setPendingFollowId] = useState<null | string>(null);
 	const connections = useQuery({
 		...orpc.social.connections.queryOptions({
 			input: { userId: userId || "missing", type: activeType, limit: 60 },
@@ -66,6 +64,28 @@ export default function UserConnectionsScreen() {
 
 	const switchType = (type: ConnectionType) => {
 		setActiveType(type);
+	};
+
+	const openUser = (id: string) => {
+		socialActions.goTo({ type: "user", id });
+	};
+
+	const toggleFollow = (item: ConnectionUser) => {
+		if (socialActions.currentUserId === item.id) return;
+		setPendingFollowId(item.id);
+		const started = socialActions.toggleFollow(
+			{ userId: item.id },
+			{
+				onSettled: () => {
+					setPendingFollowId(null);
+				},
+				redirectTo: `/user/${item.id}`,
+				showSuccessToast: false,
+			},
+		);
+		if (!started) {
+			setPendingFollowId(null);
+		}
 	};
 
 	return (
@@ -121,7 +141,15 @@ export default function UserConnectionsScreen() {
 						onRefresh={() => connections.refetch()}
 					/>
 				}
-				renderItem={({ item }) => <ConnectionRow item={item} />}
+				renderItem={({ item }) => (
+					<ConnectionRow
+						currentUserId={socialActions.currentUserId}
+						isPending={pendingFollowId === item.id}
+						item={item}
+						onOpenUser={openUser}
+						onToggleFollow={toggleFollow}
+					/>
+				)}
 				ListEmptyComponent={
 					connections.isLoading ? (
 						<View className="items-center py-16">
@@ -167,39 +195,29 @@ function SegmentButton({
 	);
 }
 
-function ConnectionRow({ item }: { item: ConnectionUser }) {
-	const router = useRouter();
-	const session = authClient.useSession();
-	const { toast } = useAppToast();
+function ConnectionRow({
+	currentUserId,
+	isPending,
+	item,
+	onOpenUser,
+	onToggleFollow,
+}: {
+	currentUserId?: string;
+	isPending: boolean;
+	item: ConnectionUser;
+	onOpenUser: (id: string) => void;
+	onToggleFollow: (item: ConnectionUser) => void;
+}) {
 	const mutedColor = useThemeColor("muted");
-	const currentUserId = session.data?.user?.id;
 	const isSelf = currentUserId === item.id;
-	const followMutation = useMutation(
-		orpc.social.toggleFollow.mutationOptions({
-			onSuccess: async () => {
-				await queryClient.refetchQueries();
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
 
 	const openUser = () => {
-		router.push({
-			pathname: "/user/[id]",
-			params: { id: item.id },
-		} as unknown as Href);
+		onOpenUser(item.id);
 	};
 
 	const toggleFollow = () => {
-		if (!currentUserId) {
-			router.push(getLoginHref(`/user/${item.id}`));
-			return;
-		}
 		if (isSelf) return;
-		followMutation.mutate({ userId: item.id });
+		onToggleFollow(item);
 	};
 
 	return (
@@ -236,12 +254,9 @@ function ConnectionRow({ item }: { item: ConnectionUser }) {
 				<Button
 					size="sm"
 					variant={item.isFollowing ? "secondary" : "primary"}
-					className={cn(
-						"rounded-full px-4",
-						followMutation.isPending && "opacity-70",
-					)}
+					className={cn("rounded-full px-4", isPending && "opacity-70")}
 					feedbackVariant="scale-ripple"
-					isDisabled={followMutation.isPending}
+					isDisabled={isPending}
 					onPress={toggleFollow}
 				>
 					<Ionicons

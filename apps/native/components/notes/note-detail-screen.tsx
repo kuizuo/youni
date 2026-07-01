@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Href } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	Avatar,
@@ -24,11 +23,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/social-states";
-import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
-import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
-import { isRequestTimeoutError } from "@/utils/request-timeout";
+import { useSocialActions } from "@/lib/social/use-social-actions";
+import { orpc } from "@/utils/orpc";
 
 function getRouteParam(value: string | string[] | undefined) {
 	return Array.isArray(value) ? value[0] : value;
@@ -38,8 +34,7 @@ export default function NoteDetailScreen() {
 	const params = useLocalSearchParams<{ id?: string | string[] }>();
 	const id = getRouteParam(params.id) ?? "";
 	const router = useRouter();
-	const session = authClient.useSession();
-	const { toast } = useAppToast();
+	const socialActions = useSocialActions();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
 	const accentForegroundColor = useThemeColor("accent-foreground");
@@ -59,72 +54,59 @@ export default function NoteDetailScreen() {
 		enabled: Boolean(authorId),
 	});
 
-	const likeMutation = useMutation(
-		orpc.social.toggleLike.mutationOptions({
-			onSuccess: async () => {
-				await note.refetch();
-				queryClient.refetchQueries();
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
-	const followMutation = useMutation(
-		orpc.social.toggleFollow.mutationOptions({
-			onSuccess: async () => {
-				await authorProfile.refetch();
-				queryClient.refetchQueries();
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
-	const commentMutation = useMutation(
-		orpc.social.addComment.mutationOptions({
-			onSuccess: async () => {
-				setCommentText("");
-				await note.refetch();
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-		}),
-	);
-
 	const images = useMemo(() => note.data?.images ?? [], [note.data?.images]);
-	const isSelf = session.data?.user?.id === authorId;
+	const isSelf = socialActions.currentUserId === authorId;
 	const isFollowing = Boolean(authorProfile.data?.profile.isFollowing);
 	const commentsEnabled = note.data?.advancedOptions.allowComment ?? true;
 	const canSendComment = commentsEnabled && commentText.trim().length > 0;
 
-	const requireLogin = () => {
-		if (session.data?.user) return true;
-		router.push(getLoginHref(`/note/${id}`));
-		return false;
-	};
-
 	const toggleLike = () => {
-		if (!note.data || !requireLogin()) return;
-		likeMutation.mutate({ id: note.data.id });
+		if (!note.data) return;
+		socialActions.toggleLike(
+			{ id: note.data.id },
+			{
+				onSuccess: async () => {
+					await note.refetch();
+				},
+				redirectTo: `/note/${id}`,
+			},
+		);
 	};
 
 	const toggleFollow = () => {
-		if (!authorId || isSelf || !requireLogin()) return;
-		followMutation.mutate({ userId: authorId });
+		if (!authorId || isSelf) return;
+		socialActions.toggleFollow(
+			{ userId: authorId },
+			{
+				onSuccess: async () => {
+					await authorProfile.refetch();
+				},
+				redirectTo: `/note/${id}`,
+			},
+		);
 	};
 
 	const sendComment = () => {
-		if (!note.data || !requireLogin()) return;
-		if (!canSendComment || commentMutation.isPending) return;
-		commentMutation.mutate({
-			noteId: note.data.id,
-			content: commentText.trim(),
-		});
+		if (
+			!note.data ||
+			!canSendComment ||
+			socialActions.mutations.comment.isPending
+		) {
+			return;
+		}
+		socialActions.addComment(
+			{
+				noteId: note.data.id,
+				content: commentText.trim(),
+			},
+			{
+				onSuccess: async () => {
+					setCommentText("");
+					await note.refetch();
+				},
+				redirectTo: `/note/${id}`,
+			},
+		);
 	};
 
 	if (note.isLoading) {
@@ -200,10 +182,10 @@ export default function NoteDetailScreen() {
 						<View className="flex-row items-center gap-3">
 							<PressableFeedback
 								onPress={() =>
-									router.push({
-										pathname: "/user/[id]",
-										params: { id: authorId },
-									} as unknown as Href)
+									socialActions.goTo({
+										type: "user",
+										id: authorId,
+									})
 								}
 								className="min-w-0 flex-1 flex-row items-center gap-3"
 							>
@@ -235,7 +217,7 @@ export default function NoteDetailScreen() {
 									size="sm"
 									variant={isFollowing ? "secondary" : "primary"}
 									feedbackVariant="scale-ripple"
-									isDisabled={followMutation.isPending}
+									isDisabled={socialActions.mutations.follow.isPending}
 									onPress={toggleFollow}
 								>
 									<Button.Label>{isFollowing ? "已关注" : "关注"}</Button.Label>
@@ -308,7 +290,7 @@ export default function NoteDetailScreen() {
 						hitSlop={8}
 						onPress={toggleLike}
 					>
-						{likeMutation.isPending ? (
+						{socialActions.mutations.like.isPending ? (
 							<Spinner size="sm" />
 						) : (
 							<Ionicons
@@ -326,7 +308,7 @@ export default function NoteDetailScreen() {
 						</Text.Paragraph>
 					</PressableFeedback>
 
-					{session.data?.user ? (
+					{socialActions.session.data?.user ? (
 						commentsEnabled ? (
 							<>
 								<View className="min-w-0 flex-1">
@@ -346,10 +328,12 @@ export default function NoteDetailScreen() {
 									size="sm"
 									variant="primary"
 									feedbackVariant="scale-ripple"
-									isDisabled={!canSendComment || commentMutation.isPending}
+									isDisabled={
+										!canSendComment || socialActions.mutations.comment.isPending
+									}
 									onPress={sendComment}
 								>
-									{commentMutation.isPending ? (
+									{socialActions.mutations.comment.isPending ? (
 										<Spinner size="sm" />
 									) : (
 										<Ionicons
@@ -376,7 +360,12 @@ export default function NoteDetailScreen() {
 							variant="secondary"
 							className="min-w-0 flex-1 justify-start rounded-full px-4"
 							feedbackVariant="scale-ripple"
-							onPress={() => router.push(getLoginHref(`/note/${id}`))}
+							onPress={() =>
+								socialActions.goTo({
+									type: "login",
+									redirectTo: `/note/${id}`,
+								})
+							}
 						>
 							<Button.Label className="text-muted">登录后参与评论</Button.Label>
 						</Button>

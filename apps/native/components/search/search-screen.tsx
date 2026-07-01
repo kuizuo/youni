@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -17,12 +17,12 @@ import { Alert, FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState, ErrorState } from "@/components/social-states";
-import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
+import {
+	useSocialActions,
+	useSocialNavigation,
+} from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
-import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
-import { isRequestTimeoutError } from "@/utils/request-timeout";
+import { orpc } from "@/utils/orpc";
 
 const QUICK_WORDS = [
 	"摄影",
@@ -106,8 +106,7 @@ export default function SearchScreen() {
 		source?: string | string[];
 	}>();
 	const insets = useSafeAreaInsets();
-	const session = authClient.useSession();
-	const { toast } = useAppToast();
+	const socialActions = useSocialActions();
 	const mutedColor = useThemeColor("muted");
 	const foregroundColor = useThemeColor("foreground");
 	const accentColor = useThemeColor("accent");
@@ -134,7 +133,7 @@ export default function SearchScreen() {
 		() => uniqueWords([...recentWords, ...QUICK_WORDS], 12),
 		[recentWords],
 	);
-	const currentUserId = session.data?.user?.id;
+	const currentUserId = socialActions.currentUserId;
 
 	const updateRecentWords = useCallback(
 		(updater: (items: string[]) => string[]) => {
@@ -196,22 +195,6 @@ export default function SearchScreen() {
 		applyKeyword(nextKeyword);
 	}, [applyKeyword, params.actionAt, params.keyword, params.source]);
 
-	const followMutation = useMutation(
-		orpc.social.toggleFollow.mutationOptions({
-			onSuccess: (result) => {
-				queryClient.refetchQueries();
-				toast.show({ label: result.following ? "已关注" : "已取消关注" });
-			},
-			onError: (error) => {
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-			onSettled: () => {
-				setPendingFollowId(null);
-			},
-		}),
-	);
-
 	const goBack = () => {
 		if (router.canGoBack()) {
 			router.back();
@@ -261,17 +244,22 @@ export default function SearchScreen() {
 		]);
 	};
 
-	const requireLogin = () => {
-		if (session.data?.user) return true;
-		router.push(getLoginHref("/search"));
-		return false;
-	};
-
 	const toggleFollow = (userId: string) => {
-		if (currentUserId === userId || !requireLogin()) return;
+		if (currentUserId === userId) return;
 		fireHaptic();
 		setPendingFollowId(userId);
-		followMutation.mutate({ userId });
+		const started = socialActions.toggleFollow(
+			{ userId },
+			{
+				onSettled: () => {
+					setPendingFollowId(null);
+				},
+				redirectTo: "/search",
+			},
+		);
+		if (!started) {
+			setPendingFollowId(null);
+		}
 	};
 
 	return (
@@ -445,15 +433,13 @@ function UserResultRow({
 	onToggleFollow: (userId: string) => void;
 }) {
 	const router = useRouter();
+	const socialNavigation = useSocialNavigation();
 	const mutedColor = useThemeColor("muted");
 	const isSelf = currentUserId === item.id;
 	const secondaryName = item.handle ? `@${item.handle}` : "未设置用户名";
 
 	const openProfile = () => {
-		router.push({
-			pathname: "/user/[id]",
-			params: { id: item.id },
-		} as unknown as Href);
+		socialNavigation.goTo({ type: "user", id: item.id });
 	};
 
 	return (

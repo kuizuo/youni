@@ -7,6 +7,7 @@ import { type ReactNode, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
 
 function getUserIdFromCode(value: string) {
@@ -17,6 +18,7 @@ function getUserIdFromCode(value: string) {
 export default function ScanScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const socialNavigation = useSocialNavigation();
 	const { toast } = useAppToast();
 	const [permission, requestPermission] = useCameraPermissions();
 	const [torchEnabled, setTorchEnabled] = useState(false);
@@ -28,10 +30,7 @@ export default function ScanScreen() {
 		setLastScannedValue(data);
 		const userId = getUserIdFromCode(data);
 		if (userId) {
-			router.replace({
-				pathname: "/user/[id]",
-				params: { id: userId },
-			} as unknown as Href);
+			socialNavigation.replaceWith({ type: "user", id: userId });
 			return;
 		}
 		toast.show({ label: "已识别二维码", description: data.slice(0, 80) });

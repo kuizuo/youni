@@ -1,8 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import type { Href } from "expo-router";
-import { useRouter } from "expo-router";
 import { Button, PressableFeedback, Text, useThemeColor } from "heroui-native";
 import { useMemo, useState } from "react";
 import { Platform, View } from "react-native";
@@ -14,8 +12,7 @@ import {
 	ErrorState,
 	FeedSkeleton,
 } from "@/components/social-states";
-import { authClient } from "@/lib/auth-client";
-import { getLoginHref } from "@/lib/auth-navigation";
+import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { orpc } from "@/utils/orpc";
 
 const HOME_TABS = [
@@ -25,8 +22,7 @@ const HOME_TABS = [
 type HomeTab = (typeof HOME_TABS)[number]["id"];
 
 export default function HomeScreen() {
-	const router = useRouter();
-	const session = authClient.useSession();
+	const socialNavigation = useSocialNavigation();
 	const insets = useSafeAreaInsets();
 	const mutedColor = useThemeColor("muted");
 	const foregroundColor = useThemeColor("foreground");
@@ -35,11 +31,13 @@ export default function HomeScreen() {
 	const discoverFeed = useQuery(orpc.social.feed.queryOptions({ input }));
 	const followingFeed = useQuery({
 		...orpc.social.followingFeed.queryOptions({ input }),
-		enabled: activeTab === "following" && Boolean(session.data?.user),
+		enabled:
+			activeTab === "following" && Boolean(socialNavigation.session.data?.user),
 	});
 	const activeFeed = activeTab === "following" ? followingFeed : discoverFeed;
 	const notes = activeFeed.data ?? [];
-	const isFollowingGuest = activeTab === "following" && !session.data?.user;
+	const isFollowingGuest =
+		activeTab === "following" && !socialNavigation.session.data?.user;
 	const topBar = (
 		<View
 			className="bg-background px-2 pb-3"
@@ -82,7 +80,7 @@ export default function HomeScreen() {
 					className="h-12 w-12 rounded-full"
 					feedbackVariant="scale-ripple"
 					accessibilityLabel="搜索"
-					onPress={() => router.push("/search" as Href)}
+					onPress={() => socialNavigation.goTo({ type: "search" })}
 				>
 					<Ionicons
 						name="search-outline"
@@ -134,7 +132,9 @@ export default function HomeScreen() {
 							title="登录后查看关注"
 							description="关注博主后，这里会显示他们的新内容。"
 							actionLabel="去登录"
-							onAction={() => router.push(getLoginHref("/"))}
+							onAction={() =>
+								socialNavigation.goTo({ type: "login", redirectTo: "/" })
+							}
 						/>
 					) : (
 						<EmptyState
@@ -155,11 +155,7 @@ export default function HomeScreen() {
 							onAction={() =>
 								activeTab === "following"
 									? setActiveTab("discover")
-									: router.push(
-											session.data?.user
-												? ("/publish" as Href)
-												: getLoginHref("/publish"),
-										)
+									: socialNavigation.openPublish()
 							}
 						/>
 					)
