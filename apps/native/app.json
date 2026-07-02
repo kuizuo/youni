@@ -1,6 +1,9 @@
 {
 	"expo": {
 		"scheme": "youni",
+		"ios": {
+			"bundleIdentifier": "com.kuizuo.youni"
+		},
 		"userInterfaceStyle": "automatic",
 		"orientation": "default",
 		"web": {
