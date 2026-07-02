@@ -52,6 +52,9 @@ export const youniBucket = await R2Bucket("youni", {
 
 export const youniDatabase = await D1Database("youni-db", {
 	adopt: true,
+	dev: {
+		remote: true,
+	},
 	name: "youni",
 	primaryLocationHint: "apac",
 	readReplication: {
