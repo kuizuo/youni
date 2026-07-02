@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { booleanColumn, timestampColumn } from "./_columns";
 
 export const userRoles = ["admin", "operator", "user"] as const;
 export const userStatuses = ["active", "disabled", "deleted"] as const;
@@ -7,35 +8,35 @@ export const userStatuses = ["active", "disabled", "deleted"] as const;
 export type UserRole = (typeof userRoles)[number];
 export type UserStatus = (typeof userStatuses)[number];
 
-export const user = pgTable("user", {
+export const user = sqliteTable("user", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
-	emailVerified: boolean("email_verified").default(false).notNull(),
+	emailVerified: booleanColumn("email_verified").default(false).notNull(),
 	image: text("image"),
 	handle: text("handle").unique(),
 	bio: text("bio"),
 	gender: text("gender").default("unknown").notNull(),
 	role: text("role").default("user").notNull(),
 	status: text("status").default("active").notNull(),
-	banned: boolean("banned").default(false).notNull(),
+	banned: booleanColumn("banned").default(false).notNull(),
 	banReason: text("ban_reason"),
-	banExpires: timestamp("ban_expires"),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	updatedAt: timestamp("updated_at")
+	banExpires: timestampColumn("ban_expires"),
+	createdAt: timestampColumn("created_at").defaultNow().notNull(),
+	updatedAt: timestampColumn("updated_at")
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
 });
 
-export const session = pgTable(
+export const session = sqliteTable(
 	"session",
 	{
 		id: text("id").primaryKey(),
-		expiresAt: timestamp("expires_at").notNull(),
+		expiresAt: timestampColumn("expires_at").notNull(),
 		token: text("token").notNull().unique(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
 		ipAddress: text("ip_address"),
@@ -48,7 +49,7 @@ export const session = pgTable(
 	(table) => [index("session_userId_idx").on(table.userId)],
 );
 
-export const account = pgTable(
+export const account = sqliteTable(
 	"account",
 	{
 		id: text("id").primaryKey(),
@@ -60,27 +61,27 @@ export const account = pgTable(
 		accessToken: text("access_token"),
 		refreshToken: text("refresh_token"),
 		idToken: text("id_token"),
-		accessTokenExpiresAt: timestamp("access_token_expires_at"),
-		refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+		accessTokenExpiresAt: timestampColumn("access_token_expires_at"),
+		refreshTokenExpiresAt: timestampColumn("refresh_token_expires_at"),
 		scope: text("scope"),
 		password: text("password"),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
 	},
 	(table) => [index("account_userId_idx").on(table.userId)],
 );
 
-export const verification = pgTable(
+export const verification = sqliteTable(
 	"verification",
 	{
 		id: text("id").primaryKey(),
 		identifier: text("identifier").notNull(),
 		value: text("value").notNull(),
-		expiresAt: timestamp("expires_at").notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		expiresAt: timestampColumn("expires_at").notNull(),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),

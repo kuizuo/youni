@@ -21,12 +21,10 @@
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
-		"pg": "^8.17.1",
 		"ulid": "^3.0.2",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@types/pg": "catalog:",
 		"@youni/config": "workspace:*",
 		"drizzle-kit": "^0.31.8",
 		"typescript": "^6"

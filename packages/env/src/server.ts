@@ -1,6 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
 /// <reference path="../env.d.ts" />
-import { env as localEnv } from "./cloudflare-local";
 
 let workerEnv: Env | undefined;
 
@@ -10,4 +9,4 @@ try {
 	workerEnv = undefined;
 }
 
-export const env = workerEnv ?? localEnv;
+export const env = workerEnv ?? (await import("./cloudflare-local")).env;

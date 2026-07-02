@@ -1,14 +1,9 @@
-import {
-	index,
-	pgTable,
-	primaryKey,
-	text,
-	timestamp,
-} from "drizzle-orm/pg-core";
+import { index, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
+import { timestampColumn } from "./_columns";
 import { user } from "./auth";
 
-export const follow = pgTable(
+export const follow = sqliteTable(
 	"follow",
 	{
 		followerId: text("follower_id")
@@ -17,7 +12,7 @@ export const follow = pgTable(
 		followingId: text("following_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
 	},
 	(table) => [
 		primaryKey({ columns: [table.followerId, table.followingId] }),

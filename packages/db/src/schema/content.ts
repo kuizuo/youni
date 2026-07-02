@@ -1,49 +1,44 @@
 import { sql } from "drizzle-orm";
 import {
 	index,
-	jsonb,
-	pgEnum,
-	pgTable,
 	primaryKey,
+	sqliteTable,
 	text,
-	timestamp,
 	uniqueIndex,
-	varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 import { ulid } from "ulid";
 
+import { timestampColumn } from "./_columns";
 import { user } from "./auth";
 
-export const noteStatus = pgEnum("note_status", [
+export const noteStatuses = [
 	"draft",
 	"audit",
 	"published",
 	"rejected",
 	"hidden",
-]);
+] as const;
 
-export const noteVisibility = pgEnum("note_visibility", [
-	"public",
-	"followers",
-	"private",
-]);
+export const noteVisibilities = ["public", "followers", "private"] as const;
 
-export const note = pgTable(
+export const note = sqliteTable(
 	"note",
 	{
-		id: varchar("id", { length: 256 })
+		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => ulid()),
 		title: text("title").notNull(),
 		content: text("content").notNull(),
-		images: jsonb("images")
+		images: text("images", { mode: "json" })
 			.$type<string[]>()
-			.default(sql`'[]'::jsonb`)
+			.default(sql`'[]'`)
 			.notNull(),
 		cover: text("cover"),
 		locationName: text("location_name"),
-		visibility: noteVisibility("visibility").default("public").notNull(),
-		components: jsonb("components")
+		visibility: text("visibility", { enum: noteVisibilities })
+			.default("public")
+			.notNull(),
+		components: text("components", { mode: "json" })
 			.$type<
 				Array<{
 					options?: string[];
@@ -52,25 +47,23 @@ export const note = pgTable(
 					value?: string;
 				}>
 			>()
-			.default(sql`'[]'::jsonb`)
+			.default(sql`'[]'`)
 			.notNull(),
-		advancedOptions: jsonb("advanced_options")
+		advancedOptions: text("advanced_options", { mode: "json" })
 			.$type<{
 				allowComment: boolean;
 				allowShare: boolean;
 				contentDisclosure?: string | null;
 				isOriginal: boolean;
 			}>()
-			.default(
-				sql`'{"allowComment":true,"allowShare":true,"isOriginal":true}'::jsonb`,
-			)
+			.default(sql`'{"allowComment":true,"allowShare":true,"isOriginal":true}'`)
 			.notNull(),
-		status: noteStatus("status").default("audit").notNull(),
+		status: text("status", { enum: noteStatuses }).default("audit").notNull(),
 		rejectionReason: text("rejection_reason"),
-		publishedAt: timestamp("published_at"),
-		draftSavedAt: timestamp("draft_saved_at"),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		publishedAt: timestampColumn("published_at"),
+		draftSavedAt: timestampColumn("draft_saved_at"),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
@@ -85,15 +78,15 @@ export const note = pgTable(
 	],
 );
 
-export const topic = pgTable(
+export const topic = sqliteTable(
 	"topic",
 	{
-		id: varchar("id", { length: 256 })
+		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => ulid()),
 		name: text("name").notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
@@ -101,13 +94,13 @@ export const topic = pgTable(
 	(table) => [uniqueIndex("topic_name_idx").on(table.name)],
 );
 
-export const noteTopic = pgTable(
+export const noteTopic = sqliteTable(
 	"note_topic",
 	{
-		noteId: varchar("note_id", { length: 256 })
+		noteId: text("note_id")
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
-		topicId: varchar("topic_id", { length: 256 })
+		topicId: text("topic_id")
 			.notNull()
 			.references(() => topic.id, { onDelete: "cascade" }),
 	},
@@ -117,15 +110,15 @@ export const noteTopic = pgTable(
 	],
 );
 
-export const comment = pgTable(
+export const comment = sqliteTable(
 	"comment",
 	{
-		id: varchar("id", { length: 256 })
+		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => ulid()),
 		content: text("content").notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		noteId: varchar("note_id", { length: 256 })
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		noteId: text("note_id")
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
 		userId: text("user_id")
@@ -135,16 +128,16 @@ export const comment = pgTable(
 	(table) => [index("comment_note_idx").on(table.noteId, table.createdAt)],
 );
 
-export const noteLike = pgTable(
+export const noteLike = sqliteTable(
 	"note_like",
 	{
-		noteId: varchar("note_id", { length: 256 })
+		noteId: text("note_id")
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
 	},
 	(table) => [
 		primaryKey({ columns: [table.noteId, table.userId] }),
@@ -152,16 +145,16 @@ export const noteLike = pgTable(
 	],
 );
 
-export const noteCollection = pgTable(
+export const noteCollection = sqliteTable(
 	"note_collection",
 	{
-		noteId: varchar("note_id", { length: 256 })
+		noteId: text("note_id")
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
 	},
 	(table) => [
 		primaryKey({ columns: [table.noteId, table.userId] }),
@@ -169,18 +162,18 @@ export const noteCollection = pgTable(
 	],
 );
 
-export const noteViewHistory = pgTable(
+export const noteViewHistory = sqliteTable(
 	"note_view_history",
 	{
-		noteId: varchar("note_id", { length: 256 })
+		noteId: text("note_id")
 			.notNull()
 			.references(() => note.id, { onDelete: "cascade" }),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		viewedAt: timestamp("viewed_at").defaultNow().notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		viewedAt: timestampColumn("viewed_at").defaultNow().notNull(),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),

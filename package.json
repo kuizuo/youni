@@ -24,18 +24,17 @@
 			"@ai-sdk/react": "^3.0.3",
 			"@types/react-dom": "^19.2.3",
 			"@better-auth/expo": "1.6.9",
-			"drizzle-orm": "^0.45.1",
-			"@types/pg": "^8.16.0"
+			"drizzle-orm": "^0.45.1"
 		}
 	},
 	"type": "module",
 	"scripts": {
-		"dev": "turbo dev",
+		"dev": "turbo -F @youni/infra -F native dev",
 		"build": "turbo build",
 		"check-types": "turbo check-types",
 		"dev:native": "turbo -F native dev",
 		"dev:web": "turbo -F web dev",
-		"dev:server": "turbo -F server dev",
+		"dev:server": "turbo -F @youni/infra dev",
 		"db:push": "turbo -F @youni/db db:push",
 		"db:seed": "turbo -F @youni/db db:seed",
 		"db:studio": "turbo -F @youni/db db:studio",

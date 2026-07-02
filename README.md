@@ -14,7 +14,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **oRPC** - End-to-end type-safe APIs with OpenAPI integration
 - **workers** - Runtime environment
 - **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
+- **Cloudflare D1** - Database engine
 - **Authentication** - Better-Auth
 - **Biome** - Linting and formatting
 - **Turborepo** - Optimized monorepo build system
@@ -29,15 +29,20 @@ bun install
 
 ## Database Setup
 
-This project uses PostgreSQL with Drizzle ORM.
+This project uses Cloudflare D1 with Drizzle ORM.
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
-
-3. Apply the schema to your database:
+1. Configure Cloudflare credentials in `packages/infra/.env`.
+2. Generate D1 migrations when the schema changes:
 
 ```bash
-bun run db:push
+bun run db:generate
+```
+
+3. Run Alchemy dev or deploy to create the D1 database and apply migrations.
+4. Seed demo data after `CLOUDFLARE_D1_DATABASE_ID` and a D1 token are configured:
+
+```bash
+bun run db:seed
 ```
 
 Then, run the development server:
@@ -46,7 +51,7 @@ Then, run the development server:
 bun run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser to see the web application.
+Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
 Use the Expo Go app to run the mobile application.
 The API is running at [http://localhost:3000](http://localhost:3000).
 
@@ -88,14 +93,14 @@ youni/
 
 ## Available Scripts
 
-- `bun run dev`: Start all applications in development mode
+- `bun run dev`: Start the Cloudflare web/server stack and native app in development mode
 - `bun run build`: Build all applications
 - `bun run dev:web`: Start only the web application
-- `bun run dev:server`: Start only the server
+- `bun run dev:server`: Start the Cloudflare web/server stack
 - `bun run check-types`: Check TypeScript types across all apps
 - `bun run dev:native`: Start the React Native/Expo development server
-- `bun run db:push`: Push schema changes to database
-- `bun run db:generate`: Generate database client/types
-- `bun run db:migrate`: Run database migrations
+- `bun run db:push`: Push schema changes to D1 over Cloudflare HTTP
+- `bun run db:generate`: Generate D1 migration files
+- `bun run db:migrate`: Run D1 migrations over Cloudflare HTTP
 - `bun run db:studio`: Open database studio UI
 - `bun run check`: Run Biome formatting and linting

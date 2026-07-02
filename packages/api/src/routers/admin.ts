@@ -16,7 +16,7 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import { hashPassword } from "better-auth/crypto";
-import { and, count, desc, eq, ilike, inArray, ne, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
 import z from "zod";
 
 import {
@@ -40,6 +40,7 @@ import {
 	listAdminContentNotesByUser,
 	updateContentNoteStatus,
 } from "../lib/content-notes";
+import { containsInsensitive } from "../lib/search";
 
 const userRoleInput = z.enum(adminUserRoleOptions);
 const userStatusInput = z.enum(adminUserStatusOptions);
@@ -229,8 +230,29 @@ function getDatabaseErrorCode(error: unknown): string | null {
 	return null;
 }
 
+function getDatabaseErrorMessage(error: unknown): string {
+	if (!error || typeof error !== "object") return "";
+
+	if ("message" in error && typeof error.message === "string") {
+		return error.message;
+	}
+
+	if ("cause" in error) {
+		return getDatabaseErrorMessage(error.cause);
+	}
+
+	return "";
+}
+
+function isUniqueConstraintError(error: unknown) {
+	return (
+		getDatabaseErrorCode(error) === "23505" ||
+		getDatabaseErrorMessage(error).includes("UNIQUE constraint failed")
+	);
+}
+
 function duplicateUserError(error: unknown): never {
-	if (getDatabaseErrorCode(error) === "23505") {
+	if (isUniqueConstraintError(error)) {
 		throw new ORPCError("BAD_REQUEST", {
 			message: "邮箱或用户名已存在",
 		});
@@ -240,7 +262,7 @@ function duplicateUserError(error: unknown): never {
 }
 
 function duplicateProfileError(error: unknown): never {
-	if (getDatabaseErrorCode(error) === "23505") {
+	if (isUniqueConstraintError(error)) {
 		throw new ORPCError("BAD_REQUEST", {
 			message: "用户名已存在",
 		});
@@ -416,7 +438,7 @@ export const adminRouter = {
 		.handler(async ({ input }) => {
 			const db = createDb();
 			const whereClause = input.keyword
-				? ilike(topic.name, `%${input.keyword}%`)
+				? containsInsensitive(topic.name, input.keyword)
 				: undefined;
 			const [totalRow] = whereClause
 				? await db.select({ value: count() }).from(topic).where(whereClause)
@@ -546,9 +568,9 @@ export const adminRouter = {
 					: ne(user.status, "deleted"),
 				input.keyword
 					? or(
-							ilike(user.name, `%${input.keyword}%`),
-							ilike(user.email, `%${input.keyword}%`),
-							ilike(user.handle, `%${input.keyword}%`),
+							containsInsensitive(user.name, input.keyword),
+							containsInsensitive(user.email, input.keyword),
+							containsInsensitive(user.handle, input.keyword),
 						)
 					: undefined,
 			].filter(Boolean);

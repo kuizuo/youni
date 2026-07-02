@@ -11,7 +11,7 @@ import {
 	topic,
 	user,
 } from "@youni/db/schema/index";
-import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, or } from "drizzle-orm";
 import z from "zod";
 import {
 	activeUserProcedure,
@@ -30,6 +30,7 @@ import {
 	updateDraftContentNote,
 } from "../lib/content-notes";
 import { notifyFollow, notifyNoteOwner } from "../lib/notifications";
+import { containsInsensitive } from "../lib/search";
 
 const idInput = z.object({ id: z.string().min(1) });
 const profileInput = z.object({ userId: z.string().min(1) });
@@ -200,19 +201,19 @@ export const socialRouter = {
 				.select({ noteId: noteTopic.noteId })
 				.from(noteTopic)
 				.innerJoin(topic, eq(noteTopic.topicId, topic.id))
-				.where(ilike(topic.name, `%${input.keyword}%`));
+				.where(containsInsensitive(topic.name, input.keyword));
 			topicNoteIds = Array.from(new Set(rows.map((row) => row.noteId)));
 		}
 		const keywordClause = input.keyword
 			? topicNoteIds.length > 0
 				? or(
-						ilike(note.title, `%${input.keyword}%`),
-						ilike(note.content, `%${input.keyword}%`),
+						containsInsensitive(note.title, input.keyword),
+						containsInsensitive(note.content, input.keyword),
 						inArray(note.id, topicNoteIds),
 					)
 				: or(
-						ilike(note.title, `%${input.keyword}%`),
-						ilike(note.content, `%${input.keyword}%`),
+						containsInsensitive(note.title, input.keyword),
+						containsInsensitive(note.content, input.keyword),
 					)
 			: undefined;
 		const whereClause = input.keyword
@@ -266,7 +267,7 @@ export const socialRouter = {
 						createdAt: topic.createdAt,
 					})
 					.from(topic)
-					.where(ilike(topic.name, `%${input.keyword}%`))
+					.where(containsInsensitive(topic.name, input.keyword))
 					.orderBy(desc(topic.createdAt))
 					.limit(input.limit)
 			: await db
@@ -307,7 +308,6 @@ export const socialRouter = {
 			const keyword = input.keyword?.trim();
 			if (!keyword) return [];
 
-			const searchValue = `%${keyword}%`;
 			const rows = await createDb()
 				.select({ id: user.id })
 				.from(user)
@@ -315,9 +315,9 @@ export const socialRouter = {
 					and(
 						eq(user.status, "active"),
 						or(
-							ilike(user.name, searchValue),
-							ilike(user.handle, searchValue),
-							ilike(user.bio, searchValue),
+							containsInsensitive(user.name, keyword),
+							containsInsensitive(user.handle, keyword),
+							containsInsensitive(user.bio, keyword),
 						),
 					),
 				)

@@ -1,5 +1,11 @@
 import alchemy from "alchemy";
-import { R2Bucket, Vite, Worker } from "alchemy/cloudflare";
+import {
+	type Binding,
+	D1Database,
+	R2Bucket,
+	Vite,
+	Worker,
+} from "alchemy/cloudflare";
 import { config } from "dotenv";
 
 config({ path: "./.env" });
@@ -13,6 +19,20 @@ function requiredEnv<T>(value: T | undefined, name: string) {
 		throw new Error(`${name} is required`);
 	}
 	return value;
+}
+
+const alchemyEnv = alchemy.env as unknown as Record<string, string | undefined>;
+const alchemySecretEnv = alchemy.secret.env as unknown as Record<
+	string,
+	Binding | undefined
+>;
+
+function optionalEnv(name: string) {
+	return process.env[name] ? (alchemyEnv[name] ?? "") : "";
+}
+
+function optionalSecretEnv(name: string): Binding {
+	return process.env[name] ? (alchemySecretEnv[name] ?? "") : "";
 }
 
 export const web = await Vite("web", {
@@ -30,12 +50,21 @@ export const youniBucket = await R2Bucket("youni", {
 	name: "youni",
 });
 
+export const youniDatabase = await D1Database("youni-db", {
+	name: "youni",
+	primaryLocationHint: "apac",
+	readReplication: {
+		mode: "disabled",
+	},
+	migrationsDir: "../../packages/db/src/d1-migrations",
+});
+
 export const server = await Worker("server", {
 	cwd: "../../apps/server",
 	entrypoint: "src/index.ts",
 	compatibility: "node",
 	bindings: {
-		DATABASE_URL: requiredEnv(alchemy.secret.env.DATABASE_URL, "DATABASE_URL"),
+		DB: youniDatabase,
 		CORS_ORIGIN: requiredEnv(alchemy.env.CORS_ORIGIN, "CORS_ORIGIN"),
 		BETTER_AUTH_SECRET: requiredEnv(
 			alchemy.secret.env.BETTER_AUTH_SECRET,
@@ -45,12 +74,13 @@ export const server = await Worker("server", {
 			alchemy.env.BETTER_AUTH_URL,
 			"BETTER_AUTH_URL",
 		),
-		GOOGLE_GENERATIVE_AI_API_KEY:
-			alchemy.secret.env.GOOGLE_GENERATIVE_AI_API_KEY ?? "",
-		GOOGLE_WEB_CLIENT_ID: alchemy.env.GOOGLE_WEB_CLIENT_ID ?? "",
-		GOOGLE_IOS_CLIENT_ID: alchemy.env.GOOGLE_IOS_CLIENT_ID ?? "",
-		GOOGLE_ANDROID_CLIENT_ID: alchemy.env.GOOGLE_ANDROID_CLIENT_ID ?? "",
-		GOOGLE_CLIENT_SECRET: alchemy.secret.env.GOOGLE_CLIENT_SECRET ?? "",
+		GOOGLE_GENERATIVE_AI_API_KEY: optionalSecretEnv(
+			"GOOGLE_GENERATIVE_AI_API_KEY",
+		),
+		GOOGLE_WEB_CLIENT_ID: optionalEnv("GOOGLE_WEB_CLIENT_ID"),
+		GOOGLE_IOS_CLIENT_ID: optionalEnv("GOOGLE_IOS_CLIENT_ID"),
+		GOOGLE_ANDROID_CLIENT_ID: optionalEnv("GOOGLE_ANDROID_CLIENT_ID"),
+		GOOGLE_CLIENT_SECRET: optionalSecretEnv("GOOGLE_CLIENT_SECRET"),
 		YOUNI_BUCKET: youniBucket,
 	},
 	dev: {

@@ -12,7 +12,8 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import type { SQL } from "drizzle-orm";
-import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, or } from "drizzle-orm";
+import { containsInsensitive } from "./search";
 
 export type ContentNoteStatus =
 	| "audit"
@@ -648,8 +649,8 @@ export async function listAdminContentNotes(input: {
 	}
 	if (input.keyword) {
 		const keywordClause = or(
-			ilike(note.title, `%${input.keyword}%`),
-			ilike(note.content, `%${input.keyword}%`),
+			containsInsensitive(note.title, input.keyword),
+			containsInsensitive(note.content, input.keyword),
 		);
 		if (keywordClause) {
 			conditions.push(keywordClause);

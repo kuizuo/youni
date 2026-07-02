@@ -10,7 +10,7 @@ Youni is a Bun-powered TypeScript monorepo generated from Better-T-Stack and ext
 - `apps/native`: Expo Router + React Native mobile app for the user-facing feed, publishing, search, profile, messages, and note detail flows.
 - `apps/server`: Hono server exposing Better Auth routes, oRPC routes, OpenAPI reference routes, and an `/ai` streaming endpoint.
 - `packages/api`: Shared oRPC router and business logic. Add or change API procedures here.
-- `packages/db`: Drizzle PostgreSQL schema, migrations, seed script, and database client.
+- `packages/db`: Drizzle Cloudflare D1 schema, migrations, seed script, and database client.
 - `packages/auth`: Better Auth configuration shared by server and clients.
 - `packages/env`: Environment variable loading and validation for server, web, native, and local Cloudflare-style runtime.
 - `packages/ui`: Shared HeroUI styles and global CSS exports.
@@ -32,12 +32,12 @@ Run from the repository root unless noted.
 - Install dependencies: `bun install`
 - Start everything in development: `bun run dev`
 - Start web only: `bun run dev:web`
-- Start server only: `bun run dev:server`
+- Start Cloudflare web/server stack: `bun run dev:server`
 - Start native only: `bun run dev:native`
 - Build all apps/packages: `bun run build`
 - Type-check all configured packages: `bun run check-types`
 - Format and lint with safe fixes: `bun run check`
-- Push database schema directly: `bun run db:push`
+- Push database schema to D1 directly: `bun run db:push`
 - Generate database migration files: `bun run db:generate`
 - Run database migrations: `bun run db:migrate`
 - Seed database: `bun run db:seed`
@@ -53,7 +53,7 @@ Run from the repository root unless noted.
 - Before starting a dev server, check whether the expected port is already listening. If the matching service is already running, reuse it instead of starting another process.
 - Web expects `VITE_SERVER_URL`.
 - Native expects `EXPO_PUBLIC_SERVER_URL`.
-- Server expects values such as `DATABASE_URL`, `CORS_ORIGIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google auth/model keys, and `ADMIN_EMAILS`.
+- Server expects the Cloudflare D1 `DB` binding from Alchemy plus values such as `CORS_ORIGIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google auth/model keys, and `ADMIN_EMAILS`.
 - Env files currently exist under `apps/server/.env`, `apps/web/.env`, `apps/native/.env`, and `packages/infra/.env`. Do not print secrets in logs or responses.
 
 ## Architecture Notes
@@ -95,7 +95,7 @@ Run from the repository root unless noted.
 - Keep database writes in API routers or small helpers under `packages/api/src/lib`.
 - When changing database schema, update Drizzle schema first, then generate or update migrations with the repo's DB commands.
 - Do not hand-edit existing migration snapshots unless a migration task specifically requires it and the generated output has been reviewed.
-- Keep PostgreSQL-specific behavior in `packages/db`.
+- Keep D1/SQLite-specific behavior in `packages/db`.
 
 ## Styling and UI
 

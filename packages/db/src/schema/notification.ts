@@ -1,25 +1,17 @@
-import {
-	boolean,
-	index,
-	pgEnum,
-	pgTable,
-	text,
-	timestamp,
-	uniqueIndex,
-	varchar,
-} from "drizzle-orm/pg-core";
+import { index, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { ulid } from "ulid";
 
+import { booleanColumn, timestampColumn } from "./_columns";
 import { user } from "./auth";
 import { note } from "./content";
 
-export const notificationCategory = pgEnum("notification_category", [
+export const notificationCategories = [
 	"activity",
 	"followers",
 	"system",
-]);
+] as const;
 
-export const notificationType = pgEnum("notification_type", [
+export const notificationTypes = [
 	"like",
 	"collect",
 	"comment",
@@ -29,12 +21,12 @@ export const notificationType = pgEnum("notification_type", [
 	"announcement",
 	"event",
 	"system",
-]);
+] as const;
 
-export const notification = pgTable(
+export const notification = sqliteTable(
 	"notification",
 	{
-		id: varchar("id", { length: 256 })
+		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => ulid()),
 		recipientId: text("recipient_id")
@@ -43,22 +35,22 @@ export const notification = pgTable(
 		actorId: text("actor_id").references(() => user.id, {
 			onDelete: "set null",
 		}),
-		type: notificationType("type").notNull(),
-		category: notificationCategory("category").notNull(),
+		type: text("type", { enum: notificationTypes }).notNull(),
+		category: text("category", { enum: notificationCategories }).notNull(),
 		title: text("title").notNull(),
 		body: text("body").notNull(),
 		targetType: text("target_type"),
 		targetId: text("target_id"),
-		noteId: varchar("note_id", { length: 256 }).references(() => note.id, {
+		noteId: text("note_id").references(() => note.id, {
 			onDelete: "set null",
 		}),
 		dedupeKey: text("dedupe_key").notNull(),
-		isRead: boolean("is_read").default(false).notNull(),
-		isDeleted: boolean("is_deleted").default(false).notNull(),
-		readAt: timestamp("read_at"),
-		deletedAt: timestamp("deleted_at"),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		isRead: booleanColumn("is_read").default(false).notNull(),
+		isDeleted: booleanColumn("is_deleted").default(false).notNull(),
+		readAt: timestampColumn("read_at"),
+		deletedAt: timestampColumn("deleted_at"),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
@@ -79,10 +71,10 @@ export const notification = pgTable(
 	],
 );
 
-export const notificationPushToken = pgTable(
+export const notificationPushToken = sqliteTable(
 	"notification_push_token",
 	{
-		id: varchar("id", { length: 256 })
+		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => ulid()),
 		userId: text("user_id")
@@ -90,10 +82,10 @@ export const notificationPushToken = pgTable(
 			.references(() => user.id, { onDelete: "cascade" }),
 		token: text("token").notNull(),
 		platform: text("platform").default("unknown").notNull(),
-		isEnabled: boolean("is_enabled").default(true).notNull(),
-		lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		isEnabled: booleanColumn("is_enabled").default(true).notNull(),
+		lastSeenAt: timestampColumn("last_seen_at").defaultNow().notNull(),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),

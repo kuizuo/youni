@@ -15,7 +15,6 @@
 		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
-		"@types/pg": "catalog:",
 		"@youni/auth": "workspace:*",
 		"@youni/db": "workspace:*",
 		"@youni/env": "workspace:*",

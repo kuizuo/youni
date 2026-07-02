@@ -15,7 +15,7 @@ import {
 const isProduction = process.env.NODE_ENV === "production";
 const configuredOrigins =
 	env.CORS_ORIGIN?.split(",")
-		.map((origin) => origin.trim())
+		.map((origin: string) => origin.trim())
 		.filter(Boolean) ?? [];
 const localOrigins = [
 	"http://localhost:3001",
@@ -46,7 +46,7 @@ export function createAuth() {
 
 	return betterAuth({
 		database: drizzleAdapter(db, {
-			provider: "pg",
+			provider: "sqlite",
 
 			schema: schema,
 		}),

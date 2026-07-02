@@ -1,25 +1,24 @@
 import {
 	index,
-	pgTable,
 	primaryKey,
+	sqliteTable,
 	text,
-	timestamp,
 	uniqueIndex,
-	varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 import { ulid } from "ulid";
 
+import { timestampColumn } from "./_columns";
 import { user } from "./auth";
 
-export const directConversation = pgTable(
+export const directConversation = sqliteTable(
 	"direct_conversation",
 	{
-		id: varchar("id", { length: 256 })
+		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => ulid()),
 		memberKey: text("member_key").notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
@@ -30,18 +29,18 @@ export const directConversation = pgTable(
 	],
 );
 
-export const directConversationParticipant = pgTable(
+export const directConversationParticipant = sqliteTable(
 	"direct_conversation_participant",
 	{
-		conversationId: varchar("conversation_id", { length: 256 })
+		conversationId: text("conversation_id")
 			.notNull()
 			.references(() => directConversation.id, { onDelete: "cascade" }),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		lastReadAt: timestamp("last_read_at"),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		lastReadAt: timestampColumn("last_read_at"),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
@@ -55,21 +54,21 @@ export const directConversationParticipant = pgTable(
 	],
 );
 
-export const directMessage = pgTable(
+export const directMessage = sqliteTable(
 	"direct_message",
 	{
-		id: varchar("id", { length: 256 })
+		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => ulid()),
-		conversationId: varchar("conversation_id", { length: 256 })
+		conversationId: text("conversation_id")
 			.notNull()
 			.references(() => directConversation.id, { onDelete: "cascade" }),
 		senderId: text("sender_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
 		content: text("content").notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
