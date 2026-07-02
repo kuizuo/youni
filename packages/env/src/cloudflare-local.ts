@@ -6,6 +6,11 @@ import { config } from "dotenv";
 config({ path: fileURLToPath(new URL("../../../.env", import.meta.url).href) });
 config({
 	path: fileURLToPath(
+		new URL("../../../packages/infra/.env", import.meta.url).href,
+	),
+});
+config({
+	path: fileURLToPath(
 		new URL("../../../apps/server/.env", import.meta.url).href,
 	),
 });

@@ -27,19 +27,45 @@ First, install the dependencies:
 bun install
 ```
 
+## Environment Setup
+
+Create local env files from the examples and fill in the values:
+
+```bash
+cp packages/infra/.env.example packages/infra/.env
+cp apps/server/.env.example apps/server/.env
+cp apps/web/.env.example apps/web/.env
+cp apps/native/.env.example apps/native/.env
+```
+
+Keep the split simple:
+
+- `packages/infra/.env`: Alchemy password and Cloudflare account/token.
+- `apps/server/.env`: server runtime values, including the D1 database ID for `youni`.
+- `apps/web/.env`: web client server URL.
+- `apps/native/.env`: native client server URL and optional public Google sign-in values.
+
+Generate local secrets with `openssl rand -base64 32`. The Cloudflare token should cover the resources managed by this project: Workers, D1, and R2.
+
 ## Database Setup
 
 This project uses Cloudflare D1 with Drizzle ORM.
 
 1. Configure Cloudflare credentials in `packages/infra/.env`.
-2. Generate D1 migrations when the schema changes:
+2. Configure the D1 database ID in `apps/server/.env`.
+3. Generate D1 migrations when the schema changes:
 
 ```bash
 bun run db:generate
 ```
 
-3. Run Alchemy dev or deploy to create the D1 database and apply migrations.
-4. Seed demo data after `CLOUDFLARE_D1_DATABASE_ID` and a D1 token are configured:
+4. Apply migrations to D1:
+
+```bash
+bun run db:migrate
+```
+
+5. Seed demo data if needed:
 
 ```bash
 bun run db:seed

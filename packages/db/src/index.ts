@@ -31,7 +31,7 @@ function getD1Database(database?: D1Database) {
 	}
 
 	throw new Error(
-		"D1 database is not available. Run the server through Alchemy/Cloudflare Workers, or set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DATABASE_ID, and CLOUDFLARE_D1_API_TOKEN for scripts.",
+		"D1 database is not available. Run the server through Alchemy/Cloudflare Workers, or set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DATABASE_ID, and CLOUDFLARE_API_TOKEN for scripts.",
 	);
 }
 

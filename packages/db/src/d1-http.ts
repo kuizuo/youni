@@ -24,7 +24,7 @@ type D1HttpResponse = {
 const credentialNames = {
 	accountId: ["CLOUDFLARE_ACCOUNT_ID"],
 	databaseId: ["CLOUDFLARE_D1_DATABASE_ID", "D1_DATABASE_ID"],
-	token: ["CLOUDFLARE_D1_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
+	token: ["CLOUDFLARE_API_TOKEN"],
 };
 
 function firstEnvValue(names: string[]) {
