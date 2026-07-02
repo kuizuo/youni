@@ -1,0 +1,9 @@
+{
+	"build": {
+		"production": {
+			"env": {
+				"EXPO_PUBLIC_SERVER_URL": "https://youni-api.kuizuo.me"
+			}
+		}
+	}
+}

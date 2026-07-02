@@ -9,7 +9,10 @@
 		"android": "expo run:android",
 		"ios": "expo run:ios",
 		"prebuild": "expo prebuild",
-		"web": "expo start --web"
+		"web": "expo start --web",
+		"build:web": "EXPO_PUBLIC_SERVER_URL=https://youni-api.kuizuo.me expo export --platform web",
+		"build:ios": "EXPO_PUBLIC_SERVER_URL=https://youni-api.kuizuo.me expo run:ios --configuration Release",
+		"build:android": "EXPO_PUBLIC_SERVER_URL=https://youni-api.kuizuo.me expo run:android --variant release"
 	},
 	"dependencies": {
 		"@ai-sdk/react": "catalog:",

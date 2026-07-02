@@ -4,11 +4,13 @@ import {
 	D1Database,
 	R2Bucket,
 	Vite,
+	Website,
 	Worker,
 } from "alchemy/cloudflare";
 import { config } from "dotenv";
 
 config({ path: "./.env" });
+config({ path: "../../apps/native/.env" });
 config({ path: "../../apps/web/.env" });
 config({ path: "../../apps/server/.env" });
 
@@ -35,18 +37,93 @@ function optionalSecretEnv(name: string): Binding {
 	return process.env[name] ? (alchemySecretEnv[name] ?? "") : "";
 }
 
+const nativeDomain = "youni.kuizuo.me";
+const adminDomain = "youni-admin.kuizuo.me";
+const apiDomain = "youni-api.kuizuo.me";
+const deployedNativeUrl = `https://${nativeDomain}`;
+const deployedAdminUrl = `https://${adminDomain}`;
+const deployedApiUrl = `https://${apiDomain}`;
+
+const publicServerUrl = app.local
+	? requiredEnv(alchemy.env.VITE_SERVER_URL, "VITE_SERVER_URL")
+	: deployedApiUrl;
+const publicCorsOrigins = app.local
+	? requiredEnv(alchemy.env.CORS_ORIGIN, "CORS_ORIGIN")
+	: [deployedNativeUrl, deployedAdminUrl].join(",");
+const spaAssetScript = `
+export default {
+	async fetch(request, env) {
+		return env.ASSETS.fetch(request);
+	},
+};
+`;
+const nativeAssetHeaders = `
+/_expo/static/*
+	Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+	Cache-Control: public, max-age=31536000, immutable
+`;
+const adminAssetHeaders = `
+/assets/*
+	Cache-Control: public, max-age=31536000, immutable
+`;
+
+process.env.VITE_SERVER_URL = publicServerUrl;
+process.env.EXPO_PUBLIC_SERVER_URL = publicServerUrl;
+process.env.BETTER_AUTH_URL = publicServerUrl;
+process.env.CORS_ORIGIN = publicCorsOrigins;
+
+export const native = await Website("native", {
+	cwd: "../../apps/native",
+	assets: {
+		directory: "dist",
+		_headers: nativeAssetHeaders,
+		not_found_handling: "single-page-application",
+	},
+	script: spaAssetScript,
+	build: {
+		command: "bun expo export --platform web",
+		env: {
+			EXPO_PUBLIC_SERVER_URL: publicServerUrl,
+		},
+	},
+	bindings: {
+		EXPO_PUBLIC_SERVER_URL: publicServerUrl,
+	},
+	domains: app.local
+		? undefined
+		: [
+				{
+					domainName: nativeDomain,
+					adopt: true,
+				},
+			],
+});
+
 export const web = await Vite("web", {
 	cwd: "../../apps/web",
-	assets: "dist",
-	bindings: {
-		VITE_SERVER_URL: requiredEnv(
-			alchemy.env.VITE_SERVER_URL,
-			"VITE_SERVER_URL",
-		),
+	assets: {
+		directory: "dist",
+		_headers: adminAssetHeaders,
+		not_found_handling: "single-page-application",
 	},
+	script: spaAssetScript,
+	bindings: {
+		VITE_SERVER_URL: publicServerUrl,
+	},
+	domains: app.local
+		? undefined
+		: [
+				{
+					domainName: adminDomain,
+					adopt: true,
+				},
+			],
 });
 
 export const youniBucket = await R2Bucket("youni", {
+	adopt: true,
 	name: "youni",
 });
 
@@ -69,15 +146,12 @@ export const server = await Worker("server", {
 	compatibility: "node",
 	bindings: {
 		DB: youniDatabase,
-		CORS_ORIGIN: requiredEnv(alchemy.env.CORS_ORIGIN, "CORS_ORIGIN"),
+		CORS_ORIGIN: publicCorsOrigins,
 		BETTER_AUTH_SECRET: requiredEnv(
 			alchemy.secret.env.BETTER_AUTH_SECRET,
 			"BETTER_AUTH_SECRET",
 		),
-		BETTER_AUTH_URL: requiredEnv(
-			alchemy.env.BETTER_AUTH_URL,
-			"BETTER_AUTH_URL",
-		),
+		BETTER_AUTH_URL: publicServerUrl,
 		GOOGLE_GENERATIVE_AI_API_KEY: optionalSecretEnv(
 			"GOOGLE_GENERATIVE_AI_API_KEY",
 		),
@@ -90,9 +164,18 @@ export const server = await Worker("server", {
 	dev: {
 		port: 3000,
 	},
+	domains: app.local
+		? undefined
+		: [
+				{
+					domainName: apiDomain,
+					adopt: true,
+				},
+			],
 });
 
-console.log(`Web    -> ${web.url}`);
-console.log(`Server -> ${server.url}`);
+console.log(`Native -> ${app.local ? native.url : deployedNativeUrl}`);
+console.log(`Admin  -> ${app.local ? web.url : deployedAdminUrl}`);
+console.log(`API    -> ${app.local ? server.url : deployedApiUrl}`);
 
 await app.finalize();
