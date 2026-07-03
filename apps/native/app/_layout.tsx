@@ -49,7 +49,6 @@ function StackLayout() {
 			<Stack.Screen name="note/[id]" />
 			<Stack.Screen name="user/[id]" />
 			<Stack.Screen name="login" />
-			<Stack.Screen name="preview" />
 			<Stack.Screen name="publish" />
 			<Stack.Screen name="scan" />
 			<Stack.Screen name="search" />
