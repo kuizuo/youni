@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { Href } from "expo-router";
+import { useRouter } from "expo-router";
 import {
 	Button,
 	Input,
@@ -30,6 +32,7 @@ type SignInProps = {
 };
 
 export function SignIn({ onAuthenticated }: SignInProps) {
+	const router = useRouter();
 	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
@@ -147,6 +150,18 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 					</Button>
 				</View>
 			</TextField>
+
+			<View className="-mt-2 -mb-1 flex-row justify-end">
+				<Button
+					size="sm"
+					variant="ghost"
+					className="h-7 rounded-full px-2"
+					feedbackVariant="scale-ripple"
+					onPress={() => router.push("/forgot-password" as Href)}
+				>
+					<Button.Label>忘记密码？</Button.Label>
+				</Button>
+			</View>
 
 			<Button
 				variant="primary"

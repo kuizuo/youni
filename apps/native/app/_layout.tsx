@@ -45,12 +45,14 @@ function StackLayout() {
 			<Stack.Screen name="chat/[id]" />
 			<Stack.Screen name="creator-center" />
 			<Stack.Screen name="drafts" />
+			<Stack.Screen name="forgot-password" />
 			<Stack.Screen name="history" />
 			<Stack.Screen name="note/[id]" />
 			<Stack.Screen name="notifications/[kind]" />
 			<Stack.Screen name="user/[id]" />
 			<Stack.Screen name="login" />
 			<Stack.Screen name="publish" />
+			<Stack.Screen name="reset-password" />
 			<Stack.Screen name="scan" />
 			<Stack.Screen name="search" />
 			<Stack.Screen name="settings" />

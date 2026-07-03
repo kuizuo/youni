@@ -159,6 +159,8 @@ export const server = await Worker("server", {
 		GOOGLE_IOS_CLIENT_ID: optionalEnv("GOOGLE_IOS_CLIENT_ID"),
 		GOOGLE_ANDROID_CLIENT_ID: optionalEnv("GOOGLE_ANDROID_CLIENT_ID"),
 		GOOGLE_CLIENT_SECRET: optionalSecretEnv("GOOGLE_CLIENT_SECRET"),
+		RESEND_API_KEY: optionalSecretEnv("RESEND_API_KEY"),
+		RESEND_FROM_EMAIL: optionalEnv("RESEND_FROM_EMAIL"),
 		YOUNI_BUCKET: youniBucket,
 	},
 	dev: {

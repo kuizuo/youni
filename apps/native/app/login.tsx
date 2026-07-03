@@ -41,13 +41,22 @@ export default function LoginScreen() {
 				}}
 			>
 				<View className="mx-auto w-full max-w-sm flex-1 justify-center gap-7">
-					<View className="gap-4">
+					<View className="items-center gap-4">
 						<YouniMark size={56} />
-						<View className="gap-2">
-							<Text.Heading type="h1" className="text-foreground">
+						<View className="items-center gap-2">
+							<Text.Heading
+								type="h1"
+								align="center"
+								className="text-foreground"
+								style={{ lineHeight: 42, paddingTop: 2 }}
+							>
 								登录 Youni
 							</Text.Heading>
-							<Text.Paragraph color="muted" className="leading-6">
+							<Text.Paragraph
+								color="muted"
+								align="center"
+								className="leading-6"
+							>
 								登录后可以发布、收藏、点赞、评论和查看消息。
 							</Text.Paragraph>
 						</View>
