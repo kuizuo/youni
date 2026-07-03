@@ -7,13 +7,13 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthPanel } from "@/components/auth-panel";
+import { YouniMark } from "@/components/brand/youni-logo";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginScreen() {
 	const router = useRouter();
 	const session = authClient.useSession();
 	const insets = useSafeAreaInsets();
-	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
 
 	useEffect(() => {
@@ -42,13 +42,7 @@ export default function LoginScreen() {
 			>
 				<View className="mx-auto w-full max-w-sm flex-1 justify-center gap-7">
 					<View className="gap-4">
-						<View className="size-14 items-center justify-center rounded-full bg-accent-soft">
-							<Ionicons
-								name="person-outline"
-								size={26}
-								color={foregroundColor}
-							/>
-						</View>
+						<YouniMark size={56} />
 						<View className="gap-2">
 							<Text.Heading type="h1" className="text-foreground">
 								登录 Youni

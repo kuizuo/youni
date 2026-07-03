@@ -8,7 +8,6 @@ import {
 	Hashtag,
 	Magnifier,
 	Persons,
-	Star,
 } from "@gravity-ui/icons";
 import {
 	Button,
@@ -328,9 +327,11 @@ function SidebarContents({
 		<>
 			<Sidebar.Header>
 				<div className="flex items-center gap-3 px-1 py-1">
-					<span className="flex size-9 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-						<Star className="size-4" />
-					</span>
+					<img
+						alt="Youni"
+						className="size-9 shrink-0 rounded-2xl"
+						src="/favicon.svg"
+					/>
 					<div className="flex min-w-0 flex-col" data-sidebar="label">
 						<span className="truncate font-medium text-foreground text-sm leading-tight">
 							Youni 工作台

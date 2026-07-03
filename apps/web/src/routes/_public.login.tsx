@@ -17,10 +17,12 @@ function RouteComponent() {
 			/>
 			<Card className="relative w-full max-w-md bg-surface/90 backdrop-blur">
 				<div className="mb-6 text-center">
-					<div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-accent font-semibold text-accent-foreground">
-						Y
-					</div>
-					<h1 className="font-semibold text-2xl">Youni Admin</h1>
+					<img
+						alt="Youni"
+						className="mx-auto mb-3 h-12 w-auto"
+						src="/youni-logo.svg"
+					/>
+					<h1 className="font-semibold text-2xl">Youni</h1>
 					<p className="mt-1 text-muted text-sm">内容审核与社区运营后台</p>
 				</div>
 				<SignInForm />

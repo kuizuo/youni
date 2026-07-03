@@ -13,6 +13,7 @@ import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn, SlideInLeft } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { YouniMark } from "@/components/brand/youni-logo";
 import { useAppTheme } from "@/lib/contexts/app-theme-context";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
@@ -153,9 +154,12 @@ export function ProfileMenuDrawer({
 								/>
 								<Button.Label className="text-danger">退出登录</Button.Label>
 							</Button>
-							<Text.Paragraph type="body-xs" color="muted" className="px-3">
-								Youni
-							</Text.Paragraph>
+							<View className="flex-row items-center gap-2 px-3 pt-1">
+								<YouniMark size={18} />
+								<Text.Paragraph type="body-xs" color="muted">
+									Youni
+								</Text.Paragraph>
+							</View>
 						</View>
 					</Animated.View>
 				</Animated.View>

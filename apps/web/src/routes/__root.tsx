@@ -23,17 +23,18 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	head: () => ({
 		meta: [
 			{
-				title: "youni",
+				title: "Youni",
 			},
 			{
 				name: "description",
-				content: "youni is a web application",
+				content: "Youni is a web application",
 			},
 		],
 		links: [
 			{
 				rel: "icon",
-				href: "/favicon.ico",
+				type: "image/svg+xml",
+				href: "/favicon.svg",
 			},
 		],
 	}),
