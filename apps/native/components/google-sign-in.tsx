@@ -187,7 +187,8 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 			<SocialAuthButton
 				provider="google"
 				label={isSubmitting ? "正在使用 Google 登录" : "使用 Google 登录"}
-				size="lg"
+				size="md"
+				className="rounded-full"
 				feedbackVariant="scale-ripple"
 				isDisabled={isSubmitting}
 				accessibilityLabel="使用 Google 登录"

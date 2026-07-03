@@ -2,32 +2,21 @@ import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
 import { Stack, useRouter } from "expo-router";
 import { Button, Text, useThemeColor } from "heroui-native";
-import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AuthPanel } from "@/components/auth-panel";
 import { YouniMark } from "@/components/brand/youni-logo";
+import { SignUp } from "@/components/sign-up";
 import { authClient } from "@/lib/auth-client";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
 	const router = useRouter();
 	const session = authClient.useSession();
 	const insets = useSafeAreaInsets();
 	const mutedColor = useThemeColor("muted");
 
-	useEffect(() => {
-		if (session.data?.user) {
-			router.replace("/" as Href);
-		}
-	}, [router, session.data?.user]);
-
-	const goHome = () => {
-		router.replace("/" as Href);
-	};
-
-	const goRegister = () => {
-		router.push("/register" as Href);
+	const goLogin = () => {
+		router.replace("/login" as Href);
 	};
 
 	return (
@@ -51,52 +40,35 @@ export default function LoginScreen() {
 								className="text-foreground"
 								style={{ lineHeight: 42, paddingTop: 2 }}
 							>
-								登录 Youni
+								注册 Youni
 							</Text.Heading>
 							<Text.Paragraph
 								color="muted"
 								align="center"
 								className="leading-6"
 							>
-								登录后可以发布、收藏、点赞、评论和查看消息。
+								创建账号后可以发布内容、收藏喜欢的笔记和查看消息。
 							</Text.Paragraph>
 						</View>
 					</View>
 
-					<AuthPanel
+					<SignUp
 						onAuthenticated={async () => {
 							await session.refetch();
 							router.replace("/" as Href);
 						}}
 					/>
 
-					<View className="gap-2">
-						<Button
-							variant="tertiary"
-							size="md"
-							className="rounded-full"
-							feedbackVariant="scale-ripple"
-							onPress={goRegister}
-						>
-							<Ionicons
-								name="person-add-outline"
-								size={18}
-								color={mutedColor}
-							/>
-							<Button.Label>还没有账号？去注册</Button.Label>
-						</Button>
-
-						<Button
-							variant="tertiary"
-							size="md"
-							className="rounded-full"
-							feedbackVariant="scale-ripple"
-							onPress={goHome}
-						>
-							<Ionicons name="compass-outline" size={18} color={mutedColor} />
-							<Button.Label>暂不登录，跳过</Button.Label>
-						</Button>
-					</View>
+					<Button
+						variant="tertiary"
+						size="md"
+						className="rounded-full"
+						feedbackVariant="scale-ripple"
+						onPress={goLogin}
+					>
+						<Ionicons name="arrow-back-outline" size={18} color={mutedColor} />
+						<Button.Label>已有账号？去登录</Button.Label>
+					</Button>
 				</View>
 			</KeyboardAvoidingView>
 		</>

@@ -165,7 +165,8 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 
 			<Button
 				variant="primary"
-				size="lg"
+				size="md"
+				className="rounded-full"
 				feedbackVariant="scale-ripple"
 				isDisabled={isSubmitting}
 				onPress={submit}

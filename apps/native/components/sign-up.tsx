@@ -167,7 +167,8 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 
 			<Button
 				variant="primary"
-				size="lg"
+				size="md"
+				className="rounded-full"
 				feedbackVariant="scale-ripple"
 				isDisabled={isSubmitting}
 				onPress={submit}
