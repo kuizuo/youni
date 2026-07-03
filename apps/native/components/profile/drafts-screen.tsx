@@ -34,7 +34,7 @@ function formatDate(value: Date | string | null) {
 export default function DraftsScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
-	const drafts = useQuery(orpc.social.drafts.queryOptions());
+	const drafts = useQuery(orpc.drafts.queryOptions());
 	const items = (drafts.data ?? []) as DraftNote[];
 
 	const openDraft = (id: string) => {

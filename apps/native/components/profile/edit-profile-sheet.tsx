@@ -51,7 +51,7 @@ export function EditProfileSheet({
 	);
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const updateProfile = useMutation(
-		orpc.social.updateProfile.mutationOptions({
+		orpc.updateProfile.mutationOptions({
 			onSuccess: async () => {
 				await onSaved();
 				toast.show({ variant: "success", label: "资料已保存" });

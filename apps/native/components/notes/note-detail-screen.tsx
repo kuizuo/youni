@@ -80,12 +80,12 @@ export default function NoteDetailScreen() {
 	}>(null);
 
 	const note = useQuery({
-		...orpc.social.byId.queryOptions({ input: { id: id || "missing" } }),
+		...orpc.byId.queryOptions({ input: { id: id || "missing" } }),
 		enabled: Boolean(id),
 	});
 	const authorId = note.data?.author.id ?? "";
 	const authorProfile = useQuery({
-		...orpc.social.profile.queryOptions({ input: { userId: authorId } }),
+		...orpc.profile.queryOptions({ input: { userId: authorId } }),
 		enabled: Boolean(authorId),
 	});
 
@@ -564,7 +564,7 @@ function CommentItem({
 	const shouldFetchReplies =
 		isExpanded && comment.replyCount > comment.replies.length;
 	const repliesQuery = useQuery({
-		...orpc.social.commentReplies.queryOptions({
+		...orpc.commentReplies.queryOptions({
 			input: { parentId: comment.id, limit: 30 },
 		}),
 		enabled: shouldFetchReplies,

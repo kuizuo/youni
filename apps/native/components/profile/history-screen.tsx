@@ -52,13 +52,13 @@ export default function HistoryScreen() {
 	const insets = useSafeAreaInsets();
 	const { toast } = useAppToast();
 	const history = useQuery({
-		...orpc.social.viewHistory.queryOptions({
+		...orpc.viewHistory.queryOptions({
 			input: { limit: 60 },
 		}),
 	});
 	const items = (history.data ?? []) as HistoryItem[];
 	const deleteMutation = useMutation(
-		orpc.social.deleteViewHistory.mutationOptions({
+		orpc.deleteViewHistory.mutationOptions({
 			onSuccess: async () => {
 				await queryClient.invalidateQueries();
 			},
@@ -69,7 +69,7 @@ export default function HistoryScreen() {
 		}),
 	);
 	const clearMutation = useMutation(
-		orpc.social.clearViewHistory.mutationOptions({
+		orpc.clearViewHistory.mutationOptions({
 			onSuccess: async () => {
 				await queryClient.invalidateQueries();
 				toast.show({ label: "浏览记录已清空" });

@@ -37,7 +37,7 @@ export default function SettingsScreen() {
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const defaultForegroundColor = useThemeColor("default-foreground");
 	const me = useQuery({
-		...orpc.social.me.queryOptions(),
+		...orpc.me.queryOptions(),
 		enabled: Boolean(session.data?.user),
 	});
 	const profile = me.data?.profile;
@@ -68,7 +68,7 @@ export default function SettingsScreen() {
 	}, [profile, user]);
 
 	const updateProfile = useMutation(
-		orpc.social.updateProfile.mutationOptions({
+		orpc.updateProfile.mutationOptions({
 			onSuccess: async () => {
 				await me.refetch();
 				await queryClient.refetchQueries();

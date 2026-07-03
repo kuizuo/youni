@@ -27,7 +27,7 @@ export default function AddFriendScreen() {
 	const foregroundColor = useThemeColor("foreground");
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const me = useQuery({
-		...orpc.social.me.queryOptions(),
+		...orpc.me.queryOptions(),
 		enabled: Boolean(session.data?.user),
 	});
 	const profile = me.data?.profile;

@@ -79,7 +79,7 @@ export default function SearchScreen() {
 	const notes = useInfiniteQuery({
 		queryKey: notesQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.social.searchNotes({
+			client.searchNotes({
 				keyword: activeKeyword,
 				limit: PAGE_SIZE,
 				offset: Number(pageParam ?? 0),
@@ -91,7 +91,7 @@ export default function SearchScreen() {
 	const users = useInfiniteQuery({
 		queryKey: usersQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.social.searchUsersPage({
+			client.searchUsersPage({
 				keyword: activeKeyword,
 				limit: PAGE_SIZE,
 				offset: Number(pageParam ?? 0),
@@ -103,7 +103,7 @@ export default function SearchScreen() {
 	const topics = useInfiniteQuery({
 		queryKey: topicsQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.social.searchTopics({
+			client.searchTopics({
 				keyword: activeKeyword,
 				limit: PAGE_SIZE,
 				offset: Number(pageParam ?? 0),

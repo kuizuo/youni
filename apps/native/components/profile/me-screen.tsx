@@ -52,23 +52,23 @@ export default function MeScreen() {
 	const [isEditOpen, setIsEditOpen] = useState(false);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
-		...orpc.social.meProfile.queryOptions(),
+		...orpc.meProfile.queryOptions(),
 		enabled: isAuthenticated,
 	});
 	const notesFeed = useQuery({
-		...orpc.social.meFeed.queryOptions({
+		...orpc.meFeed.queryOptions({
 			input: { limit: PROFILE_FEED_LIMIT, tab: "notes" },
 		}),
 		enabled: isAuthenticated,
 	});
 	const collectionsFeed = useQuery({
-		...orpc.social.meFeed.queryOptions({
+		...orpc.meFeed.queryOptions({
 			input: { limit: PROFILE_FEED_LIMIT, tab: "collections" },
 		}),
 		enabled: isAuthenticated && activeTab === "collections",
 	});
 	const likedFeed = useQuery({
-		...orpc.social.meFeed.queryOptions({
+		...orpc.meFeed.queryOptions({
 			input: { limit: PROFILE_FEED_LIMIT, tab: "liked" },
 		}),
 		enabled: isAuthenticated && activeTab === "liked",

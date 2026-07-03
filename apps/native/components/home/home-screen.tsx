@@ -40,7 +40,7 @@ export default function HomeScreen() {
 	const discoverFeed = useInfiniteQuery({
 		queryKey: discoverQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.social.searchNotes({
+			client.searchNotes({
 				limit: DISCOVER_PAGE_SIZE,
 				offset: Number(pageParam ?? 0),
 			}),
@@ -48,7 +48,7 @@ export default function HomeScreen() {
 		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
 	});
 	const followingFeed = useQuery({
-		...orpc.social.followingFeed.queryOptions({ input }),
+		...orpc.followingFeed.queryOptions({ input }),
 		enabled:
 			activeTab === "following" && Boolean(socialNavigation.session.data?.user),
 	});

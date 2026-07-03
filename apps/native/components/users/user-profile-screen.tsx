@@ -48,7 +48,7 @@ export default function UserProfileScreen() {
 	const accentForegroundColor = useThemeColor("accent-foreground");
 
 	const profile = useQuery({
-		...orpc.social.profile.queryOptions({ input: { userId: id || "missing" } }),
+		...orpc.profile.queryOptions({ input: { userId: id || "missing" } }),
 		enabled: Boolean(id),
 	});
 

@@ -95,19 +95,15 @@ export function useSocialActions() {
 		toast.show({ variant: "danger", label: error.message });
 	};
 
-	const likeMutation = useMutation(orpc.social.toggleLike.mutationOptions());
-	const collectMutation = useMutation(
-		orpc.social.toggleCollect.mutationOptions(),
-	);
-	const followMutation = useMutation(
-		orpc.social.toggleFollow.mutationOptions(),
-	);
-	const commentMutation = useMutation(orpc.social.addComment.mutationOptions());
+	const likeMutation = useMutation(orpc.toggleLike.mutationOptions());
+	const collectMutation = useMutation(orpc.toggleCollect.mutationOptions());
+	const followMutation = useMutation(orpc.toggleFollow.mutationOptions());
+	const commentMutation = useMutation(orpc.addComment.mutationOptions());
 	const commentLikeMutation = useMutation(
-		orpc.social.toggleCommentLike.mutationOptions(),
+		orpc.toggleCommentLike.mutationOptions(),
 	);
 	const deleteCommentMutation = useMutation(
-		orpc.social.deleteComment.mutationOptions(),
+		orpc.deleteComment.mutationOptions(),
 	);
 	const startChatMutation = useMutation(orpc.messages.start.mutationOptions());
 

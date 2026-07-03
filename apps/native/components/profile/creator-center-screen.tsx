@@ -19,7 +19,7 @@ export default function CreatorCenterScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const accentColor = useThemeColor("accent");
-	const stats = useQuery(orpc.social.creatorStats.queryOptions());
+	const stats = useQuery(orpc.creatorStats.queryOptions());
 	const data = stats.data;
 
 	return (

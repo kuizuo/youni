@@ -93,7 +93,7 @@ export function useCreateComposer({
 		components.length > 0 ? `已添加 ${components.length} 个` : "可添加文件";
 	const advancedLabel = advancedOptions.allowComment ? "评论开启" : "评论关闭";
 	const draftQuery = useQuery({
-		...orpc.social.draftById.queryOptions({
+		...orpc.draftById.queryOptions({
 			input: { id: draftId || "missing" },
 		}),
 		enabled: Boolean(draftId && isAuthenticated),
@@ -112,7 +112,7 @@ export function useCreateComposer({
 	};
 
 	const createMutation = useMutation(
-		orpc.social.create.mutationOptions({
+		orpc.create.mutationOptions({
 			onSuccess: async (_result, variables) => {
 				resetForm();
 				await queryClient.refetchQueries();
@@ -140,7 +140,7 @@ export function useCreateComposer({
 		}),
 	);
 	const updateDraftMutation = useMutation(
-		orpc.social.updateDraft.mutationOptions({
+		orpc.updateDraft.mutationOptions({
 			onSuccess: async (_result, variables) => {
 				resetForm();
 				await queryClient.refetchQueries();

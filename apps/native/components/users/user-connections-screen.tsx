@@ -52,7 +52,7 @@ export default function UserConnectionsScreen() {
 	const [activeType, setActiveType] = useState<ConnectionType>(initialType);
 	const [pendingFollowId, setPendingFollowId] = useState<null | string>(null);
 	const connections = useQuery({
-		...orpc.social.connections.queryOptions({
+		...orpc.connections.queryOptions({
 			input: { userId: userId || "missing", type: activeType, limit: 60 },
 		}),
 		enabled: Boolean(userId),
