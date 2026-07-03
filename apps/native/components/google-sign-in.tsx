@@ -2,7 +2,7 @@ import type * as GoogleSignInNative from "@react-native-google-signin/google-sig
 import { env } from "@youni/env/native";
 import Constants from "expo-constants";
 import { Text, useThemeColor } from "heroui-native";
-import { SocialAuthButton } from "heroui-native-pro";
+import { SocialAuthButton } from "heroui-native-pro/social-auth-button";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
