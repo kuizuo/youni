@@ -4,6 +4,7 @@ import { closeDb, createDb } from "./index";
 import {
 	account,
 	comment,
+	commentLike,
 	directConversation,
 	directConversationParticipant,
 	directMessage,
@@ -12,6 +13,7 @@ import {
 	noteCollection,
 	noteLike,
 	noteTopic,
+	notification,
 	topic,
 	user,
 } from "./schema";
@@ -44,6 +46,18 @@ const seedUsers = [
 			"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=240&q=80",
 		password: adminPassword,
 		role: "operator" as const,
+	},
+	{
+		key: "kuizuo",
+		id: "seed-user-kuizuo",
+		name: "愧怍",
+		email: "kuizuo@youni.local",
+		handle: "kuizuo",
+		bio: "Youni 的产品体验测试账号。",
+		image:
+			"https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=240&q=80",
+		password: demoPassword,
+		role: "user" as const,
 	},
 	{
 		key: "lin",
@@ -122,6 +136,20 @@ const seedTopics = [
 ];
 
 const seedNotes = [
+	{
+		id: "seed-note-kuizuo-inspiration",
+		authorKey: "kuizuo",
+		status: "published" as const,
+		title: "把消息中心整理成更清楚的三类入口",
+		content:
+			"今天想把互动消息分成赞和收藏、关注、评论三类。这样打开消息页时，可以一眼知道哪里有新动态。",
+		images: [
+			"https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80",
+			"https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=80",
+		],
+		topics: ["灵感", "好物"],
+		publishedAt: new Date(now.getTime() - 1000 * 60 * 24),
+	},
 	{
 		id: "seed-note-outfit",
 		authorKey: "lin",
@@ -263,6 +291,30 @@ const seedNotes = [
 
 const seedConversations = [
 	{
+		id: "seed-conversation-kuizuo-lin",
+		members: ["kuizuo", "lin"] as const,
+		messages: [
+			{
+				id: "seed-message-kuizuo-lin-1",
+				senderKey: "lin",
+				content: "我看到了新的消息分类，入口比之前清楚很多。",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 18),
+			},
+			{
+				id: "seed-message-kuizuo-lin-2",
+				senderKey: "kuizuo",
+				content: "我也想看看评论回复和通知列表的效果。",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 15),
+			},
+			{
+				id: "seed-message-kuizuo-lin-3",
+				senderKey: "lin",
+				content: "我给你的笔记留了几条评论，方便测试。",
+				createdAt: new Date(now.getTime() - 1000 * 60 * 12),
+			},
+		],
+	},
+	{
 		id: "seed-conversation-lin-momo",
 		members: ["lin", "momo"] as const,
 		messages: [
@@ -379,6 +431,21 @@ async function main() {
 
 	const seedNoteIds = seedNotes.map((item) => item.id);
 	const seedConversationIds = seedConversations.map((item) => item.id);
+	const seedCommentIds = [
+		"seed-comment-kuizuo-1",
+		"seed-comment-kuizuo-2",
+		"seed-comment-kuizuo-3",
+		"seed-comment-kuizuo-4",
+		"seed-comment-kuizuo-5",
+		"seed-comment-1",
+		"seed-comment-2",
+		"seed-comment-3",
+		"seed-comment-4",
+		"seed-comment-5",
+		"seed-comment-6",
+		"seed-comment-7",
+		"seed-comment-8",
+	];
 
 	await db
 		.delete(directMessage)
@@ -398,6 +465,9 @@ async function main() {
 	await db
 		.delete(noteCollection)
 		.where(inArray(noteCollection.noteId, seedNoteIds));
+	await db
+		.delete(commentLike)
+		.where(inArray(commentLike.commentId, seedCommentIds));
 	await db.delete(comment).where(inArray(comment.noteId, seedNoteIds));
 	await db.delete(noteTopic).where(inArray(noteTopic.noteId, seedNoteIds));
 	await db.delete(note).where(inArray(note.id, seedNoteIds));
@@ -414,6 +484,14 @@ async function main() {
 			or(
 				inArray(follow.followerId, seedUserIds),
 				inArray(follow.followingId, seedUserIds),
+			),
+		);
+	await db
+		.delete(notification)
+		.where(
+			or(
+				inArray(notification.recipientId, seedUserIds),
+				inArray(notification.actorId, seedUserIds),
 			),
 		);
 
@@ -458,17 +536,65 @@ async function main() {
 	}
 
 	const lin = userIds.get("lin");
+	const kuizuo = userIds.get("kuizuo");
 	const momo = userIds.get("momo");
 	const ash = userIds.get("ash");
 	const admin = userIds.get("admin");
 	const operator = userIds.get("operator");
 	const nana = userIds.get("nana");
 	const qiqi = userIds.get("qiqi");
-	if (!lin || !momo || !ash || !admin || !operator || !nana || !qiqi) {
+	if (
+		!lin ||
+		!kuizuo ||
+		!momo ||
+		!ash ||
+		!admin ||
+		!operator ||
+		!nana ||
+		!qiqi
+	) {
 		throw new Error("Missing seed users");
 	}
 
 	await db.insert(comment).values([
+		{
+			id: "seed-comment-kuizuo-1",
+			noteId: "seed-note-kuizuo-inspiration",
+			userId: lin,
+			content: "这个分类很直观，我第一眼就知道该看哪里。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 22),
+		},
+		{
+			id: "seed-comment-kuizuo-2",
+			noteId: "seed-note-kuizuo-inspiration",
+			parentId: "seed-comment-kuizuo-1",
+			userId: momo,
+			content: "同意，赞和收藏放一起很适合快速扫一眼。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 20),
+		},
+		{
+			id: "seed-comment-kuizuo-3",
+			noteId: "seed-note-kuizuo-inspiration",
+			parentId: "seed-comment-kuizuo-1",
+			userId: kuizuo,
+			content: "这条回复用来测试作者删除自己的评论。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 18),
+		},
+		{
+			id: "seed-comment-kuizuo-4",
+			noteId: "seed-note-kuizuo-inspiration",
+			userId: ash,
+			content: "评论列表支持展开以后，消息会完整很多。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 16),
+		},
+		{
+			id: "seed-comment-kuizuo-5",
+			noteId: "seed-note-kuizuo-inspiration",
+			parentId: "seed-comment-kuizuo-4",
+			userId: qiqi,
+			content: "这里也顺便测试一下子评论点赞。",
+			createdAt: new Date(now.getTime() - 1000 * 60 * 14),
+		},
 		{
 			id: "seed-comment-1",
 			noteId: "seed-note-outfit",
@@ -531,9 +657,13 @@ async function main() {
 		.insert(noteLike)
 		.values([
 			{ noteId: "seed-note-outfit", userId: momo },
+			{ noteId: "seed-note-kuizuo-inspiration", userId: lin },
+			{ noteId: "seed-note-kuizuo-inspiration", userId: momo },
+			{ noteId: "seed-note-kuizuo-inspiration", userId: ash },
 			{ noteId: "seed-note-outfit", userId: ash },
 			{ noteId: "seed-note-outfit", userId: qiqi },
 			{ noteId: "seed-note-outfit", userId: admin },
+			{ noteId: "seed-note-kuizuo-inspiration", userId: qiqi },
 			{ noteId: "seed-note-brunch", userId: lin },
 			{ noteId: "seed-note-brunch", userId: momo },
 			{ noteId: "seed-note-brunch", userId: nana },
@@ -559,6 +689,8 @@ async function main() {
 		.insert(noteCollection)
 		.values([
 			{ noteId: "seed-note-outfit", userId: admin },
+			{ noteId: "seed-note-kuizuo-inspiration", userId: momo },
+			{ noteId: "seed-note-kuizuo-inspiration", userId: nana },
 			{ noteId: "seed-note-brunch", userId: momo },
 			{ noteId: "seed-note-citywalk", userId: lin },
 			{ noteId: "seed-note-home-corner", userId: qiqi },
@@ -573,6 +705,9 @@ async function main() {
 		.insert(follow)
 		.values([
 			{ followerId: lin, followingId: momo },
+			{ followerId: lin, followingId: kuizuo },
+			{ followerId: momo, followingId: kuizuo },
+			{ followerId: ash, followingId: kuizuo },
 			{ followerId: momo, followingId: lin },
 			{ followerId: ash, followingId: lin },
 			{ followerId: admin, followingId: lin },
@@ -583,6 +718,87 @@ async function main() {
 			{ followerId: momo, followingId: ash },
 		])
 		.onConflictDoNothing();
+
+	await db
+		.insert(commentLike)
+		.values([
+			{ commentId: "seed-comment-kuizuo-1", userId: kuizuo },
+			{ commentId: "seed-comment-kuizuo-1", userId: momo },
+			{ commentId: "seed-comment-kuizuo-2", userId: lin },
+			{ commentId: "seed-comment-kuizuo-4", userId: kuizuo },
+			{ commentId: "seed-comment-kuizuo-5", userId: momo },
+		])
+		.onConflictDoNothing();
+
+	await db.insert(notification).values([
+		{
+			id: "seed-notification-kuizuo-like",
+			recipientId: kuizuo,
+			actorId: lin,
+			type: "like",
+			category: "activity",
+			title: "林一一 赞了你的笔记",
+			body: "把消息中心整理成更清楚的三类入口",
+			targetType: "note",
+			targetId: "seed-note-kuizuo-inspiration",
+			noteId: "seed-note-kuizuo-inspiration",
+			dedupeKey: "seed:kuizuo:like:lin:seed-note-kuizuo-inspiration",
+			isRead: false,
+			isDeleted: false,
+			createdAt: new Date(now.getTime() - 1000 * 60 * 21),
+			updatedAt: now,
+		},
+		{
+			id: "seed-notification-kuizuo-collect",
+			recipientId: kuizuo,
+			actorId: momo,
+			type: "collect",
+			category: "activity",
+			title: "Momo 收藏了你的笔记",
+			body: "把消息中心整理成更清楚的三类入口",
+			targetType: "note",
+			targetId: "seed-note-kuizuo-inspiration",
+			noteId: "seed-note-kuizuo-inspiration",
+			dedupeKey: "seed:kuizuo:collect:momo:seed-note-kuizuo-inspiration",
+			isRead: false,
+			isDeleted: false,
+			createdAt: new Date(now.getTime() - 1000 * 60 * 19),
+			updatedAt: now,
+		},
+		{
+			id: "seed-notification-kuizuo-follow",
+			recipientId: kuizuo,
+			actorId: ash,
+			type: "follow",
+			category: "followers",
+			title: "阿树 开始关注你",
+			body: "周末出逃和简单食谱。",
+			targetType: "user",
+			targetId: ash,
+			dedupeKey: "seed:kuizuo:follow:ash",
+			isRead: false,
+			isDeleted: false,
+			createdAt: new Date(now.getTime() - 1000 * 60 * 17),
+			updatedAt: now,
+		},
+		{
+			id: "seed-notification-kuizuo-comment",
+			recipientId: kuizuo,
+			actorId: lin,
+			type: "comment",
+			category: "activity",
+			title: "林一一 评论了你的内容",
+			body: "这个分类很直观，我第一眼就知道该看哪里。",
+			targetType: "note",
+			targetId: "seed-note-kuizuo-inspiration",
+			noteId: "seed-note-kuizuo-inspiration",
+			dedupeKey: "seed:kuizuo:comment:lin:seed-comment-kuizuo-1",
+			isRead: false,
+			isDeleted: false,
+			createdAt: new Date(now.getTime() - 1000 * 60 * 15),
+			updatedAt: now,
+		},
+	]);
 
 	for (const item of seedConversations) {
 		const memberIds = item.members.map((key) => userIds.get(key));
@@ -633,6 +849,7 @@ async function main() {
 	console.log("Seed completed");
 	console.log(`Admin: admin@youni.local / ${adminPassword}`);
 	console.log(`Operator: operator@youni.local / ${adminPassword}`);
+	console.log(`Demo: kuizuo@youni.local / ${demoPassword}`);
 	console.log(`Demo: lin@youni.local / ${demoPassword}`);
 }
 

@@ -22,6 +22,29 @@ import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { orpc } from "@/utils/orpc";
 
 const HEADER_HEIGHT = 64;
+const NOTIFICATION_SHORTCUTS = [
+	{
+		id: "reactions",
+		title: "赞和收藏",
+		description: "有人喜欢或收藏了你的内容",
+		icon: "heart-outline",
+		href: "/notifications/reactions",
+	},
+	{
+		id: "followers",
+		title: "新增关注",
+		description: "新的关注者会显示在这里",
+		icon: "person-add-outline",
+		href: "/notifications/followers",
+	},
+	{
+		id: "comments",
+		title: "评论",
+		description: "新的评论和互动回复",
+		icon: "chatbubble-ellipses-outline",
+		href: "/notifications/comments",
+	},
+] as const;
 
 type ConversationItem = {
 	id: string;
@@ -66,21 +89,41 @@ export default function MessagesScreen() {
 	const socialNavigation = useSocialNavigation();
 	const foregroundColor = useThemeColor("foreground");
 	const [menuVisible, setMenuVisible] = useState(false);
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const isAuthenticated = Boolean(session.data?.user);
 	const conversations = useQuery({
 		...orpc.messages.conversations.queryOptions(),
 		enabled: isAuthenticated,
-		refetchInterval: isAuthenticated ? 5000 : false,
+	});
+	const notificationSummary = useQuery({
+		...orpc.notifications.summary.queryOptions(),
+		enabled: isAuthenticated,
 	});
 	const items = useMemo(
 		() => (conversations.data ?? []) as ConversationItem[],
 		[conversations.data],
+	);
+	const messageGroups = useMemo(
+		() => notificationSummary.data?.messageGroups ?? [],
+		[notificationSummary.data?.messageGroups],
 	);
 
 	const openAction = (href: Href) => {
 		fireHaptic();
 		setMenuVisible(false);
 		router.push(href);
+	};
+
+	const refreshMessages = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			await Promise.all([
+				conversations.refetch(),
+				notificationSummary.refetch(),
+			]);
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
 	};
 
 	return (
@@ -128,11 +171,41 @@ export default function MessagesScreen() {
 				}}
 				refreshControl={
 					<RefreshControl
-						refreshing={conversations.isRefetching}
-						onRefresh={() => conversations.refetch()}
+						refreshing={isManuallyRefreshing}
+						onRefresh={refreshMessages}
 					/>
 				}
 				renderItem={({ item }) => <ConversationRow item={item} />}
+				ListHeaderComponent={
+					<View className="border-border-tertiary border-b bg-background px-4 py-3">
+						<View className="gap-2">
+							<Text.Paragraph
+								type="body-sm"
+								weight="semibold"
+								className="text-foreground"
+							>
+								互动消息
+							</Text.Paragraph>
+							<View className="gap-2">
+								{NOTIFICATION_SHORTCUTS.map((item) => {
+									const group = messageGroups.find(
+										(group) => group.id === item.id,
+									);
+									return (
+										<NotificationShortcut
+											key={item.id}
+											description={item.description}
+											icon={item.icon}
+											title={item.title}
+											unreadCount={group?.unreadCount ?? 0}
+											onPress={() => openAction(item.href as Href)}
+										/>
+									);
+								})}
+							</View>
+						</View>
+					</View>
+				}
 				ListEmptyComponent={
 					conversations.isLoading ? (
 						<View className="items-center py-16">
@@ -200,6 +273,57 @@ export default function MessagesScreen() {
 				</View>
 			</Modal>
 		</View>
+	);
+}
+
+function NotificationShortcut({
+	description,
+	icon,
+	onPress,
+	title,
+	unreadCount,
+}: {
+	description: string;
+	icon: keyof typeof Ionicons.glyphMap;
+	onPress: () => void;
+	title: string;
+	unreadCount: number;
+}) {
+	const mutedColor = useThemeColor("muted");
+	const foregroundColor = useThemeColor("foreground");
+
+	return (
+		<PressableFeedback
+			accessibilityRole="button"
+			accessibilityLabel={title}
+			className="flex-row items-center gap-3 rounded-2xl bg-content2 px-3 py-3"
+			onPress={onPress}
+		>
+			<View className="size-11 items-center justify-center rounded-full bg-background">
+				<Ionicons name={icon} size={22} color={foregroundColor} />
+			</View>
+			<View className="min-w-0 flex-1">
+				<Text.Paragraph weight="semibold" numberOfLines={1}>
+					{title}
+				</Text.Paragraph>
+				<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+					{description}
+				</Text.Paragraph>
+			</View>
+			{unreadCount > 0 ? (
+				<View className="min-w-6 items-center rounded-full bg-accent px-2 py-1">
+					<Text.Paragraph
+						type="body-xs"
+						weight="semibold"
+						className="text-accent-foreground"
+					>
+						{unreadCount > 99 ? "99+" : unreadCount}
+					</Text.Paragraph>
+				</View>
+			) : (
+				<Ionicons name="chevron-forward" size={18} color={mutedColor} />
+			)}
+		</PressableFeedback>
 	);
 }
 

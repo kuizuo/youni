@@ -6,15 +6,27 @@ import {
 	notificationPushToken,
 	user,
 } from "@youni/db/schema/index";
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, inArray } from "drizzle-orm";
 import z from "zod";
 
 import { protectedProcedure } from "../index";
 
 const categoryInput = z.enum(["all", "activity", "followers", "system"]);
+const typeInput = z.enum([
+	"announcement",
+	"collect",
+	"comment",
+	"event",
+	"follow",
+	"like",
+	"message",
+	"mention",
+	"system",
+]);
 
 const listInput = z.object({
 	category: categoryInput.default("all"),
+	types: z.array(typeInput).max(4).optional(),
 	limit: z.number().int().min(1).max(30).default(10),
 	offset: z.number().int().min(0).default(0),
 });
@@ -39,11 +51,13 @@ function toNumber(value: unknown) {
 function categoryWhere(
 	userId: string,
 	category: z.infer<typeof categoryInput>,
+	types?: z.infer<typeof typeInput>[],
 ) {
 	const base = [
 		eq(notification.recipientId, userId),
 		eq(notification.isDeleted, false),
-	] as const;
+		types && types.length > 0 ? inArray(notification.type, types) : undefined,
+	].filter(Boolean);
 
 	if (category === "all") {
 		return and(...base);
@@ -52,10 +66,17 @@ function categoryWhere(
 	return and(...base, eq(notification.category, category));
 }
 
-async function getCategorySummary(
-	userId: string,
-	category: "activity" | "followers" | "system",
-) {
+async function getNotificationSummaryItem({
+	category,
+	id,
+	types,
+	userId,
+}: {
+	category: "activity" | "followers" | "system";
+	id: string;
+	types?: z.infer<typeof typeInput>[];
+	userId: string;
+}) {
 	const db = createDb();
 	const [[unread], [latest]] = await Promise.all([
 		db
@@ -67,6 +88,9 @@ async function getCategorySummary(
 					eq(notification.category, category),
 					eq(notification.isDeleted, false),
 					eq(notification.isRead, false),
+					types && types.length > 0
+						? inArray(notification.type, types)
+						: undefined,
 				),
 			),
 		db
@@ -77,6 +101,9 @@ async function getCategorySummary(
 					eq(notification.recipientId, userId),
 					eq(notification.category, category),
 					eq(notification.isDeleted, false),
+					types && types.length > 0
+						? inArray(notification.type, types)
+						: undefined,
 				),
 			)
 			.orderBy(desc(notification.createdAt))
@@ -84,7 +111,7 @@ async function getCategorySummary(
 	]);
 
 	return {
-		category,
+		id,
 		unreadCount: toNumber(unread?.value),
 		updatedAt: latest?.createdAt ?? null,
 	};
@@ -115,7 +142,7 @@ export const notificationsRouter = {
 				.from(notification)
 				.leftJoin(user, eq(notification.actorId, user.id))
 				.leftJoin(note, eq(notification.noteId, note.id))
-				.where(categoryWhere(userId, input.category))
+				.where(categoryWhere(userId, input.category, input.types))
 				.orderBy(desc(notification.createdAt))
 				.limit(input.limit + 1)
 				.offset(input.offset);
@@ -150,7 +177,7 @@ export const notificationsRouter = {
 
 	summary: protectedProcedure.handler(async ({ context }) => {
 		const userId = context.session.user.id;
-		const [[totalUnread], categories] = await Promise.all([
+		const [[totalUnread], categories, messageGroups] = await Promise.all([
 			createDb()
 				.select({ value: count() })
 				.from(notification)
@@ -162,15 +189,48 @@ export const notificationsRouter = {
 					),
 				),
 			Promise.all([
-				getCategorySummary(userId, "activity"),
-				getCategorySummary(userId, "followers"),
-				getCategorySummary(userId, "system"),
+				getNotificationSummaryItem({
+					id: "activity",
+					userId,
+					category: "activity",
+				}),
+				getNotificationSummaryItem({
+					id: "followers",
+					userId,
+					category: "followers",
+				}),
+				getNotificationSummaryItem({
+					id: "system",
+					userId,
+					category: "system",
+				}),
+			]),
+			Promise.all([
+				getNotificationSummaryItem({
+					id: "reactions",
+					userId,
+					category: "activity",
+					types: ["like", "collect"],
+				}),
+				getNotificationSummaryItem({
+					id: "followers",
+					userId,
+					category: "followers",
+					types: ["follow"],
+				}),
+				getNotificationSummaryItem({
+					id: "comments",
+					userId,
+					category: "activity",
+					types: ["comment"],
+				}),
 			]),
 		]);
 
 		return {
 			totalUnread: toNumber(totalUnread?.value),
 			categories,
+			messageGroups,
 		};
 	}),
 
@@ -199,12 +259,19 @@ export const notificationsRouter = {
 		}),
 
 	markAllRead: protectedProcedure
-		.input(z.object({ category: categoryInput.default("all") }))
+		.input(
+			z.object({
+				category: categoryInput.default("all"),
+				types: z.array(typeInput).max(4).optional(),
+			}),
+		)
 		.handler(async ({ input, context }) => {
 			await createDb()
 				.update(notification)
 				.set({ isRead: true, readAt: new Date() })
-				.where(categoryWhere(context.session.user.id, input.category));
+				.where(
+					categoryWhere(context.session.user.id, input.category, input.types),
+				);
 
 			return { ok: true };
 		}),
@@ -226,12 +293,19 @@ export const notificationsRouter = {
 		}),
 
 	deleteAll: protectedProcedure
-		.input(z.object({ category: categoryInput.default("all") }))
+		.input(
+			z.object({
+				category: categoryInput.default("all"),
+				types: z.array(typeInput).max(4).optional(),
+			}),
+		)
 		.handler(async ({ input, context }) => {
 			await createDb()
 				.update(notification)
 				.set({ isDeleted: true, deletedAt: new Date() })
-				.where(categoryWhere(context.session.user.id, input.category));
+				.where(
+					categoryWhere(context.session.user.id, input.category, input.types),
+				);
 
 			return { ok: true };
 		}),

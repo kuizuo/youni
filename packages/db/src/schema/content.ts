@@ -117,6 +117,7 @@ export const comment = sqliteTable(
 			.primaryKey()
 			.$defaultFn(() => ulid()),
 		content: text("content").notNull(),
+		parentId: text("parent_id"),
 		createdAt: timestampColumn("created_at").defaultNow().notNull(),
 		noteId: text("note_id")
 			.notNull()
@@ -125,7 +126,27 @@ export const comment = sqliteTable(
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
 	},
-	(table) => [index("comment_note_idx").on(table.noteId, table.createdAt)],
+	(table) => [
+		index("comment_note_idx").on(table.noteId, table.createdAt),
+		index("comment_parent_idx").on(table.parentId, table.createdAt),
+	],
+);
+
+export const commentLike = sqliteTable(
+	"comment_like",
+	{
+		commentId: text("comment_id")
+			.notNull()
+			.references(() => comment.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.commentId, table.userId] }),
+		index("comment_like_user_idx").on(table.userId),
+	],
 );
 
 export const noteLike = sqliteTable(

@@ -39,6 +39,11 @@ type AddCommentResult = {
 	id: string;
 };
 
+type ToggleCommentLikeResult = {
+	liked: boolean;
+	likedCount: number;
+};
+
 type StartChatResult = {
 	id: string;
 };
@@ -98,6 +103,12 @@ export function useSocialActions() {
 		orpc.social.toggleFollow.mutationOptions(),
 	);
 	const commentMutation = useMutation(orpc.social.addComment.mutationOptions());
+	const commentLikeMutation = useMutation(
+		orpc.social.toggleCommentLike.mutationOptions(),
+	);
+	const deleteCommentMutation = useMutation(
+		orpc.social.deleteComment.mutationOptions(),
+	);
 	const startChatMutation = useMutation(orpc.messages.start.mutationOptions());
 
 	const toggleLike = (
@@ -176,7 +187,7 @@ export function useSocialActions() {
 	};
 
 	const addComment = (
-		input: { content: string; noteId: string },
+		input: { content: string; noteId: string; parentId?: string },
 		options: SocialActionOptions<AddCommentResult> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
@@ -192,6 +203,55 @@ export function useSocialActions() {
 			},
 			onSuccess: async (result) => {
 				await options.onSuccess?.(result);
+			},
+		});
+		return true;
+	};
+
+	const toggleCommentLike = (
+		input: { id: string },
+		options: SocialActionOptions<ToggleCommentLikeResult> = {},
+	) => {
+		if (!navigation.requireLogin(options.redirectTo)) return false;
+
+		commentLikeMutation.mutate(input, {
+			onError: (error) => {
+				const actionError = getError(error);
+				options.onError?.(actionError);
+				showErrorToast(actionError);
+			},
+			onSettled: () => {
+				options.onSettled?.();
+			},
+			onSuccess: async (result) => {
+				await options.onSuccess?.(result);
+				await queryClient.refetchQueries();
+			},
+		});
+		return true;
+	};
+
+	const deleteComment = (
+		input: { id: string },
+		options: SocialActionOptions<{ ok: boolean }> = {},
+	) => {
+		if (!navigation.requireLogin(options.redirectTo)) return false;
+
+		deleteCommentMutation.mutate(input, {
+			onError: (error) => {
+				const actionError = getError(error);
+				options.onError?.(actionError);
+				showErrorToast(actionError);
+			},
+			onSettled: () => {
+				options.onSettled?.();
+			},
+			onSuccess: async (result) => {
+				await options.onSuccess?.(result);
+				await queryClient.refetchQueries();
+				if (options.showSuccessToast !== false) {
+					toast.show({ label: "评论已删除" });
+				}
 			},
 		});
 		return true;
@@ -228,6 +288,8 @@ export function useSocialActions() {
 		mutations: {
 			collect: collectMutation,
 			comment: commentMutation,
+			commentLike: commentLikeMutation,
+			deleteComment: deleteCommentMutation,
 			follow: followMutation,
 			like: likeMutation,
 			startChat: startChatMutation,
@@ -237,6 +299,8 @@ export function useSocialActions() {
 		replaceWith: navigation.replaceWith,
 		session: navigation.session,
 		startChat,
+		deleteComment,
+		toggleCommentLike,
 		toggleCollect,
 		toggleFollow,
 		toggleLike,

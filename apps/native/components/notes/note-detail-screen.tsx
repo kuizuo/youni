@@ -26,8 +26,39 @@ import { ErrorState } from "@/components/social-states";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { orpc } from "@/utils/orpc";
 
+type NoteComment = {
+	authorImage: null | string;
+	authorName: string;
+	canDelete: boolean;
+	content: string;
+	createdAt: Date | string;
+	id: string;
+	liked: boolean;
+	likedCount: number;
+	noteId: string;
+	parentId: null | string;
+	replies: NoteComment[];
+	replyCount: number;
+	userId: string;
+};
+
 function getRouteParam(value: string | string[] | undefined) {
 	return Array.isArray(value) ? value[0] : value;
+}
+
+function formatCommentTime(value: Date | string) {
+	const date = new Date(value);
+	const diff = Date.now() - date.getTime();
+	const minute = 60 * 1000;
+	const hour = 60 * minute;
+	const day = 24 * hour;
+
+	if (Number.isNaN(date.getTime())) return "";
+	if (diff < minute) return "刚刚";
+	if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`;
+	if (diff < day) return `${Math.floor(diff / hour)} 小时前`;
+	if (diff < 7 * day) return `${Math.floor(diff / day)} 天前`;
+	return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 export default function NoteDetailScreen() {
@@ -43,6 +74,10 @@ export default function NoteDetailScreen() {
 	const pageWidth = Math.min(width, 560);
 	const imageHeight = Math.min(620, Math.max(420, pageWidth * 1.14));
 	const [commentText, setCommentText] = useState("");
+	const [replyTarget, setReplyTarget] = useState<null | {
+		authorName: string;
+		id: string;
+	}>(null);
 
 	const note = useQuery({
 		...orpc.social.byId.queryOptions({ input: { id: id || "missing" } }),
@@ -98,10 +133,12 @@ export default function NoteDetailScreen() {
 			{
 				noteId: note.data.id,
 				content: commentText.trim(),
+				parentId: replyTarget?.id,
 			},
 			{
 				onSuccess: async () => {
 					setCommentText("");
+					setReplyTarget(null);
 					await note.refetch();
 				},
 				redirectTo: `/note/${id}`,
@@ -264,8 +301,20 @@ export default function NoteDetailScreen() {
 							)}
 							{commentsEnabled && note.data.comments.length > 0 ? (
 								<View className="gap-4">
-									{note.data.comments.map((comment) => (
-										<CommentItem key={comment.id} comment={comment} />
+									{(note.data.comments as NoteComment[]).map((comment) => (
+										<CommentItem
+											key={comment.id}
+											comment={comment}
+											depth={0}
+											onChanged={() => note.refetch()}
+											onReply={(nextComment) => {
+												setReplyTarget({
+													id: nextComment.id,
+													authorName: nextComment.authorName,
+												});
+											}}
+											redirectTo={`/note/${id}`}
+										/>
 									))}
 								</View>
 							) : commentsEnabled ? (
@@ -312,10 +361,34 @@ export default function NoteDetailScreen() {
 						commentsEnabled ? (
 							<>
 								<View className="min-w-0 flex-1">
+									{replyTarget ? (
+										<View className="mb-2 flex-row items-center gap-2 rounded-2xl bg-content2 px-3 py-2">
+											<Text.Paragraph
+												type="body-xs"
+												color="muted"
+												className="min-w-0 flex-1"
+												numberOfLines={1}
+											>
+												回复 {replyTarget.authorName}
+											</Text.Paragraph>
+											<PressableFeedback
+												accessibilityLabel="取消回复"
+												accessibilityRole="button"
+												hitSlop={8}
+												onPress={() => setReplyTarget(null)}
+											>
+												<Ionicons name="close" size={16} color={mutedColor} />
+											</PressableFeedback>
+										</View>
+									) : null}
 									<Input
 										value={commentText}
 										onChangeText={setCommentText}
-										placeholder="说点什么..."
+										placeholder={
+											replyTarget
+												? `回复 ${replyTarget.authorName}`
+												: "说点什么..."
+										}
 										placeholderTextColor={mutedColor}
 										returnKeyType="send"
 										onSubmitEditing={sendComment}
@@ -473,30 +546,156 @@ function DetailTopBar({ onBack }: { onBack: () => void }) {
 
 function CommentItem({
 	comment,
+	depth,
+	onChanged,
+	onReply,
+	redirectTo,
 }: {
-	comment: {
-		authorImage: null | string;
-		authorName: string;
-		content: string;
-		id: string;
-	};
+	comment: NoteComment;
+	depth: number;
+	onChanged: () => Promise<unknown>;
+	onReply: (comment: NoteComment) => void;
+	redirectTo: string;
 }) {
+	const socialActions = useSocialActions();
+	const mutedColor = useThemeColor("muted");
+	const dangerColor = useThemeColor("danger");
+	const [isExpanded, setIsExpanded] = useState(false);
+	const shouldFetchReplies =
+		isExpanded && comment.replyCount > comment.replies.length;
+	const repliesQuery = useQuery({
+		...orpc.social.commentReplies.queryOptions({
+			input: { parentId: comment.id, limit: 30 },
+		}),
+		enabled: shouldFetchReplies,
+	});
+	const replies = isExpanded
+		? ((repliesQuery.data?.items ?? comment.replies) as NoteComment[])
+		: comment.replies;
+	const hiddenReplyCount = Math.max(
+		0,
+		comment.replyCount - comment.replies.length,
+	);
+	const canExpand = comment.replyCount > comment.replies.length && !isExpanded;
+
+	const toggleLike = () => {
+		socialActions.toggleCommentLike(
+			{ id: comment.id },
+			{
+				onSuccess: async () => {
+					await onChanged();
+				},
+				redirectTo,
+			},
+		);
+	};
+
+	const deleteComment = () => {
+		socialActions.deleteComment(
+			{ id: comment.id },
+			{
+				onSuccess: async () => {
+					await onChanged();
+				},
+				redirectTo,
+			},
+		);
+	};
+
 	return (
-		<View className="flex-row gap-3">
-			<Avatar size="sm" alt={comment.authorName}>
-				{comment.authorImage ? (
-					<Avatar.Image source={{ uri: comment.authorImage }} />
-				) : null}
-				<Avatar.Fallback>{comment.authorName.slice(0, 1)}</Avatar.Fallback>
-			</Avatar>
-			<View className="min-w-0 flex-1 gap-1 border-border-tertiary border-b pb-4">
-				<Text.Paragraph type="body-sm" weight="semibold" numberOfLines={1}>
-					{comment.authorName}
-				</Text.Paragraph>
-				<Text.Paragraph type="body-sm" className="text-foreground leading-5">
-					{comment.content}
-				</Text.Paragraph>
+		<View className={depth > 0 ? "ml-10 gap-3" : "gap-3"}>
+			<View className="flex-row gap-3">
+				<Avatar size="sm" alt={comment.authorName}>
+					{comment.authorImage ? (
+						<Avatar.Image source={{ uri: comment.authorImage }} />
+					) : null}
+					<Avatar.Fallback>{comment.authorName.slice(0, 1)}</Avatar.Fallback>
+				</Avatar>
+				<View className="min-w-0 flex-1 gap-1 border-border-tertiary border-b pb-4">
+					<View className="flex-row items-center gap-2">
+						<Text.Paragraph
+							type="body-sm"
+							weight="semibold"
+							numberOfLines={1}
+							className="min-w-0 flex-1"
+						>
+							{comment.authorName}
+						</Text.Paragraph>
+						<Text.Paragraph type="body-xs" color="muted">
+							{formatCommentTime(comment.createdAt)}
+						</Text.Paragraph>
+					</View>
+					<Text.Paragraph type="body-sm" className="text-foreground leading-5">
+						{comment.content}
+					</Text.Paragraph>
+					<View className="flex-row items-center gap-4 pt-1">
+						<PressableFeedback
+							accessibilityRole="button"
+							accessibilityLabel={comment.liked ? "取消评论点赞" : "评论点赞"}
+							className="flex-row items-center gap-1"
+							onPress={toggleLike}
+						>
+							<Ionicons
+								name={comment.liked ? "heart" : "heart-outline"}
+								size={15}
+								color={comment.liked ? dangerColor : mutedColor}
+							/>
+							<Text.Paragraph
+								type="body-xs"
+								style={{ color: comment.liked ? dangerColor : mutedColor }}
+							>
+								{comment.likedCount || "赞"}
+							</Text.Paragraph>
+						</PressableFeedback>
+						<PressableFeedback
+							accessibilityRole="button"
+							accessibilityLabel="回复评论"
+							onPress={() => onReply(comment)}
+						>
+							<Text.Paragraph type="body-xs" color="muted">
+								回复
+							</Text.Paragraph>
+						</PressableFeedback>
+						{comment.canDelete ? (
+							<PressableFeedback
+								accessibilityRole="button"
+								accessibilityLabel="删除评论"
+								onPress={deleteComment}
+							>
+								<Text.Paragraph type="body-xs" style={{ color: dangerColor }}>
+									删除
+								</Text.Paragraph>
+							</PressableFeedback>
+						) : null}
+					</View>
+				</View>
 			</View>
+			{replies.length > 0 ? (
+				<View className="gap-3">
+					{replies.map((reply) => (
+						<CommentItem
+							key={reply.id}
+							comment={reply}
+							depth={depth + 1}
+							onChanged={onChanged}
+							onReply={onReply}
+							redirectTo={redirectTo}
+						/>
+					))}
+				</View>
+			) : null}
+			{canExpand ? (
+				<Button
+					size="sm"
+					variant="ghost"
+					className="ml-10 self-start rounded-full"
+					feedbackVariant="scale-ripple"
+					onPress={() => setIsExpanded(true)}
+				>
+					{repliesQuery.isLoading ? <Spinner size="sm" /> : null}
+					<Button.Label>展开 {hiddenReplyCount} 条回复</Button.Label>
+				</Button>
+			) : null}
 		</View>
 	);
 }
