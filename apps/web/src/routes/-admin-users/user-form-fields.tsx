@@ -1,6 +1,6 @@
-import { CloudArrowUpIn, TrashBin } from "@gravity-ui/icons";
+import { CloudArrowUpIn, Eye, EyeSlash, TrashBin } from "@gravity-ui/icons";
 import { Button, Input, Label } from "@heroui/react";
-import { type ChangeEvent, type ReactNode, useRef } from "react";
+import { type ChangeEvent, type ReactNode, useRef, useState } from "react";
 
 import { AppAvatar } from "@/components/app-avatar";
 
@@ -19,16 +19,41 @@ export function TextInputField({
 	type?: string;
 	value: string;
 }) {
+	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+	const isPassword = type === "password";
+	const inputType = isPassword && isPasswordVisible ? "text" : type;
+
 	return (
 		<TextFieldWrapper id={id} label={label}>
-			<Input
-				id={id}
-				type={type}
-				value={value}
-				placeholder={placeholder}
-				onChange={(event) => onChange(event.target.value)}
-				fullWidth
-			/>
+			<div className="relative">
+				<Input
+					id={id}
+					type={inputType}
+					value={value}
+					placeholder={placeholder}
+					className={isPassword ? "pr-11" : undefined}
+					onChange={(event) => onChange(event.target.value)}
+					fullWidth
+				/>
+				{isPassword ? (
+					<Button
+						type="button"
+						size="sm"
+						variant="ghost"
+						isIconOnly
+						aria-label={isPasswordVisible ? "隐藏密码" : "显示密码"}
+						aria-pressed={isPasswordVisible}
+						className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-muted"
+						onPress={() => setIsPasswordVisible((visible) => !visible)}
+					>
+						{isPasswordVisible ? (
+							<EyeSlash className="size-4" />
+						) : (
+							<Eye className="size-4" />
+						)}
+					</Button>
+				) : null}
+			</div>
 		</TextFieldWrapper>
 	);
 }

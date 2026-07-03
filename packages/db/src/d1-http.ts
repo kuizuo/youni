@@ -15,6 +15,10 @@ type D1HttpResult = {
 	success: boolean;
 };
 
+type D1HttpPreparedStatement = D1PreparedStatement & {
+	__youniD1HttpQuery: D1HttpQuery;
+};
+
 type D1HttpResponse = {
 	errors?: Array<{ message?: string }>;
 	result?: D1HttpResult[];
@@ -57,7 +61,9 @@ function d1HttpUrl(credentials: D1HttpCredentials) {
 }
 
 function assertD1Success(response: D1HttpResponse) {
-	if (response.success && response.result?.[0]?.success !== false) {
+	const failedResult = response.result?.find((result) => !result.success);
+
+	if (response.success && !failedResult) {
 		return;
 	}
 
@@ -113,16 +119,19 @@ function createPreparedStatement(
 	sql: string,
 	params: unknown[] = [],
 ): D1PreparedStatement {
+	async function all() {
+		const [result] = await queryD1(credentials, { params, sql });
+		return resultToD1Response(result ?? { success: true });
+	}
+
 	return {
+		__youniD1HttpQuery: { params, sql },
 		bind(...boundValues: unknown[]) {
 			return createPreparedStatement(credentials, sql, boundValues);
 		},
-		async all() {
-			const [result] = await queryD1(credentials, { params, sql });
-			return resultToD1Response(result ?? { success: true });
-		},
+		all,
 		async first(columnName?: string) {
-			const response = await this.all();
+			const response = await all();
 			const row = response.results?.[0];
 			if (!row) return null;
 			if (columnName) {
@@ -131,7 +140,7 @@ function createPreparedStatement(
 			return row;
 		},
 		async raw() {
-			const response = await this.all();
+			const response = await all();
 			return rowsToRaw(
 				(response.results ?? []) as unknown as Record<string, unknown>[],
 			);
@@ -140,7 +149,7 @@ function createPreparedStatement(
 			const [result] = await queryD1(credentials, { params, sql });
 			return resultToD1Response(result ?? { success: true });
 		},
-	} as D1PreparedStatement;
+	} as unknown as D1PreparedStatement;
 }
 
 export function createD1HttpDatabase(
@@ -148,11 +157,12 @@ export function createD1HttpDatabase(
 ): D1Database {
 	return {
 		async batch(statements: D1PreparedStatement[]) {
-			const results: D1Result[] = [];
-			for (const statement of statements) {
-				results.push(await statement.run());
-			}
-			return results;
+			const queries = statements.map(
+				(statement) =>
+					(statement as D1HttpPreparedStatement).__youniD1HttpQuery,
+			);
+			const results = await queryD1(credentials, queries);
+			return results.map(resultToD1Response);
 		},
 		dump() {
 			throw new Error("D1 HTTP dump is not supported by this adapter");

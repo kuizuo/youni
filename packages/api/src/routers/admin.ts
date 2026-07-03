@@ -761,8 +761,8 @@ export const adminRouter = {
 			const password = await hashPassword(input.password);
 
 			try {
-				return await db.transaction(async (tx) => {
-					const [createdUser] = await tx
+				const [createdUsers] = await db.batch([
+					db
 						.insert(user)
 						.values({
 							id,
@@ -778,9 +778,8 @@ export const adminRouter = {
 							createdAt: now,
 							updatedAt: now,
 						})
-						.returning();
-
-					await tx.insert(account).values({
+						.returning(),
+					db.insert(account).values({
 						id: createId(),
 						accountId: id,
 						providerId: "credential",
@@ -788,10 +787,10 @@ export const adminRouter = {
 						password,
 						createdAt: now,
 						updatedAt: now,
-					});
+					}),
+				]);
 
-					return createdUser;
-				});
+				return createdUsers[0];
 			} catch (error) {
 				duplicateUserError(error);
 			}
@@ -832,67 +831,83 @@ export const adminRouter = {
 			const now = new Date();
 
 			try {
-				return await db.transaction(async (tx) => {
-					const [updatedUser] = await tx
-						.update(user)
-						.set({
-							name: input.name,
-							email: input.email,
-							image: normalizeText(input.image),
-							handle: normalizeText(input.handle),
-							bio: normalizeText(input.bio),
-							gender: input.gender,
-							role: input.role,
-							...authStatusPatch(input.status),
-							updatedAt: now,
-						})
-						.where(eq(user.id, input.id))
-						.returning();
+				const updateUserQuery = db
+					.update(user)
+					.set({
+						name: input.name,
+						email: input.email,
+						image: normalizeText(input.image),
+						handle: normalizeText(input.handle),
+						bio: normalizeText(input.bio),
+						gender: input.gender,
+						role: input.role,
+						...authStatusPatch(input.status),
+						updatedAt: now,
+					})
+					.where(eq(user.id, input.id))
+					.returning();
 
-					if (
-						input.status !== target.status &&
-						shouldRevokeSessions(input.status)
-					) {
-						await tx.delete(session).where(eq(session.userId, input.id));
+				const revokeSessions =
+					input.status !== target.status && shouldRevokeSessions(input.status);
+				const deleteSessionsQuery = db
+					.delete(session)
+					.where(eq(session.userId, input.id));
+
+				if (!input.password) {
+					if (revokeSessions) {
+						const [updatedUsers] = await db.batch([
+							updateUserQuery,
+							deleteSessionsQuery,
+						]);
+						return updatedUsers[0];
 					}
 
-					if (input.password) {
-						const password = await hashPassword(input.password);
-						const [existing] = await tx
-							.select({ id: account.id })
-							.from(account)
-							.where(
-								and(
-									eq(account.userId, input.id),
-									eq(account.providerId, "credential"),
-								),
-							)
-							.limit(1);
-
-						if (existing) {
-							await tx
-								.update(account)
-								.set({
-									accountId: input.id,
-									password,
-									updatedAt: now,
-								})
-								.where(eq(account.id, existing.id));
-						} else {
-							await tx.insert(account).values({
-								id: createId(),
-								accountId: input.id,
-								providerId: "credential",
-								userId: input.id,
-								password,
-								createdAt: now,
-								updatedAt: now,
-							});
-						}
-					}
-
+					const [updatedUser] = await updateUserQuery;
 					return updatedUser;
-				});
+				}
+
+				const password = await hashPassword(input.password);
+				const [existing] = await db
+					.select({ id: account.id })
+					.from(account)
+					.where(
+						and(
+							eq(account.userId, input.id),
+							eq(account.providerId, "credential"),
+						),
+					)
+					.limit(1);
+
+				const accountQuery = existing
+					? db
+							.update(account)
+							.set({
+								accountId: input.id,
+								password,
+								updatedAt: now,
+							})
+							.where(eq(account.id, existing.id))
+					: db.insert(account).values({
+							id: createId(),
+							accountId: input.id,
+							providerId: "credential",
+							userId: input.id,
+							password,
+							createdAt: now,
+							updatedAt: now,
+						});
+
+				if (revokeSessions) {
+					const [updatedUsers] = await db.batch([
+						updateUserQuery,
+						deleteSessionsQuery,
+						accountQuery,
+					]);
+					return updatedUsers[0];
+				}
+
+				const [updatedUsers] = await db.batch([updateUserQuery, accountQuery]);
+				return updatedUsers[0];
 			} catch (error) {
 				duplicateUserError(error);
 			}
@@ -922,19 +937,24 @@ export const adminRouter = {
 				}),
 			);
 
-			return createDb().transaction(async (tx) => {
-				const [updated] = await tx
-					.update(user)
-					.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
-					.where(eq(user.id, input.id))
-					.returning();
+			const db = createDb();
+			const updateUserQuery = db
+				.update(user)
+				.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
+				.where(eq(user.id, input.id))
+				.returning();
 
-				if (shouldRevokeSessions(input.status)) {
-					await tx.delete(session).where(eq(session.userId, input.id));
-				}
+			if (shouldRevokeSessions(input.status)) {
+				const [updatedUsers] = await db.batch([
+					updateUserQuery,
+					db.delete(session).where(eq(session.userId, input.id)),
+				]);
 
-				return updated;
-			});
+				return updatedUsers[0];
+			}
+
+			const [updated] = await updateUserQuery;
+			return updated;
 		}),
 
 	softDeleteUser: adminPermissionProcedure({ user: ["delete"] })
@@ -961,17 +981,17 @@ export const adminRouter = {
 				}),
 			);
 
-			return createDb().transaction(async (tx) => {
-				const [deleted] = await tx
+			const db = createDb();
+			const [deletedUsers] = await db.batch([
+				db
 					.update(user)
 					.set({ ...authStatusPatch("deleted"), updatedAt: new Date() })
 					.where(eq(user.id, input.id))
-					.returning();
+					.returning(),
+				db.delete(session).where(eq(session.userId, input.id)),
+			]);
 
-				await tx.delete(session).where(eq(session.userId, input.id));
-
-				return deleted;
-			});
+			return deletedUsers[0];
 		}),
 
 	restoreUser: adminPermissionProcedure({ user: ["restore"] })
@@ -998,18 +1018,23 @@ export const adminRouter = {
 				}),
 			);
 
-			return createDb().transaction(async (tx) => {
-				const [updated] = await tx
-					.update(user)
-					.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
-					.where(eq(user.id, input.id))
-					.returning();
+			const db = createDb();
+			const updateUserQuery = db
+				.update(user)
+				.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
+				.where(eq(user.id, input.id))
+				.returning();
 
-				if (shouldRevokeSessions(input.status)) {
-					await tx.delete(session).where(eq(session.userId, input.id));
-				}
+			if (shouldRevokeSessions(input.status)) {
+				const [updatedUsers] = await db.batch([
+					updateUserQuery,
+					db.delete(session).where(eq(session.userId, input.id)),
+				]);
 
-				return updated;
-			});
+				return updatedUsers[0];
+			}
+
+			const [updated] = await updateUserQuery;
+			return updated;
 		}),
 };
