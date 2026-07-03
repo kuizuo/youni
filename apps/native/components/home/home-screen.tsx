@@ -1,7 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
-import { useQuery } from "@tanstack/react-query";
-import { Button, PressableFeedback, Text, useThemeColor } from "heroui-native";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+	Button,
+	PressableFeedback,
+	Spinner,
+	Text,
+	useThemeColor,
+} from "heroui-native";
 import { useMemo, useState } from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,13 +19,15 @@ import {
 	FeedSkeleton,
 } from "@/components/social-states";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
-import { orpc } from "@/utils/orpc";
+import { client, orpc, queryClient } from "@/utils/orpc";
 
 const HOME_TABS = [
 	{ id: "following", label: "关注" },
 	{ id: "discover", label: "发现" },
 ] as const;
+const DISCOVER_PAGE_SIZE = 20;
 type HomeTab = (typeof HOME_TABS)[number]["id"];
+type HomeFeedNote = Parameters<typeof NoteCard>[0]["note"];
 
 export default function HomeScreen() {
 	const socialNavigation = useSocialNavigation();
@@ -28,14 +36,38 @@ export default function HomeScreen() {
 	const foregroundColor = useThemeColor("foreground");
 	const [activeTab, setActiveTab] = useState<HomeTab>("discover");
 	const input = useMemo(() => ({ limit: 30 }), []);
-	const discoverFeed = useQuery(orpc.social.feed.queryOptions({ input }));
+	const discoverQueryKey = useMemo(() => ["home", "discover"] as const, []);
+	const discoverFeed = useInfiniteQuery({
+		queryKey: discoverQueryKey,
+		queryFn: ({ pageParam }) =>
+			client.social.searchNotes({
+				limit: DISCOVER_PAGE_SIZE,
+				offset: Number(pageParam ?? 0),
+			}),
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+	});
 	const followingFeed = useQuery({
 		...orpc.social.followingFeed.queryOptions({ input }),
 		enabled:
 			activeTab === "following" && Boolean(socialNavigation.session.data?.user),
 	});
-	const activeFeed = activeTab === "following" ? followingFeed : discoverFeed;
-	const notes = activeFeed.data ?? [];
+	const discoverNotes = useMemo(
+		() => flattenPages<HomeFeedNote>(discoverFeed.data?.pages),
+		[discoverFeed.data?.pages],
+	);
+	const notes =
+		activeTab === "following" ? (followingFeed.data ?? []) : discoverNotes;
+	const isActiveLoading =
+		activeTab === "following"
+			? followingFeed.isLoading
+			: discoverFeed.isLoading;
+	const isActiveError =
+		activeTab === "following" ? followingFeed.isError : discoverFeed.isError;
+	const isActiveRefetching =
+		activeTab === "following"
+			? followingFeed.isRefetching
+			: discoverFeed.isRefetching && !discoverFeed.isFetchingNextPage;
 	const isFollowingGuest =
 		activeTab === "following" && !socialNavigation.session.data?.user;
 	const topBar = (
@@ -109,22 +141,52 @@ export default function HomeScreen() {
 				)}
 				contentInsetAdjustmentBehavior="automatic"
 				showsVerticalScrollIndicator={false}
-				refreshing={activeFeed.isRefetching}
+				refreshing={isActiveRefetching}
 				onRefresh={() => {
-					activeFeed.refetch();
+					if (activeTab === "following") {
+						followingFeed.refetch();
+						return;
+					}
+					void queryClient.resetQueries({ queryKey: discoverQueryKey });
 				}}
+				onEndReached={() => {
+					if (
+						activeTab === "discover" &&
+						discoverFeed.hasNextPage &&
+						!discoverFeed.isFetchingNextPage &&
+						!discoverFeed.isFetching
+					) {
+						void discoverFeed.fetchNextPage();
+					}
+				}}
+				onEndReachedThreshold={0.4}
 				contentContainerStyle={{
 					paddingTop: 8,
 					paddingBottom: Platform.OS === "ios" ? 32 : 128,
 					paddingHorizontal: 4,
 				}}
+				ListFooterComponent={
+					activeTab === "discover" ? (
+						<DiscoverFooter
+							hasItems={discoverNotes.length > 0}
+							hasMore={Boolean(discoverFeed.hasNextPage)}
+							isLoading={discoverFeed.isFetchingNextPage}
+						/>
+					) : null
+				}
 				ListEmptyComponent={
-					activeFeed.isLoading ? (
+					isActiveLoading ? (
 						<FeedSkeleton />
-					) : activeFeed.isError ? (
+					) : isActiveError ? (
 						<ErrorState
 							description="内容暂时没有加载出来，请检查网络后重试。"
-							onRetry={() => activeFeed.refetch()}
+							onRetry={() => {
+								if (activeTab === "following") {
+									followingFeed.refetch();
+									return;
+								}
+								discoverFeed.refetch();
+							}}
 						/>
 					) : isFollowingGuest ? (
 						<EmptyState
@@ -163,4 +225,40 @@ export default function HomeScreen() {
 			/>
 		</View>
 	);
+}
+
+function DiscoverFooter({
+	hasItems,
+	hasMore,
+	isLoading,
+}: {
+	hasItems: boolean;
+	hasMore: boolean;
+	isLoading: boolean;
+}) {
+	if (!hasItems) return null;
+
+	if (isLoading) {
+		return (
+			<View className="items-center py-5">
+				<Spinner size="sm" />
+			</View>
+		);
+	}
+
+	if (!hasMore) {
+		return (
+			<View className="items-center py-5">
+				<Text.Paragraph type="body-xs" color="muted">
+					没有更多了
+				</Text.Paragraph>
+			</View>
+		);
+	}
+
+	return <View className="h-5" />;
+}
+
+function flattenPages<T>(pages?: Array<{ items: T[] }>) {
+	return pages?.flatMap((page) => page.items) ?? [];
 }

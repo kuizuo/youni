@@ -9,6 +9,7 @@ export type SocialNavigationIntent =
 	| { type: "note"; id: string }
 	| { type: "publish" }
 	| { type: "search" }
+	| { type: "topic"; id: string }
 	| {
 			title?: string;
 			type: "userConnections";
@@ -47,6 +48,11 @@ export function toSocialHref(intent: SocialNavigationIntent): Href {
 			return "/publish" as Href;
 		case "search":
 			return "/search" as Href;
+		case "topic":
+			return {
+				pathname: "/topic/[id]",
+				params: { id: intent.id },
+			} as unknown as Href;
 		case "user":
 			return {
 				pathname: "/user/[id]",

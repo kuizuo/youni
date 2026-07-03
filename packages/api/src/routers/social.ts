@@ -46,6 +46,15 @@ const listInput = z.object({
 	keyword: z.string().trim().optional(),
 	limit: z.number().int().min(1).max(60).default(30),
 });
+const paginatedListInput = listInput.extend({
+	offset: z.number().int().min(0).default(0),
+});
+const topicDetailInput = z.object({
+	id: z.string().min(1),
+	limit: z.number().int().min(1).max(60).default(20),
+	offset: z.number().int().min(0).default(0),
+	sort: z.enum(["hot", "latest"]).default("hot"),
+});
 
 const noteCreateInput = z.object({
 	title: z.string().trim().max(100).default(""),
@@ -105,6 +114,115 @@ const profileUpdateInput = z.object({
 
 function toNumber(value: unknown) {
 	return Number(value ?? 0);
+}
+
+function toPage<T>(items: T[], limit: number, offset: number) {
+	const pageItems = items.slice(0, limit);
+	const hasMore = items.length > limit;
+
+	return {
+		items: pageItems,
+		hasMore,
+		nextOffset: hasMore ? offset + limit : null,
+	};
+}
+
+async function getTopicNoteIds(keyword: string) {
+	const rows = await createDb()
+		.select({ noteId: noteTopic.noteId })
+		.from(noteTopic)
+		.innerJoin(topic, eq(noteTopic.topicId, topic.id))
+		.where(containsInsensitive(topic.name, keyword));
+
+	return Array.from(new Set(rows.map((row) => row.noteId)));
+}
+
+async function getSearchNoteWhereClause(keyword?: string) {
+	const normalizedKeyword = keyword?.trim();
+	if (!normalizedKeyword) {
+		return and(eq(note.status, "published"), eq(note.visibility, "public"));
+	}
+
+	const topicNoteIds = await getTopicNoteIds(normalizedKeyword);
+	const keywordClause =
+		topicNoteIds.length > 0
+			? or(
+					containsInsensitive(note.title, normalizedKeyword),
+					containsInsensitive(note.content, normalizedKeyword),
+					inArray(note.id, topicNoteIds),
+				)
+			: or(
+					containsInsensitive(note.title, normalizedKeyword),
+					containsInsensitive(note.content, normalizedKeyword),
+				);
+
+	return and(
+		eq(note.status, "published"),
+		eq(note.visibility, "public"),
+		keywordClause,
+	);
+}
+
+async function getPublicTopicStats(topicIds: string[]) {
+	if (topicIds.length === 0) {
+		return {
+			discussionsByTopic: new Map<string, number>(),
+			notesByTopic: new Map<string, number>(),
+		};
+	}
+
+	const db = createDb();
+	const noteRows = await db
+		.select({ noteId: noteTopic.noteId, topicId: noteTopic.topicId })
+		.from(noteTopic)
+		.innerJoin(note, eq(noteTopic.noteId, note.id))
+		.where(
+			and(
+				inArray(noteTopic.topicId, topicIds),
+				eq(note.status, "published"),
+				eq(note.visibility, "public"),
+			),
+		);
+	const notesByTopic = new Map<string, number>();
+	const noteIdsByTopic = new Map<string, string[]>();
+
+	for (const row of noteRows) {
+		notesByTopic.set(row.topicId, (notesByTopic.get(row.topicId) ?? 0) + 1);
+		noteIdsByTopic.set(row.topicId, [
+			...(noteIdsByTopic.get(row.topicId) ?? []),
+			row.noteId,
+		]);
+	}
+
+	const allNoteIds = Array.from(new Set(noteRows.map((row) => row.noteId)));
+	if (allNoteIds.length === 0) {
+		return {
+			discussionsByTopic: new Map<string, number>(),
+			notesByTopic,
+		};
+	}
+
+	const commentRows = await db
+		.select({ noteId: comment.noteId, value: count() })
+		.from(comment)
+		.where(inArray(comment.noteId, allNoteIds))
+		.groupBy(comment.noteId);
+	const commentsByNote = new Map(
+		commentRows.map((row) => [row.noteId, toNumber(row.value)]),
+	);
+	const discussionsByTopic = new Map<string, number>();
+
+	for (const [topicId, noteIds] of noteIdsByTopic) {
+		discussionsByTopic.set(
+			topicId,
+			noteIds.reduce(
+				(total, noteId) => total + (commentsByNote.get(noteId) ?? 0),
+				0,
+			),
+		);
+	}
+
+	return { discussionsByTopic, notesByTopic };
 }
 
 async function recordNoteView(noteId: string, userId: string) {
@@ -257,6 +375,22 @@ export const socialRouter = {
 			return hydrateContentNotes(rows, context.session.user.id);
 		}),
 
+	searchNotes: publicProcedure
+		.input(paginatedListInput)
+		.handler(async ({ input, context }) => {
+			const whereClause = await getSearchNoteWhereClause(input.keyword);
+			const rows = (await selectContentNoteRows(whereClause)).slice(
+				input.offset,
+				input.offset + input.limit + 1,
+			);
+			const page = toPage(rows, input.limit, input.offset);
+
+			return {
+				...page,
+				items: await hydrateContentNotes(page.items, context.session?.user.id),
+			};
+		}),
+
 	topics: publicProcedure.input(listInput).handler(async ({ input }) => {
 		const db = createDb();
 		const rows = input.keyword
@@ -302,6 +436,47 @@ export const socialRouter = {
 		}));
 	}),
 
+	searchTopics: publicProcedure
+		.input(paginatedListInput)
+		.handler(async ({ input }) => {
+			const db = createDb();
+			const rows = input.keyword
+				? await db
+						.select({
+							id: topic.id,
+							name: topic.name,
+							createdAt: topic.createdAt,
+						})
+						.from(topic)
+						.where(containsInsensitive(topic.name, input.keyword))
+						.orderBy(desc(topic.createdAt))
+						.limit(input.limit + 1)
+						.offset(input.offset)
+				: await db
+						.select({
+							id: topic.id,
+							name: topic.name,
+							createdAt: topic.createdAt,
+						})
+						.from(topic)
+						.orderBy(desc(topic.createdAt))
+						.limit(input.limit + 1)
+						.offset(input.offset);
+			const page = toPage(rows, input.limit, input.offset);
+			const topicIds = page.items.map((row) => row.id);
+			const { discussionsByTopic, notesByTopic } =
+				await getPublicTopicStats(topicIds);
+
+			return {
+				...page,
+				items: page.items.map((row) => ({
+					...row,
+					discussionCount: discussionsByTopic.get(row.id) ?? 0,
+					noteCount: notesByTopic.get(row.id) ?? 0,
+				})),
+			};
+		}),
+
 	searchUsers: publicProcedure
 		.input(listInput)
 		.handler(async ({ input, context }) => {
@@ -327,6 +502,117 @@ export const socialRouter = {
 			return Promise.all(
 				rows.map((row) => getProfile(row.id, context.session?.user.id)),
 			);
+		}),
+
+	searchUsersPage: publicProcedure
+		.input(paginatedListInput)
+		.handler(async ({ input, context }) => {
+			const keyword = input.keyword?.trim();
+			if (!keyword) return { items: [], hasMore: false, nextOffset: null };
+
+			const rows = await createDb()
+				.select({ id: user.id })
+				.from(user)
+				.where(
+					and(
+						eq(user.status, "active"),
+						or(
+							containsInsensitive(user.name, keyword),
+							containsInsensitive(user.handle, keyword),
+							containsInsensitive(user.bio, keyword),
+						),
+					),
+				)
+				.orderBy(desc(user.createdAt))
+				.limit(input.limit + 1)
+				.offset(input.offset);
+			const page = toPage(rows, input.limit, input.offset);
+
+			return {
+				...page,
+				items: await Promise.all(
+					page.items.map((row) => getProfile(row.id, context.session?.user.id)),
+				),
+			};
+		}),
+
+	topicDetail: publicProcedure
+		.input(topicDetailInput)
+		.handler(async ({ input, context }) => {
+			const db = createDb();
+			const [topicRow] = await db
+				.select({
+					id: topic.id,
+					name: topic.name,
+					createdAt: topic.createdAt,
+				})
+				.from(topic)
+				.where(eq(topic.id, input.id))
+				.limit(1);
+
+			if (!topicRow) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
+			const noteIdRows = await db
+				.select({ noteId: noteTopic.noteId })
+				.from(noteTopic)
+				.innerJoin(note, eq(noteTopic.noteId, note.id))
+				.where(
+					and(
+						eq(noteTopic.topicId, input.id),
+						eq(note.status, "published"),
+						eq(note.visibility, "public"),
+					),
+				)
+				.orderBy(desc(note.createdAt));
+			const noteIds = noteIdRows.map((row) => row.noteId);
+			const discussionRows =
+				noteIds.length > 0
+					? await db
+							.select({ value: count() })
+							.from(comment)
+							.where(inArray(comment.noteId, noteIds))
+					: [];
+			const rows =
+				noteIds.length > 0
+					? await selectContentNoteRows(
+							and(
+								inArray(note.id, noteIds),
+								eq(note.status, "published"),
+								eq(note.visibility, "public"),
+							),
+						)
+					: [];
+			const hydratedRows = await hydrateContentNotes(
+				rows,
+				context.session?.user.id,
+			);
+			const sortedRows =
+				input.sort === "hot"
+					? hydratedRows.toSorted((left, right) => {
+							const likeDelta = right.likedCount - left.likedCount;
+							if (likeDelta !== 0) return likeDelta;
+							return (
+								new Date(right.createdAt).getTime() -
+								new Date(left.createdAt).getTime()
+							);
+						})
+					: hydratedRows;
+			const page = toPage(
+				sortedRows.slice(input.offset, input.offset + input.limit + 1),
+				input.limit,
+				input.offset,
+			);
+
+			return {
+				topic: {
+					...topicRow,
+					discussionCount: toNumber(discussionRows[0]?.value),
+					noteCount: noteIds.length,
+				},
+				notes: page,
+			};
 		}),
 
 	connections: publicProcedure
