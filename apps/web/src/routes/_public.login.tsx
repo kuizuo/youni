@@ -19,11 +19,9 @@ function RouteComponent() {
 				<div className="mb-6 text-center">
 					<img
 						alt="Youni"
-						className="mx-auto mb-3 h-12 w-auto"
+						className="mx-auto mb-3 h-14 w-auto"
 						src="/youni-logo.svg"
 					/>
-					<h1 className="font-semibold text-2xl">Youni</h1>
-					<p className="mt-1 text-muted text-sm">内容审核与社区运营后台</p>
 				</div>
 				<SignInForm />
 			</Card>

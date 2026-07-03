@@ -1,7 +1,7 @@
-import { env } from "@youni/env/native";
 import * as ImagePicker from "expo-image-picker";
 import { Platform } from "react-native";
 
+import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
@@ -135,7 +135,7 @@ export async function pickAndUploadAvatar() {
 	}
 
 	const response = await fetchWithTimeout(
-		`${env.EXPO_PUBLIC_SERVER_URL}/uploads/avatar`,
+		`${apiBaseUrl}/uploads/avatar`,
 		{
 			body: formData,
 			credentials: Platform.OS === "web" ? "include" : "omit",

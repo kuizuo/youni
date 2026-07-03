@@ -3,9 +3,9 @@ import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import type { AppRouterClient } from "@youni/api/routers/index";
-import { env } from "@youni/env/native";
 import { Platform } from "react-native";
 
+import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
@@ -18,7 +18,7 @@ export const queryClient = new QueryClient({
 });
 
 export const link = new RPCLink({
-	url: `${env.EXPO_PUBLIC_SERVER_URL}/rpc`,
+	url: `${apiBaseUrl}/rpc`,
 	fetch: (request, init) =>
 		fetchWithTimeout(request, {
 			...init,

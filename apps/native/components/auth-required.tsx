@@ -1,6 +1,6 @@
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Spinner } from "heroui-native";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback } from "react";
 import { View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
@@ -15,11 +15,15 @@ export function AuthRequired({ children, redirectTo }: AuthRequiredProps) {
 	const router = useRouter();
 	const session = authClient.useSession();
 
-	useEffect(() => {
-		if (!session.isPending && !session.data?.user) {
+	useFocusEffect(
+		useCallback(() => {
+			if (session.isPending || session.data?.user) {
+				return;
+			}
+
 			router.replace(getLoginHref(redirectTo));
-		}
-	}, [redirectTo, router, session.data?.user, session.isPending]);
+		}, [redirectTo, router, session.data?.user, session.isPending]),
+	);
 
 	if (session.isPending || !session.data?.user) {
 		return (
