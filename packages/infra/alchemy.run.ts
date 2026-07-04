@@ -137,7 +137,7 @@ export const youniDatabase = await D1Database("youni-db", {
 	readReplication: {
 		mode: "disabled",
 	},
-	migrationsDir: "../../packages/db/src/d1-migrations",
+	migrationsDir: "../../packages/db/src/migrations",
 });
 
 export const server = await Worker("server", {

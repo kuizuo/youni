@@ -53,7 +53,6 @@ function StackLayout() {
 			<Stack.Screen name="login" />
 			<Stack.Screen name="publish" />
 			<Stack.Screen name="register" />
-			<Stack.Screen name="reset-password" />
 			<Stack.Screen name="scan" />
 			<Stack.Screen name="search" />
 			<Stack.Screen name="settings" />
