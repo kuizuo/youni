@@ -16,6 +16,7 @@ import { Platform, Share, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NoteCard } from "@/components/note-card";
+import { AppHeading } from "@/components/shared/app-heading";
 import {
 	EmptyState,
 	ErrorState,
@@ -231,14 +232,14 @@ function TopicHeader({
 								</>
 							) : (
 								<>
-									<Text.Heading
+									<AppHeading
 										type="h2"
 										weight="bold"
 										numberOfLines={2}
 										className="text-foreground"
 									>
 										# {topicName ?? "话题"}
-									</Text.Heading>
+									</AppHeading>
 									<Text.Paragraph type="body-sm" color="muted">
 										{formatCount(noteCount)} 篇图文
 										{discussionCount > 0
@@ -266,13 +267,13 @@ function TopicHeader({
 									onSortChange(item.key);
 								}}
 							>
-								<Text.Heading
+								<AppHeading
 									type="h4"
 									weight={active ? "bold" : "normal"}
 									className={active ? "text-foreground" : "text-muted"}
 								>
 									{item.label}
-								</Text.Heading>
+								</AppHeading>
 							</PressableFeedback>
 						);
 					})}

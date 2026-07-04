@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { YouniMark } from "@/components/brand/youni-logo";
+import { AppHeading } from "@/components/shared/app-heading";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginScreen() {
@@ -45,14 +46,9 @@ export default function LoginScreen() {
 					<View className="items-center gap-3">
 						<YouniMark size={50} />
 						<View className="items-center gap-1.5">
-							<Text.Heading
-								type="h1"
-								align="center"
-								className="text-foreground"
-								style={{ lineHeight: 42, paddingTop: 2 }}
-							>
+							<AppHeading type="h1" align="center" className="text-foreground">
 								登录 Youni
-							</Text.Heading>
+							</AppHeading>
 							<Text.Paragraph
 								color="muted"
 								align="center"

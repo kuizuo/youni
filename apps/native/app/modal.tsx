@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { type Href, router } from "expo-router";
 import { Button, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
-
+import { AppHeading } from "@/components/shared/app-heading";
 import { Container } from "@/components/shared/container";
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
@@ -59,7 +59,7 @@ function Modal() {
 			<View className="mx-auto w-full max-w-sm gap-6">
 				<View className="flex-row items-start justify-between gap-4">
 					<View className="min-w-0 flex-1 gap-1">
-						<Text.Heading type="h2">下一步</Text.Heading>
+						<AppHeading type="h2">下一步</AppHeading>
 						<Text.Paragraph type="body-sm" color="muted">
 							发布、搜索，或者继续回到发现页。
 						</Text.Paragraph>

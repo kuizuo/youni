@@ -13,6 +13,7 @@ import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NoteCard } from "@/components/note-card";
+import { AppHeading } from "@/components/shared/app-heading";
 import {
 	EmptyState,
 	ErrorState,
@@ -88,13 +89,13 @@ export default function HomeScreen() {
 								className="h-14 items-center justify-center px-1"
 								onPress={() => setActiveTab(item.id)}
 							>
-								<Text.Heading
+								<AppHeading
 									type="h4"
 									weight={active ? "bold" : "normal"}
 									className={active ? "text-foreground" : "text-muted"}
 								>
 									{item.label}
-								</Text.Heading>
+								</AppHeading>
 								<View
 									className={
 										active

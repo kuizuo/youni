@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import z from "zod";
 
 import { YouniMark } from "@/components/brand/youni-logo";
+import { AppHeading } from "@/components/shared/app-heading";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
 import {
@@ -111,9 +112,7 @@ export default function ForgotPasswordScreen() {
 		<>
 			<Stack.Screen
 				options={{
-					headerShown: true,
-					headerShadowVisible: false,
-					title: "找回密码",
+					headerShown: false,
 				}}
 			/>
 			<KeyboardAvoidingView
@@ -135,9 +134,9 @@ export default function ForgotPasswordScreen() {
 						<View className="gap-4">
 							<YouniMark size={54} />
 							<View className="gap-2">
-								<Text.Heading type="h1" className="text-foreground">
+								<AppHeading type="h1" className="text-foreground">
 									找回密码
-								</Text.Heading>
+								</AppHeading>
 								<Text.Paragraph color="muted" className="leading-6">
 									输入注册邮箱，我们会发送一封邮件帮你设置新密码。
 								</Text.Paragraph>

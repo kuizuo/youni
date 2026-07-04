@@ -21,7 +21,7 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { AppHeading } from "@/components/shared/app-heading";
 import { ErrorState } from "@/components/social-states";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { orpc } from "@/utils/orpc";
@@ -263,9 +263,9 @@ export default function NoteDetailScreen() {
 						</View>
 
 						<View className="gap-3">
-							<Text.Heading type="h2" className="text-foreground">
+							<AppHeading type="h2" className="text-foreground">
 								{note.data.title}
-							</Text.Heading>
+							</AppHeading>
 							<Text.Paragraph className="text-foreground leading-6">
 								{note.data.content}
 							</Text.Paragraph>

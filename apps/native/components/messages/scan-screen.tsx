@@ -7,6 +7,7 @@ import { type ReactNode, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppHeading } from "@/components/shared/app-heading";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
 
@@ -88,9 +89,9 @@ export default function ScanScreen() {
 						>
 							<Ionicons name="chevron-back" size={28} color="#ffffff" />
 						</Button>
-						<Text.Heading type="h2" style={{ color: "#ffffff" }}>
+						<AppHeading type="h2" style={{ color: "#ffffff" }}>
 							扫描二维码
-						</Text.Heading>
+						</AppHeading>
 						<View className="size-10" />
 					</View>
 

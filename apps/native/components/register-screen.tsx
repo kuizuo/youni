@@ -6,6 +6,7 @@ import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { YouniMark } from "@/components/brand/youni-logo";
+import { AppHeading } from "@/components/shared/app-heading";
 import { SignUp } from "@/components/sign-up";
 import { authClient } from "@/lib/auth-client";
 
@@ -34,14 +35,9 @@ export default function RegisterScreen() {
 					<View className="items-center gap-3">
 						<YouniMark size={50} />
 						<View className="items-center gap-1.5">
-							<Text.Heading
-								type="h1"
-								align="center"
-								className="text-foreground"
-								style={{ lineHeight: 42, paddingTop: 2 }}
-							>
+							<AppHeading type="h1" align="center" className="text-foreground">
 								注册 Youni
-							</Text.Heading>
+							</AppHeading>
 							<Text.Paragraph
 								color="muted"
 								align="center"

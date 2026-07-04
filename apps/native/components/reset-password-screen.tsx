@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import z from "zod";
 
 import { YouniMark } from "@/components/brand/youni-logo";
+import { AppHeading } from "@/components/shared/app-heading";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
 import {
@@ -158,9 +159,9 @@ export default function ResetPasswordScreen() {
 						<View className="gap-4">
 							<YouniMark size={54} />
 							<View className="gap-2">
-								<Text.Heading type="h1" className="text-foreground">
+								<AppHeading type="h1" className="text-foreground">
 									设置新密码
-								</Text.Heading>
+								</AppHeading>
 								<Text.Paragraph color="muted" className="leading-6">
 									新密码至少 8 位。设置成功后，其他设备需要重新登录。
 								</Text.Paragraph>
