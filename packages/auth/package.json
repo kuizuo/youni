@@ -12,6 +12,7 @@
 	"scripts": {},
 	"dependencies": {
 		"@better-auth/expo": "catalog:",
+		"@better-auth/i18n": "catalog:",
 		"@youni/db": "workspace:*",
 		"@youni/env": "workspace:*",
 		"better-auth": "catalog:",

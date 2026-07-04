@@ -1,4 +1,5 @@
 import { expo } from "@better-auth/expo";
+import { i18n } from "@better-auth/i18n";
 import { createDb } from "@youni/db";
 import * as schema from "@youni/db/schema/auth";
 import { env } from "@youni/env/server";
@@ -41,6 +42,23 @@ const socialProviders = firstGoogleClientId
 			},
 		}
 	: undefined;
+
+const zhAuthErrorTranslations = {
+	CREDENTIAL_ACCOUNT_NOT_FOUND: "邮箱或密码错误",
+	EMAIL_NOT_VERIFIED: "邮箱还未验证",
+	FAILED_TO_CREATE_SESSION: "登录失败，请稍后重试",
+	INVALID_EMAIL: "请输入正确的邮箱",
+	INVALID_EMAIL_OR_PASSWORD: "邮箱或密码错误",
+	INVALID_OTP: "验证码错误或已失效",
+	INVALID_PASSWORD: "密码错误",
+	INVALID_TOKEN: "验证信息无效或已失效",
+	PASSWORD_TOO_SHORT: "密码长度不够",
+	SESSION_EXPIRED: "登录已过期，请重新登录",
+	TOO_MANY_ATTEMPTS: "尝试次数过多，请稍后再试",
+	UNAUTHORIZED: "请先登录",
+	USER_ALREADY_EXISTS: "该邮箱已注册",
+	USER_NOT_FOUND: "用户不存在",
+} satisfies Record<string, string>;
 
 export function createAuth() {
 	const db = createDb();
@@ -129,6 +147,12 @@ export function createAuth() {
 			// },
 		},
 		plugins: [
+			i18n({
+				defaultLocale: "zh",
+				translations: {
+					zh: zhAuthErrorTranslations,
+				},
+			}),
 			adminPlugin({
 				ac: adminAccessControl,
 				adminRoles: [...backofficeUserRoleOptions],

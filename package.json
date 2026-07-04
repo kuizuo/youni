@@ -24,6 +24,7 @@
 			"@ai-sdk/react": "^3.0.3",
 			"@types/react-dom": "^19.2.3",
 			"@better-auth/expo": "1.6.9",
+			"@better-auth/i18n": "1.6.9",
 			"drizzle-orm": "^0.45.1"
 		}
 	},
