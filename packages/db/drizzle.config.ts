@@ -10,7 +10,7 @@ dotenv.config({
 
 export default defineConfig({
 	schema: "./src/schema",
-	out: "./src/d1-migrations",
+	out: "./src/migrations",
 	dialect: "sqlite",
 	driver: "d1-http",
 	dbCredentials: {
