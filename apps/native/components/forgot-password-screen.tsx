@@ -28,6 +28,10 @@ import {
 
 const StyledIonicons = withUniwind(Ionicons);
 const RESEND_COOLDOWN_SECONDS = 60;
+const RATE_LIMIT_MESSAGES = new Set([
+	"Too many attempts",
+	"Too many requests. Please try again later.",
+]);
 
 const forgotPasswordSchema = z.object({
 	email: z.string().trim().min(1, "请输入邮箱").email("请输入正确的邮箱"),
@@ -43,6 +47,18 @@ const resetPasswordSchema = forgotPasswordSchema
 		message: "两次输入的密码不一致",
 		path: ["confirmPassword"],
 	});
+
+function getAuthErrorMessage(message: string | undefined, fallback: string) {
+	if (!message) {
+		return fallback;
+	}
+
+	if (RATE_LIMIT_MESSAGES.has(message)) {
+		return "操作太频繁，请 60 秒后再试";
+	}
+
+	return message;
+}
 
 export default function ForgotPasswordScreen() {
 	const router = useRouter();
@@ -89,8 +105,10 @@ export default function ForgotPasswordScreen() {
 				},
 				{
 					onError(error) {
-						const message =
-							error.error?.message || "重置邮件发送失败，请稍后重试";
+						const message = getAuthErrorMessage(
+							error.error?.message,
+							"重置邮件发送失败，请稍后重试",
+						);
 						setErrorMessage(message);
 						toast.show({
 							variant: "danger",
@@ -153,8 +171,10 @@ export default function ForgotPasswordScreen() {
 				},
 				{
 					onError(error) {
-						const message =
-							error.error?.message || "密码重置失败，请重新获取验证码";
+						const message = getAuthErrorMessage(
+							error.error?.message,
+							"密码重置失败，请重新获取验证码",
+						);
 						setErrorMessage(message);
 						toast.show({
 							variant: "danger",

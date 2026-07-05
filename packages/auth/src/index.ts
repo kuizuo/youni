@@ -7,6 +7,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin as adminPlugin, emailOTP } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
+import { passwordResetOtpRateLimitPlugin } from "./password-reset-otp-rate-limit";
 import {
 	adminAccessControl,
 	adminPermissionRoles,
@@ -134,6 +135,9 @@ export function createAuth() {
 		secret: env.BETTER_AUTH_SECRET,
 		baseURL: env.BETTER_AUTH_URL,
 		advanced: {
+			ipAddress: {
+				ipAddressHeaders: ["cf-connecting-ip", "x-real-ip", "x-forwarded-for"],
+			},
 			defaultCookieAttributes: {
 				sameSite: isProduction ? "none" : "lax",
 				secure: isProduction,
@@ -145,6 +149,21 @@ export function createAuth() {
 			//   enabled: true,
 			//   domain: "<your-workers-subdomain>",
 			// },
+		},
+		rateLimit: {
+			enabled: true,
+			window: 60,
+			max: 100,
+			customRules: {
+				"/email-otp/request-password-reset": {
+					window: 60,
+					max: 3,
+				},
+				"/forget-password/email-otp": {
+					window: 60,
+					max: 3,
+				},
+			},
 		},
 		plugins: [
 			i18n({
@@ -160,6 +179,7 @@ export function createAuth() {
 				defaultRole: "user",
 				roles: adminPermissionRoles,
 			}),
+			passwordResetOtpRateLimitPlugin(db),
 			emailOTP({
 				async sendVerificationOTP({ email, otp, type }) {
 					if (type !== "forget-password") {
