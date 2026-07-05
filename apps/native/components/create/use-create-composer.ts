@@ -1,11 +1,17 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import * as FileSystem from "expo-file-system/legacy";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
+import { Platform } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
-import { uploadNoteImages } from "@/lib/note-image-upload";
+import {
+	type NoteImageUploadAsset,
+	uploadNoteImages,
+} from "@/lib/note-image-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -14,8 +20,13 @@ import { isRequestTimeoutError } from "@/utils/request-timeout";
 type NoteVisibility = "followers" | "private" | "public";
 type PublishSubmitMode = "draft" | "publish";
 export type ComposerImage = {
-	asset?: ImagePicker.ImagePickerAsset;
+	asset?: NoteImageUploadAsset;
+	fileName?: null | string;
+	fileSize?: null | number;
 	id: string;
+	isEdited?: boolean;
+	mimeType?: null | string;
+	originalUri?: string;
 	remoteUrl?: string;
 	uri: string;
 };
@@ -52,6 +63,61 @@ function mergeTopics(...topicGroups: string[][]) {
 	return [...topics];
 }
 
+function isGifAsset(asset: ImagePicker.ImagePickerAsset) {
+	const mimeType = asset.mimeType?.toLowerCase();
+	if (mimeType === "image/gif") return true;
+	return asset.uri.split("?")[0]?.toLowerCase().endsWith(".gif") ?? false;
+}
+
+function imageFileName(asset: ImagePicker.ImagePickerAsset, extension: string) {
+	const rawName =
+		asset.fileName?.split(".").slice(0, -1).join(".") ||
+		asset.assetId ||
+		`note-image-${Date.now()}`;
+	const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, "-");
+	return `${safeName}.${extension}`;
+}
+
+async function createComposerImageFromAsset(
+	asset: ImagePicker.ImagePickerAsset,
+): Promise<ComposerImage> {
+	if (Platform.OS === "web" || isGifAsset(asset)) {
+		return {
+			asset,
+			fileName: asset.fileName,
+			fileSize: asset.fileSize,
+			id: `${asset.assetId ?? asset.uri}-${asset.uri}`,
+			mimeType: asset.mimeType,
+			originalUri: asset.uri,
+			uri: asset.uri,
+		};
+	}
+
+	const converted = await manipulateAsync(asset.uri, [], {
+		compress: 0.92,
+		format: SaveFormat.JPEG,
+	});
+	const info = await FileSystem.getInfoAsync(converted.uri);
+	const fileSize =
+		info.exists && !info.isDirectory ? info.size : asset.fileSize;
+	const fileName = imageFileName(asset, "jpg");
+
+	return {
+		asset: {
+			fileName,
+			fileSize,
+			mimeType: "image/jpeg",
+			uri: converted.uri,
+		},
+		fileName,
+		fileSize,
+		id: `${asset.assetId ?? asset.uri}-${converted.uri}`,
+		mimeType: "image/jpeg",
+		originalUri: asset.uri,
+		uri: converted.uri,
+	};
+}
+
 type UseCreateComposerOptions = {
 	onRequestClose?: () => void;
 };
@@ -73,6 +139,7 @@ export function useCreateComposer({
 	);
 	const [pendingSubmitMode, setPendingSubmitMode] =
 		useState<PublishSubmitMode | null>(null);
+	const [isAddingImages, setIsAddingImages] = useState(false);
 	const [isUploadingImages, setIsUploadingImages] = useState(false);
 	const [hydratedDraftId, setHydratedDraftId] = useState<null | string>(null);
 	const rawDraftId = params.draftId;
@@ -186,6 +253,7 @@ export function useCreateComposer({
 		setImages(
 			(draftQuery.data.images ?? []).map((url) => ({
 				id: url,
+				originalUri: url,
 				remoteUrl: url,
 				uri: url,
 			})),
@@ -210,7 +278,7 @@ export function useCreateComposer({
 
 	const uploadLocalImages = async () => {
 		const localAssets = images.flatMap((image) =>
-			image.remoteUrl || !image.asset ? [] : [image.asset],
+			image.asset ? [image.asset] : [],
 		);
 		if (localAssets.length === 0) {
 			return images.map((image) => image.remoteUrl ?? image.uri);
@@ -221,7 +289,7 @@ export function useCreateComposer({
 			const uploaded = await uploadNoteImages(localAssets);
 			let uploadedIndex = 0;
 			const nextImages = images.map((image) => {
-				if (image.remoteUrl) return image;
+				if (!image.asset) return image;
 				const item = uploaded[uploadedIndex];
 				uploadedIndex += 1;
 				if (!item) {
@@ -229,6 +297,7 @@ export function useCreateComposer({
 				}
 				return {
 					id: item.url,
+					originalUri: image.originalUri ?? image.uri,
 					remoteUrl: item.url,
 					uri: item.url,
 				};
@@ -254,6 +323,7 @@ export function useCreateComposer({
 	const isSubmitting =
 		createMutation.isPending ||
 		updateDraftMutation.isPending ||
+		isAddingImages ||
 		isUploadingImages;
 
 	const submitNote = async (submitMode: PublishSubmitMode) => {
@@ -285,6 +355,7 @@ export function useCreateComposer({
 	};
 
 	const addImage = async () => {
+		if (isAddingImages) return;
 		fireHaptic();
 		const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 		if (!permission.granted) {
@@ -302,34 +373,49 @@ export function useCreateComposer({
 			return;
 		}
 
-		const result = await ImagePicker.launchImageLibraryAsync({
-			allowsEditing: false,
-			allowsMultipleSelection: true,
-			mediaTypes: "images",
-			orderedSelection: true,
-			quality: 0.92,
-			selectionLimit: remaining,
-		});
+		setIsAddingImages(true);
+		try {
+			const result = await ImagePicker.launchImageLibraryAsync({
+				allowsEditing: false,
+				allowsMultipleSelection: true,
+				mediaTypes: "images",
+				orderedSelection: true,
+				preferredAssetRepresentationMode:
+					ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+				quality: 0.92,
+				selectionLimit: remaining,
+				shouldDownloadFromNetwork: true,
+			});
 
-		if (result.canceled) {
-			return;
+			if (result.canceled) {
+				return;
+			}
+
+			const selectedImages = await Promise.all(
+				result.assets.map((asset) => createComposerImageFromAsset(asset)),
+			);
+
+			setImages((current) => [...current, ...selectedImages].slice(0, 9));
+		} catch {
+			toast.show({
+				variant: "danger",
+				label: "图片处理失败",
+				description: "当前图片格式暂时无法处理，请换一张图片。",
+			});
+		} finally {
+			setIsAddingImages(false);
 		}
-
-		setImages((current) =>
-			[
-				...current,
-				...result.assets.map((asset) => ({
-					asset,
-					id: `${asset.assetId ?? asset.uri}-${asset.uri}`,
-					uri: asset.uri,
-				})),
-			].slice(0, 9),
-		);
 	};
 
 	const removeImage = (id: string) => {
 		fireHaptic();
 		setImages((current) => current.filter((item) => item.id !== id));
+	};
+
+	const updateImage = (image: ComposerImage) => {
+		setImages((current) =>
+			current.map((item) => (item.id === image.id ? image : item)),
+		);
 	};
 
 	const setComposerContent = (value: string) => {
@@ -433,6 +519,7 @@ export function useCreateComposer({
 		draftQuery,
 		goBack,
 		images,
+		isAddingImages,
 		isEditingDraft,
 		isSubmitting,
 		isUploadingImages,
@@ -445,6 +532,7 @@ export function useCreateComposer({
 		setContent: setComposerContent,
 		setTitle,
 		title,
+		updateImage,
 		insertMention,
 		toggleTopic,
 		topics,

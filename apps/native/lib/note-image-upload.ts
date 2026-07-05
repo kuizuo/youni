@@ -19,6 +19,13 @@ export type NoteImageUploadResponse = {
 	key: string;
 	url: string;
 };
+export type NoteImageUploadAsset = {
+	file?: ImagePicker.ImagePickerAsset["file"];
+	fileName?: null | string;
+	fileSize?: null | number;
+	mimeType?: null | string;
+	uri: string;
+};
 
 function extensionFromName(value?: null | string) {
 	const cleanValue = value?.split("?")[0]?.split("#")[0];
@@ -26,7 +33,7 @@ function extensionFromName(value?: null | string) {
 	return match?.[1]?.toLowerCase();
 }
 
-function mimeTypeFromAsset(asset: ImagePicker.ImagePickerAsset) {
+function mimeTypeFromAsset(asset: NoteImageUploadAsset) {
 	const explicitType = asset.mimeType?.toLowerCase();
 	if (explicitType) {
 		if (NOTE_IMAGE_MIME_EXTENSIONS.has(explicitType)) {
@@ -47,10 +54,7 @@ function mimeTypeFromAsset(asset: ImagePicker.ImagePickerAsset) {
 	return detectedType ?? "image/jpeg";
 }
 
-function fileNameFromAsset(
-	asset: ImagePicker.ImagePickerAsset,
-	mimeType: string,
-) {
+function fileNameFromAsset(asset: NoteImageUploadAsset, mimeType: string) {
 	const extension = NOTE_IMAGE_MIME_EXTENSIONS.get(mimeType) ?? "jpg";
 	const rawName =
 		asset.fileName?.trim() ||
@@ -96,7 +100,7 @@ async function parseUploadResponse(response: Response) {
 	return items;
 }
 
-export async function uploadNoteImages(assets: ImagePicker.ImagePickerAsset[]) {
+export async function uploadNoteImages(assets: NoteImageUploadAsset[]) {
 	if (assets.length === 0) {
 		return [];
 	}

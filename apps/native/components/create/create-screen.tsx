@@ -18,14 +18,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/social-states";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
+import { useAppToast } from "@/utils/app-toast";
 import { InlineMentionPicker, InlineTopicPicker } from "./create-pickers";
 import { AdvancedOptionsSheet } from "./create-sheets";
 import { ListDivider, MediaTile, SettingsListItem } from "./create-ui";
+import { ImageEditor } from "./image-editor";
 import {
 	LinkedComposerInput,
 	type TextSelection,
 } from "./linked-composer-input";
-import { useCreateComposer } from "./use-create-composer";
+import { type ComposerImage, useCreateComposer } from "./use-create-composer";
 
 const OPTION_ROWS = [
 	{ key: "visibility", label: "公开可见", icon: "lock-open-outline" },
@@ -62,15 +64,25 @@ function findInlineTrigger(
 	};
 }
 
+function isGifImage(image: ComposerImage) {
+	return (
+		image.mimeType?.toLowerCase() === "image/gif" ||
+		image.fileName?.toLowerCase().endsWith(".gif") ||
+		image.uri.split("?")[0]?.toLowerCase().endsWith(".gif")
+	);
+}
+
 export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const defaultForegroundColor = useThemeColor("default-foreground");
 	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
 	const insets = useSafeAreaInsets();
+	const { toast } = useAppToast();
 	const composer = useCreateComposer({ onRequestClose });
 	const contentRef = useRef(composer.content);
 	contentRef.current = composer.content;
 	const [isAdvancedSheetOpen, setIsAdvancedSheetOpen] = useState(false);
+	const [editingImageId, setEditingImageId] = useState<null | string>(null);
 	const [contentSelection, setContentSelection] = useState<TextSelection>({
 		end: 0,
 		start: 0,
@@ -127,6 +139,21 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 		setContentSelection({ start: cursor, end: cursor });
 		setInlineTrigger(null);
 	};
+	const editingImage =
+		composer.images.find((image) => image.id === editingImageId) ?? null;
+
+	const openImageEditor = (image: ComposerImage) => {
+		fireHaptic();
+		if (isGifImage(image)) {
+			toast.show({
+				variant: "warning",
+				label: "暂不支持编辑动图",
+				description: "GIF 可以继续发布，但不能进入图片编辑器。",
+			});
+			return;
+		}
+		setEditingImageId(image.id);
+	};
 
 	if (
 		composer.isEditingDraft &&
@@ -182,13 +209,15 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 								key={image.id}
 								image={image}
 								label={`第 ${index + 1} 张图片`}
-								onPress={() => composer.removeImage(image.id)}
+								onEdit={() => openImageEditor(image)}
+								onRemove={() => composer.removeImage(image.id)}
 							/>
 						))}
 						{composer.images.length < 9 ? (
 							<PressableFeedback
 								accessibilityLabel="添加图片"
 								accessibilityRole="button"
+								isDisabled={composer.isAddingImages}
 								onPress={composer.addImage}
 								className="h-22 w-22 items-center justify-center rounded-xl border border-border bg-content2"
 							>
@@ -316,6 +345,16 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					onAllowCommentChange={composer.setAllowComment}
 					onAllowShareChange={composer.setAllowShare}
 				/>
+				{editingImage ? (
+					<ImageEditor
+						image={editingImage}
+						onCancel={() => setEditingImageId(null)}
+						onSave={(editedImage) => {
+							composer.updateImage(editedImage);
+							setEditingImageId(null);
+						}}
+					/>
+				) : null}
 			</View>
 		</KeyboardAvoidingView>
 	);

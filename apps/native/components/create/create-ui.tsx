@@ -1,5 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { ListGroup, PressableFeedback, Separator, Text } from "heroui-native";
+import {
+	ListGroup,
+	PressableFeedback,
+	Separator,
+	Spinner,
+	Text,
+} from "heroui-native";
+import { useEffect, useState } from "react";
 import { Image, View } from "react-native";
 
 import { fireHaptic } from "@/lib/utils/fire-haptic";
@@ -10,29 +17,72 @@ export type IoniconName = keyof typeof Ionicons.glyphMap;
 export function MediaTile({
 	image,
 	label,
-	onPress,
+	onEdit,
+	onRemove,
 }: {
 	image: ComposerImage;
 	label: string;
-	onPress: () => void;
+	onEdit: () => void;
+	onRemove: () => void;
 }) {
+	const [isLoading, setIsLoading] = useState(true);
+	const [hasError, setHasError] = useState(false);
+
+	useEffect(() => {
+		if (!image.uri) {
+			setIsLoading(false);
+			setHasError(true);
+			return;
+		}
+		setIsLoading(true);
+		setHasError(false);
+	}, [image.uri]);
+
 	return (
-		<PressableFeedback
-			accessibilityLabel="移除图片"
-			accessibilityRole="button"
-			onPress={onPress}
-			className="h-22 w-22 overflow-hidden rounded-xl border border-border bg-content2"
-		>
-			<Image
-				accessibilityLabel={label}
-				source={{ uri: image.uri }}
-				resizeMode="cover"
-				className="h-full w-full"
-			/>
-			<View className="absolute top-1 right-1 size-6 items-center justify-center rounded-full bg-overlay-backdrop">
+		<View className="h-22 w-22">
+			<PressableFeedback
+				accessibilityLabel={`编辑${label}`}
+				accessibilityRole="button"
+				onPress={onEdit}
+				className="h-full w-full overflow-hidden rounded-xl border border-border bg-content2"
+			>
+				<Image
+					accessibilityLabel={label}
+					source={{ uri: image.uri }}
+					resizeMode="cover"
+					onError={() => {
+						setHasError(true);
+						setIsLoading(false);
+					}}
+					onLoad={() => {
+						setHasError(false);
+						setIsLoading(false);
+					}}
+					onLoadEnd={() => setIsLoading(false)}
+					onLoadStart={() => setIsLoading(true)}
+					className="h-full w-full"
+				/>
+				{isLoading ? (
+					<View className="absolute inset-0 items-center justify-center bg-content2">
+						<Spinner size="sm" />
+					</View>
+				) : null}
+				{hasError ? (
+					<View className="absolute inset-0 items-center justify-center bg-content2">
+						<Ionicons name="image-outline" size={24} color="#9ca3af" />
+					</View>
+				) : null}
+			</PressableFeedback>
+			<PressableFeedback
+				accessibilityLabel={`移除${label}`}
+				accessibilityRole="button"
+				hitSlop={8}
+				onPress={onRemove}
+				className="absolute top-1 right-1 z-10 size-6 items-center justify-center rounded-full bg-overlay-backdrop"
+			>
 				<Ionicons name="close" size={14} color="white" />
-			</View>
-		</PressableFeedback>
+			</PressableFeedback>
+		</View>
 	);
 }
 
