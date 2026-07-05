@@ -166,7 +166,10 @@ export default function NotificationListScreen() {
 			} as unknown as Href);
 			return;
 		}
-		if (item.targetType === "note" && (item.noteId || item.targetId)) {
+		if (
+			(item.targetType === "note" || item.targetType === "comment") &&
+			(item.noteId || item.targetId)
+		) {
 			router.push({
 				pathname: "/note/[id]",
 				params: { id: item.noteId ?? item.targetId ?? "" },

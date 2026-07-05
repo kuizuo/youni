@@ -94,10 +94,16 @@ export default function MessagesScreen() {
 	const conversations = useQuery({
 		...orpc.messages.conversations.queryOptions(),
 		enabled: isAuthenticated,
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+		staleTime: 30_000,
 	});
 	const notificationSummary = useQuery({
 		...orpc.notifications.summary.queryOptions(),
 		enabled: isAuthenticated,
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+		staleTime: 30_000,
 	});
 	const items = useMemo(
 		() => (conversations.data ?? []) as ConversationItem[],
@@ -115,6 +121,7 @@ export default function MessagesScreen() {
 	};
 
 	const refreshMessages = async () => {
+		if (!isAuthenticated) return;
 		setIsManuallyRefreshing(true);
 		try {
 			await Promise.all([
@@ -163,14 +170,19 @@ export default function MessagesScreen() {
 				className="mx-auto w-full max-w-xl"
 				data={items}
 				keyExtractor={(item) => item.id}
-				contentInsetAdjustmentBehavior="automatic"
 				showsVerticalScrollIndicator={false}
 				contentContainerClassName="bg-background pb-32"
 				contentContainerStyle={{
 					paddingTop: insets.top + HEADER_HEIGHT + 8,
 				}}
+				scrollIndicatorInsets={{
+					top: insets.top + HEADER_HEIGHT,
+					bottom: 96,
+				}}
 				refreshControl={
 					<RefreshControl
+						enabled={isAuthenticated}
+						progressViewOffset={insets.top + HEADER_HEIGHT}
 						refreshing={isManuallyRefreshing}
 						onRefresh={refreshMessages}
 					/>

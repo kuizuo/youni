@@ -3,7 +3,7 @@ import { createDb } from "@youni/db";
 import { comment, commentLike, note, user } from "@youni/db/schema/index";
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import { activeUserProcedure, publicProcedure } from "../index";
-import { notifyNoteOwner } from "../lib/notifications";
+import { notifyCommentOwner, notifyNoteOwner } from "../lib/notifications";
 import {
 	commentInput,
 	commentRepliesInput,
@@ -95,7 +95,7 @@ async function hydrateComments({
 			replies: withPreviewReplies
 				? await listCommentReplies({
 						parentId: row.id,
-						limit: 2,
+						limit: 1,
 						offset: 0,
 						viewerId,
 					}).then((page) => page.items)
@@ -234,7 +234,11 @@ export const commentsRouter = {
 			const db = createDb();
 			const parentComment = input.parentId
 				? await db
-						.select({ id: comment.id, noteId: comment.noteId })
+						.select({
+							id: comment.id,
+							noteId: comment.noteId,
+							userId: comment.userId,
+						})
 						.from(comment)
 						.where(eq(comment.id, input.parentId))
 						.limit(1)
@@ -274,12 +278,23 @@ export const commentsRouter = {
 					content: input.content,
 				})
 				.returning();
-			await notifyNoteOwner({
-				type: "comment",
-				noteId: input.noteId,
-				actorId: context.session.user.id,
-				content: input.content,
-			});
+			if (parentComment) {
+				await notifyCommentOwner({
+					type: "comment",
+					commentId: parentComment.id,
+					notificationCommentId: created?.id,
+					actorId: context.session.user.id,
+					content: input.content,
+				});
+			} else {
+				await notifyNoteOwner({
+					type: "comment",
+					noteId: input.noteId,
+					commentId: created?.id,
+					actorId: context.session.user.id,
+					content: input.content,
+				});
+			}
 			return created;
 		}),
 
@@ -312,6 +327,11 @@ export const commentsRouter = {
 				await db
 					.insert(commentLike)
 					.values({ commentId: input.id, userId: context.session.user.id });
+				await notifyCommentOwner({
+					type: "like",
+					commentId: input.id,
+					actorId: context.session.user.id,
+				});
 			} else {
 				await db.delete(commentLike).where(whereClause);
 			}

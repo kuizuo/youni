@@ -1,5 +1,6 @@
 import { createDb } from "@youni/db";
 import {
+	comment,
 	note,
 	notification,
 	notificationPushToken,
@@ -105,11 +106,13 @@ export async function createNotification(input: CreateNotificationInput) {
 
 export async function notifyNoteOwner({
 	actorId,
+	commentId,
 	content,
 	noteId,
 	type,
 }: {
 	actorId: string;
+	commentId?: string;
 	content?: string;
 	noteId: string;
 	type: Extract<NotificationType, "collect" | "comment" | "like">;
@@ -149,8 +152,54 @@ export async function notifyNoteOwner({
 		category: "activity",
 		title: titleByType[type],
 		body,
-		targetType: "note",
-		targetId: row.noteId,
+		targetType: type === "comment" ? "comment" : "note",
+		targetId: type === "comment" ? (commentId ?? row.noteId) : row.noteId,
+		noteId: row.noteId,
+	});
+}
+
+export async function notifyCommentOwner({
+	actorId,
+	commentId,
+	content,
+	notificationCommentId,
+	type,
+}: {
+	actorId: string;
+	commentId: string;
+	content?: string;
+	notificationCommentId?: string;
+	type: Extract<NotificationType, "comment" | "like">;
+}) {
+	const db = createDb();
+	const [row] = await db
+		.select({
+			actorName: user.name,
+			commentContent: comment.content,
+			noteId: comment.noteId,
+			recipientId: comment.userId,
+		})
+		.from(comment)
+		.innerJoin(user, eq(user.id, actorId))
+		.where(eq(comment.id, commentId))
+		.limit(1);
+
+	if (!row || row.recipientId === actorId) {
+		return null;
+	}
+
+	return createNotification({
+		recipientId: row.recipientId,
+		actorId,
+		type,
+		category: "activity",
+		title:
+			type === "comment"
+				? `${row.actorName} 回复了你的评论`
+				: `${row.actorName} 赞了你的评论`,
+		body: content || row.commentContent,
+		targetType: "comment",
+		targetId: notificationCommentId ?? commentId,
 		noteId: row.noteId,
 	});
 }

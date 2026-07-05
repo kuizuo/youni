@@ -37,6 +37,9 @@ const allowedCorsOrigins = new Set([
 ]);
 const avatarPrefix = "avatar/";
 const avatarMaxSize = 2 * 1024 * 1024;
+const noteImagePrefix = "note-images/";
+const noteImageMaxSize = 8 * 1024 * 1024;
+const noteImageMaxCount = 9;
 const avatarContentTypes = new Map([
 	["image/jpeg", "jpg"],
 	["image/jpg", "jpg"],
@@ -44,6 +47,7 @@ const avatarContentTypes = new Map([
 	["image/webp", "webp"],
 	["image/gif", "gif"],
 ]);
+const noteImageContentTypes = avatarContentTypes;
 
 function getProcedureErrorStatus(error: unknown) {
 	if (error instanceof ORPCError) {
@@ -188,6 +192,62 @@ async function uploadAvatarFromRequest(c: HonoContext) {
 	});
 }
 
+function getBodyFiles(body: Record<string, unknown>) {
+	return Object.values(body).flatMap((value) => {
+		if (value instanceof File) return [value];
+		if (Array.isArray(value)) {
+			return value.filter((item): item is File => item instanceof File);
+		}
+		return [];
+	});
+}
+
+async function uploadNoteImagesFromRequest(c: HonoContext) {
+	if (!env.YOUNI_BUCKET) {
+		return c.json({ message: "图片存储尚未配置" }, 503);
+	}
+
+	const body = await c.req.parseBody({ all: true });
+	const files = getBodyFiles(body);
+
+	if (files.length === 0) {
+		return c.json({ message: "请选择图片文件" }, 400);
+	}
+
+	if (files.length > noteImageMaxCount) {
+		return c.json({ message: `最多只能上传 ${noteImageMaxCount} 张图片` }, 400);
+	}
+
+	const uploaded = [];
+	for (const file of files) {
+		const extension = noteImageContentTypes.get(file.type);
+		if (!extension) {
+			return c.json({ message: "图片仅支持 JPG、PNG、WebP 或 GIF" }, 400);
+		}
+
+		if (file.size > noteImageMaxSize) {
+			return c.json({ message: "单张图片不能超过 8MB" }, 400);
+		}
+
+		const fileName = `${crypto.randomUUID()}.${extension}`;
+		const key = `${noteImagePrefix}${fileName}`;
+
+		await env.YOUNI_BUCKET.put(key, file.stream(), {
+			httpMetadata: {
+				cacheControl: "public, max-age=31536000, immutable",
+				contentType: file.type,
+			},
+		});
+
+		uploaded.push({
+			key,
+			url: new URL(`/uploads/note-images/${fileName}`, c.req.url).toString(),
+		});
+	}
+
+	return c.json({ items: uploaded });
+}
+
 app.post("/admin/uploads/avatar", async (c) => {
 	const account = await assertBackofficeAccess(c);
 	if (!account) {
@@ -206,6 +266,15 @@ app.post("/uploads/avatar", async (c) => {
 	return uploadAvatarFromRequest(c);
 });
 
+app.post("/uploads/note-images", async (c) => {
+	const account = await assertActiveUploadAccess(c);
+	if (!account) {
+		return c.json({ message: "请先登录后再上传图片" }, 401);
+	}
+
+	return uploadNoteImagesFromRequest(c);
+});
+
 app.get("/uploads/avatar/:fileName", async (c) => {
 	if (!env.YOUNI_BUCKET) {
 		return c.notFound();
@@ -217,6 +286,29 @@ app.get("/uploads/avatar/:fileName", async (c) => {
 	}
 
 	const object = await env.YOUNI_BUCKET.get(`${avatarPrefix}${fileName}`);
+	if (!object) {
+		return c.notFound();
+	}
+
+	const headers = new Headers();
+	object.writeHttpMetadata(headers);
+	headers.set("etag", object.httpEtag);
+	headers.set("cache-control", "public, max-age=31536000, immutable");
+
+	return new Response(object.body, { headers });
+});
+
+app.get("/uploads/note-images/:fileName", async (c) => {
+	if (!env.YOUNI_BUCKET) {
+		return c.notFound();
+	}
+
+	const fileName = c.req.param("fileName");
+	if (!/^[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(fileName)) {
+		return c.notFound();
+	}
+
+	const object = await env.YOUNI_BUCKET.get(`${noteImagePrefix}${fileName}`);
 	if (!object) {
 		return c.notFound();
 	}
