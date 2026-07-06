@@ -1,6 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Button, Text, useThemeColor } from "heroui-native";
+import { Button, useThemeColor } from "heroui-native";
 import { View } from "react-native";
+
+import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
 
 import type { ConnectionType } from "./types";
 
@@ -20,46 +21,34 @@ export function ConnectionsHeader({
 	const mutedColor = useThemeColor("muted");
 
 	return (
-		<View
-			className="bg-background px-4 pb-2"
-			style={{ paddingTop: topInset + 8 }}
-		>
-			<View className="h-12 flex-row items-center gap-3">
-				<Button
-					isIconOnly
-					size="sm"
-					variant="ghost"
-					className="rounded-full"
-					feedbackVariant="scale-ripple"
+		<AppHeader
+			title={title}
+			topInset={topInset}
+			left={
+				<AppHeaderIconButton
 					accessibilityLabel="返回"
+					color={mutedColor}
+					icon="chevron-back"
 					onPress={onBack}
-				>
-					<Ionicons name="chevron-back" size={24} color={mutedColor} />
-				</Button>
-				<View className="min-w-0 flex-1 items-center">
-					<Text.Paragraph
-						weight="bold"
-						numberOfLines={1}
-						style={{ lineHeight: 22, textAlign: "center" }}
-					>
-						{title}
-					</Text.Paragraph>
+				/>
+			}
+			after={
+				<View className="mx-auto w-full max-w-xl pb-2">
+					<View className="w-40 flex-row self-center rounded-full bg-content2 p-0.5">
+						<SegmentButton
+							isActive={activeType === "following"}
+							label="关注"
+							onPress={() => onTypeChange("following")}
+						/>
+						<SegmentButton
+							isActive={activeType === "followers"}
+							label="粉丝"
+							onPress={() => onTypeChange("followers")}
+						/>
+					</View>
 				</View>
-				<View className="size-9" />
-			</View>
-			<View className="mt-2 w-40 flex-row self-center rounded-full bg-content2 p-0.5">
-				<SegmentButton
-					isActive={activeType === "following"}
-					label="关注"
-					onPress={() => onTypeChange("following")}
-				/>
-				<SegmentButton
-					isActive={activeType === "followers"}
-					label="粉丝"
-					onPress={() => onTypeChange("followers")}
-				/>
-			</View>
-		</View>
+			}
+		/>
 	);
 }
 

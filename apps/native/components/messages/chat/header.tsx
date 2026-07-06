@@ -1,8 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Avatar, Button, Text, useThemeColor } from "heroui-native";
-import { View } from "react-native";
+import { Avatar, useThemeColor } from "heroui-native";
 
-import { AppSeparator } from "@/components/shared/app-separator";
+import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
 
 import type { ChatPeer } from "./types";
 
@@ -21,54 +19,38 @@ export function ChatHeader({
 	const mutedColor = useThemeColor("muted");
 
 	return (
-		<View
-			className="bg-background px-4 pb-3"
-			style={{ paddingTop: topInset + 8 }}
-		>
-			<View className="h-12 flex-row items-center gap-3">
-				<Button
-					isIconOnly
-					size="sm"
-					variant="ghost"
-					className="rounded-full"
-					feedbackVariant="scale-ripple"
+		<AppHeader
+			variant="leading"
+			title={peer?.name ?? "私信"}
+			subtitle={peer?.handle ? `@${peer.handle}` : "实时同步中"}
+			topInset={topInset}
+			showSeparator
+			left={
+				<AppHeaderIconButton
 					accessibilityLabel="返回"
+					color={mutedColor}
+					icon="chevron-back"
 					onPress={onBack}
-				>
-					<Ionicons name="chevron-back" size={24} color={mutedColor} />
-				</Button>
-				{peer ? (
+				/>
+			}
+			beforeTitle={
+				peer ? (
 					<Avatar size="sm" alt={peer.name}>
 						{peer.image ? <Avatar.Image source={{ uri: peer.image }} /> : null}
 						<Avatar.Fallback>{peer.name.slice(0, 1)}</Avatar.Fallback>
 					</Avatar>
-				) : null}
-				<View className="min-w-0 flex-1">
-					<Text.Paragraph weight="bold" numberOfLines={1}>
-						{peer?.name ?? "私信"}
-					</Text.Paragraph>
-					<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
-						{peer?.handle ? `@${peer.handle}` : "实时同步中"}
-					</Text.Paragraph>
-				</View>
-				{peer ? (
-					<Button
-						isIconOnly
-						size="sm"
-						variant="ghost"
-						className="rounded-full"
+				) : null
+			}
+			right={
+				peer ? (
+					<AppHeaderIconButton
 						accessibilityLabel="更多"
+						color={foregroundColor}
+						icon="ellipsis-horizontal"
 						onPress={onOpenSettings}
-					>
-						<Ionicons
-							name="ellipsis-horizontal"
-							size={24}
-							color={foregroundColor}
-						/>
-					</Button>
-				) : null}
-			</View>
-			<AppSeparator className="-mx-4 mt-3" />
-		</View>
+					/>
+				) : null
+			}
+		/>
 	);
 }

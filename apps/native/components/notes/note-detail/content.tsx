@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { Image, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 import { AppHeading } from "@/components/shared/app-heading";
 import { formatRelativeTime } from "@/utils/format";
 
@@ -27,14 +27,18 @@ export function SimpleTopBar({ onBack }: { onBack: () => void }) {
 				<Button
 					isIconOnly
 					variant="ghost"
-					className="h-12 w-12 rounded-full"
+					className="h-11 w-11 rounded-full"
 					feedbackVariant="scale-ripple"
 					accessibilityLabel="返回"
 					onPress={onBack}
 				>
-					<Ionicons name="chevron-back" size={28} color={mutedColor} />
+					<Ionicons
+						name="chevron-back"
+						size={APP_HEADER_ICON_SIZE}
+						color={mutedColor}
+					/>
 				</Button>
-				<View className="h-12 w-12" />
+				<View className="h-11 w-11" />
 			</View>
 		</View>
 	);
@@ -71,12 +75,16 @@ export function AuthorTopBar({
 				<Button
 					isIconOnly
 					variant="ghost"
-					className="h-12 w-12 rounded-full"
+					className="h-11 w-11 rounded-full"
 					feedbackVariant="scale-ripple"
 					accessibilityLabel="返回"
 					onPress={onBack}
 				>
-					<Ionicons name="chevron-back" size={28} color={mutedColor} />
+					<Ionicons
+						name="chevron-back"
+						size={APP_HEADER_ICON_SIZE}
+						color={mutedColor}
+					/>
 				</Button>
 				<PressableFeedback
 					onPress={onOpenAuthor}

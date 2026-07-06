@@ -1,8 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Button, PressableFeedback, useThemeColor } from "heroui-native";
+import { PressableFeedback, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 
-import { AppHeading } from "@/components/shared/app-heading";
+import {
+	APP_HEADER_HEIGHT,
+	APP_HEADER_ICON_SIZE,
+	APP_HEADER_TITLE_FONT_SIZE,
+	AppHeader,
+	AppHeaderIconButton,
+} from "@/components/shared/app-header";
 
 import { HOME_TABS, type HomeTab } from "./types";
 
@@ -21,56 +26,64 @@ export function HomeTopBar({
 	const foregroundColor = useThemeColor("foreground");
 
 	return (
-		<View
-			className="bg-background px-2 pb-3"
-			style={{ paddingTop: Math.max(topInset, 8) }}
-		>
-			<View className="mx-auto h-14 w-full max-w-xl flex-row items-center justify-between">
-				<View className="w-12" />
+		<AppHeader
+			topInset={topInset}
+			center={
 				<View className="flex-row items-center gap-9">
-					{HOME_TABS.map((item) => {
-						const active = item.id === activeTab;
-						return (
-							<PressableFeedback
-								key={item.id}
-								accessibilityRole="tab"
-								accessibilityState={active ? { selected: true } : undefined}
-								className="h-14 items-center justify-center px-1"
-								onPress={() => onTabChange(item.id)}
-							>
-								<AppHeading
-									type="h4"
-									weight={active ? "bold" : "normal"}
-									className={active ? "text-foreground" : "text-muted"}
-								>
-									{item.label}
-								</AppHeading>
-								<View
-									className={
-										active
-											? "mt-1 h-1 w-8 rounded-full bg-accent"
-											: "mt-1 h-1 w-8 rounded-full bg-transparent"
-									}
-								/>
-							</PressableFeedback>
-						);
-					})}
+					{HOME_TABS.map((item) => (
+						<HomeTabButton
+							key={item.id}
+							isActive={item.id === activeTab}
+							label={item.label}
+							onPress={() => onTabChange(item.id)}
+						/>
+					))}
 				</View>
-				<Button
-					isIconOnly
-					variant="ghost"
-					className="h-12 w-12 rounded-full"
-					feedbackVariant="scale-ripple"
+			}
+			right={
+				<AppHeaderIconButton
 					accessibilityLabel="搜索"
+					color={activeTab === "discover" ? foregroundColor : mutedColor}
+					icon="search-outline"
+					iconSize={APP_HEADER_ICON_SIZE}
 					onPress={onSearch}
-				>
-					<Ionicons
-						name="search-outline"
-						size={30}
-						color={activeTab === "discover" ? foregroundColor : mutedColor}
-					/>
-				</Button>
-			</View>
-		</View>
+				/>
+			}
+		/>
+	);
+}
+
+function HomeTabButton({
+	isActive,
+	label,
+	onPress,
+}: {
+	isActive: boolean;
+	label: string;
+	onPress: () => void;
+}) {
+	return (
+		<PressableFeedback
+			accessibilityRole="tab"
+			accessibilityState={isActive ? { selected: true } : undefined}
+			className="items-center justify-center px-1"
+			style={{ height: APP_HEADER_HEIGHT }}
+			onPress={onPress}
+		>
+			<Text.Paragraph
+				weight={isActive ? "bold" : "normal"}
+				className={isActive ? "text-foreground" : "text-muted"}
+				style={{ fontSize: APP_HEADER_TITLE_FONT_SIZE }}
+			>
+				{label}
+			</Text.Paragraph>
+			<View
+				className={
+					isActive
+						? "mt-1 h-1 w-8 rounded-full bg-accent"
+						: "mt-1 h-1 w-8 rounded-full bg-transparent"
+				}
+			/>
+		</PressableFeedback>
 	);
 }

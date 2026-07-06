@@ -1,7 +1,8 @@
 import { NOTIFICATION_ICON_COLORS } from "@/components/messages/notification-colors";
+import { APP_HEADER_HEIGHT } from "@/components/shared/app-header";
 import type { NotificationShortcutConfig } from "./types";
 
-export const HEADER_HEIGHT = 64;
+export const HEADER_HEIGHT = APP_HEADER_HEIGHT;
 
 export const NOTIFICATION_SHORTCUTS = [
 	{

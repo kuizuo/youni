@@ -5,6 +5,7 @@ import { Button, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
 import { AppHeading } from "@/components/shared/app-heading";
 import { getRouteParam } from "@/utils/route-params";
 
@@ -46,22 +47,19 @@ export default function MissingTargetScreen() {
 	};
 
 	return (
-		<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-			<View className="mx-auto w-full max-w-xl px-4">
-				<View className="h-14 justify-center">
-					<Button
-						isIconOnly
-						size="sm"
-						variant="ghost"
-						className="rounded-full"
-						feedbackVariant="scale-ripple"
+		<View className="flex-1 bg-background">
+			<AppHeader
+				topInset={insets.top}
+				left={
+					<AppHeaderIconButton
 						accessibilityLabel="返回"
+						color={mutedColor}
+						icon="chevron-back"
 						onPress={goBack}
-					>
-						<Ionicons name="chevron-back" size={24} color={mutedColor} />
-					</Button>
-				</View>
-
+					/>
+				}
+			/>
+			<View className="mx-auto w-full max-w-xl px-4">
 				<View className="min-h-[70vh] items-center justify-center gap-6 px-4">
 					<View className="items-center gap-3">
 						<View className="size-14 items-center justify-center rounded-full bg-content2">

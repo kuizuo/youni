@@ -1,6 +1,7 @@
 import { Button, PressableFeedback, Spinner, Text } from "heroui-native";
 import { ScrollView, View } from "react-native";
 
+import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 import { AppSeparator } from "@/components/shared/app-separator";
 import { GravityIcon, type GravityIconName } from "./gravity-icon";
 import type { CropRatio, EditorTool, ToolDefinition } from "./types";
@@ -60,11 +61,11 @@ export function EditorTopBar({
 					hitSlop={10}
 					isDisabled={isApplyingTool}
 					onPress={onCancelToolChanges}
-					className={`size-10 items-center justify-center rounded-full ${
+					className={`h-11 w-11 items-center justify-center rounded-full ${
 						isApplyingTool ? "bg-white/5 opacity-40" : "bg-white/10"
 					}`}
 				>
-					<GravityIcon name="xmark" size={23} color="white" />
+					<GravityIcon name="xmark" size={APP_HEADER_ICON_SIZE} color="white" />
 				</PressableFeedback>
 				<PressableFeedback
 					accessibilityLabel="确认本次修改"
@@ -72,14 +73,18 @@ export function EditorTopBar({
 					hitSlop={10}
 					isDisabled={isApplyingTool}
 					onPress={onConfirmToolChanges}
-					className={`size-10 items-center justify-center rounded-full ${
+					className={`h-11 w-11 items-center justify-center rounded-full ${
 						isApplyingTool ? "bg-white/60 opacity-70" : "bg-white"
 					}`}
 				>
 					{isApplyingTool ? (
 						<Spinner size="sm" />
 					) : (
-						<GravityIcon name="check" size={23} color="black" />
+						<GravityIcon
+							name="check"
+							size={APP_HEADER_ICON_SIZE}
+							color="black"
+						/>
 					)}
 				</PressableFeedback>
 			</View>
@@ -93,9 +98,13 @@ export function EditorTopBar({
 				accessibilityRole="button"
 				hitSlop={10}
 				onPress={onCancel}
-				className="size-10 items-center justify-center rounded-full"
+				className="h-11 w-11 items-center justify-center rounded-full"
 			>
-				<GravityIcon name="chevron-left" size={28} color="white" />
+				<GravityIcon
+					name="chevron-left"
+					size={APP_HEADER_ICON_SIZE}
+					color="white"
+				/>
 			</PressableFeedback>
 			<View className="flex-row items-center gap-2">
 				<IconActionButton

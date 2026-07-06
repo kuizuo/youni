@@ -10,6 +10,7 @@ import { type StyleProp, View, type ViewStyle } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { PROFILE_HERO_COLOR } from "@/components/profile/profile-tabs";
+import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 
 export function MeProfileHeader({
 	avatarInitial,
@@ -245,15 +246,14 @@ function HeaderIconButton({
 	return (
 		<Button
 			isIconOnly
-			size="sm"
 			variant="ghost"
-			className="rounded-full bg-black/20"
+			className="h-11 w-11 rounded-full bg-black/20"
 			feedbackVariant="scale-ripple"
 			accessibilityLabel={accessibilityLabel}
 			isDisabled={isDisabled}
 			onPress={onPress}
 		>
-			<Ionicons name={icon} size={23} color="#ffffff" />
+			<Ionicons name={icon} size={APP_HEADER_ICON_SIZE} color="#ffffff" />
 		</Button>
 	);
 }

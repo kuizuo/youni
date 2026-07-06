@@ -12,6 +12,7 @@ import { CameraPermissionState } from "@/components/messages/scan/permission-sta
 import { ScanFrame } from "@/components/messages/scan/scan-frame";
 import { ScanOverlay } from "@/components/messages/scan/scan-overlay";
 import { getUserIdFromCode } from "@/components/messages/scan/utils";
+import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 import { AppHeading } from "@/components/shared/app-heading";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
@@ -70,17 +71,21 @@ export default function ScanScreen() {
 						<Button
 							isIconOnly
 							variant="ghost"
-							className="rounded-full"
+							className="h-11 w-11 rounded-full"
 							feedbackVariant="scale-ripple"
 							accessibilityLabel="返回"
 							onPress={() => router.back()}
 						>
-							<Ionicons name="chevron-back" size={28} color="#ffffff" />
+							<Ionicons
+								name="chevron-back"
+								size={APP_HEADER_ICON_SIZE}
+								color="#ffffff"
+							/>
 						</Button>
 						<AppHeading type="h2" style={{ color: "#ffffff" }}>
 							扫描二维码
 						</AppHeading>
-						<View className="size-10" />
+						<View className="h-11 w-11" />
 					</View>
 
 					<View className="flex-1 justify-center px-8">

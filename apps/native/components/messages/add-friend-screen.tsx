@@ -14,7 +14,7 @@ import { ScrollView, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppSeparator } from "@/components/shared/app-separator";
+import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
 import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { getLoginHref } from "@/lib/auth-navigation";
@@ -57,41 +57,29 @@ export default function AddFriendScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			<View
-				className="bg-background px-4 pb-3"
-				style={{ paddingTop: insets.top + 8 }}
-			>
-				<View className="h-12 flex-row items-center gap-3">
-					<Button
-						isIconOnly
-						size="sm"
-						variant="ghost"
-						className="rounded-full"
-						feedbackVariant="scale-ripple"
+			<AppHeader
+				variant="leading"
+				title="添加好友"
+				subtitle="展示二维码，让朋友扫码关注你"
+				topInset={insets.top}
+				showSeparator
+				left={
+					<AppHeaderIconButton
 						accessibilityLabel="返回"
+						color={mutedColor}
+						icon="chevron-back"
 						onPress={() => router.back()}
-					>
-						<Ionicons name="chevron-back" size={24} color={mutedColor} />
-					</Button>
-					<View className="min-w-0 flex-1">
-						<Text.Paragraph weight="bold">添加好友</Text.Paragraph>
-						<Text.Paragraph type="body-xs" color="muted">
-							展示二维码，让朋友扫码关注你
-						</Text.Paragraph>
-					</View>
-					<Button
-						isIconOnly
-						size="sm"
-						variant="ghost"
-						className="rounded-full"
+					/>
+				}
+				right={
+					<AppHeaderIconButton
 						accessibilityLabel="扫一扫"
+						color={foregroundColor}
+						icon="scan-outline"
 						onPress={() => router.push("/scan" as Href)}
-					>
-						<Ionicons name="scan-outline" size={22} color={foregroundColor} />
-					</Button>
-				</View>
-				<AppSeparator className="-mx-4 mt-3" />
-			</View>
+					/>
+				}
+			/>
 
 			<ScrollView
 				className="flex-1"

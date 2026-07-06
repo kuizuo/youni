@@ -11,6 +11,7 @@ import {
 	SEARCH_TABS,
 	type SearchTabKey,
 } from "@/components/search/search-utils";
+import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 import { AppSeparator } from "@/components/shared/app-separator";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
@@ -54,7 +55,11 @@ export function SearchHeader({
 					accessibilityLabel="返回"
 					onPress={onBack}
 				>
-					<Ionicons name="chevron-back" size={24} color={foregroundColor} />
+					<Ionicons
+						name="chevron-back"
+						size={APP_HEADER_ICON_SIZE}
+						color={foregroundColor}
+					/>
 				</Button>
 
 				<SearchField
