@@ -1,30 +1,23 @@
-import { Ionicons } from "@expo/vector-icons";
-import {
-	Avatar,
-	Button,
-	cn,
-	PressableFeedback,
-	Text,
-	useThemeColor,
-} from "heroui-native";
+import { Avatar, Button, cn, PressableFeedback, Text } from "heroui-native";
 import { View } from "react-native";
 
-import type { ConnectionUser } from "./types";
+import type { ConnectionType, ConnectionUser } from "./types";
 
 export function ConnectionRow({
+	activeType,
 	currentUserId,
 	isPending,
 	item,
 	onOpenUser,
 	onToggleFollow,
 }: {
+	activeType: ConnectionType;
 	currentUserId?: string;
 	isPending: boolean;
 	item: ConnectionUser;
 	onOpenUser: (id: string) => void;
 	onToggleFollow: (item: ConnectionUser) => void;
 }) {
-	const mutedColor = useThemeColor("muted");
 	const isSelf = currentUserId === item.id;
 
 	const openUser = () => {
@@ -56,37 +49,34 @@ export function ConnectionRow({
 					{item.name}
 				</Text.Paragraph>
 				<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
-					{getConnectionSummary(item)}
+					{getConnectionSummary(item, activeType)}
 				</Text.Paragraph>
 			</View>
 			{isSelf ? null : (
 				<Button
 					size="sm"
-					variant={item.isFollowing ? "secondary" : "primary"}
+					variant={item.isFollowing ? "outline" : "primary"}
 					className={cn("rounded-full px-4", isPending && "opacity-70")}
 					feedbackVariant="scale-ripple"
 					isDisabled={isPending}
 					onPress={toggleFollow}
 				>
-					<Ionicons
-						name={item.isFollowing ? "checkmark-outline" : "person-add-outline"}
-						size={15}
-						color={mutedColor}
-					/>
-					<Button.Label>{item.isFollowing ? "已关注" : "关注"}</Button.Label>
+					<Button.Label>
+						{item.isFollowing ? "已关注" : "关注"}
+					</Button.Label>
 				</Button>
 			)}
 		</PressableFeedback>
 	);
 }
 
-function getConnectionSummary(item: ConnectionUser) {
-	const stats = [
-		item.noteCount ? `笔记 ${item.noteCount}` : null,
-		item.followerCount ? `粉丝 ${item.followerCount}` : null,
-	]
-		.filter(Boolean)
-		.join(" · ");
+function getConnectionSummary(
+	item: ConnectionUser,
+	activeType: ConnectionType,
+) {
+	if (activeType === "following") {
+		return item.bio?.trim() || "暂无简介";
+	}
 
-	return stats || item.bio || (item.handle ? `@${item.handle}` : item.email);
+	return `笔记 ${item.noteCount} · 粉丝 ${item.followerCount}`;
 }

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { FlatList, RefreshControl, View } from "react-native";
+import { Alert, FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ListSeparator } from "@/components/shared/app-separator";
@@ -50,7 +50,7 @@ export default function UserConnectionsScreen() {
 		socialActions.goTo({ type: "user", id });
 	};
 
-	const toggleFollow = (item: ConnectionUser) => {
+	const runToggleFollow = (item: ConnectionUser) => {
 		if (socialActions.currentUserId === item.id) return;
 		setPendingFollowId(item.id);
 		const started = socialActions.toggleFollow(
@@ -66,6 +66,22 @@ export default function UserConnectionsScreen() {
 		if (!started) {
 			setPendingFollowId(null);
 		}
+	};
+
+	const toggleFollow = (item: ConnectionUser) => {
+		if (!item.isFollowing) {
+			runToggleFollow(item);
+			return;
+		}
+
+		Alert.alert("取消关注", `确定不再关注 ${item.name} 吗？`, [
+			{ text: "继续关注", style: "cancel" },
+			{
+				text: "取消关注",
+				style: "destructive",
+				onPress: () => runToggleFollow(item),
+			},
+		]);
 	};
 
 	return (
@@ -84,14 +100,9 @@ export default function UserConnectionsScreen() {
 				contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
 				data={items}
 				keyExtractor={(item) => item.id}
-				refreshControl={
-					<RefreshControl
-						refreshing={connections.isRefetching}
-						onRefresh={() => connections.refetch()}
-					/>
-				}
 				renderItem={({ item }) => (
 					<ConnectionRow
+						activeType={activeType}
 						currentUserId={socialActions.currentUserId}
 						isPending={pendingFollowId === item.id}
 						item={item}

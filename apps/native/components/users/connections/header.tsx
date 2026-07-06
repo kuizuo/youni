@@ -2,8 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 
-import { AppSeparator } from "@/components/shared/app-separator";
-
 import type { ConnectionType } from "./types";
 
 export function ConnectionsHeader({
@@ -23,7 +21,7 @@ export function ConnectionsHeader({
 
 	return (
 		<View
-			className="bg-background px-4 pb-3"
+			className="bg-background px-4 pb-2"
 			style={{ paddingTop: topInset + 8 }}
 		>
 			<View className="h-12 flex-row items-center gap-3">
@@ -38,16 +36,18 @@ export function ConnectionsHeader({
 				>
 					<Ionicons name="chevron-back" size={24} color={mutedColor} />
 				</Button>
-				<View className="min-w-0 flex-1">
-					<Text.Paragraph weight="bold" numberOfLines={1}>
+				<View className="min-w-0 flex-1 items-center">
+					<Text.Paragraph
+						weight="bold"
+						numberOfLines={1}
+						style={{ lineHeight: 22, textAlign: "center" }}
+					>
 						{title}
 					</Text.Paragraph>
-					<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
-						关注与粉丝
-					</Text.Paragraph>
 				</View>
+				<View className="size-9" />
 			</View>
-			<View className="mt-3 flex-row rounded-full bg-content2 p-1">
+			<View className="mt-2 w-40 flex-row self-center rounded-full bg-content2 p-0.5">
 				<SegmentButton
 					isActive={activeType === "following"}
 					label="关注"
@@ -59,7 +59,6 @@ export function ConnectionsHeader({
 					onPress={() => onTypeChange("followers")}
 				/>
 			</View>
-			<AppSeparator className="-mx-4 mt-3" />
 		</View>
 	);
 }
@@ -77,11 +76,11 @@ function SegmentButton({
 		<Button
 			size="sm"
 			variant={isActive ? "primary" : "ghost"}
-			className="h-9 flex-1 rounded-full"
+			className="h-7 flex-1 rounded-full px-2"
 			feedbackVariant="scale-ripple"
 			onPress={onPress}
 		>
-			<Button.Label>{label}</Button.Label>
+			<Button.Label className="text-xs">{label}</Button.Label>
 		</Button>
 	);
 }
