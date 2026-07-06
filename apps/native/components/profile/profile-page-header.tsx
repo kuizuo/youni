@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppSeparator } from "@/components/shared/app-separator";
+
 export function ProfilePageHeader({
 	action,
 	subtitle,
@@ -20,7 +22,7 @@ export function ProfilePageHeader({
 
 	return (
 		<View
-			className="border-border/70 border-b bg-background px-4 pb-3"
+			className="bg-background px-4 pb-3"
 			style={{ paddingTop: insets.top + 8 }}
 		>
 			<View className="h-12 flex-row items-center gap-3">
@@ -47,6 +49,7 @@ export function ProfilePageHeader({
 				</View>
 				{action}
 			</View>
+			<AppSeparator className="-mx-4 mt-3" />
 		</View>
 	);
 }

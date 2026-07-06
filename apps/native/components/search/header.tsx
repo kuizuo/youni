@@ -7,11 +7,11 @@ import {
 	useThemeColor,
 } from "heroui-native";
 import { View } from "react-native";
-
 import {
 	SEARCH_TABS,
 	type SearchTabKey,
 } from "@/components/search/search-utils";
+import { AppSeparator } from "@/components/shared/app-separator";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
 export function SearchHeader({
@@ -42,7 +42,7 @@ export function SearchHeader({
 
 	return (
 		<View
-			className="mx-auto w-full max-w-xl border-border border-b bg-background px-3 pb-0"
+			className="mx-auto w-full max-w-xl bg-background px-3 pb-0"
 			style={{ paddingTop: Math.max(topInset, 8) + 6 }}
 		>
 			<View className="flex-row items-center gap-2 pb-3">
@@ -96,6 +96,7 @@ export function SearchHeader({
 			{hasActiveSearch ? (
 				<SearchTabs activeTab={activeTab} onChange={onChangeTab} />
 			) : null}
+			<AppSeparator className="-mx-3" />
 		</View>
 	);
 }

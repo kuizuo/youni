@@ -4,7 +4,6 @@ import {
 	Avatar,
 	Button,
 	PressableFeedback,
-	Separator,
 	Spinner,
 	Text,
 	useThemeColor,
@@ -12,6 +11,7 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 
+import { AppSeparator } from "@/components/shared/app-separator";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { formatRelativeTime } from "@/utils/format";
 import { orpc } from "@/utils/orpc";
@@ -33,7 +33,7 @@ export function CommentSectionHeader({
 
 	return (
 		<View>
-			<Separator />
+			<AppSeparator />
 			<View className="gap-4 px-4 pt-5 pb-4">
 				<View className="flex-row items-center justify-between gap-4">
 					<View className="min-w-0 flex-1 flex-row items-baseline gap-2">

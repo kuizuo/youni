@@ -22,7 +22,7 @@ export function ConversationRow({ item }: { item: ConversationItem }) {
 		<PressableFeedback
 			accessibilityRole="button"
 			accessibilityLabel={`打开与 ${item.peer.name} 的聊天`}
-			className="flex-row items-center gap-3 border-border-tertiary border-b px-4 py-4"
+			className="flex-row items-center gap-3 px-4 py-4"
 			onPress={openChat}
 		>
 			<Avatar size="lg" alt={item.peer.name}>

@@ -1,14 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import {
-	ListGroup,
-	PressableFeedback,
-	Separator,
-	Spinner,
-	Text,
-} from "heroui-native";
+import { ListGroup, PressableFeedback, Spinner, Text } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Image, View } from "react-native";
 
+import { AppSeparator } from "@/components/shared/app-separator";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import type { ComposerImage } from "./use-create-composer";
 
@@ -157,5 +152,5 @@ export function SettingsListItem({
 }
 
 export function ListDivider() {
-	return <Separator className="bg-separator opacity-60" thickness={1} />;
+	return <AppSeparator className="opacity-60" />;
 }

@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Text, useThemeColor } from "heroui-native";
 import { ScrollView, View } from "react-native";
 
+import { AppSeparator } from "@/components/shared/app-separator";
+
 export function SearchHome({
 	bottomInset,
 	isEditingHistory,
@@ -50,7 +52,7 @@ export function SearchHome({
 								>
 									<Button.Label className="text-muted">全部删除</Button.Label>
 								</Button>
-								<View className="h-4 w-px bg-border" />
+								<AppSeparator orientation="vertical" className="h-4" />
 								<Button
 									size="sm"
 									variant="ghost"

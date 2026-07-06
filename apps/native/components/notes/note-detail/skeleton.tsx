@@ -1,6 +1,8 @@
-import { Separator, Skeleton } from "heroui-native";
+import { Skeleton } from "heroui-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { AppSeparator } from "@/components/shared/app-separator";
 
 import { SimpleTopBar } from "./content";
 
@@ -31,7 +33,7 @@ export function NoteDetailSkeleton({
 						<Skeleton className="h-4 w-3/5 rounded-md" />
 					</View>
 					<View className="gap-4 pt-5">
-						<Separator />
+						<AppSeparator />
 						<View className="flex-row items-center justify-between">
 							<Skeleton className="h-5 w-16 rounded-md" />
 							<Skeleton className="h-8 w-32 rounded-full" />
@@ -47,7 +49,7 @@ export function NoteDetailSkeleton({
 					</View>
 				</View>
 			</View>
-			<Separator />
+			<AppSeparator />
 			<View
 				className="mt-auto bg-background px-4 pt-3"
 				style={{ paddingBottom: insets.bottom + 10 }}

@@ -32,7 +32,7 @@ export function NotificationRow({
 		<PressableFeedback
 			accessibilityRole="button"
 			accessibilityLabel={item.title}
-			className="border-border-tertiary border-b px-4 py-4"
+			className="px-4 py-4"
 			onPress={onPress}
 		>
 			<View className="flex-row gap-3">

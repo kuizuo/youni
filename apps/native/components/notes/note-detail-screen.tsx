@@ -4,7 +4,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	Button,
 	PressableFeedback,
-	Separator,
 	Spinner,
 	Text,
 	useThemeColor,
@@ -22,6 +21,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { EmojiType } from "rn-emoji-keyboard";
 
+import { AppSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
@@ -512,7 +512,7 @@ export default function NoteDetailScreen() {
 				}
 			/>
 
-			<Separator />
+			<AppSeparator />
 			<View
 				className="bg-background px-4 pt-2"
 				style={{

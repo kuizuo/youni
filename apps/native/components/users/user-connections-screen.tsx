@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ListSeparator } from "@/components/shared/app-separator";
 import { ConnectionRow } from "@/components/users/connections/connection-row";
 import { ConnectionsEmptyState } from "@/components/users/connections/empty";
 import { ConnectionsHeader } from "@/components/users/connections/header";
@@ -98,6 +99,7 @@ export default function UserConnectionsScreen() {
 						onToggleFollow={toggleFollow}
 					/>
 				)}
+				ItemSeparatorComponent={ListSeparator}
 				ListEmptyComponent={
 					<ConnectionsEmptyState
 						activeType={activeType}

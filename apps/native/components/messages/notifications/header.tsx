@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 
+import { AppSeparator } from "@/components/shared/app-separator";
+
 export function NotificationListHeader({
 	isClearing,
 	isMarkingAllRead,
@@ -24,7 +26,7 @@ export function NotificationListHeader({
 
 	return (
 		<View
-			className="border-border-secondary border-b bg-background px-4 pb-3"
+			className="bg-background px-4 pb-3"
 			style={{ paddingTop: topInset + 8 }}
 		>
 			<View className="mx-auto h-12 w-full max-w-xl flex-row items-center gap-3">
@@ -69,6 +71,7 @@ export function NotificationListHeader({
 					<Ionicons name="trash-outline" size={21} color={mutedColor} />
 				</Button>
 			</View>
+			<AppSeparator className="-mx-4 mt-3" />
 		</View>
 	);
 }

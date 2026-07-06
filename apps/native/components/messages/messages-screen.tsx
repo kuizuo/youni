@@ -15,6 +15,7 @@ import type {
 	ConversationItem,
 	MessageGroupSummary,
 } from "@/components/messages/inbox/types";
+import { ListSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
@@ -105,6 +106,7 @@ export default function MessagesScreen() {
 					/>
 				}
 				renderItem={({ item }) => <ConversationRow item={item} />}
+				ItemSeparatorComponent={ListSeparator}
 				ListHeaderComponent={
 					<NotificationShortcutsSection
 						messageGroups={messageGroups}

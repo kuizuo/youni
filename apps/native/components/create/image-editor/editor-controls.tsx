@@ -1,6 +1,7 @@
 import { Button, PressableFeedback, Spinner, Text } from "heroui-native";
 import { ScrollView, View } from "react-native";
 
+import { AppSeparator } from "@/components/shared/app-separator";
 import { GravityIcon, type GravityIconName } from "./gravity-icon";
 import type { CropRatio, EditorTool, ToolDefinition } from "./types";
 import { BRUSH_COLORS, TEXT_COLORS } from "./utils";
@@ -167,9 +168,10 @@ export function EditorBottomControls({
 }: EditorBottomControlsProps) {
 	return (
 		<View
-			className="relative border-white/10 border-t px-3 pt-3 pb-2"
+			className="relative px-3 pt-3 pb-2"
 			style={{ height: 67, overflow: "visible" }}
 		>
+			<AppSeparator className="absolute top-0 right-0 left-0 bg-white/10" />
 			<View
 				pointerEvents={tool ? "auto" : "none"}
 				className="absolute right-3 left-3 h-24 justify-end gap-2"

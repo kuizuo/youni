@@ -14,6 +14,7 @@ import Animated, { FadeIn, SlideInLeft } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { YouniMark } from "@/components/brand/youni-logo";
+import { AppSeparator } from "@/components/shared/app-separator";
 import { useAppTheme } from "@/lib/contexts/app-theme-context";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
@@ -134,7 +135,8 @@ export function ProfileMenuDrawer({
 							</Surface>
 						</View>
 
-						<View className="gap-1 border-border border-t pt-3">
+						<View className="gap-1 pt-3">
+							<AppSeparator className="mb-2" />
 							<AppearanceButton isDark={isDark} onPress={toggleAppearance} />
 							<DrawerButton
 								icon="settings-outline"

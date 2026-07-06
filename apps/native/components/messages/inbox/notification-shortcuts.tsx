@@ -3,6 +3,8 @@ import type { Href } from "expo-router";
 import { PressableFeedback, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 
+import { AppSeparator } from "@/components/shared/app-separator";
+
 import { NOTIFICATION_SHORTCUTS } from "./constants";
 import type { MessageGroupSummary } from "./types";
 
@@ -14,31 +16,34 @@ export function NotificationShortcutsSection({
 	onOpenAction: (href: Href) => void;
 }) {
 	return (
-		<View className="border-border-tertiary border-b bg-background px-4 py-3">
-			<View className="gap-2">
-				<Text.Paragraph
-					type="body-sm"
-					weight="semibold"
-					className="text-foreground"
-				>
-					互动消息
-				</Text.Paragraph>
+		<View className="bg-background">
+			<View className="px-4 py-3">
 				<View className="gap-2">
-					{NOTIFICATION_SHORTCUTS.map((item) => {
-						const group = messageGroups.find((group) => group.id === item.id);
-						return (
-							<NotificationShortcut
-								key={item.id}
-								description={item.description}
-								icon={item.icon}
-								title={item.title}
-								unreadCount={group?.unreadCount ?? 0}
-								onPress={() => onOpenAction(item.href)}
-							/>
-						);
-					})}
+					<Text.Paragraph
+						type="body-sm"
+						weight="semibold"
+						className="text-foreground"
+					>
+						互动消息
+					</Text.Paragraph>
+					<View className="gap-2">
+						{NOTIFICATION_SHORTCUTS.map((item) => {
+							const group = messageGroups.find((group) => group.id === item.id);
+							return (
+								<NotificationShortcut
+									key={item.id}
+									description={item.description}
+									icon={item.icon}
+									title={item.title}
+									unreadCount={group?.unreadCount ?? 0}
+									onPress={() => onOpenAction(item.href)}
+								/>
+							);
+						})}
+					</View>
 				</View>
 			</View>
+			<AppSeparator />
 		</View>
 	);
 }

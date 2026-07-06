@@ -14,6 +14,7 @@ import { ScrollView, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppSeparator } from "@/components/shared/app-separator";
 import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { getLoginHref } from "@/lib/auth-navigation";
@@ -57,7 +58,7 @@ export default function AddFriendScreen() {
 	return (
 		<View className="flex-1 bg-background">
 			<View
-				className="border-border-secondary border-b bg-background px-4 pb-3"
+				className="bg-background px-4 pb-3"
 				style={{ paddingTop: insets.top + 8 }}
 			>
 				<View className="h-12 flex-row items-center gap-3">
@@ -89,6 +90,7 @@ export default function AddFriendScreen() {
 						<Ionicons name="scan-outline" size={22} color={foregroundColor} />
 					</Button>
 				</View>
+				<AppSeparator className="-mx-4 mt-3" />
 			</View>
 
 			<ScrollView

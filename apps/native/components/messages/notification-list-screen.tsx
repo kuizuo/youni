@@ -12,6 +12,7 @@ import { NotificationListHeader } from "@/components/messages/notifications/head
 import { NotificationRow } from "@/components/messages/notifications/notification-row";
 import type { NotificationItem } from "@/components/messages/notifications/types";
 import { getNotificationKind } from "@/components/messages/notifications/utils";
+import { ListSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { client, queryClient } from "@/utils/orpc";
@@ -140,6 +141,7 @@ export default function NotificationListScreen() {
 						onPress={() => openItem(item)}
 					/>
 				)}
+				ItemSeparatorComponent={ListSeparator}
 				onEndReached={() => {
 					if (
 						notifications.hasNextPage &&

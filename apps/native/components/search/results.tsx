@@ -15,6 +15,7 @@ import {
 	type TopicSearchItem,
 	type UserSearchItem,
 } from "@/components/search/search-utils";
+import { ListSeparator } from "@/components/shared/app-separator";
 import {
 	EmptyState,
 	ErrorState,
@@ -206,6 +207,7 @@ export function SearchResults({
 				contentContainerStyle={{
 					paddingBottom: bottomInset + 28,
 				}}
+				ItemSeparatorComponent={ListSeparator}
 				renderItem={({ item }) => (
 					<UserResultRow
 						currentUserId={currentUserId}
@@ -266,6 +268,7 @@ export function SearchResults({
 			contentContainerStyle={{
 				paddingBottom: bottomInset + 28,
 			}}
+			ItemSeparatorComponent={ListSeparator}
 			renderItem={({ item }) => (
 				<TopicResultRow item={item} onPress={openTopic} />
 			)}

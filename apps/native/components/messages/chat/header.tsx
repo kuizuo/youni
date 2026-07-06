@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Avatar, Button, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 
+import { AppSeparator } from "@/components/shared/app-separator";
+
 import type { ChatPeer } from "./types";
 
 export function ChatHeader({
@@ -20,7 +22,7 @@ export function ChatHeader({
 
 	return (
 		<View
-			className="border-border-secondary border-b bg-background px-4 pb-3"
+			className="bg-background px-4 pb-3"
 			style={{ paddingTop: topInset + 8 }}
 		>
 			<View className="h-12 flex-row items-center gap-3">
@@ -66,6 +68,7 @@ export function ChatHeader({
 					</Button>
 				) : null}
 			</View>
+			<AppSeparator className="-mx-4 mt-3" />
 		</View>
 	);
 }

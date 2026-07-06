@@ -39,7 +39,7 @@ export function UserResultRow({
 	};
 
 	return (
-		<View className="flex-row items-start gap-3 border-border-tertiary border-b px-4 py-4">
+		<View className="flex-row items-start gap-3 px-4 py-4">
 			<PressableFeedback
 				accessibilityRole="button"
 				accessibilityLabel={`查看 ${item.name} 的主页`}
@@ -127,7 +127,7 @@ export function TopicResultRow({
 		<PressableFeedback
 			accessibilityRole="button"
 			accessibilityLabel={`查看话题 ${item.name}`}
-			className="flex-row items-center gap-3 border-border-tertiary border-b px-4 py-4"
+			className="flex-row items-center gap-3 px-4 py-4"
 			onPress={() => onPress(item.id)}
 		>
 			<View className="size-12 items-center justify-center rounded-full bg-content2">

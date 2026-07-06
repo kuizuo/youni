@@ -40,7 +40,7 @@ export function ConnectionRow({
 		<PressableFeedback
 			accessibilityRole="button"
 			accessibilityLabel={`查看 ${item.name} 的主页`}
-			className="flex-row items-center gap-3 border-border-tertiary border-b px-4 py-3"
+			className="flex-row items-center gap-3 px-4 py-3"
 			onPress={openUser}
 		>
 			<Avatar size="md" alt={item.name}>
