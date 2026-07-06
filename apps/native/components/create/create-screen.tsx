@@ -1,76 +1,27 @@
-import { Ionicons } from "@expo/vector-icons";
-import {
-	Button,
-	ListGroup,
-	PressableFeedback,
-	Spinner,
-	useThemeColor,
-} from "heroui-native";
+import { Spinner, useThemeColor } from "heroui-native";
 import { useRef, useState } from "react";
-import {
-	KeyboardAvoidingView,
-	Platform,
-	ScrollView,
-	TextInput,
-	View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ContentEditor } from "@/components/create/content-editor";
+import { CreateHeader } from "@/components/create/create-header";
+import type { InlineTrigger } from "@/components/create/create-types";
+import { findInlineTrigger } from "@/components/create/inline-trigger";
+import { MediaStrip } from "@/components/create/media-strip";
+import { PublishingOptions } from "@/components/create/publishing-options";
+import { SubmitBar } from "@/components/create/submit-bar";
 import { ErrorState } from "@/components/social-states";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
-import { InlineMentionPicker, InlineTopicPicker } from "./create-pickers";
+import { isGifImage } from "@/utils/media";
 import { AdvancedOptionsSheet } from "./create-sheets";
-import { ListDivider, MediaTile, SettingsListItem } from "./create-ui";
 import { ImageEditor } from "./image-editor";
-import {
-	LinkedComposerInput,
-	type TextSelection,
-} from "./linked-composer-input";
+import type { TextSelection } from "./linked-composer-input";
 import { type ComposerImage, useCreateComposer } from "./use-create-composer";
-
-const OPTION_ROWS = [
-	{ key: "visibility", label: "公开可见", icon: "lock-open-outline" },
-	{ key: "advanced", label: "高级选项", icon: "settings-outline" },
-] as const;
 
 type CreateScreenProps = {
 	onRequestClose?: () => void;
 };
-
-type InlineTrigger = {
-	end: number;
-	query: string;
-	start: number;
-	type: "mention" | "topic";
-};
-
-function findInlineTrigger(
-	value: string,
-	cursor: number,
-): InlineTrigger | null {
-	const beforeCursor = value.slice(0, cursor);
-	const match = beforeCursor.match(/(^|\s)([#@])([^\s#@]*)$/);
-	if (!match) return null;
-
-	const symbol = match[2];
-	const query = match[3] ?? "";
-	const tokenLength = symbol.length + query.length;
-	return {
-		end: cursor,
-		query,
-		start: cursor - tokenLength,
-		type: symbol === "#" ? "topic" : "mention",
-	};
-}
-
-function isGifImage(image: ComposerImage) {
-	return (
-		image.mimeType?.toLowerCase() === "image/gif" ||
-		image.fileName?.toLowerCase().endsWith(".gif") ||
-		image.uri.split("?")[0]?.toLowerCase().endsWith(".gif")
-	);
-}
 
 export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const defaultForegroundColor = useThemeColor("default-foreground");
@@ -179,17 +130,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 			className="flex-1 bg-background"
 		>
 			<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-				<View className="h-14 justify-center px-4">
-					<PressableFeedback
-						accessibilityLabel="返回"
-						accessibilityRole="button"
-						hitSlop={10}
-						onPress={composer.goBack}
-						className="size-10 items-center justify-center rounded-full"
-					>
-						<Ionicons name="chevron-back" size={30} color={mutedColor} />
-					</PressableFeedback>
-				</View>
+				<CreateHeader mutedColor={mutedColor} onBack={composer.goBack} />
 
 				<ScrollView
 					contentInsetAdjustmentBehavior="automatic"
@@ -199,144 +140,50 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					contentContainerClassName="gap-4 px-4 pt-3"
 					contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
 				>
-					<ScrollView
-						horizontal
-						showsHorizontalScrollIndicator={false}
-						contentContainerClassName="gap-2.5 pr-4"
-					>
-						{composer.images.map((image, index) => (
-							<MediaTile
-								key={image.id}
-								image={image}
-								label={`第 ${index + 1} 张图片`}
-								onEdit={() => openImageEditor(image)}
-								onRemove={() => composer.removeImage(image.id)}
-							/>
-						))}
-						{composer.images.length < 9 ? (
-							<PressableFeedback
-								accessibilityLabel="添加图片"
-								accessibilityRole="button"
-								isDisabled={composer.isAddingImages}
-								onPress={composer.addImage}
-								className="h-22 w-22 items-center justify-center rounded-xl border border-border bg-content2"
-							>
-								<Ionicons name="add" size={42} color={mutedColor} />
-							</PressableFeedback>
-						) : null}
-					</ScrollView>
+					<MediaStrip
+						images={composer.images}
+						isAddingImages={composer.isAddingImages}
+						mutedColor={mutedColor}
+						onAddImage={composer.addImage}
+						onEditImage={openImageEditor}
+						onRemoveImage={composer.removeImage}
+					/>
 
-					<View className="gap-2">
-						<TextInput
-							value={composer.title}
-							onChangeText={composer.setTitle}
-							placeholder="添加标题"
-							placeholderTextColor={mutedColor}
-							maxLength={80}
-							returnKeyType="next"
-							style={{
-								color: foregroundColor,
-								fontSize: 24,
-								fontWeight: "500",
-								lineHeight: 32,
-								minHeight: 38,
-								padding: 0,
-							}}
-						/>
-						<LinkedComposerInput
-							value={composer.content}
-							onChangeText={handleContentChange}
-							onSelectionChange={handleContentSelectionChange}
-							placeholder="添加正文"
-							placeholderTextColor={mutedColor}
-							maxLength={2000}
-						/>
-						{inlineTrigger?.type === "topic" ? (
-							<InlineTopicPicker
-								query={inlineTrigger.query}
-								selectedTopics={composer.topics}
-								onSelect={(value) => replaceInlineTrigger("topic", value)}
-							/>
-						) : inlineTrigger?.type === "mention" ? (
-							<InlineMentionPicker
-								query={inlineTrigger.query}
-								onSelect={(value) => replaceInlineTrigger("mention", value)}
-							/>
-						) : null}
-					</View>
+					<ContentEditor
+						content={composer.content}
+						foregroundColor={foregroundColor}
+						inlineTrigger={inlineTrigger}
+						mutedColor={mutedColor}
+						selectedTopics={composer.topics}
+						title={composer.title}
+						onContentChange={handleContentChange}
+						onMentionSelect={(value) => replaceInlineTrigger("mention", value)}
+						onSelectionChange={handleContentSelectionChange}
+						onTitleChange={composer.setTitle}
+						onTopicSelect={(value) => replaceInlineTrigger("topic", value)}
+					/>
 
-					<ListGroup
-						variant="secondary"
-						className="overflow-hidden rounded-2xl"
-					>
-						{OPTION_ROWS.map((row, index) => {
-							const value =
-								row.key === "visibility"
-									? composer.visibilityLabel
-									: composer.advancedLabel;
-							const onPress =
-								row.key === "visibility"
-									? composer.cycleVisibility
-									: () => {
-											fireHaptic();
-											setIsAdvancedSheetOpen(true);
-										};
-
-							return (
-								<View key={row.key}>
-									<SettingsListItem
-										icon={row.icon}
-										label={row.label}
-										value={value}
-										foregroundColor={defaultForegroundColor}
-										mutedColor={mutedColor}
-										onPress={onPress}
-									/>
-									{index < OPTION_ROWS.length - 1 ? <ListDivider /> : null}
-								</View>
-							);
-						})}
-					</ListGroup>
+					<PublishingOptions
+						advancedLabel={composer.advancedLabel}
+						defaultForegroundColor={defaultForegroundColor}
+						mutedColor={mutedColor}
+						visibilityLabel={composer.visibilityLabel}
+						onAdvancedPress={() => {
+							fireHaptic();
+							setIsAdvancedSheetOpen(true);
+						}}
+						onVisibilityPress={composer.cycleVisibility}
+					/>
 				</ScrollView>
 
-				<View
-					className="bg-background"
-					style={{
-						paddingBottom: insets.bottom + 10,
-					}}
-				>
-					<ListDivider />
-					<View className="flex-row items-center gap-2 px-4 pt-2.5">
-						<Button
-							onPress={composer.saveDraft}
-							size="md"
-							variant="outline"
-							feedbackVariant="scale-ripple"
-							isDisabled={composer.isSubmitting}
-							className="h-12 flex-1 rounded-full"
-						>
-							{composer.pendingSubmitMode === "draft" ||
-							composer.isUploadingImages ? (
-								<Spinner size="sm" />
-							) : null}
-							<Button.Label>存草稿</Button.Label>
-						</Button>
-						<Button
-							onPress={composer.publish}
-							size="md"
-							variant="primary"
-							feedbackVariant="scale-ripple"
-							isDisabled={composer.isSubmitting}
-							className="h-12 flex-[2] rounded-full"
-						>
-							{composer.pendingSubmitMode === "publish" ||
-							composer.isUploadingImages ? (
-								<Spinner size="sm" />
-							) : null}
-							<Button.Label>发布笔记</Button.Label>
-						</Button>
-					</View>
-				</View>
+				<SubmitBar
+					bottomInset={insets.bottom}
+					isSubmitting={composer.isSubmitting}
+					isUploadingImages={composer.isUploadingImages}
+					pendingSubmitMode={composer.pendingSubmitMode}
+					onPublish={composer.publish}
+					onSaveDraft={composer.saveDraft}
+				/>
 				<AdvancedOptionsSheet
 					isOpen={isAdvancedSheetOpen}
 					onOpenChange={setIsAdvancedSheetOpen}

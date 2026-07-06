@@ -26,7 +26,7 @@ import { EmptyState, ErrorState } from "@/components/social-states";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { client, orpc, queryClient } from "@/utils/orpc";
-
+import { getRouteParam } from "@/utils/route-params";
 import { BottomIconAction } from "./note-detail/bottom-actions";
 import { CommentComposerPanel } from "./note-detail/comment-composer";
 import {
@@ -47,11 +47,7 @@ import type {
 	NoteComment,
 	TextSelection,
 } from "./note-detail/types";
-import {
-	clampCursor,
-	findMentionTrigger,
-	getRouteParam,
-} from "./note-detail/utils";
+import { clampCursor, findMentionTrigger } from "./note-detail/utils";
 
 const COMMENTS_PAGE_SIZE = 20;
 

@@ -1,24 +1,5 @@
 import type { InlineToken, MentionTrigger } from "./types";
 
-export function getRouteParam(value: string | string[] | undefined) {
-	return Array.isArray(value) ? value[0] : value;
-}
-
-export function formatCommentTime(value: Date | string) {
-	const date = new Date(value);
-	const diff = Date.now() - date.getTime();
-	const minute = 60 * 1000;
-	const hour = 60 * minute;
-	const day = 24 * hour;
-
-	if (Number.isNaN(date.getTime())) return "";
-	if (diff < minute) return "刚刚";
-	if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`;
-	if (diff < day) return `${Math.floor(diff / hour)} 小时前`;
-	if (diff < 7 * day) return `${Math.floor(diff / day)} 天前`;
-	return `${date.getMonth() + 1}/${date.getDate()}`;
-}
-
 export function parseInlineTokens(value: string): InlineToken[] {
 	const tokens: InlineToken[] = [];
 	const pattern = /@([A-Za-z0-9_]{1,30})|#([\p{L}\p{N}_-]{1,24})/gu;

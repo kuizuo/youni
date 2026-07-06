@@ -13,8 +13,9 @@ import { Image, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppHeading } from "@/components/shared/app-heading";
+import { formatRelativeTime } from "@/utils/format";
 
-import { formatCommentTime, parseInlineTokens } from "./utils";
+import { parseInlineTokens } from "./utils";
 
 export function SimpleTopBar({ onBack }: { onBack: () => void }) {
 	const mutedColor = useThemeColor("muted");
@@ -240,7 +241,7 @@ export function NoteBody({
 				) : null}
 			</View>
 			<Text.Paragraph type="body-xs" color="muted">
-				{formatCommentTime(createdAt)}
+				{formatRelativeTime(createdAt)}
 			</Text.Paragraph>
 		</View>
 	);

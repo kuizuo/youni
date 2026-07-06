@@ -3,18 +3,18 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { Button, Text, useThemeColor } from "heroui-native";
-import { type ReactNode, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ScanBottomAction } from "@/components/messages/scan/bottom-action";
+import { CameraPermissionState } from "@/components/messages/scan/permission-state";
+import { ScanFrame } from "@/components/messages/scan/scan-frame";
+import { ScanOverlay } from "@/components/messages/scan/scan-overlay";
+import { getUserIdFromCode } from "@/components/messages/scan/utils";
 import { AppHeading } from "@/components/shared/app-heading";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
-
-function getUserIdFromCode(value: string) {
-	const match = value.match(/(?:user\/|user:)([a-zA-Z0-9_-]+)/);
-	return match?.[1] ?? null;
-}
 
 export default function ScanScreen() {
 	const router = useRouter();
@@ -43,22 +43,10 @@ export default function ScanScreen() {
 
 	if (!permission.granted) {
 		return (
-			<View className="flex-1 items-center justify-center gap-4 bg-black px-8">
-				<Ionicons name="camera-outline" size={44} color="#ffffff" />
-				<Text.Paragraph align="center" style={{ color: "#ffffff" }}>
-					需要相机权限才能扫一扫。
-				</Text.Paragraph>
-				<Button className="rounded-full" onPress={requestPermission}>
-					<Button.Label>允许相机权限</Button.Label>
-				</Button>
-				<Button
-					variant="ghost"
-					className="rounded-full"
-					onPress={() => router.back()}
-				>
-					<Button.Label className="text-white">返回</Button.Label>
-				</Button>
-			</View>
+			<CameraPermissionState
+				onBack={() => router.back()}
+				onRequestPermission={requestPermission}
+			/>
 		);
 	}
 
@@ -128,12 +116,12 @@ export default function ScanScreen() {
 					</View>
 
 					<View className="flex-row items-center justify-around px-12">
-						<BottomAction
+						<ScanBottomAction
 							icon="qr-code-outline"
 							label="我的二维码"
 							onPress={() => router.push("/add-friend" as Href)}
 						/>
-						<BottomAction
+						<ScanBottomAction
 							icon="image-outline"
 							label="相册"
 							onPress={() =>
@@ -146,119 +134,11 @@ export default function ScanScreen() {
 					</View>
 				</View>
 			</CameraView>
-			<View
-				pointerEvents="none"
-				className="absolute right-0 left-0 h-40 bg-black/70"
-				style={{ top: insets.top + 72 }}
+			<ScanOverlay
+				bottomInset={insets.bottom}
+				mutedColor={mutedColor}
+				topInset={insets.top}
 			/>
-			<View
-				pointerEvents="none"
-				className="absolute right-0 left-0 h-40 bg-black/70"
-				style={{ bottom: insets.bottom + 220 }}
-			/>
-			<Text.Paragraph
-				type="body-xs"
-				align="center"
-				color="muted"
-				className="absolute right-0 bottom-2 left-0"
-				style={{ color: mutedColor }}
-			>
-				Youni 扫一扫
-			</Text.Paragraph>
 		</View>
 	);
 }
-
-function ScanFrame({ children }: { children: ReactNode }) {
-	return (
-		<View style={styles.scanFrame}>
-			<View pointerEvents="none" style={styles.scanGuide} />
-			<View pointerEvents="none" style={[styles.scanCorner, styles.topLeft]} />
-			<View pointerEvents="none" style={[styles.scanCorner, styles.topRight]} />
-			<View
-				pointerEvents="none"
-				style={[styles.scanCorner, styles.bottomLeft]}
-			/>
-			<View
-				pointerEvents="none"
-				style={[styles.scanCorner, styles.bottomRight]}
-			/>
-			<View className="items-center gap-3">{children}</View>
-		</View>
-	);
-}
-
-function BottomAction({
-	icon,
-	label,
-	onPress,
-}: {
-	icon: keyof typeof Ionicons.glyphMap;
-	label: string;
-	onPress: () => void;
-}) {
-	return (
-		<Pressable
-			accessibilityRole="button"
-			className="items-center gap-3"
-			onPress={onPress}
-		>
-			<View className="size-16 items-center justify-center rounded-full bg-white/20">
-				<Ionicons name={icon} size={30} color="#ffffff" />
-			</View>
-			<Text.Paragraph weight="semibold" style={{ color: "#ffffff" }}>
-				{label}
-			</Text.Paragraph>
-		</Pressable>
-	);
-}
-
-const styles = StyleSheet.create({
-	bottomLeft: {
-		bottom: 0,
-		borderBottomLeftRadius: 18,
-		borderBottomWidth: 5,
-		borderLeftWidth: 5,
-		left: 0,
-	},
-	bottomRight: {
-		bottom: 0,
-		borderBottomRightRadius: 18,
-		borderBottomWidth: 5,
-		borderRightWidth: 5,
-		right: 0,
-	},
-	scanCorner: {
-		borderColor: "#ffffff",
-		height: 48,
-		position: "absolute",
-		width: 48,
-	},
-	scanFrame: {
-		alignItems: "center",
-		alignSelf: "center",
-		height: 256,
-		justifyContent: "center",
-		width: 256,
-	},
-	scanGuide: {
-		...StyleSheet.absoluteFillObject,
-		borderColor: "rgba(255, 255, 255, 0.2)",
-		borderRadius: 28,
-		borderWidth: StyleSheet.hairlineWidth,
-	},
-	topLeft: {
-		borderLeftWidth: 5,
-		borderTopLeftRadius: 18,
-		borderTopWidth: 5,
-		left: 0,
-		top: 0,
-	},
-	topRight: {
-		borderRightWidth: 5,
-		borderTopRightRadius: 18,
-		borderTopWidth: 5,
-		right: 0,
-		top: 0,
-	},
-});

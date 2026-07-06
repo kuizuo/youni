@@ -8,12 +8,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { ErrorState } from "@/components/social-states";
+import { formatCount } from "@/utils/format";
 import { orpc } from "@/utils/orpc";
-
-function formatCount(value: number) {
-	if (value >= 10_000) return `${(value / 10_000).toFixed(1)}万`;
-	return String(value);
-}
 
 export default function CreatorCenterScreen() {
 	const router = useRouter();

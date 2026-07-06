@@ -1,49 +1,19 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-	Avatar,
-	Button,
-	cn,
-	Spinner,
-	Text,
-	useThemeColor,
-} from "heroui-native";
 import { useMemo, useState } from "react";
-import {
-	FlatList,
-	KeyboardAvoidingView,
-	Platform,
-	TextInput,
-	View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ErrorState } from "@/components/social-states";
+import { ChatHeader } from "@/components/messages/chat/header";
+import { ChatInputBar } from "@/components/messages/chat/input-bar";
+import { ChatMessageList } from "@/components/messages/chat/message-list";
+import type { ChatMessage } from "@/components/messages/chat/types";
 import { authClient } from "@/lib/auth-client";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
-
-type ChatMessage = {
-	content: string;
-	createdAt: Date | string;
-	id: string;
-	senderId: string;
-};
-
-function getRouteParam(value: string | string[] | undefined) {
-	return Array.isArray(value) ? value[0] : value;
-}
-
-function formatTime(value: Date | string) {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return "";
-	return `${String(date.getHours()).padStart(2, "0")}:${String(
-		date.getMinutes(),
-	).padStart(2, "0")}`;
-}
+import { getRouteParam } from "@/utils/route-params";
 
 export default function ChatDetailScreen() {
 	const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -53,10 +23,6 @@ export default function ChatDetailScreen() {
 	const session = authClient.useSession();
 	const socialNavigation = useSocialNavigation();
 	const { toast } = useAppToast();
-	const foregroundColor = useThemeColor("foreground");
-	const mutedColor = useThemeColor("muted");
-	const fieldForegroundColor = useThemeColor("field-foreground");
-	const accentForegroundColor = useThemeColor("accent-foreground");
 	const [content, setContent] = useState("");
 	const chat = useQuery({
 		...orpc.messages.byId.queryOptions({
@@ -95,163 +61,29 @@ export default function ChatDetailScreen() {
 			className="flex-1 bg-background"
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 		>
-			<View
-				className="border-border-secondary border-b bg-background px-4 pb-3"
-				style={{ paddingTop: insets.top + 8 }}
-			>
-				<View className="h-12 flex-row items-center gap-3">
-					<Button
-						isIconOnly
-						size="sm"
-						variant="ghost"
-						className="rounded-full"
-						feedbackVariant="scale-ripple"
-						accessibilityLabel="返回"
-						onPress={() => router.back()}
-					>
-						<Ionicons name="chevron-back" size={24} color={mutedColor} />
-					</Button>
-					{peer ? (
-						<Avatar size="sm" alt={peer.name}>
-							{peer.image ? (
-								<Avatar.Image source={{ uri: peer.image }} />
-							) : null}
-							<Avatar.Fallback>{peer.name.slice(0, 1)}</Avatar.Fallback>
-						</Avatar>
-					) : null}
-					<View className="min-w-0 flex-1">
-						<Text.Paragraph weight="bold" numberOfLines={1}>
-							{peer?.name ?? "私信"}
-						</Text.Paragraph>
-						<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
-							{peer?.handle ? `@${peer.handle}` : "实时同步中"}
-						</Text.Paragraph>
-					</View>
-					{peer ? (
-						<Button
-							isIconOnly
-							size="sm"
-							variant="ghost"
-							className="rounded-full"
-							accessibilityLabel="查看主页"
-							onPress={() =>
-								socialNavigation.goTo({ type: "user", id: peer.id })
-							}
-						>
-							<Ionicons
-								name="person-circle-outline"
-								size={24}
-								color={foregroundColor}
-							/>
-						</Button>
-					) : null}
-				</View>
-			</View>
+			<ChatHeader
+				peer={peer}
+				topInset={insets.top}
+				onBack={() => router.back()}
+				onOpenPeer={(id) => socialNavigation.goTo({ type: "user", id })}
+			/>
 
-			{chat.isError ? (
-				<View className="flex-1 justify-center">
-					<ErrorState
-						description="聊天暂时没有加载出来，请稍后重试。"
-						onRetry={() => chat.refetch()}
-					/>
-				</View>
-			) : (
-				<FlatList
-					className="flex-1"
-					data={messages}
-					keyExtractor={(item) => item.id}
-					contentContainerClassName="gap-3 px-4 py-4"
-					renderItem={({ item }) => (
-						<MessageBubble
-							item={item}
-							isMine={item.senderId === session.data?.user?.id}
-						/>
-					)}
-					ListEmptyComponent={
-						chat.isLoading ? (
-							<View className="items-center py-16">
-								<Spinner />
-							</View>
-						) : (
-							<View className="items-center py-16">
-								<Text.Paragraph type="body-sm" color="muted">
-									还没有消息，先打个招呼。
-								</Text.Paragraph>
-							</View>
-						)
-					}
-				/>
-			)}
+			<ChatMessageList
+				currentUserId={session.data?.user?.id}
+				isError={chat.isError}
+				isLoading={chat.isLoading}
+				messages={messages}
+				onRetry={() => chat.refetch()}
+			/>
 
-			<View
-				className="flex-row items-end gap-2 border-border-secondary border-t bg-background px-3 pt-3"
-				style={{ paddingBottom: insets.bottom + 10 }}
-			>
-				<View className="min-h-11 flex-1 justify-center rounded-3xl bg-content2 px-4 py-2">
-					<TextInput
-						value={content}
-						onChangeText={setContent}
-						placeholder="发送私信"
-						placeholderTextColor={mutedColor}
-						multiline
-						maxLength={1000}
-						style={{
-							color: fieldForegroundColor,
-							fontSize: 16,
-							lineHeight: 22,
-							maxHeight: 120,
-							padding: 0,
-						}}
-					/>
-				</View>
-				<Button
-					isIconOnly
-					variant={canSend ? "primary" : "secondary"}
-					className="h-11 w-11 rounded-full"
-					feedbackVariant="scale-ripple"
-					isDisabled={!canSend}
-					accessibilityLabel="发送"
-					onPress={send}
-				>
-					{sendMutation.isPending ? (
-						<Spinner size="sm" />
-					) : (
-						<Ionicons
-							name="send"
-							size={18}
-							color={canSend ? accentForegroundColor : foregroundColor}
-						/>
-					)}
-				</Button>
-			</View>
+			<ChatInputBar
+				bottomInset={insets.bottom}
+				canSend={canSend}
+				content={content}
+				isSending={sendMutation.isPending}
+				onChangeContent={setContent}
+				onSend={send}
+			/>
 		</KeyboardAvoidingView>
-	);
-}
-
-function MessageBubble({
-	isMine,
-	item,
-}: {
-	isMine: boolean;
-	item: ChatMessage;
-}) {
-	return (
-		<View className={cn("gap-1", isMine ? "items-end" : "items-start")}>
-			<View
-				className={cn(
-					"max-w-[78%] rounded-3xl px-4 py-2",
-					isMine ? "bg-accent" : "bg-content2",
-				)}
-			>
-				<Text.Paragraph
-					className={isMine ? "text-accent-foreground" : "text-foreground"}
-				>
-					{item.content}
-				</Text.Paragraph>
-			</View>
-			<Text.Paragraph type="body-xs" color="muted">
-				{formatTime(item.createdAt)}
-			</Text.Paragraph>
-		</View>
 	);
 }

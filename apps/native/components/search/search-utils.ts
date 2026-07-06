@@ -49,14 +49,6 @@ export type TopicSearchItem = {
 let searchHistoryCache: string[] = [];
 let hasLoadedSearchHistory = false;
 
-export function getRouteParam(value: string | string[] | undefined) {
-	return Array.isArray(value) ? value[0] : value;
-}
-
-export function flattenPages<T>(pages?: Array<{ items: T[] }>) {
-	return pages?.flatMap((page) => page.items) ?? [];
-}
-
 export function uniqueWords(values: readonly string[], limit: number) {
 	const words: string[] = [];
 	for (const value of values) {
@@ -108,15 +100,4 @@ export function persistSearchHistory(items: string[]) {
 			: SecureStore.deleteItemAsync(SEARCH_HISTORY_STORAGE_KEY);
 
 	void writeHistory.catch(() => undefined);
-}
-
-export function formatCount(value: number) {
-	if (value >= 10000) {
-		const formatted =
-			value >= 100000
-				? String(Math.round(value / 10000))
-				: (value / 10000).toFixed(1).replace(/\.0$/, "");
-		return `${formatted}万`;
-	}
-	return String(value);
 }

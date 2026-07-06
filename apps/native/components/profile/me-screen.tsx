@@ -1,17 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { BottomSheet, useThemeColor } from "heroui-native";
+import { useThemeColor } from "heroui-native";
 import { useMemo, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
-import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { EditProfileSheet } from "@/components/profile/edit-profile-sheet";
-import {
-	MeProfileHeader,
-	MeProfileTopChrome,
-} from "@/components/profile/me-profile-header";
+import { MeEditProfileSheetHost } from "@/components/profile/me/edit-profile-sheet-host";
+import { MeTabEmptyState } from "@/components/profile/me/empty-state";
+import { MeStickyChrome } from "@/components/profile/me/sticky-chrome";
+import { MeProfileHeader } from "@/components/profile/me-profile-header";
 import {
 	createProfileFeedItems,
 	ProfileTabBar,
@@ -29,7 +26,6 @@ import {
 	PROFILE_TABS,
 	type ProfileTabKey,
 } from "@/components/profile/profile-tabs";
-import { EmptyState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -141,32 +137,6 @@ export default function MeScreen() {
 		} as unknown as Href);
 	};
 
-	const renderEmptyState = (tab: ProfileTabKey) => {
-		if (tab === "collections") {
-			return (
-				<EmptyState
-					icon="bookmark-outline"
-					title="还没有收藏"
-					description="收藏过的图文会出现在这里。"
-				/>
-			);
-		}
-		if (tab === "liked") {
-			return (
-				<EmptyState title="还没有赞过" description="赞过的内容会显示在这里。" />
-			);
-		}
-		return (
-			<EmptyState
-				icon="add-circle-outline"
-				title="还没有作品"
-				description="发布第一篇图文后，会出现在这里。"
-				actionLabel="去发布"
-				onAction={openCreate}
-			/>
-		);
-	};
-
 	return (
 		<View className="flex-1" style={{ backgroundColor: PROFILE_HERO_COLOR }}>
 			<ProfileCollapsibleTabs
@@ -203,33 +173,21 @@ export default function MeScreen() {
 					/>
 				)}
 				renderStickyHeader={(style, miniProfileStyle) => (
-					<Animated.View
-						className="absolute top-0 right-0 left-0"
-						pointerEvents="box-none"
-						style={[
-							{
-								backgroundColor: PROFILE_HERO_COLOR,
-								height: topChromeHeight,
-								zIndex: 20,
-							},
-							style,
-						]}
-					>
-						<MeProfileTopChrome
-							avatarInitial={avatarInitial}
-							displayName={displayName}
-							image={profile?.image ?? currentUser?.image}
-							isEditDisabled={isProfileLoading}
-							miniProfileStyle={miniProfileStyle}
-							topChromeHeight={topChromeHeight}
-							onEdit={() => {
-								fireHaptic();
-								setIsEditOpen(true);
-							}}
-							onMenu={() => setIsMenuOpen(true)}
-							onSearch={openSearch}
-						/>
-					</Animated.View>
+					<MeStickyChrome
+						avatarInitial={avatarInitial}
+						displayName={displayName}
+						image={profile?.image ?? currentUser?.image}
+						isEditDisabled={isProfileLoading}
+						miniProfileStyle={miniProfileStyle}
+						style={style}
+						topChromeHeight={topChromeHeight}
+						onEdit={() => {
+							fireHaptic();
+							setIsEditOpen(true);
+						}}
+						onMenu={() => setIsMenuOpen(true)}
+						onSearch={openSearch}
+					/>
 				)}
 				renderTabBar={({ elevated, onSelect }) => (
 					<ProfileTabBar
@@ -246,7 +204,9 @@ export default function MeScreen() {
 				{PROFILE_TABS.map((tab) => (
 					<ProfileTabPane key={tab.key}>
 						<ProfileTabPage
-							emptyState={renderEmptyState(tab.key)}
+							emptyState={
+								<MeTabEmptyState tab={tab.key} onCreate={openCreate} />
+							}
 							feedItems={feedItemsByTab[tab.key]}
 							isError={feedQueries[tab.key].isError || profileQuery.isError}
 							isLoading={feedQueries[tab.key].isLoading}
@@ -266,30 +226,19 @@ export default function MeScreen() {
 				onSignOut={signOut}
 			/>
 
-			<BottomSheet isOpen={isEditOpen} onOpenChange={setIsEditOpen}>
-				<BottomSheet.Portal disableFullWindowOverlay>
-					<BottomSheet.Overlay />
-					<BottomSheet.Content
-						snapPoints={["86%"]}
-						enableDynamicSizing={false}
-						enableOverDrag={false}
-						keyboardBehavior="extend"
-						contentContainerClassName="h-full"
-					>
-						<EditProfileSheet
-							displayName={displayName}
-							profile={profile}
-							user={currentUser}
-							onSaved={async () => {
-								await profileQuery.refetch();
-								await activeFeed.refetch();
-								await queryClient.refetchQueries();
-								setIsEditOpen(false);
-							}}
-						/>
-					</BottomSheet.Content>
-				</BottomSheet.Portal>
-			</BottomSheet>
+			<MeEditProfileSheetHost
+				displayName={displayName}
+				isOpen={isEditOpen}
+				profile={profile}
+				user={currentUser}
+				onOpenChange={setIsEditOpen}
+				onSaved={async () => {
+					await profileQuery.refetch();
+					await activeFeed.refetch();
+					await queryClient.refetchQueries();
+					setIsEditOpen(false);
+				}}
+			/>
 		</View>
 	);
 }

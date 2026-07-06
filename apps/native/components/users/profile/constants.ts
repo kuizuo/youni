@@ -1,0 +1,2 @@
+export const PROFILE_HERO_COLOR = "#728894";
+export const PROFILE_HEADER_HEIGHT = 330;

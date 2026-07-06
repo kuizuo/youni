@@ -16,6 +16,7 @@ import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
+import { formatRelativeTime } from "@/utils/format";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
@@ -31,21 +32,6 @@ type HistoryItem = {
 	};
 	viewedAt: Date | string;
 };
-
-function formatRelativeTime(value: Date | string) {
-	const date = new Date(value);
-	const diff = Date.now() - date.getTime();
-	const minute = 60 * 1000;
-	const hour = 60 * minute;
-	const day = 24 * hour;
-
-	if (Number.isNaN(date.getTime())) return "刚刚";
-	if (diff < minute) return "刚刚";
-	if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`;
-	if (diff < day) return `${Math.floor(diff / hour)} 小时前`;
-	if (diff < 7 * day) return `${Math.floor(diff / day)} 天前`;
-	return `${date.getMonth() + 1}/${date.getDate()}`;
-}
 
 export default function HistoryScreen() {
 	const router = useRouter();
@@ -212,7 +198,7 @@ function HistoryRow({
 						{item.note.author.name}
 					</Text.Paragraph>
 					<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
-						{formatRelativeTime(item.viewedAt)}
+						{formatRelativeTime(item.viewedAt, "刚刚")}
 					</Text.Paragraph>
 				</View>
 			</PressableFeedback>

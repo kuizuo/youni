@@ -6,12 +6,9 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppHeading } from "@/components/shared/app-heading";
+import { getRouteParam } from "@/utils/route-params";
 
 type MissingKind = "topic" | "user";
-
-function getRouteParam(value: string | string[] | undefined) {
-	return Array.isArray(value) ? value[0] : value;
-}
 
 function getKind(value?: string): MissingKind {
 	return value === "topic" ? "topic" : "user";

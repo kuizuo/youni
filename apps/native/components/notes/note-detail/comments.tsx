@@ -13,10 +13,10 @@ import { useState } from "react";
 import { View } from "react-native";
 
 import { useSocialActions } from "@/lib/social/use-social-actions";
+import { formatRelativeTime } from "@/utils/format";
 import { orpc } from "@/utils/orpc";
 
 import type { CommentSort, NoteComment } from "./types";
-import { formatCommentTime } from "./utils";
 
 export function CommentSectionHeader({
 	commentCount,
@@ -185,7 +185,7 @@ export function CommentItem({
 					<View className="flex-row items-center justify-between gap-4 pt-1">
 						<View className="min-w-0 flex-1 flex-row items-center gap-4">
 							<Text.Paragraph type="body-xs" color="muted">
-								{formatCommentTime(comment.createdAt)}
+								{formatRelativeTime(comment.createdAt)}
 							</Text.Paragraph>
 							<PressableFeedback
 								accessibilityRole="button"
