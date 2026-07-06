@@ -173,6 +173,11 @@ export default function ChatDetailScreen() {
 		setIsEmojiKeyboardOpen(false);
 	};
 
+	const dismissInputPanel = () => {
+		closeEmojiKeyboard();
+		Keyboard.dismiss();
+	};
+
 	const handleFocusInput = () => {
 		if (isEmojiInputLockedRef.current) return;
 		isSystemKeyboardVisibleRef.current = true;
@@ -208,6 +213,7 @@ export default function ChatDetailScreen() {
 				isError={chat.isError}
 				isLoading={chat.isLoading}
 				messages={messages}
+				onDismissInputPanel={dismissInputPanel}
 				onRetry={() => chat.refetch()}
 			/>
 

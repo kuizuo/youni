@@ -35,7 +35,9 @@ const COMMENT_INPUT_MAX_HEIGHT = COMMENT_INPUT_LINE_HEIGHT * 4;
 
 export function CommentComposerPanel({
 	canSend,
+	emojiPanelHeight,
 	inputRef,
+	isEmojiInputLocked,
 	isEmojiPickerOpen,
 	isSending,
 	mentionTrigger,
@@ -43,6 +45,7 @@ export function CommentComposerPanel({
 	onChangeText,
 	onEmojiPress,
 	onEmojiSelect,
+	onFocusInput,
 	onMentionPress,
 	onMentionSelect,
 	onSelectionChange,
@@ -51,7 +54,9 @@ export function CommentComposerPanel({
 	value,
 }: {
 	canSend: boolean;
+	emojiPanelHeight: number;
 	inputRef: CommentInputRef;
+	isEmojiInputLocked: boolean;
 	isEmojiPickerOpen: boolean;
 	isSending: boolean;
 	mentionTrigger: MentionTrigger | null;
@@ -59,6 +64,7 @@ export function CommentComposerPanel({
 	onChangeText: (value: string) => void;
 	onEmojiPress: () => void;
 	onEmojiSelect: (emoji: EmojiType) => void;
+	onFocusInput: () => void;
 	onMentionPress: () => void;
 	onMentionSelect: (handle: string) => void;
 	onSelectionChange: (selection: TextSelection) => void;
@@ -67,19 +73,27 @@ export function CommentComposerPanel({
 	value: string;
 }) {
 	return (
-		<View className="mx-auto w-full max-w-xl gap-2">
-			<CommentMentionPicker
-				trigger={mentionTrigger}
-				onSelect={onMentionSelect}
-			/>
-			<CommentComposerInput
-				inputRef={inputRef}
-				value={value}
-				onChangeText={onChangeText}
-				onSelectionChange={onSelectionChange}
-				placeholder={placeholder}
-			/>
-			<View className="h-9 flex-row items-center justify-between">
+		<View className="mx-auto w-full max-w-xl">
+			{mentionTrigger ? (
+				<View className="mb-1">
+					<CommentMentionPicker
+						trigger={mentionTrigger}
+						onSelect={onMentionSelect}
+					/>
+				</View>
+			) : null}
+			<View className="mb-1">
+				<CommentComposerInput
+					inputRef={inputRef}
+					isEmojiInputLocked={isEmojiInputLocked}
+					value={value}
+					onChangeText={onChangeText}
+					onFocus={onFocusInput}
+					onSelectionChange={onSelectionChange}
+					placeholder={placeholder}
+				/>
+			</View>
+			<View className="mb-1 h-9 flex-row items-center justify-between">
 				<View className="flex-row items-center gap-2">
 					<Button
 						isIconOnly
@@ -117,7 +131,7 @@ export function CommentComposerPanel({
 			{isEmojiPickerOpen ? (
 				<View
 					className="overflow-hidden rounded-2xl bg-content2"
-					style={{ height: 236 }}
+					style={{ height: emojiPanelHeight }}
 				>
 					<EmojiKeyboard
 						onEmojiSelected={onEmojiSelect}
@@ -134,13 +148,17 @@ export function CommentComposerPanel({
 
 function CommentComposerInput({
 	inputRef,
+	isEmojiInputLocked,
 	onChangeText,
+	onFocus,
 	onSelectionChange,
 	placeholder,
 	value,
 }: {
 	inputRef: CommentInputRef;
+	isEmojiInputLocked: boolean;
 	onChangeText: (value: string) => void;
+	onFocus: () => void;
 	onSelectionChange: (selection: TextSelection) => void;
 	placeholder: string;
 	value: string;
@@ -183,6 +201,7 @@ function CommentComposerInput({
 				ref={inputRef}
 				value={value}
 				onChangeText={onChangeText}
+				onFocus={onFocus}
 				onContentSizeChange={(event) => {
 					const nextHeight = clampCursor(
 						Math.ceil(event.nativeEvent.contentSize.height),
@@ -199,6 +218,7 @@ function CommentComposerInput({
 				placeholder={placeholder}
 				placeholderTextColor={mutedColor}
 				multiline
+				showSoftInputOnFocus={!isEmojiInputLocked}
 				scrollEnabled={inputHeight >= COMMENT_INPUT_MAX_HEIGHT}
 				maxLength={500}
 				returnKeyType="default"

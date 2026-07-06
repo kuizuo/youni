@@ -8,11 +8,12 @@ import {
 	Text,
 	useThemeColor,
 } from "heroui-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	FlatList,
 	Keyboard,
 	KeyboardAvoidingView,
+	type KeyboardEvent,
 	Platform,
 	type TextInput,
 	useWindowDimensions,
@@ -50,6 +51,8 @@ import type {
 import { clampCursor, findMentionTrigger } from "./note-detail/utils";
 
 const COMMENTS_PAGE_SIZE = 20;
+const DEFAULT_EMOJI_PANEL_HEIGHT = 304;
+const INPUT_ACCESSORY_GAP = 8;
 
 export default function NoteDetailScreen() {
 	const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -65,12 +68,22 @@ export default function NoteDetailScreen() {
 	const imageHeight = Math.min(620, Math.max(380, pageWidth * 1.08));
 	const commentInputRef = useRef<TextInput>(null);
 	const commentTextRef = useRef("");
+	const isCommentComposerOpenRef = useRef(false);
 	const isEmojiKeyboardOpenRef = useRef(false);
+	const isEmojiInputLockedRef = useRef(false);
+	const isSystemKeyboardVisibleRef = useRef(false);
+	const isSwitchingToSystemKeyboardRef = useRef(false);
+	const keyboardHeightRef = useRef(DEFAULT_EMOJI_PANEL_HEIGHT);
 	const [commentText, setCommentText] = useState("");
 	const [commentSort, setCommentSort] = useState<CommentSort>("hot");
 	const [activeImageIndex, setActiveImageIndex] = useState(0);
+	const [emojiPanelHeight, setEmojiPanelHeight] = useState(
+		DEFAULT_EMOJI_PANEL_HEIGHT,
+	);
 	const [isCommentComposerOpen, setIsCommentComposerOpen] = useState(false);
+	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
+	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
 	const [commentSelection, setCommentSelection] = useState<TextSelection>({
 		end: 0,
 		start: 0,
@@ -83,7 +96,10 @@ export default function NoteDetailScreen() {
 		id: string;
 	}>(null);
 	commentTextRef.current = commentText;
+	isCommentComposerOpenRef.current = isCommentComposerOpen;
+	isEmojiInputLockedRef.current = isEmojiInputLocked;
 	isEmojiKeyboardOpenRef.current = isEmojiKeyboardOpen;
+	isSystemKeyboardVisibleRef.current = isSystemKeyboardVisible;
 
 	const note = useQuery({
 		...orpc.byId.queryOptions({ input: { id: id || "missing" } }),
@@ -128,16 +144,81 @@ export default function NoteDetailScreen() {
 		authorProfile.isRefetching ||
 		(comments.isRefetching && !comments.isFetchingNextPage);
 
-	useEffect(() => {
-		const subscription = Keyboard.addListener("keyboardDidHide", () => {
-			if (isEmojiKeyboardOpenRef.current) return;
+	const closeCommentComposer = useCallback(
+		({ dismissKeyboard = false }: { dismissKeyboard?: boolean } = {}) => {
+			isEmojiKeyboardOpenRef.current = false;
+			isCommentComposerOpenRef.current = false;
+			isEmojiInputLockedRef.current = false;
+			isSwitchingToSystemKeyboardRef.current = false;
+			setIsEmojiInputLocked(false);
+			setIsEmojiKeyboardOpen(false);
 			setIsCommentComposerOpen(false);
 			setReplyTarget(null);
 			setMentionTrigger(null);
-		});
 
-		return () => subscription.remove();
+			if (dismissKeyboard) {
+				commentInputRef.current?.blur();
+				Keyboard.dismiss();
+			}
+		},
+		[],
+	);
+
+	const closeEmojiKeyboard = useCallback(() => {
+		isSwitchingToSystemKeyboardRef.current = false;
+		isEmojiInputLockedRef.current = false;
+		setIsEmojiInputLocked(false);
+		if (!isEmojiKeyboardOpenRef.current) return;
+		isEmojiKeyboardOpenRef.current = false;
+		setIsEmojiKeyboardOpen(false);
 	}, []);
+
+	useEffect(() => {
+		const updateKeyboardHeight = (event: KeyboardEvent) => {
+			const height = Math.round(event.endCoordinates.height);
+			if (height > 0) {
+				const nextHeight = Math.max(260, height);
+				keyboardHeightRef.current = nextHeight;
+				setEmojiPanelHeight(nextHeight);
+			}
+		};
+		const showSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+			(event) => {
+				if (Platform.OS === "ios") {
+					Keyboard.scheduleLayoutAnimation(event);
+				}
+				isSystemKeyboardVisibleRef.current = true;
+				setIsSystemKeyboardVisible(true);
+				updateKeyboardHeight(event);
+				if (isSwitchingToSystemKeyboardRef.current) {
+					isSwitchingToSystemKeyboardRef.current = false;
+					isEmojiKeyboardOpenRef.current = false;
+					setIsEmojiKeyboardOpen(false);
+				}
+			},
+		);
+		const handleKeyboardHide = (event?: KeyboardEvent) => {
+			if (Platform.OS === "ios" && event) {
+				Keyboard.scheduleLayoutAnimation(event);
+			}
+			isSystemKeyboardVisibleRef.current = false;
+			setIsSystemKeyboardVisible(false);
+			isSwitchingToSystemKeyboardRef.current = false;
+			if (isEmojiKeyboardOpenRef.current) return;
+			if (!isCommentComposerOpenRef.current) return;
+			closeCommentComposer();
+		};
+		const hideSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+			handleKeyboardHide,
+		);
+
+		return () => {
+			showSubscription.remove();
+			hideSubscription.remove();
+		};
+	}, [closeCommentComposer]);
 
 	const focusCommentInput = () => {
 		setTimeout(() => {
@@ -225,6 +306,7 @@ export default function NoteDetailScreen() {
 			openCommentComposer();
 			return;
 		}
+		closeEmojiKeyboard();
 		const cursor = commentSelection.start;
 		const currentValue = commentTextRef.current;
 		const previousChar = cursor > 0 ? currentValue[cursor - 1] : "";
@@ -238,13 +320,33 @@ export default function NoteDetailScreen() {
 
 	const openEmojiKeyboard = () => {
 		const nextValue = !isEmojiKeyboardOpenRef.current;
-		isEmojiKeyboardOpenRef.current = nextValue;
-		setIsEmojiKeyboardOpen(nextValue);
 		if (!nextValue) {
+			isSwitchingToSystemKeyboardRef.current = true;
+			isEmojiInputLockedRef.current = false;
+			setIsEmojiInputLocked(false);
 			focusCommentInput();
 			return;
 		}
+		isSwitchingToSystemKeyboardRef.current = false;
+		isEmojiInputLockedRef.current = true;
+		isEmojiKeyboardOpenRef.current = true;
+		setEmojiPanelHeight(keyboardHeightRef.current);
+		setIsEmojiInputLocked(true);
+		setIsEmojiKeyboardOpen(true);
+		commentInputRef.current?.blur();
 		Keyboard.dismiss();
+	};
+
+	const closeEmojiKeyboardFromContent = () => {
+		closeEmojiKeyboard();
+	};
+
+	const handleCommentInputFocus = () => {
+		if (isEmojiInputLockedRef.current) return;
+		isSystemKeyboardVisibleRef.current = true;
+		setIsSystemKeyboardVisible(true);
+		if (isSwitchingToSystemKeyboardRef.current) return;
+		closeEmojiKeyboard();
 	};
 
 	const goBack = () => {
@@ -352,12 +454,7 @@ export default function NoteDetailScreen() {
 		}
 		const content = commentText.trim();
 		const parentId = replyTarget?.id;
-		isEmojiKeyboardOpenRef.current = false;
-		setIsEmojiKeyboardOpen(false);
-		setIsCommentComposerOpen(false);
-		setReplyTarget(null);
-		setMentionTrigger(null);
-		Keyboard.dismiss();
+		closeCommentComposer({ dismissKeyboard: true });
 		socialActions.addComment(
 			{
 				noteId: note.data.id,
@@ -405,7 +502,9 @@ export default function NoteDetailScreen() {
 
 	return (
 		<KeyboardAvoidingView
-			behavior={Platform.OS === "ios" ? "padding" : undefined}
+			behavior={
+				Platform.OS === "ios" && !isEmojiKeyboardOpen ? "padding" : undefined
+			}
 			className="flex-1 bg-background"
 		>
 			<FlatList
@@ -419,6 +518,8 @@ export default function NoteDetailScreen() {
 				}}
 				keyboardShouldPersistTaps="handled"
 				showsVerticalScrollIndicator={false}
+				onScrollBeginDrag={closeEmojiKeyboardFromContent}
+				onTouchStart={closeEmojiKeyboardFromContent}
 				onEndReached={() => {
 					if (
 						comments.hasNextPage &&
@@ -517,7 +618,9 @@ export default function NoteDetailScreen() {
 				className="bg-background px-4 pt-2"
 				style={{
 					paddingBottom: isCommentComposerOpen
-						? Math.max(insets.bottom, 2)
+						? isEmojiKeyboardOpen || isSystemKeyboardVisible
+							? INPUT_ACCESSORY_GAP
+							: Math.max(insets.bottom, 2)
 						: insets.bottom + 10,
 				}}
 			>
@@ -525,7 +628,9 @@ export default function NoteDetailScreen() {
 					isCommentComposerOpen ? (
 						<CommentComposerPanel
 							canSend={canSendComment}
+							emojiPanelHeight={emojiPanelHeight}
 							inputRef={commentInputRef}
+							isEmojiInputLocked={isEmojiInputLocked}
 							isEmojiPickerOpen={isEmojiKeyboardOpen}
 							isSending={socialActions.mutations.comment.isPending}
 							mentionTrigger={mentionTrigger}
@@ -537,6 +642,7 @@ export default function NoteDetailScreen() {
 							onChangeText={handleCommentTextChange}
 							onEmojiPress={openEmojiKeyboard}
 							onEmojiSelect={handleEmojiSelected}
+							onFocusInput={handleCommentInputFocus}
 							onMentionPress={openMentionInput}
 							onMentionSelect={insertMention}
 							onSelectionChange={handleCommentSelectionChange}
