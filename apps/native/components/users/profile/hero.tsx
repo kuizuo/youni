@@ -17,7 +17,6 @@ export function UserProfileHero({
 	displayHandle,
 	displayName,
 	isFollowing,
-	isFollowPending,
 	isLoading,
 	isSelf,
 	isStartChatPending,
@@ -32,7 +31,6 @@ export function UserProfileHero({
 	displayHandle: string;
 	displayName: string;
 	isFollowing: boolean;
-	isFollowPending: boolean;
 	isLoading: boolean;
 	isSelf: boolean;
 	isStartChatPending: boolean;
@@ -148,20 +146,15 @@ export function UserProfileHero({
 								variant={isFollowing ? "secondary" : "primary"}
 								className="flex-1 rounded-full"
 								feedbackVariant="scale-ripple"
-								isDisabled={isFollowPending}
 								onPress={onToggleFollow}
 							>
-								{isFollowPending ? (
-									<Spinner size="sm" />
-								) : (
-									<Ionicons
-										name={
-											isFollowing ? "checkmark-outline" : "person-add-outline"
-										}
-										size={16}
-										color={isFollowing ? "#ffffff" : accentForegroundColor}
-									/>
-								)}
+								<Ionicons
+									name={
+										isFollowing ? "checkmark-outline" : "person-add-outline"
+									}
+									size={16}
+									color={isFollowing ? "#ffffff" : accentForegroundColor}
+								/>
 								<Button.Label
 									className={isFollowing ? "text-white" : undefined}
 								>

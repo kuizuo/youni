@@ -3,7 +3,6 @@ import {
 	Avatar,
 	Button,
 	PressableFeedback,
-	Spinner,
 	Text,
 	useThemeColor,
 } from "heroui-native";
@@ -47,7 +46,6 @@ export function SimpleTopBar({ onBack }: { onBack: () => void }) {
 export function AuthorTopBar({
 	author,
 	isFollowing,
-	isFollowPending,
 	isSelf,
 	onBack,
 	onFollow,
@@ -60,7 +58,6 @@ export function AuthorTopBar({
 		name: string;
 	};
 	isFollowing: boolean;
-	isFollowPending: boolean;
 	isSelf: boolean;
 	onBack: () => void;
 	onFollow: () => void;
@@ -114,10 +111,8 @@ export function AuthorTopBar({
 						size="sm"
 						variant={isFollowing ? "secondary" : "primary"}
 						feedbackVariant="scale-ripple"
-						isDisabled={isFollowPending}
 						onPress={onFollow}
 					>
-						{isFollowPending ? <Spinner size="sm" /> : null}
 						<Button.Label>{isFollowing ? "已关注" : "关注"}</Button.Label>
 					</Button>
 				)}

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { RefreshControl, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,6 +23,7 @@ export default function UserProfileScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const socialActions = useSocialActions();
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 
 	const profile = useQuery({
 		...orpc.profile.queryOptions({ input: { userId: id || "missing" } }),
@@ -44,12 +45,10 @@ export default function UserProfileScreen() {
 
 	const toggleFollow = () => {
 		if (!id || isSelf) return;
+		if (socialActions.pending.follow(id)) return;
 		socialActions.toggleFollow(
 			{ userId: id },
 			{
-				onSuccess: async () => {
-					await profile.refetch();
-				},
 				redirectTo: `/user/${id}`,
 			},
 		);
@@ -67,6 +66,14 @@ export default function UserProfileScreen() {
 			view: type,
 			title: displayName,
 		});
+	};
+	const refreshProfile = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			await profile.refetch();
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
 	};
 
 	if (profile.isError) {
@@ -91,8 +98,8 @@ export default function UserProfileScreen() {
 				refreshControl={
 					<RefreshControl
 						progressViewOffset={topChromeHeight}
-						refreshing={profile.isRefetching}
-						onRefresh={() => profile.refetch()}
+						refreshing={isManuallyRefreshing}
+						onRefresh={refreshProfile}
 					/>
 				}
 				showsVerticalScrollIndicator={false}
@@ -101,7 +108,6 @@ export default function UserProfileScreen() {
 					displayHandle={displayHandle}
 					displayName={displayName}
 					isFollowing={isFollowing}
-					isFollowPending={socialActions.mutations.follow.isPending}
 					isLoading={profile.isLoading}
 					isSelf={isSelf}
 					isStartChatPending={socialActions.mutations.startChat.isPending}

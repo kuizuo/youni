@@ -13,6 +13,7 @@ import {
 	type HomeTab,
 } from "@/components/home/types";
 import { NoteCard } from "@/components/note-card";
+import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { client, orpc, queryClient } from "@/utils/orpc";
 import { flattenPages } from "@/utils/pagination";
@@ -21,8 +22,9 @@ export default function HomeScreen() {
 	const socialNavigation = useSocialNavigation();
 	const insets = useSafeAreaInsets();
 	const [activeTab, setActiveTab] = useState<HomeTab>("discover");
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const input = useMemo(() => ({ limit: 30 }), []);
-	const discoverQueryKey = useMemo(() => ["home", "discover"] as const, []);
+	const discoverQueryKey = useMemo(() => nativeQueryKeys.home.discover(), []);
 	const discoverFeed = useInfiniteQuery({
 		queryKey: discoverQueryKey,
 		queryFn: ({ pageParam }) =>
@@ -50,12 +52,20 @@ export default function HomeScreen() {
 			: discoverFeed.isLoading;
 	const isActiveError =
 		activeTab === "following" ? followingFeed.isError : discoverFeed.isError;
-	const isActiveRefetching =
-		activeTab === "following"
-			? followingFeed.isRefetching
-			: discoverFeed.isRefetching && !discoverFeed.isFetchingNextPage;
 	const isFollowingGuest =
 		activeTab === "following" && !socialNavigation.session.data?.user;
+	const refreshActiveFeed = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			if (activeTab === "following") {
+				await followingFeed.refetch();
+				return;
+			}
+			await queryClient.resetQueries({ queryKey: discoverQueryKey });
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
+	};
 
 	return (
 		<View className="flex-1 bg-background">
@@ -79,13 +89,9 @@ export default function HomeScreen() {
 				)}
 				contentInsetAdjustmentBehavior="automatic"
 				showsVerticalScrollIndicator={false}
-				refreshing={isActiveRefetching}
+				refreshing={isManuallyRefreshing}
 				onRefresh={() => {
-					if (activeTab === "following") {
-						followingFeed.refetch();
-						return;
-					}
-					void queryClient.resetQueries({ queryKey: discoverQueryKey });
+					void refreshActiveFeed();
 				}}
 				onEndReached={() => {
 					if (

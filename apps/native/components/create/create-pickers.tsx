@@ -10,6 +10,7 @@ import {
 import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 
+import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { client } from "@/utils/orpc";
 import { SuggestionChip } from "./create-ui";
 
@@ -97,7 +98,7 @@ export function InlineMentionPicker({
 	const mutedColor = useThemeColor("muted");
 	const keyword = query.trim().replace(/^@/, "");
 	const users = useQuery({
-		queryKey: ["create", "mention-users", keyword],
+		queryKey: nativeQueryKeys.create.mentionUsers(keyword),
 		queryFn: () =>
 			client.searchUsers({
 				keyword,

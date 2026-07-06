@@ -104,13 +104,11 @@ export function CommentFooter({
 export function CommentItem({
 	comment,
 	depth,
-	onChanged,
 	onReply,
 	redirectTo,
 }: {
 	comment: NoteComment;
 	depth: number;
-	onChanged: () => Promise<unknown>;
 	onReply: (comment: NoteComment) => void;
 	redirectTo: string;
 }) {
@@ -136,24 +134,20 @@ export function CommentItem({
 	const canExpand = comment.replyCount > comment.replies.length && !isExpanded;
 
 	const toggleLike = () => {
+		if (socialActions.pending.commentLike(comment.id)) return;
 		socialActions.toggleCommentLike(
 			{ id: comment.id },
 			{
-				onSuccess: async () => {
-					await onChanged();
-				},
 				redirectTo,
 			},
 		);
 	};
 
 	const deleteComment = () => {
+		if (socialActions.pending.deleteComment(comment.id)) return;
 		socialActions.deleteComment(
 			{ id: comment.id },
 			{
-				onSuccess: async () => {
-					await onChanged();
-				},
 				redirectTo,
 			},
 		);
@@ -236,7 +230,6 @@ export function CommentItem({
 							key={reply.id}
 							comment={reply}
 							depth={depth + 1}
-							onChanged={onChanged}
 							onReply={onReply}
 							redirectTo={redirectTo}
 						/>

@@ -16,10 +16,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { AppSeparator } from "@/components/shared/app-separator";
 import { ErrorState } from "@/components/social-states";
+import {
+	applyConversationBlockedResult,
+	invalidateConversation,
+	optimisticClearConversation,
+	optimisticSetConversationBlocked,
+} from "@/lib/query/optimistic-cache";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 import { getRouteParam } from "@/utils/route-params";
 
@@ -65,38 +71,52 @@ export default function ChatSettingsScreen() {
 	const isBlocked = data?.hasBlockedPeer ?? false;
 
 	const blockMutation = useMutation(
-		orpc.messages.setBlocked.mutationOptions({
-			onSuccess: async () => {
-				await queryClient.invalidateQueries();
-			},
-			onError: (error) => {
+		orpc.messages.setBlocked.mutationOptions<{ rollback?: () => void }>({
+			onError: (error, _variables, context) => {
+				context?.rollback?.();
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
+			},
+			onMutate: (variables) =>
+				optimisticSetConversationBlocked({
+					blocked: variables.blocked,
+					conversationId: variables.conversationId,
+				}),
+			onSettled: (_data, _error, variables) => {
+				void invalidateConversation(variables.conversationId);
+			},
+			onSuccess: (result, variables) => {
+				applyConversationBlockedResult({
+					blocked: result.blocked,
+					conversationId: variables.conversationId,
+					isBlockedByPeer: result.isBlockedByPeer,
+				});
 			},
 		}),
 	);
 	const clearMutation = useMutation(
-		orpc.messages.clear.mutationOptions({
-			onSuccess: async () => {
-				await queryClient.invalidateQueries();
-			},
-			onError: (error) => {
+		orpc.messages.clear.mutationOptions<{ rollback?: () => void }>({
+			onError: (error, _variables, context) => {
+				context?.rollback?.();
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
+			},
+			onMutate: (variables) =>
+				optimisticClearConversation(variables.conversationId),
+			onSettled: (_data, _error, variables) => {
+				void invalidateConversation(variables.conversationId);
 			},
 		}),
 	);
 
 	const toggleFollow = () => {
 		if (!data?.peer.id) return;
+		if (socialActions.pending.follow(data.peer.id)) return;
 		fireHaptic();
 		socialActions.toggleFollow(
 			{ userId: data.peer.id },
 			{
 				redirectTo: `/chat-settings/${conversationId}`,
-				onSuccess: async () => {
-					await settings.refetch();
-				},
 			},
 		);
 	};
@@ -162,20 +182,15 @@ export default function ChatSettingsScreen() {
 								variant={isFollowing ? "secondary" : "primary"}
 								className="min-w-32 rounded-full"
 								feedbackVariant="scale-ripple"
-								isDisabled={socialActions.mutations.follow.isPending}
 								onPress={toggleFollow}
 							>
-								{socialActions.mutations.follow.isPending ? (
-									<Spinner size="sm" />
-								) : (
-									<Ionicons
-										name={
-											isFollowing ? "checkmark-outline" : "person-add-outline"
-										}
-										size={16}
-										color={foregroundColor}
-									/>
-								)}
+								<Ionicons
+									name={
+										isFollowing ? "checkmark-outline" : "person-add-outline"
+									}
+									size={16}
+									color={foregroundColor}
+								/>
 								<Button.Label>{isFollowing ? "已关注" : "关注"}</Button.Label>
 							</Button>
 						</View>
@@ -204,20 +219,16 @@ export default function ChatSettingsScreen() {
 									</ListGroup.ItemTitle>
 								</ListGroup.ItemContent>
 								<ListGroup.ItemSuffix>
-									{blockMutation.isPending ? (
-										<Spinner size="sm" />
-									) : (
-										<Switch
-											isSelected={displayedBlockState}
-											onSelectedChange={setBlocked}
-											className="h-6 w-12"
-										>
-											<Switch.Thumb
-												animation={SWITCH_THUMB_ANIMATION}
-												className="bg-white"
-											/>
-										</Switch>
-									)}
+									<Switch
+										isSelected={displayedBlockState}
+										onSelectedChange={setBlocked}
+										className="h-6 w-12"
+									>
+										<Switch.Thumb
+											animation={SWITCH_THUMB_ANIMATION}
+											className="bg-white"
+										/>
+									</Switch>
 								</ListGroup.ItemSuffix>
 							</ListGroup.Item>
 							<AppSeparator className="opacity-60" />

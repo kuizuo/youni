@@ -92,7 +92,7 @@ export function AppHeaderTitle({
 	subtitle,
 	title,
 }: {
-	align?: "center" | "left";
+	align?: "center" | "start";
 	subtitle?: string;
 	title?: string;
 }) {
@@ -125,7 +125,7 @@ export function AppHeaderTitle({
 
 type AppHeaderIconButtonProps = Omit<
 	ComponentProps<typeof Button>,
-	"children" | "isIconOnly"
+	"animation" | "children" | "feedbackVariant" | "isIconOnly"
 > & {
 	color: string;
 	icon: keyof typeof Ionicons.glyphMap;

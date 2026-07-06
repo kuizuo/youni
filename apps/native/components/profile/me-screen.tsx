@@ -54,6 +54,7 @@ export default function MeScreen() {
 	const [isEditOpen, setIsEditOpen] = useState(false);
 	const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
 	const [isChangingAvatar, setIsChangingAvatar] = useState(false);
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
 		...orpc.meProfile.queryOptions(),
@@ -167,9 +168,22 @@ export default function MeScreen() {
 		}
 	};
 
-	const refreshTab = async (tab: ProfileTabKey) => {
+	const refreshTab = async (
+		tab: ProfileTabKey,
+		options: { showRefreshControl?: boolean } = {},
+	) => {
+		const showRefreshControl = options.showRefreshControl ?? true;
 		fireHaptic();
-		await Promise.all([profileQuery.refetch(), feedQueries[tab].refetch()]);
+		if (showRefreshControl) {
+			setIsManuallyRefreshing(true);
+		}
+		try {
+			await Promise.all([profileQuery.refetch(), feedQueries[tab].refetch()]);
+		} finally {
+			if (showRefreshControl) {
+				setIsManuallyRefreshing(false);
+			}
+		}
 	};
 
 	const openConnections = (type: "followers" | "following") => {
@@ -194,7 +208,7 @@ export default function MeScreen() {
 				headerHeight={headerHeight}
 				minTabContentHeight={minTabContentHeight}
 				refreshColor={foregroundColor}
-				refreshing={profileQuery.isRefetching || activeFeed.isRefetching}
+				refreshing={isManuallyRefreshing}
 				tabBarHeight={PROFILE_TAB_BAR_HEIGHT}
 				tabs={PROFILE_TABS}
 				topChromeHeight={topChromeHeight}
@@ -262,7 +276,9 @@ export default function MeScreen() {
 							isError={feedQueries[tab.key].isError || profileQuery.isError}
 							isLoading={feedQueries[tab.key].isLoading}
 							width={contentWidth}
-							onRetry={() => refreshTab(tab.key)}
+							onRetry={() => {
+								void refreshTab(tab.key, { showRefreshControl: false });
+							}}
 						/>
 					</ProfileTabPane>
 				))}

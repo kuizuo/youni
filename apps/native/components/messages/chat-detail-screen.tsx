@@ -16,9 +16,14 @@ import { ChatInputBar } from "@/components/messages/chat/input-bar";
 import { ChatMessageList } from "@/components/messages/chat/message-list";
 import type { ChatMessage } from "@/components/messages/chat/types";
 import { authClient } from "@/lib/auth-client";
+import {
+	applySentMessageResult,
+	invalidateConversation,
+	optimisticSendMessage,
+} from "@/lib/query/optimistic-cache";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 import { getRouteParam } from "@/utils/route-params";
 
@@ -57,14 +62,36 @@ export default function ChatDetailScreen() {
 		refetchInterval: 2500,
 	});
 	const sendMutation = useMutation(
-		orpc.messages.send.mutationOptions({
-			onSuccess: async () => {
-				setContent("");
-				await Promise.all([chat.refetch(), queryClient.refetchQueries()]);
-			},
-			onError: (error) => {
+		orpc.messages.send.mutationOptions<{
+			rollback?: () => void;
+			tempId?: string;
+		}>({
+			onError: (error, variables, context) => {
+				context?.rollback?.();
+				contentRef.current = variables.content;
+				setContent(variables.content);
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
+			},
+			onMutate: async (variables) => {
+				const userId = session.data?.user?.id;
+				if (!userId) return {};
+				return optimisticSendMessage({
+					content: variables.content,
+					conversationId: variables.conversationId,
+					senderId: userId,
+				});
+			},
+			onSettled: (_data, _error, variables) => {
+				void invalidateConversation(variables.conversationId);
+			},
+			onSuccess: (message, variables, context) => {
+				if (!context?.tempId) return;
+				applySentMessageResult({
+					conversationId: variables.conversationId,
+					message,
+					tempId: context.tempId,
+				});
 			},
 		}),
 	);
@@ -76,8 +103,7 @@ export default function ChatDetailScreen() {
 	const disabledReason = chat.data?.isBlockedByPeer
 		? "对方已将你加入黑名单，暂时不能发送私信"
 		: undefined;
-	const canSend =
-		!disabledReason && content.trim().length > 0 && !sendMutation.isPending;
+	const canSend = !disabledReason && content.trim().length > 0;
 
 	useEffect(() => {
 		const updateKeyboardHeight = (event: KeyboardEvent) => {
@@ -192,9 +218,11 @@ export default function ChatDetailScreen() {
 
 	const send = () => {
 		const nextContent = content.trim();
-		if (!nextContent || !conversationId) return;
+		if (!nextContent || !conversationId || sendMutation.isPending) return;
 		closeEmojiKeyboard();
 		Keyboard.dismiss();
+		contentRef.current = "";
+		setContent("");
 		sendMutation.mutate({ conversationId, content: nextContent });
 	};
 
@@ -232,7 +260,6 @@ export default function ChatDetailScreen() {
 				isEmojiInputLocked={isEmojiInputLocked}
 				inputRef={inputRef}
 				isEmojiPickerOpen={isEmojiKeyboardOpen}
-				isSending={sendMutation.isPending}
 				isSystemKeyboardVisible={isSystemKeyboardVisible}
 				onChangeContent={changeContent}
 				onEmojiPress={toggleEmojiKeyboard}

@@ -10,7 +10,7 @@ import {
 	Text,
 	useThemeColor,
 } from "heroui-native";
-import { type ComponentProps, useEffect, useState } from "react";
+import { type ComponentProps, useState } from "react";
 import { Image, Platform } from "react-native";
 
 import { useSocialActions } from "@/lib/social/use-social-actions";
@@ -52,30 +52,12 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
-	const [liked, setLiked] = useState(Boolean(note.liked));
-	const [likedCount, setLikedCount] = useState(note.likedCount);
-	const [collected, setCollected] = useState(Boolean(note.collected));
-	const [collectedCount, setCollectedCount] = useState(
-		note.collectedCount ?? 0,
-	);
-	const [authorFollowing, setAuthorFollowing] = useState(
-		Boolean(note.author.isFollowing),
-	);
 	const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
-
-	useEffect(() => {
-		setLiked(Boolean(note.liked));
-		setLikedCount(note.likedCount);
-		setCollected(Boolean(note.collected));
-		setCollectedCount(note.collectedCount ?? 0);
-		setAuthorFollowing(Boolean(note.author.isFollowing));
-	}, [
-		note.author.isFollowing,
-		note.collected,
-		note.collectedCount,
-		note.liked,
-		note.likedCount,
-	]);
+	const liked = Boolean(note.liked);
+	const likedCount = note.likedCount;
+	const collected = Boolean(note.collected);
+	const collectedCount = note.collectedCount ?? 0;
+	const authorFollowing = Boolean(note.author.isFollowing);
 
 	const openDetail = () => {
 		socialActions.goTo({ type: "note", id: note.id });
@@ -86,21 +68,11 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	};
 
 	const toggleLike = () => {
+		if (socialActions.pending.like(note.id)) return;
 		if (!socialActions.requireLogin("/")) return;
-		const nextLiked = !liked;
-		setLiked(nextLiked);
-		setLikedCount((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
 		socialActions.toggleLike(
 			{ id: note.id },
 			{
-				onError: () => {
-					setLiked(Boolean(note.liked));
-					setLikedCount(note.likedCount);
-				},
-				onSuccess: (result) => {
-					setLiked(result.liked);
-					setLikedCount(result.likedCount);
-				},
 				redirectTo: "/",
 			},
 		);
@@ -124,21 +96,11 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 
 	const toggleCollect = () => {
 		closeActionMenu();
+		if (socialActions.pending.collect(note.id)) return;
 		if (!socialActions.requireLogin("/")) return;
-		const nextCollected = !collected;
-		setCollected(nextCollected);
-		setCollectedCount((count) => Math.max(0, count + (nextCollected ? 1 : -1)));
 		socialActions.toggleCollect(
 			{ id: note.id },
 			{
-				onError: () => {
-					setCollected(Boolean(note.collected));
-					setCollectedCount(note.collectedCount ?? 0);
-				},
-				onSuccess: (result) => {
-					setCollected(result.collected);
-					setCollectedCount(result.collectedCount);
-				},
 				redirectTo: "/",
 			},
 		);
@@ -146,17 +108,11 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 
 	const toggleFollow = () => {
 		closeActionMenu();
+		if (socialActions.pending.follow(note.author.id)) return;
 		if (!socialActions.requireLogin("/")) return;
-		setAuthorFollowing((value) => !value);
 		socialActions.toggleFollow(
 			{ userId: note.author.id },
 			{
-				onError: () => {
-					setAuthorFollowing(Boolean(note.author.isFollowing));
-				},
-				onSuccess: (result) => {
-					setAuthorFollowing(result.following);
-				},
 				redirectTo: "/",
 			},
 		);
@@ -343,9 +299,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 							authorName={note.author.name}
 							collected={collected}
 							collectedCount={collectedCount}
-							collectPending={socialActions.mutations.collect.isPending}
 							following={authorFollowing}
-							followPending={socialActions.mutations.follow.isPending}
 							isSelf={isSelf}
 							noteTitle={note.title}
 							onClose={closeActionMenu}
@@ -372,9 +326,7 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 				authorName={note.author.name}
 				collected={collected}
 				collectedCount={collectedCount}
-				collectPending={socialActions.mutations.collect.isPending}
 				following={authorFollowing}
-				followPending={socialActions.mutations.follow.isPending}
 				isSelf={isSelf}
 				noteTitle={note.title}
 				onClose={closeActionMenu}
@@ -392,9 +344,7 @@ function ActionMenuContent({
 	authorName,
 	collected,
 	collectedCount,
-	collectPending,
 	following,
-	followPending,
 	isSelf,
 	noteTitle,
 	onClose,
@@ -407,9 +357,7 @@ function ActionMenuContent({
 	authorName: string;
 	collected: boolean;
 	collectedCount: number;
-	collectPending: boolean;
 	following: boolean;
-	followPending: boolean;
 	isSelf: boolean;
 	noteTitle: string;
 	onClose: () => void;
@@ -449,7 +397,6 @@ function ActionMenuContent({
 				<ActionMenuItem
 					icon={following ? "checkmark-circle" : "person-add-outline"}
 					label={following ? "取消关注" : "关注作者"}
-					loading={followPending}
 					onPress={onFollow}
 					tintColor={following ? accentColor : undefined}
 				/>
@@ -460,7 +407,6 @@ function ActionMenuContent({
 				description={
 					collectedCount > 0 ? `${collectedCount} 人收藏` : undefined
 				}
-				loading={collectPending}
 				onPress={onCollect}
 				tintColor={collected ? accentColor : undefined}
 			/>
@@ -504,9 +450,7 @@ function WebActionMenuPanel({
 	authorName,
 	collected,
 	collectedCount,
-	collectPending,
 	following,
-	followPending,
 	isSelf,
 	noteTitle,
 	onClose,
@@ -519,9 +463,7 @@ function WebActionMenuPanel({
 	authorName: string;
 	collected: boolean;
 	collectedCount: number;
-	collectPending: boolean;
 	following: boolean;
-	followPending: boolean;
 	isSelf: boolean;
 	noteTitle: string;
 	onClose: () => void;
@@ -563,7 +505,6 @@ function WebActionMenuPanel({
 					<WebActionMenuItem
 						icon={following ? "checkmark-circle" : "person-add-outline"}
 						label={following ? "取消关注" : "关注作者"}
-						loading={followPending}
 						onPress={onFollow}
 						tintColor={following ? accentColor : undefined}
 					/>
@@ -574,7 +515,6 @@ function WebActionMenuPanel({
 					description={
 						collectedCount > 0 ? `${collectedCount} 人收藏` : undefined
 					}
-					loading={collectPending}
 					onPress={onCollect}
 					tintColor={collected ? accentColor : undefined}
 				/>
@@ -611,14 +551,12 @@ function WebActionMenuItem({
 	description,
 	icon,
 	label,
-	loading = false,
 	onPress,
 	tintColor,
 }: {
 	description?: string;
 	icon: ComponentProps<typeof Ionicons>["name"];
 	label: string;
-	loading?: boolean;
 	onPress: () => void;
 	tintColor?: string;
 }) {
@@ -636,11 +574,7 @@ function WebActionMenuItem({
 				variant="secondary"
 				className="size-7 items-center justify-center rounded-full"
 			>
-				<Ionicons
-					name={loading ? "sync-outline" : icon}
-					size={15}
-					color={iconColor}
-				/>
+				<Ionicons name={icon} size={15} color={iconColor} />
 			</Surface>
 			<Card.Body className="min-w-0 flex-1 p-0">
 				<Text.Paragraph
@@ -666,7 +600,6 @@ function ActionMenuItem({
 	description,
 	icon,
 	label,
-	loading = false,
 	onPress,
 	tintColor,
 	variant,
@@ -674,7 +607,6 @@ function ActionMenuItem({
 	description?: string;
 	icon: ComponentProps<typeof Ionicons>["name"];
 	label: string;
-	loading?: boolean;
 	onPress: () => void;
 	tintColor?: string;
 	variant?: "danger" | "default";
@@ -689,11 +621,7 @@ function ActionMenuItem({
 				variant="secondary"
 				className="size-8 items-center justify-center rounded-full"
 			>
-				<Ionicons
-					name={loading ? "sync-outline" : icon}
-					size={18}
-					color={iconColor}
-				/>
+				<Ionicons name={icon} size={18} color={iconColor} />
 			</Surface>
 			<Card.Body className="min-w-0 flex-1 p-0">
 				<Menu.ItemTitle

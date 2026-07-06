@@ -9,15 +9,21 @@ import {
 	Text,
 	useThemeColor,
 } from "heroui-native";
+import { useState } from "react";
 import { Alert, Image, RefreshControl, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { EmptyState, ErrorState } from "@/components/social-states";
+import {
+	invalidateViewHistory,
+	optimisticClearHistory,
+	optimisticDeleteHistoryItem,
+} from "@/lib/query/optimistic-cache";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { formatRelativeTime } from "@/utils/format";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 type HistoryItem = {
@@ -37,6 +43,7 @@ export default function HistoryScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { toast } = useAppToast();
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const history = useQuery({
 		...orpc.viewHistory.queryOptions({
 			input: { limit: 60 },
@@ -44,25 +51,28 @@ export default function HistoryScreen() {
 	});
 	const items = (history.data ?? []) as HistoryItem[];
 	const deleteMutation = useMutation(
-		orpc.deleteViewHistory.mutationOptions({
-			onSuccess: async () => {
-				await queryClient.invalidateQueries();
-			},
-			onError: (error) => {
+		orpc.deleteViewHistory.mutationOptions<{ rollback?: () => void }>({
+			onError: (error, _variables, context) => {
+				context?.rollback?.();
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
+			},
+			onMutate: (variables) => optimisticDeleteHistoryItem(variables.id),
+			onSettled: () => {
+				void invalidateViewHistory();
 			},
 		}),
 	);
 	const clearMutation = useMutation(
-		orpc.clearViewHistory.mutationOptions({
-			onSuccess: async () => {
-				await queryClient.invalidateQueries();
-				toast.show({ label: "浏览记录已清空" });
-			},
-			onError: (error) => {
+		orpc.clearViewHistory.mutationOptions<{ rollback?: () => void }>({
+			onError: (error, _variables, context) => {
+				context?.rollback?.();
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
+			},
+			onMutate: () => optimisticClearHistory(),
+			onSettled: () => {
+				void invalidateViewHistory();
 			},
 		}),
 	);
@@ -89,6 +99,14 @@ export default function HistoryScreen() {
 			},
 		]);
 	};
+	const refreshHistory = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			await history.refetch();
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
+	};
 
 	return (
 		<View className="flex-1 bg-background">
@@ -103,7 +121,6 @@ export default function HistoryScreen() {
 							feedbackVariant="scale-ripple"
 							onPress={confirmClear}
 						>
-							{clearMutation.isPending ? <Spinner size="sm" /> : null}
 							<Button.Label>清空</Button.Label>
 						</Button>
 					) : null
@@ -113,8 +130,8 @@ export default function HistoryScreen() {
 				contentInsetAdjustmentBehavior="automatic"
 				refreshControl={
 					<RefreshControl
-						refreshing={history.isRefetching}
-						onRefresh={() => history.refetch()}
+						refreshing={isManuallyRefreshing}
+						onRefresh={refreshHistory}
 					/>
 				}
 				contentContainerClassName="gap-3 px-4 pt-4"
@@ -134,10 +151,6 @@ export default function HistoryScreen() {
 						<HistoryRow
 							key={item.note.id}
 							item={item}
-							isDeleting={
-								deleteMutation.isPending &&
-								deleteMutation.variables?.id === item.note.id
-							}
 							onDelete={deleteItem}
 							onOpen={openNote}
 						/>
@@ -155,12 +168,10 @@ export default function HistoryScreen() {
 }
 
 function HistoryRow({
-	isDeleting,
 	item,
 	onDelete,
 	onOpen,
 }: {
-	isDeleting: boolean;
 	item: HistoryItem;
 	onDelete: (id: string) => void;
 	onOpen: (id: string) => void;
@@ -211,11 +222,7 @@ function HistoryRow({
 				accessibilityLabel="删除浏览记录"
 				onPress={() => onDelete(item.note.id)}
 			>
-				{isDeleting ? (
-					<Spinner size="sm" />
-				) : (
-					<Ionicons name="close-outline" size={20} color={mutedColor} />
-				)}
+				<Ionicons name="close-outline" size={20} color={mutedColor} />
 			</Button>
 		</View>
 	);

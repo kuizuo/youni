@@ -1,13 +1,29 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useMutationState } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { useMemo } from "react";
 
 import { authClient } from "@/lib/auth-client";
+import {
+	applyCommentLikeResult,
+	applyCreatedComment,
+	applyFollowResult,
+	applyNoteReactionResult,
+	invalidateComment,
+	invalidateConversation,
+	invalidateNote,
+	invalidateUser,
+	optimisticAddComment,
+	optimisticDeleteComment,
+	optimisticToggleCommentLike,
+	optimisticToggleFollow,
+	optimisticToggleNoteReaction,
+} from "@/lib/query/optimistic-cache";
 import {
 	type SocialNavigationIntent,
 	toSocialHref,
 } from "@/lib/social/navigation-intents";
 import { useAppToast } from "@/utils/app-toast";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 type SocialActionError = Error;
@@ -17,7 +33,6 @@ export type SocialActionOptions<TResult = unknown> = {
 	onSettled?: () => void;
 	onSuccess?: (result: TResult) => Promise<void> | void;
 	redirectTo?: string;
-	showSuccessToast?: boolean;
 };
 
 type ToggleLikeResult = {
@@ -36,7 +51,12 @@ type ToggleFollowResult = {
 };
 
 type AddCommentResult = {
+	content?: string;
+	createdAt?: Date | string;
 	id: string;
+	noteId?: string;
+	parentId?: null | string;
+	userId?: string;
 };
 
 type ToggleCommentLikeResult = {
@@ -46,6 +66,15 @@ type ToggleCommentLikeResult = {
 
 type StartChatResult = {
 	id: string;
+};
+
+type OptimisticMutationContext = {
+	noteId?: string;
+	optimisticComment?: {
+		id: string;
+		value: Parameters<typeof applyCreatedComment>[0]["tempComment"];
+	};
+	rollback?: () => void;
 };
 
 function getError(error: unknown): SocialActionError {
@@ -89,29 +118,232 @@ export function useSocialNavigation() {
 export function useSocialActions() {
 	const navigation = useSocialNavigation();
 	const { toast } = useAppToast();
+	const currentUser = navigation.session.data?.user;
 
 	const showErrorToast = (error: SocialActionError) => {
 		if (isRequestTimeoutError(error)) return;
 		toast.show({ variant: "danger", label: error.message });
 	};
 
-	const likeMutation = useMutation(orpc.toggleLike.mutationOptions());
-	const collectMutation = useMutation(orpc.toggleCollect.mutationOptions());
-	const followMutation = useMutation(orpc.toggleFollow.mutationOptions());
-	const commentMutation = useMutation(orpc.addComment.mutationOptions());
+	const likeMutation = useMutation(
+		orpc.toggleLike.mutationOptions<OptimisticMutationContext>({
+			onError: (_error, _variables, context) => {
+				context?.rollback?.();
+			},
+			onMutate: async (input) => {
+				return optimisticToggleNoteReaction({
+					countField: "likedCount",
+					noteId: input.id,
+					stateField: "liked",
+				});
+			},
+			onSettled: (_data, _error, variables) => {
+				void invalidateNote(variables.id);
+			},
+			onSuccess: (result, variables) => {
+				applyNoteReactionResult({
+					count: result.likedCount,
+					countField: "likedCount",
+					noteId: variables.id,
+					state: result.liked,
+					stateField: "liked",
+				});
+			},
+		}),
+	);
+	const collectMutation = useMutation(
+		orpc.toggleCollect.mutationOptions<OptimisticMutationContext>({
+			onError: (_error, _variables, context) => {
+				context?.rollback?.();
+			},
+			onMutate: async (input) => {
+				return optimisticToggleNoteReaction({
+					countField: "collectedCount",
+					noteId: input.id,
+					stateField: "collected",
+				});
+			},
+			onSettled: (_data, _error, variables) => {
+				void invalidateNote(variables.id);
+			},
+			onSuccess: (result, variables) => {
+				applyNoteReactionResult({
+					count: result.collectedCount,
+					countField: "collectedCount",
+					noteId: variables.id,
+					state: result.collected,
+					stateField: "collected",
+				});
+			},
+		}),
+	);
+	const followMutation = useMutation(
+		orpc.toggleFollow.mutationOptions<OptimisticMutationContext>({
+			onError: (_error, _variables, context) => {
+				context?.rollback?.();
+			},
+			onMutate: async (input) => {
+				return optimisticToggleFollow(input.userId);
+			},
+			onSettled: (_data, _error, variables) => {
+				void invalidateUser(variables.userId);
+			},
+			onSuccess: (result, variables) => {
+				applyFollowResult({
+					followerCount: result.followerCount,
+					following: result.following,
+					userId: variables.userId,
+				});
+			},
+		}),
+	);
+	const commentMutation = useMutation(
+		orpc.addComment.mutationOptions<OptimisticMutationContext>({
+			onError: (_error, _variables, context) => {
+				context?.rollback?.();
+			},
+			onMutate: async (input) => {
+				if (!currentUser?.id) return {};
+				const context = await optimisticAddComment({
+					authorImage: currentUser.image ?? null,
+					authorName: currentUser.name ?? "我",
+					content: input.content,
+					noteId: input.noteId,
+					parentId: input.parentId,
+					userId: currentUser.id,
+				});
+				return {
+					rollback: context.rollback,
+					optimisticComment: {
+						id: context.tempId,
+						value: context.optimisticComment,
+					},
+				};
+			},
+			onSettled: (_data, _error, variables) => {
+				void invalidateNote(variables.noteId);
+				if (variables.parentId) {
+					void invalidateComment(variables.parentId);
+				}
+			},
+			onSuccess: (result, _variables, context) => {
+				if (!context?.optimisticComment) return;
+				applyCreatedComment({
+					commentId: result.id,
+					createdAt: result.createdAt,
+					tempComment: context.optimisticComment.value,
+					tempId: context.optimisticComment.id,
+				});
+			},
+		}),
+	);
 	const commentLikeMutation = useMutation(
-		orpc.toggleCommentLike.mutationOptions(),
+		orpc.toggleCommentLike.mutationOptions<OptimisticMutationContext>({
+			onError: (_error, _variables, context) => {
+				context?.rollback?.();
+			},
+			onMutate: async (input) => {
+				return optimisticToggleCommentLike(input.id);
+			},
+			onSettled: (_data, _error, variables) => {
+				void invalidateComment(variables.id);
+			},
+			onSuccess: (result, variables) => {
+				applyCommentLikeResult({
+					commentId: variables.id,
+					liked: result.liked,
+					likedCount: result.likedCount,
+				});
+			},
+		}),
 	);
 	const deleteCommentMutation = useMutation(
-		orpc.deleteComment.mutationOptions(),
+		orpc.deleteComment.mutationOptions<OptimisticMutationContext>({
+			onError: (_error, _variables, context) => {
+				context?.rollback?.();
+			},
+			onMutate: async (input) => {
+				return optimisticDeleteComment(input.id);
+			},
+			onSettled: (_data, _error, variables, context) => {
+				if (context?.noteId) {
+					void invalidateNote(context.noteId);
+				}
+				void invalidateComment(variables.id);
+			},
+		}),
 	);
-	const startChatMutation = useMutation(orpc.messages.start.mutationOptions());
+	const startChatMutation = useMutation(
+		orpc.messages.start.mutationOptions({
+			onSuccess: (result) => {
+				void invalidateConversation(result.id);
+			},
+		}),
+	);
+
+	const pendingLikeIds = useMutationState({
+		filters: {
+			mutationKey: orpc.toggleLike.mutationKey(),
+			status: "pending",
+		},
+		select: (mutation) =>
+			(mutation.state.variables as { id: string } | undefined)?.id,
+	});
+	const pendingCollectIds = useMutationState({
+		filters: {
+			mutationKey: orpc.toggleCollect.mutationKey(),
+			status: "pending",
+		},
+		select: (mutation) =>
+			(mutation.state.variables as { id: string } | undefined)?.id,
+	});
+	const pendingFollowIds = useMutationState({
+		filters: {
+			mutationKey: orpc.toggleFollow.mutationKey(),
+			status: "pending",
+		},
+		select: (mutation) =>
+			(mutation.state.variables as { userId: string } | undefined)?.userId,
+	});
+	const pendingCommentLikeIds = useMutationState({
+		filters: {
+			mutationKey: orpc.toggleCommentLike.mutationKey(),
+			status: "pending",
+		},
+		select: (mutation) =>
+			(mutation.state.variables as { id: string } | undefined)?.id,
+	});
+	const pendingDeleteCommentIds = useMutationState({
+		filters: {
+			mutationKey: orpc.deleteComment.mutationKey(),
+			status: "pending",
+		},
+		select: (mutation) =>
+			(mutation.state.variables as { id: string } | undefined)?.id,
+	});
+	const pending = useMemo(
+		() => ({
+			collect: new Set(pendingCollectIds.filter(Boolean)),
+			commentLike: new Set(pendingCommentLikeIds.filter(Boolean)),
+			deleteComment: new Set(pendingDeleteCommentIds.filter(Boolean)),
+			follow: new Set(pendingFollowIds.filter(Boolean)),
+			like: new Set(pendingLikeIds.filter(Boolean)),
+		}),
+		[
+			pendingCollectIds,
+			pendingCommentLikeIds,
+			pendingDeleteCommentIds,
+			pendingFollowIds,
+			pendingLikeIds,
+		],
+	);
 
 	const toggleLike = (
 		input: { id: string },
 		options: SocialActionOptions<ToggleLikeResult> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
+		if (pending.like.has(input.id)) return false;
 
 		likeMutation.mutate(input, {
 			onError: (error) => {
@@ -124,7 +356,6 @@ export function useSocialActions() {
 			},
 			onSuccess: async (result) => {
 				await options.onSuccess?.(result);
-				await queryClient.refetchQueries();
 			},
 		});
 		return true;
@@ -135,6 +366,7 @@ export function useSocialActions() {
 		options: SocialActionOptions<ToggleCollectResult> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
+		if (pending.collect.has(input.id)) return false;
 
 		collectMutation.mutate(input, {
 			onError: (error) => {
@@ -147,10 +379,6 @@ export function useSocialActions() {
 			},
 			onSuccess: async (result) => {
 				await options.onSuccess?.(result);
-				await queryClient.refetchQueries();
-				if (options.showSuccessToast !== false) {
-					toast.show({ label: result.collected ? "已收藏" : "已取消收藏" });
-				}
 			},
 		});
 		return true;
@@ -161,6 +389,7 @@ export function useSocialActions() {
 		options: SocialActionOptions<ToggleFollowResult> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
+		if (pending.follow.has(input.userId)) return false;
 
 		followMutation.mutate(input, {
 			onError: (error) => {
@@ -173,10 +402,6 @@ export function useSocialActions() {
 			},
 			onSuccess: async (result) => {
 				await options.onSuccess?.(result);
-				await queryClient.refetchQueries();
-				if (options.showSuccessToast !== false) {
-					toast.show({ label: result.following ? "已关注" : "已取消关注" });
-				}
 			},
 		});
 		return true;
@@ -209,6 +434,7 @@ export function useSocialActions() {
 		options: SocialActionOptions<ToggleCommentLikeResult> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
+		if (pending.commentLike.has(input.id)) return false;
 
 		commentLikeMutation.mutate(input, {
 			onError: (error) => {
@@ -221,7 +447,6 @@ export function useSocialActions() {
 			},
 			onSuccess: async (result) => {
 				await options.onSuccess?.(result);
-				await queryClient.refetchQueries();
 			},
 		});
 		return true;
@@ -232,6 +457,7 @@ export function useSocialActions() {
 		options: SocialActionOptions<{ ok: boolean }> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
+		if (pending.deleteComment.has(input.id)) return false;
 
 		deleteCommentMutation.mutate(input, {
 			onError: (error) => {
@@ -244,10 +470,6 @@ export function useSocialActions() {
 			},
 			onSuccess: async (result) => {
 				await options.onSuccess?.(result);
-				await queryClient.refetchQueries();
-				if (options.showSuccessToast !== false) {
-					toast.show({ label: "评论已删除" });
-				}
 			},
 		});
 		return true;
@@ -270,7 +492,6 @@ export function useSocialActions() {
 			},
 			onSuccess: async (result) => {
 				await options.onSuccess?.(result);
-				await queryClient.refetchQueries();
 				navigation.goTo({ type: "chat", id: result.id });
 			},
 		});
@@ -291,6 +512,13 @@ export function useSocialActions() {
 			startChat: startChatMutation,
 		},
 		openPublish: navigation.openPublish,
+		pending: {
+			collect: (id: string) => pending.collect.has(id),
+			commentLike: (id: string) => pending.commentLike.has(id),
+			deleteComment: (id: string) => pending.deleteComment.has(id),
+			follow: (id: string) => pending.follow.has(id),
+			like: (id: string) => pending.like.has(id),
+		},
 		requireLogin: navigation.requireLogin,
 		replaceWith: navigation.replaceWith,
 		session: navigation.session,

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Spinner, Text, useThemeColor } from "heroui-native";
+import { Button, Text, useThemeColor } from "heroui-native";
 import type { RefObject } from "react";
 import { TextInput, View } from "react-native";
 import { EmojiKeyboard, type EmojiType } from "rn-emoji-keyboard";
@@ -17,7 +17,6 @@ export function ChatInputBar({
 	isEmojiInputLocked,
 	inputRef,
 	isEmojiPickerOpen,
-	isSending,
 	isSystemKeyboardVisible,
 	onChangeContent,
 	onEmojiPress,
@@ -34,7 +33,6 @@ export function ChatInputBar({
 	isEmojiInputLocked: boolean;
 	inputRef: RefObject<TextInput | null>;
 	isEmojiPickerOpen: boolean;
-	isSending: boolean;
 	isSystemKeyboardVisible: boolean;
 	onChangeContent: (value: string) => void;
 	onEmojiPress: () => void;
@@ -121,15 +119,11 @@ export function ChatInputBar({
 					accessibilityLabel="发送"
 					onPress={onSend}
 				>
-					{isSending ? (
-						<Spinner size="sm" />
-					) : (
-						<Ionicons
-							name="send"
-							size={18}
-							color={canSend ? accentForegroundColor : foregroundColor}
-						/>
-					)}
+					<Ionicons
+						name="send"
+						size={18}
+						color={canSend ? accentForegroundColor : foregroundColor}
+					/>
 				</Button>
 			</View>
 			{isEmojiPickerOpen ? (

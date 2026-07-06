@@ -13,6 +13,7 @@ import type { TextStyle } from "react-native";
 import { Text as NativeText, TextInput, View } from "react-native";
 import { EmojiKeyboard, type EmojiType } from "rn-emoji-keyboard";
 
+import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { client } from "@/utils/orpc";
 
 import type {
@@ -39,7 +40,6 @@ export function CommentComposerPanel({
 	inputRef,
 	isEmojiInputLocked,
 	isEmojiPickerOpen,
-	isSending,
 	mentionTrigger,
 	mutedColor,
 	onChangeText,
@@ -58,7 +58,6 @@ export function CommentComposerPanel({
 	inputRef: CommentInputRef;
 	isEmojiInputLocked: boolean;
 	isEmojiPickerOpen: boolean;
-	isSending: boolean;
 	mentionTrigger: MentionTrigger | null;
 	mutedColor: string;
 	onChangeText: (value: string) => void;
@@ -121,10 +120,9 @@ export function CommentComposerPanel({
 					variant="primary"
 					className="h-8 rounded-full px-5"
 					feedbackVariant="scale-ripple"
-					isDisabled={!canSend || isSending}
+					isDisabled={!canSend}
 					onPress={onSend}
 				>
-					{isSending ? <Spinner size="sm" /> : null}
 					<Button.Label>发送</Button.Label>
 				</Button>
 			</View>
@@ -269,7 +267,7 @@ function CommentMentionPicker({
 	const mutedColor = useThemeColor("muted");
 	const keyword = trigger?.query.trim().replace(/^@/, "") ?? "";
 	const users = useQuery({
-		queryKey: ["note-detail", "mention-users", keyword],
+		queryKey: nativeQueryKeys.note.mentionUsers(keyword),
 		queryFn: () =>
 			client.searchUsers({
 				keyword,

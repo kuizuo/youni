@@ -18,6 +18,7 @@ import { TopicFooter } from "@/components/topics/detail/footer";
 import { TopicHeader } from "@/components/topics/detail/header";
 import { TopicTopBar } from "@/components/topics/detail/top-bar";
 import type { TopicNote, TopicSort } from "@/components/topics/detail/types";
+import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { client, queryClient } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
@@ -33,7 +34,11 @@ export default function TopicDetailScreen() {
 	const foregroundColor = useThemeColor("foreground");
 	const accentColor = useThemeColor("accent");
 	const [sort, setSort] = useState<TopicSort>("hot");
-	const queryKey = useMemo(() => ["topic", id, sort] as const, [id, sort]);
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const queryKey = useMemo(
+		() => nativeQueryKeys.topic.detail(id, sort),
+		[id, sort],
+	);
 	const topic = useInfiniteQuery({
 		queryKey,
 		queryFn: ({ pageParam }) =>
@@ -65,6 +70,14 @@ export default function TopicDetailScreen() {
 		if (!topicInfo?.name) return;
 		await Share.share({ message: `#${topicInfo.name}` }).catch(() => undefined);
 	};
+	const refreshTopic = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			await queryClient.resetQueries({ queryKey });
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
+	};
 
 	if (!id || (topic.isError && notes.length === 0)) {
 		return (
@@ -93,9 +106,9 @@ export default function TopicDetailScreen() {
 				masonry
 				optimizeItemArrangement={false}
 				showsVerticalScrollIndicator={false}
-				refreshing={topic.isRefetching && !topic.isFetchingNextPage}
+				refreshing={isManuallyRefreshing}
 				onRefresh={() => {
-					void queryClient.resetQueries({ queryKey });
+					void refreshTopic();
 				}}
 				onEndReached={() => {
 					if (

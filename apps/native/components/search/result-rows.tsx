@@ -19,12 +19,10 @@ import { formatCount } from "@/utils/format";
 
 export function UserResultRow({
 	currentUserId,
-	isPending,
 	item,
 	onToggleFollow,
 }: {
 	currentUserId?: string;
-	isPending: boolean;
 	item: UserSearchItem;
 	onToggleFollow: (userId: string) => void;
 }) {
@@ -104,7 +102,6 @@ export function UserResultRow({
 					variant={item.isFollowing ? "secondary" : "primary"}
 					className="rounded-full px-4"
 					feedbackVariant="scale-ripple"
-					isDisabled={isPending}
 					onPress={() => onToggleFollow(item.id)}
 				>
 					<Button.Label>{item.isFollowing ? "已关注" : "关注"}</Button.Label>

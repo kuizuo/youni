@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { PressableFeedback, Spinner, Text, useThemeColor } from "heroui-native";
+import { useState } from "react";
 import { Image, RefreshControl, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -34,6 +35,7 @@ function formatDate(value: Date | string | null) {
 export default function DraftsScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const drafts = useQuery(orpc.drafts.queryOptions());
 	const items = (drafts.data ?? []) as DraftNote[];
 
@@ -44,6 +46,14 @@ export default function DraftsScreen() {
 			params: { draftId: id },
 		} as unknown as Href);
 	};
+	const refreshDrafts = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			await drafts.refetch();
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
+	};
 
 	return (
 		<View className="flex-1 bg-background">
@@ -52,8 +62,8 @@ export default function DraftsScreen() {
 				contentInsetAdjustmentBehavior="automatic"
 				refreshControl={
 					<RefreshControl
-						refreshing={drafts.isRefetching}
-						onRefresh={() => drafts.refetch()}
+						refreshing={isManuallyRefreshing}
+						onRefresh={refreshDrafts}
 					/>
 				}
 				contentContainerClassName="gap-3 px-4 pt-4"

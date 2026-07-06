@@ -14,8 +14,16 @@ import type { NotificationItem } from "@/components/messages/notifications/types
 import { getNotificationKind } from "@/components/messages/notifications/utils";
 import { ListSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
+import {
+	invalidateNotifications,
+	optimisticDeleteNotification,
+	optimisticMarkNotificationKindRead,
+	optimisticMarkNotificationRead,
+} from "@/lib/query/optimistic-cache";
+import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
-import { client, queryClient } from "@/utils/orpc";
+import { useAppToast } from "@/utils/app-toast";
+import { client } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
 
 export default function NotificationListScreen() {
@@ -25,9 +33,10 @@ export default function NotificationListScreen() {
 	const emptyIconColor = useThemeColor(config.iconColor);
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const { toast } = useAppToast();
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const notifications = useInfiniteQuery({
-		queryKey: ["notifications", kind],
+		queryKey: nativeQueryKeys.notifications.list(kind),
 		queryFn: ({ pageParam }) =>
 			client.notifications.list({
 				category: config.category,
@@ -44,22 +53,60 @@ export default function NotificationListScreen() {
 			([] as NotificationItem[]),
 		[notifications.data?.pages],
 	);
-	const deleteOne = useMutation({
+	const deleteOne = useMutation<
+		Awaited<ReturnType<typeof client.notifications.delete>>,
+		Error,
+		string,
+		{ rollback?: () => void }
+	>({
 		mutationFn: (id: string) => client.notifications.delete({ id }),
-		onSuccess: async () => {
-			await queryClient.invalidateQueries();
+		onError: (error, _variables, context) => {
+			context?.rollback?.();
+			toast.show({
+				variant: "danger",
+				label: error instanceof Error ? error.message : "删除失败",
+			});
+		},
+		onMutate: (id) => optimisticDeleteNotification(id),
+		onSettled: () => {
+			void invalidateNotifications(kind);
 		},
 	});
 
 	useEffect(() => {
-		void client.notifications
-			.markAllRead({
-				category: config.category,
-				types: [...config.types],
-			})
-			.then(() => queryClient.invalidateQueries())
+		void optimisticMarkNotificationKindRead(kind)
+			.then((context) =>
+				client.notifications
+					.markAllRead({
+						category: config.category,
+						types: [...config.types],
+					})
+					.then(() => invalidateNotifications(kind))
+					.catch((error) => {
+						context.rollback();
+						toast.show({
+							variant: "danger",
+							label: error instanceof Error ? error.message : "标记已读失败",
+						});
+					}),
+			)
 			.catch(() => undefined);
-	}, [config.category, config.types]);
+	}, [config.category, config.types, kind, toast.show]);
+
+	const markRead = async (item: NotificationItem) => {
+		if (item.isRead) return;
+		const context = await optimisticMarkNotificationRead(item.id);
+		void client.notifications
+			.markRead({ id: item.id, isRead: true })
+			.then(() => invalidateNotifications(kind))
+			.catch((error) => {
+				context.rollback();
+				toast.show({
+					variant: "danger",
+					label: error instanceof Error ? error.message : "标记已读失败",
+				});
+			});
+	};
 
 	const refreshNotifications = async () => {
 		setIsManuallyRefreshing(true);
@@ -72,12 +119,7 @@ export default function NotificationListScreen() {
 
 	const openItem = async (item: NotificationItem) => {
 		fireHaptic();
-		if (!item.isRead) {
-			await client.notifications
-				.markRead({ id: item.id, isRead: true })
-				.catch(() => undefined);
-			await queryClient.invalidateQueries();
-		}
+		await markRead(item);
 		if (item.targetType === "user" && item.targetId) {
 			router.push({
 				pathname: "/user/[id]",
@@ -125,7 +167,6 @@ export default function NotificationListScreen() {
 				renderItem={({ item }) => (
 					<NotificationRow
 						item={item}
-						isDeleting={deleteOne.isPending}
 						onDelete={() => deleteOne.mutate(item.id)}
 						onPress={() => openItem(item)}
 					/>

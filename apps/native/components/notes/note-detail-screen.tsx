@@ -24,6 +24,7 @@ import type { EmojiType } from "rn-emoji-keyboard";
 
 import { AppSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
+import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { client, orpc, queryClient } from "@/utils/orpc";
@@ -83,6 +84,7 @@ export default function NoteDetailScreen() {
 	const [isCommentComposerOpen, setIsCommentComposerOpen] = useState(false);
 	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
 	const [commentSelection, setCommentSelection] = useState<TextSelection>({
 		end: 0,
@@ -112,7 +114,7 @@ export default function NoteDetailScreen() {
 	});
 	const commentsEnabled = note.data?.advancedOptions.allowComment ?? true;
 	const commentsQueryKey = useMemo(
-		() => ["note", id, "comments", commentSort] as const,
+		() => nativeQueryKeys.note.comments(id, commentSort),
 		[id, commentSort],
 	);
 	const comments = useInfiniteQuery({
@@ -139,11 +141,6 @@ export default function NoteDetailScreen() {
 	const isSelf = socialActions.currentUserId === authorId;
 	const isFollowing = Boolean(authorProfile.data?.profile.isFollowing);
 	const canSendComment = commentsEnabled && commentText.trim().length > 0;
-	const isRefreshing =
-		note.isRefetching ||
-		authorProfile.isRefetching ||
-		(comments.isRefetching && !comments.isFetchingNextPage);
-
 	const closeCommentComposer = useCallback(
 		({ dismissKeyboard = false }: { dismissKeyboard?: boolean } = {}) => {
 			isEmojiKeyboardOpenRef.current = false;
@@ -391,28 +388,24 @@ export default function NoteDetailScreen() {
 	};
 
 	const refreshAll = async () => {
-		await Promise.all([
-			note.refetch(),
-			authorId ? authorProfile.refetch() : Promise.resolve(),
-			queryClient.resetQueries({ queryKey: commentsQueryKey }),
-		]);
-	};
-
-	const refreshCommentsAndNote = async () => {
-		await Promise.all([
-			note.refetch(),
-			queryClient.resetQueries({ queryKey: commentsQueryKey }),
-		]);
+		setIsManuallyRefreshing(true);
+		try {
+			await Promise.all([
+				note.refetch(),
+				authorId ? authorProfile.refetch() : Promise.resolve(),
+				queryClient.resetQueries({ queryKey: commentsQueryKey }),
+			]);
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
 	};
 
 	const toggleLike = () => {
 		if (!note.data) return;
+		if (socialActions.pending.like(note.data.id)) return;
 		socialActions.toggleLike(
 			{ id: note.data.id },
 			{
-				onSuccess: async () => {
-					await note.refetch();
-				},
 				redirectTo: `/note/${id}`,
 			},
 		);
@@ -420,12 +413,10 @@ export default function NoteDetailScreen() {
 
 	const toggleCollect = () => {
 		if (!note.data) return;
+		if (socialActions.pending.collect(note.data.id)) return;
 		socialActions.toggleCollect(
 			{ id: note.data.id },
 			{
-				onSuccess: async () => {
-					await note.refetch();
-				},
 				redirectTo: `/note/${id}`,
 			},
 		);
@@ -433,12 +424,10 @@ export default function NoteDetailScreen() {
 
 	const toggleFollow = () => {
 		if (!authorId || isSelf) return;
+		if (socialActions.pending.follow(authorId)) return;
 		socialActions.toggleFollow(
 			{ userId: authorId },
 			{
-				onSuccess: async () => {
-					await authorProfile.refetch();
-				},
 				redirectTo: `/note/${id}`,
 			},
 		);
@@ -453,7 +442,8 @@ export default function NoteDetailScreen() {
 			return;
 		}
 		const content = commentText.trim();
-		const parentId = replyTarget?.id;
+		const target = replyTarget;
+		const parentId = target?.id;
 		closeCommentComposer({ dismissKeyboard: true });
 		socialActions.addComment(
 			{
@@ -462,6 +452,13 @@ export default function NoteDetailScreen() {
 				parentId,
 			},
 			{
+				onError: () => {
+					commentTextRef.current = content;
+					setCommentText(content);
+					setReplyTarget(target);
+					setIsCommentComposerOpen(true);
+					focusCommentInput();
+				},
 				onSuccess: async () => {
 					commentTextRef.current = "";
 					setCommentText("");
@@ -470,7 +467,6 @@ export default function NoteDetailScreen() {
 					setCommentSelection({ start: 0, end: 0 });
 					setIsEmojiKeyboardOpen(false);
 					setIsCommentComposerOpen(false);
-					await refreshCommentsAndNote();
 				},
 				redirectTo: `/note/${id}`,
 			},
@@ -512,7 +508,7 @@ export default function NoteDetailScreen() {
 				contentContainerClassName="bg-background pb-32"
 				data={rootComments}
 				keyExtractor={(item) => item.id}
-				refreshing={isRefreshing}
+				refreshing={isManuallyRefreshing}
 				onRefresh={() => {
 					void refreshAll();
 				}}
@@ -535,7 +531,6 @@ export default function NoteDetailScreen() {
 						<AuthorTopBar
 							author={note.data.author}
 							isFollowing={isFollowing}
-							isFollowPending={socialActions.mutations.follow.isPending}
 							isSelf={isSelf}
 							onBack={goBack}
 							onFollow={toggleFollow}
@@ -572,7 +567,6 @@ export default function NoteDetailScreen() {
 						<CommentItem
 							comment={item}
 							depth={0}
-							onChanged={refreshCommentsAndNote}
 							onReply={(nextComment) => {
 								openCommentComposer({
 									id: nextComment.id,
@@ -632,7 +626,6 @@ export default function NoteDetailScreen() {
 							inputRef={commentInputRef}
 							isEmojiInputLocked={isEmojiInputLocked}
 							isEmojiPickerOpen={isEmojiKeyboardOpen}
-							isSending={socialActions.mutations.comment.isPending}
 							mentionTrigger={mentionTrigger}
 							mutedColor={mutedColor}
 							placeholder={
@@ -655,7 +648,6 @@ export default function NoteDetailScreen() {
 								activeColor={dangerColor}
 								count={note.data.likedCount}
 								icon={note.data.liked ? "heart" : "heart-outline"}
-								isLoading={socialActions.mutations.like.isPending}
 								label={note.data.liked ? "取消点赞" : "点赞"}
 								onPress={toggleLike}
 							/>
@@ -664,7 +656,6 @@ export default function NoteDetailScreen() {
 								activeColor={accentColor}
 								count={note.data.collectedCount}
 								icon={note.data.collected ? "star" : "star-outline"}
-								isLoading={socialActions.mutations.collect.isPending}
 								label={note.data.collected ? "取消收藏" : "收藏"}
 								onPress={toggleCollect}
 							/>
@@ -687,7 +678,6 @@ export default function NoteDetailScreen() {
 							activeColor={dangerColor}
 							count={note.data.likedCount}
 							icon={note.data.liked ? "heart" : "heart-outline"}
-							isLoading={socialActions.mutations.like.isPending}
 							label={note.data.liked ? "取消点赞" : "点赞"}
 							onPress={toggleLike}
 						/>
@@ -696,7 +686,6 @@ export default function NoteDetailScreen() {
 							activeColor={accentColor}
 							count={note.data.collectedCount}
 							icon={note.data.collected ? "star" : "star-outline"}
-							isLoading={socialActions.mutations.collect.isPending}
 							label={note.data.collected ? "取消收藏" : "收藏"}
 							onPress={toggleCollect}
 						/>

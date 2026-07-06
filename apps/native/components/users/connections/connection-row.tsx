@@ -1,4 +1,4 @@
-import { Avatar, Button, cn, PressableFeedback, Text } from "heroui-native";
+import { Avatar, Button, PressableFeedback, Text } from "heroui-native";
 import { View } from "react-native";
 
 import type { ConnectionType, ConnectionUser } from "./types";
@@ -6,14 +6,12 @@ import type { ConnectionType, ConnectionUser } from "./types";
 export function ConnectionRow({
 	activeType,
 	currentUserId,
-	isPending,
 	item,
 	onOpenUser,
 	onToggleFollow,
 }: {
 	activeType: ConnectionType;
 	currentUserId?: string;
-	isPending: boolean;
 	item: ConnectionUser;
 	onOpenUser: (id: string) => void;
 	onToggleFollow: (item: ConnectionUser) => void;
@@ -56,14 +54,11 @@ export function ConnectionRow({
 				<Button
 					size="sm"
 					variant={item.isFollowing ? "outline" : "primary"}
-					className={cn("rounded-full px-4", isPending && "opacity-70")}
+					className="rounded-full px-4"
 					feedbackVariant="scale-ripple"
-					isDisabled={isPending}
 					onPress={toggleFollow}
 				>
-					<Button.Label>
-						{item.isFollowing ? "已关注" : "关注"}
-					</Button.Label>
+					<Button.Label>{item.isFollowing ? "已关注" : "关注"}</Button.Label>
 				</Button>
 			)}
 		</PressableFeedback>

@@ -1,12 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { PressableFeedback, Spinner, Text, useThemeColor } from "heroui-native";
+import { PressableFeedback, Text, useThemeColor } from "heroui-native";
 
 export function BottomIconAction({
 	active,
 	activeColor,
 	count,
 	icon,
-	isLoading,
 	label,
 	onPress,
 }: {
@@ -14,7 +13,6 @@ export function BottomIconAction({
 	activeColor: string;
 	count: number;
 	icon: keyof typeof Ionicons.glyphMap;
-	isLoading: boolean;
 	label: string;
 	onPress: () => void;
 }) {
@@ -28,15 +26,11 @@ export function BottomIconAction({
 			hitSlop={8}
 			onPress={onPress}
 		>
-			{isLoading ? (
-				<Spinner size="sm" />
-			) : (
-				<Ionicons
-					name={icon}
-					size={22}
-					color={active ? activeColor : mutedColor}
-				/>
-			)}
+			<Ionicons
+				name={icon}
+				size={22}
+				color={active ? activeColor : mutedColor}
+			/>
 			<Text.Paragraph
 				type="body-sm"
 				weight={active ? "semibold" : undefined}

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { Button, Spinner, Surface, Text, useThemeColor } from "heroui-native";
+import { useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -15,8 +16,17 @@ export default function CreatorCenterScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const accentColor = useThemeColor("accent");
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const stats = useQuery(orpc.creatorStats.queryOptions());
 	const data = stats.data;
+	const refreshStats = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			await stats.refetch();
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
+	};
 
 	return (
 		<View className="flex-1 bg-background">
@@ -25,8 +35,8 @@ export default function CreatorCenterScreen() {
 				contentInsetAdjustmentBehavior="automatic"
 				refreshControl={
 					<RefreshControl
-						refreshing={stats.isRefetching}
-						onRefresh={() => stats.refetch()}
+						refreshing={isManuallyRefreshing}
+						onRefresh={refreshStats}
 					/>
 				}
 				contentContainerClassName="gap-4 px-4 pt-4"

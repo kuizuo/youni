@@ -11,28 +11,21 @@ import { formatRelativeTime } from "@/utils/format";
 import type { NotificationItem } from "./types";
 
 export function NotificationRow({
-	isDeleting,
 	item,
 	onDelete,
 	onPress,
 }: {
-	isDeleting: boolean;
 	item: NotificationItem;
 	onDelete: () => void;
 	onPress: () => void;
 }) {
 	return (
 		<ReanimatedSwipeable
-			enabled={!isDeleting}
 			friction={2}
 			overshootRight={false}
 			rightThreshold={44}
 			renderRightActions={(_, __, swipeable) => (
-				<SwipeDeleteAction
-					isDeleting={isDeleting}
-					swipeable={swipeable}
-					onDelete={onDelete}
-				/>
+				<SwipeDeleteAction swipeable={swipeable} onDelete={onDelete} />
 			)}
 		>
 			<PressableFeedback
@@ -77,11 +70,9 @@ export function NotificationRow({
 }
 
 function SwipeDeleteAction({
-	isDeleting,
 	onDelete,
 	swipeable,
 }: {
-	isDeleting: boolean;
 	onDelete: () => void;
 	swipeable: SwipeableMethods;
 }) {
@@ -94,7 +85,6 @@ function SwipeDeleteAction({
 				accessibilityLabel="删除"
 				className="h-full w-20 items-center justify-center bg-danger"
 				onPress={() => {
-					if (isDeleting) return;
 					swipeable.close();
 					fireHaptic();
 					onDelete();

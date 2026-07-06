@@ -21,6 +21,7 @@ import {
 	ErrorState,
 	FeedSkeleton,
 } from "@/components/social-states";
+import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { client, queryClient } from "@/utils/orpc";
@@ -37,11 +38,11 @@ export function SearchResults({
 }) {
 	const router = useRouter();
 	const socialActions = useSocialActions();
-	const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const currentUserId = socialActions.currentUserId;
-	const notesQueryKey = ["search", "notes", activeKeyword] as const;
-	const usersQueryKey = ["search", "users", activeKeyword] as const;
-	const topicsQueryKey = ["search", "topics", activeKeyword] as const;
+	const notesQueryKey = nativeQueryKeys.search.notes(activeKeyword);
+	const usersQueryKey = nativeQueryKeys.search.users(activeKeyword);
+	const topicsQueryKey = nativeQueryKeys.search.topics(activeKeyword);
 	const notes = useInfiniteQuery({
 		queryKey: notesQueryKey,
 		queryFn: ({ pageParam }) =>
@@ -82,32 +83,26 @@ export function SearchResults({
 	const userResults = flattenPages<UserSearchItem>(users.data?.pages);
 	const topicResults = flattenPages<TopicSearchItem>(topics.data?.pages);
 
-	const refreshActiveTab = () => {
+	const refreshActiveTab = async () => {
 		const queryKey =
 			activeTab === "notes"
 				? notesQueryKey
 				: activeTab === "users"
 					? usersQueryKey
 					: topicsQueryKey;
-		void queryClient.resetQueries({ queryKey });
+		setIsManuallyRefreshing(true);
+		try {
+			await queryClient.resetQueries({ queryKey });
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
 	};
 
 	const toggleFollow = (userId: string) => {
 		if (currentUserId === userId) return;
+		if (socialActions.pending.follow(userId)) return;
 		fireHaptic();
-		setPendingFollowId(userId);
-		const started = socialActions.toggleFollow(
-			{ userId },
-			{
-				onSettled: () => {
-					setPendingFollowId(null);
-				},
-				redirectTo: "/search",
-			},
-		);
-		if (!started) {
-			setPendingFollowId(null);
-		}
+		socialActions.toggleFollow({ userId }, { redirectTo: "/search" });
 	};
 
 	const openTopic = (topicId: string) => {
@@ -134,8 +129,10 @@ export function SearchResults({
 				keyboardDismissMode="on-drag"
 				keyboardShouldPersistTaps="handled"
 				showsVerticalScrollIndicator={false}
-				refreshing={notes.isRefetching && !notes.isFetchingNextPage}
-				onRefresh={refreshActiveTab}
+				refreshing={isManuallyRefreshing}
+				onRefresh={() => {
+					void refreshActiveTab();
+				}}
 				onEndReached={() => {
 					if (
 						notes.hasNextPage &&
@@ -192,8 +189,10 @@ export function SearchResults({
 				showsVerticalScrollIndicator={false}
 				keyboardDismissMode="on-drag"
 				keyboardShouldPersistTaps="handled"
-				refreshing={users.isRefetching && !users.isFetchingNextPage}
-				onRefresh={refreshActiveTab}
+				refreshing={isManuallyRefreshing}
+				onRefresh={() => {
+					void refreshActiveTab();
+				}}
 				onEndReached={() => {
 					if (
 						users.hasNextPage &&
@@ -211,7 +210,6 @@ export function SearchResults({
 				renderItem={({ item }) => (
 					<UserResultRow
 						currentUserId={currentUserId}
-						isPending={pendingFollowId === item.id}
 						item={item}
 						onToggleFollow={toggleFollow}
 					/>
@@ -253,8 +251,10 @@ export function SearchResults({
 			showsVerticalScrollIndicator={false}
 			keyboardDismissMode="on-drag"
 			keyboardShouldPersistTaps="handled"
-			refreshing={topics.isRefetching && !topics.isFetchingNextPage}
-			onRefresh={refreshActiveTab}
+			refreshing={isManuallyRefreshing}
+			onRefresh={() => {
+				void refreshActiveTab();
+			}}
 			onEndReached={() => {
 				if (
 					topics.hasNextPage &&

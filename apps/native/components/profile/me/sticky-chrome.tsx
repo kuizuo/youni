@@ -1,4 +1,5 @@
-import Animated, { type AnimatedStyle } from "react-native-reanimated";
+import type { StyleProp, ViewStyle } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { MeProfileTopChrome } from "@/components/profile/me-profile-header";
 import { PROFILE_HERO_COLOR } from "@/components/profile/profile-tabs";
@@ -20,8 +21,8 @@ export function MeStickyChrome({
 	displayName: string;
 	image?: null | string;
 	isEditDisabled: boolean;
-	miniProfileStyle: AnimatedStyle;
-	style: AnimatedStyle;
+	miniProfileStyle: StyleProp<ViewStyle>;
+	style: StyleProp<ViewStyle>;
 	topChromeHeight: number;
 	onAvatarPress: () => void;
 	onEdit: () => void;

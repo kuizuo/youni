@@ -30,7 +30,6 @@ export default function UserConnectionsScreen() {
 	const title = getRouteParam(params.title) ?? "用户";
 	const socialActions = useSocialActions();
 	const [activeType, setActiveType] = useState<ConnectionType>(initialType);
-	const [pendingFollowId, setPendingFollowId] = useState<null | string>(null);
 	const connections = useQuery({
 		...orpc.connections.queryOptions({
 			input: { userId: userId || "missing", type: activeType, limit: 60 },
@@ -52,20 +51,13 @@ export default function UserConnectionsScreen() {
 
 	const runToggleFollow = (item: ConnectionUser) => {
 		if (socialActions.currentUserId === item.id) return;
-		setPendingFollowId(item.id);
-		const started = socialActions.toggleFollow(
+		if (socialActions.pending.follow(item.id)) return;
+		socialActions.toggleFollow(
 			{ userId: item.id },
 			{
-				onSettled: () => {
-					setPendingFollowId(null);
-				},
 				redirectTo: `/user/${item.id}`,
-				showSuccessToast: false,
 			},
 		);
-		if (!started) {
-			setPendingFollowId(null);
-		}
 	};
 
 	const toggleFollow = (item: ConnectionUser) => {
@@ -104,7 +96,6 @@ export default function UserConnectionsScreen() {
 					<ConnectionRow
 						activeType={activeType}
 						currentUserId={socialActions.currentUserId}
-						isPending={pendingFollowId === item.id}
 						item={item}
 						onOpenUser={openUser}
 						onToggleFollow={toggleFollow}
