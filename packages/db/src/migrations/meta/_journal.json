@@ -15,6 +15,13 @@
 			"when": 1783074811397,
 			"tag": "0001_wealthy_orphan",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "6",
+			"when": 1783338808678,
+			"tag": "0002_abandoned_unus",
+			"breakpoints": true
 		}
 	]
 }

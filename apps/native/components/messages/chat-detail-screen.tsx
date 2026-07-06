@@ -73,7 +73,11 @@ export default function ChatDetailScreen() {
 		[chat.data?.messages],
 	);
 	const peer = chat.data?.peer;
-	const canSend = content.trim().length > 0 && !sendMutation.isPending;
+	const disabledReason = chat.data?.isBlockedByPeer
+		? "对方已将你加入黑名单，暂时不能发送私信"
+		: undefined;
+	const canSend =
+		!disabledReason && content.trim().length > 0 && !sendMutation.isPending;
 
 	useEffect(() => {
 		const updateKeyboardHeight = (event: KeyboardEvent) => {
@@ -205,7 +209,9 @@ export default function ChatDetailScreen() {
 				peer={peer}
 				topInset={insets.top}
 				onBack={() => router.back()}
-				onOpenPeer={(id) => socialNavigation.goTo({ type: "user", id })}
+				onOpenSettings={() =>
+					socialNavigation.goTo({ type: "chatSettings", id: conversationId })
+				}
 			/>
 
 			<ChatMessageList
@@ -222,6 +228,7 @@ export default function ChatDetailScreen() {
 				canSend={canSend}
 				content={content}
 				emojiPanelHeight={emojiPanelHeight}
+				disabledReason={disabledReason}
 				isEmojiInputLocked={isEmojiInputLocked}
 				inputRef={inputRef}
 				isEmojiPickerOpen={isEmojiKeyboardOpen}

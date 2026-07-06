@@ -10,12 +10,12 @@ export function ChatHeader({
 	peer,
 	topInset,
 	onBack,
-	onOpenPeer,
+	onOpenSettings,
 }: {
 	peer?: ChatPeer;
 	topInset: number;
 	onBack: () => void;
-	onOpenPeer: (id: string) => void;
+	onOpenSettings: () => void;
 }) {
 	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
@@ -57,11 +57,11 @@ export function ChatHeader({
 						size="sm"
 						variant="ghost"
 						className="rounded-full"
-						accessibilityLabel="查看主页"
-						onPress={() => onOpenPeer(peer.id)}
+						accessibilityLabel="更多"
+						onPress={onOpenSettings}
 					>
 						<Ionicons
-							name="person-circle-outline"
+							name="ellipsis-horizontal"
 							size={24}
 							color={foregroundColor}
 						/>

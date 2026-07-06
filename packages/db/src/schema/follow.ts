@@ -19,3 +19,20 @@ export const follow = sqliteTable(
 		index("follow_following_idx").on(table.followingId),
 	],
 );
+
+export const userBlock = sqliteTable(
+	"user_block",
+	{
+		blockerId: text("blocker_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		blockedId: text("blocked_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.blockerId, table.blockedId] }),
+		index("user_block_blocked_idx").on(table.blockedId),
+	],
+);

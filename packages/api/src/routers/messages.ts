@@ -4,7 +4,9 @@ import {
 	directConversation,
 	directConversationParticipant,
 	directMessage,
+	follow,
 	user,
+	userBlock,
 } from "@youni/db/schema/index";
 import { and, count, desc, eq, gt, ne } from "drizzle-orm";
 import z from "zod";
@@ -15,6 +17,14 @@ import { notifyMessage } from "../lib/notifications";
 const conversationInput = z.object({
 	conversationId: z.string().min(1),
 	limit: z.number().int().min(1).max(80).default(40),
+});
+
+const conversationActionInput = z.object({
+	conversationId: z.string().min(1),
+});
+
+const blockInput = conversationActionInput.extend({
+	blocked: z.boolean(),
 });
 
 const startInput = z.object({
@@ -38,6 +48,7 @@ async function assertParticipant(conversationId: string, userId: string) {
 	const [participant] = await createDb()
 		.select({
 			conversationId: directConversationParticipant.conversationId,
+			clearedAt: directConversationParticipant.clearedAt,
 			lastReadAt: directConversationParticipant.lastReadAt,
 		})
 		.from(directConversationParticipant)
@@ -54,6 +65,23 @@ async function assertParticipant(conversationId: string, userId: string) {
 	}
 
 	return participant;
+}
+
+function getVisibleMessageWhere(
+	conversationId: string,
+	clearedAt: Date | null,
+) {
+	const conversationWhere = eq(directMessage.conversationId, conversationId);
+	if (!clearedAt) return conversationWhere;
+	return and(conversationWhere, gt(directMessage.createdAt, clearedAt));
+}
+
+function getLatestDate(...dates: Array<Date | null>) {
+	return dates.reduce<Date | null>((latest, date) => {
+		if (!date) return latest;
+		if (!latest || date.getTime() > latest.getTime()) return date;
+		return latest;
+	}, null);
 }
 
 async function getPeer(conversationId: string, viewerId: string) {
@@ -150,6 +178,47 @@ async function ensureConversation(viewerId: string, peerId: string) {
 	return conversation.id;
 }
 
+async function getConversationState(conversationId: string, viewerId: string) {
+	const peer = await getPeer(conversationId, viewerId);
+	const db = createDb();
+	const [following, hasBlockedPeer, isBlockedByPeer] = await Promise.all([
+		db
+			.select({ followingId: follow.followingId })
+			.from(follow)
+			.where(
+				and(eq(follow.followerId, viewerId), eq(follow.followingId, peer.id)),
+			)
+			.limit(1),
+		db
+			.select({ blockedId: userBlock.blockedId })
+			.from(userBlock)
+			.where(
+				and(
+					eq(userBlock.blockerId, viewerId),
+					eq(userBlock.blockedId, peer.id),
+				),
+			)
+			.limit(1),
+		db
+			.select({ blockerId: userBlock.blockerId })
+			.from(userBlock)
+			.where(
+				and(
+					eq(userBlock.blockerId, peer.id),
+					eq(userBlock.blockedId, viewerId),
+				),
+			)
+			.limit(1),
+	]);
+
+	return {
+		peer,
+		hasBlockedPeer: hasBlockedPeer.length > 0,
+		isBlockedByPeer: isBlockedByPeer.length > 0,
+		isFollowing: following.length > 0,
+	};
+}
+
 export const messagesRouter = {
 	start: protectedProcedure
 		.input(startInput)
@@ -168,6 +237,7 @@ export const messagesRouter = {
 		const rows = await db
 			.select({
 				id: directConversation.id,
+				clearedAt: directConversationParticipant.clearedAt,
 				updatedAt: directConversation.updatedAt,
 				lastReadAt: directConversationParticipant.lastReadAt,
 			})
@@ -182,6 +252,7 @@ export const messagesRouter = {
 
 		return Promise.all(
 			rows.map(async (row) => {
+				const unreadAfter = getLatestDate(row.lastReadAt, row.clearedAt);
 				const [peer, [lastMessage], [unread]] = await Promise.all([
 					getPeer(row.id, viewerId),
 					db
@@ -192,18 +263,18 @@ export const messagesRouter = {
 							createdAt: directMessage.createdAt,
 						})
 						.from(directMessage)
-						.where(eq(directMessage.conversationId, row.id))
+						.where(getVisibleMessageWhere(row.id, row.clearedAt))
 						.orderBy(desc(directMessage.createdAt))
 						.limit(1),
 					db
 						.select({ value: count() })
 						.from(directMessage)
 						.where(
-							row.lastReadAt
+							unreadAfter
 								? and(
 										eq(directMessage.conversationId, row.id),
 										ne(directMessage.senderId, viewerId),
-										gt(directMessage.createdAt, row.lastReadAt),
+										gt(directMessage.createdAt, unreadAfter),
 									)
 								: and(
 										eq(directMessage.conversationId, row.id),
@@ -227,11 +298,14 @@ export const messagesRouter = {
 		.input(conversationInput)
 		.handler(async ({ input, context }) => {
 			const viewerId = context.session.user.id;
-			await assertParticipant(input.conversationId, viewerId);
+			const participant = await assertParticipant(
+				input.conversationId,
+				viewerId,
+			);
 
 			const db = createDb();
-			const [peer, rows] = await Promise.all([
-				getPeer(input.conversationId, viewerId),
+			const [state, rows] = await Promise.all([
+				getConversationState(input.conversationId, viewerId),
 				db
 					.select({
 						id: directMessage.id,
@@ -240,7 +314,9 @@ export const messagesRouter = {
 						createdAt: directMessage.createdAt,
 					})
 					.from(directMessage)
-					.where(eq(directMessage.conversationId, input.conversationId))
+					.where(
+						getVisibleMessageWhere(input.conversationId, participant.clearedAt),
+					)
 					.orderBy(desc(directMessage.createdAt))
 					.limit(input.limit),
 			]);
@@ -260,9 +336,79 @@ export const messagesRouter = {
 
 			return {
 				id: input.conversationId,
-				peer,
+				peer: state.peer,
+				hasBlockedPeer: state.hasBlockedPeer,
+				isBlockedByPeer: state.isBlockedByPeer,
 				messages: rows.reverse(),
 			};
+		}),
+
+	settings: protectedProcedure
+		.input(conversationActionInput)
+		.handler(async ({ input, context }) => {
+			const viewerId = context.session.user.id;
+			await assertParticipant(input.conversationId, viewerId);
+			const state = await getConversationState(input.conversationId, viewerId);
+			return {
+				id: input.conversationId,
+				...state,
+			};
+		}),
+
+	setBlocked: activeUserProcedure
+		.input(blockInput)
+		.handler(async ({ input, context }) => {
+			const viewerId = context.session.user.id;
+			await assertParticipant(input.conversationId, viewerId);
+			const peer = await getPeer(input.conversationId, viewerId);
+			const db = createDb();
+
+			if (input.blocked) {
+				await db
+					.insert(userBlock)
+					.values({
+						blockerId: viewerId,
+						blockedId: peer.id,
+					})
+					.onConflictDoNothing();
+			} else {
+				await db
+					.delete(userBlock)
+					.where(
+						and(
+							eq(userBlock.blockerId, viewerId),
+							eq(userBlock.blockedId, peer.id),
+						),
+					);
+			}
+
+			const state = await getConversationState(input.conversationId, viewerId);
+			return {
+				blocked: state.hasBlockedPeer,
+				isBlockedByPeer: state.isBlockedByPeer,
+			};
+		}),
+
+	clear: activeUserProcedure
+		.input(conversationActionInput)
+		.handler(async ({ input, context }) => {
+			const viewerId = context.session.user.id;
+			await assertParticipant(input.conversationId, viewerId);
+			const now = new Date();
+			await createDb()
+				.update(directConversationParticipant)
+				.set({ clearedAt: now, lastReadAt: now, updatedAt: now })
+				.where(
+					and(
+						eq(
+							directConversationParticipant.conversationId,
+							input.conversationId,
+						),
+						eq(directConversationParticipant.userId, viewerId),
+					),
+				);
+
+			return { clearedAt: now, ok: true };
 		}),
 
 	send: activeUserProcedure
@@ -272,6 +418,23 @@ export const messagesRouter = {
 			await assertParticipant(input.conversationId, viewerId);
 			const peer = await getPeer(input.conversationId, viewerId);
 			const db = createDb();
+			const [block] = await db
+				.select({ blockerId: userBlock.blockerId })
+				.from(userBlock)
+				.where(
+					and(
+						eq(userBlock.blockerId, peer.id),
+						eq(userBlock.blockedId, viewerId),
+					),
+				)
+				.limit(1);
+
+			if (block) {
+				throw new ORPCError("FORBIDDEN", {
+					message: "对方已将你加入黑名单，暂时不能发送私信",
+				});
+			}
+
 			const now = new Date();
 			const [message] = await db
 				.insert(directMessage)

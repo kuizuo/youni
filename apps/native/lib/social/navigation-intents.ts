@@ -4,6 +4,7 @@ import { getLoginHref } from "@/lib/auth-navigation";
 
 export type SocialNavigationIntent =
 	| { type: "chat"; id: string }
+	| { type: "chatSettings"; id: string }
 	| { redirectTo?: string; type: "login" }
 	| { type: "messages" }
 	| { type: "note"; id: string }
@@ -33,6 +34,11 @@ export function toSocialHref(intent: SocialNavigationIntent): Href {
 		case "chat":
 			return {
 				pathname: "/chat/[id]",
+				params: { id: intent.id },
+			} as unknown as Href;
+		case "chatSettings":
+			return {
+				pathname: "/chat-settings/[id]",
 				params: { id: intent.id },
 			} as unknown as Href;
 		case "login":

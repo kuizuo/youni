@@ -6,6 +6,8 @@ export type ChatMessage = {
 };
 
 export type ChatPeer = {
+	bio?: null | string;
+	email?: string;
 	handle?: null | string;
 	id: string;
 	image?: null | string;

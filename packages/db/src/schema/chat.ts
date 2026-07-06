@@ -39,6 +39,7 @@ export const directConversationParticipant = sqliteTable(
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
 		lastReadAt: timestampColumn("last_read_at"),
+		clearedAt: timestampColumn("cleared_at"),
 		createdAt: timestampColumn("created_at").defaultNow().notNull(),
 		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
