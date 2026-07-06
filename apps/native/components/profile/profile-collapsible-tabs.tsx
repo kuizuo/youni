@@ -10,7 +10,7 @@ import {
 	type NativeScrollEvent,
 	type NativeSyntheticEvent,
 	RefreshControl,
-	ScrollView,
+	type ScrollView,
 	type StyleProp,
 	useWindowDimensions,
 	View,
@@ -20,6 +20,7 @@ import Animated, {
 	Extrapolation,
 	interpolate,
 	runOnJS,
+	type SharedValue,
 	useAnimatedReaction,
 	useAnimatedScrollHandler,
 	useAnimatedStyle,
@@ -68,6 +69,8 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	renderTabBar: (options: {
 		elevated: boolean;
 		onSelect: (tab: Key) => void;
+		pageWidth: number;
+		pagerScrollX: SharedValue<number>;
 	}) => ReactNode;
 	tabBarHeight: number;
 	tabs: readonly CollapsibleTab<Key>[];
@@ -80,6 +83,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 		typeof setTimeout
 	>>(null);
 	const scrollY = useSharedValue(0);
+	const pagerScrollX = useSharedValue(0);
 	const [isSticky, setIsSticky] = useState(false);
 	const [pageHeights, setPageHeights] = useState<Partial<Record<Key, number>>>(
 		{},
@@ -97,8 +101,11 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	const onScroll = useAnimatedScrollHandler((event) => {
 		scrollY.value = event.contentOffset.y;
 	});
+	const onPagerScroll = useAnimatedScrollHandler((event) => {
+		pagerScrollX.value = event.contentOffset.x;
+	});
 	useAnimatedReaction(
-		() => scrollY.value >= stickyTrigger - 1,
+		() => scrollY.value >= stickyTrigger,
 		(current, previous) => {
 			if (current !== previous) {
 				runOnJS(setIsSticky)(current);
@@ -132,22 +139,10 @@ export function ProfileCollapsibleTabs<Key extends string>({
 		],
 	}));
 	const stickyTabStyle = useAnimatedStyle(() => ({
-		opacity: interpolate(
-			scrollY.value,
-			[stickyTrigger - 8, stickyTrigger + 8],
-			[0, 1],
-			Extrapolation.CLAMP,
-		),
-		transform: [
-			{
-				translateY: interpolate(
-					scrollY.value,
-					[stickyTrigger - 8, stickyTrigger + 8],
-					[8, 0],
-					Extrapolation.CLAMP,
-				),
-			},
-		],
+		opacity: scrollY.value >= stickyTrigger ? 1 : 0,
+	}));
+	const inlineTabStyle = useAnimatedStyle(() => ({
+		opacity: scrollY.value >= stickyTrigger ? 0 : 1,
 	}));
 
 	const selectTab = (tab: Key) => {
@@ -196,7 +191,8 @@ export function ProfileCollapsibleTabs<Key extends string>({
 			animated: false,
 			x: activeIndex * dimensions.width,
 		});
-	}, [activeIndex, dimensions.width]);
+		pagerScrollX.value = activeIndex * dimensions.width;
+	}, [activeIndex, dimensions.width, pagerScrollX]);
 
 	useEffect(() => {
 		return () => {
@@ -230,9 +226,14 @@ export function ProfileCollapsibleTabs<Key extends string>({
 				<View style={{ backgroundColor: headerColor, height: headerHeight }}>
 					{renderHeader()}
 				</View>
-				<View style={{ backgroundColor }}>
-					{renderTabBar({ elevated: false, onSelect: selectTab })}
-				</View>
+				<Animated.View style={[{ backgroundColor }, inlineTabStyle]}>
+					{renderTabBar({
+						elevated: false,
+						onSelect: selectTab,
+						pageWidth: dimensions.width,
+						pagerScrollX,
+					})}
+				</Animated.View>
 				<View
 					style={{
 						backgroundColor,
@@ -240,7 +241,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 						overflow: "hidden",
 					}}
 				>
-					<ScrollView
+					<Animated.ScrollView
 						ref={pagerRef}
 						horizontal
 						bounces={false}
@@ -251,6 +252,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 						scrollEventThrottle={16}
 						showsHorizontalScrollIndicator={false}
 						onMomentumScrollEnd={handlePagerEnd}
+						onScroll={onPagerScroll}
 					>
 						{tabs.map((tab, index) => (
 							<View
@@ -282,7 +284,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 								</View>
 							</View>
 						))}
-					</ScrollView>
+					</Animated.ScrollView>
 				</View>
 			</Animated.ScrollView>
 
@@ -303,7 +305,12 @@ export function ProfileCollapsibleTabs<Key extends string>({
 					stickyTabStyle,
 				]}
 			>
-				{renderTabBar({ elevated: true, onSelect: selectTab })}
+				{renderTabBar({
+					elevated: true,
+					onSelect: selectTab,
+					pageWidth: dimensions.width,
+					pagerScrollX,
+				})}
 			</Animated.View>
 		</View>
 	);

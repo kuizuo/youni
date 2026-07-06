@@ -11,6 +11,7 @@ export function MeStickyChrome({
 	miniProfileStyle,
 	style,
 	topChromeHeight,
+	onAvatarPress,
 	onEdit,
 	onMenu,
 	onSearch,
@@ -22,6 +23,7 @@ export function MeStickyChrome({
 	miniProfileStyle: AnimatedStyle;
 	style: AnimatedStyle;
 	topChromeHeight: number;
+	onAvatarPress: () => void;
 	onEdit: () => void;
 	onMenu: () => void;
 	onSearch: () => void;
@@ -46,6 +48,7 @@ export function MeStickyChrome({
 				isEditDisabled={isEditDisabled}
 				miniProfileStyle={miniProfileStyle}
 				topChromeHeight={topChromeHeight}
+				onAvatarPress={onAvatarPress}
 				onEdit={onEdit}
 				onMenu={onMenu}
 				onSearch={onSearch}

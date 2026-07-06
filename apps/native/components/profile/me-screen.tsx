@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { useThemeColor } from "heroui-native";
+import { Button, Spinner, Text, useThemeColor } from "heroui-native";
 import { useMemo, useState } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MeEditProfileSheetHost } from "@/components/profile/me/edit-profile-sheet-host";
 import { MeTabEmptyState } from "@/components/profile/me/empty-state";
@@ -27,11 +29,15 @@ import {
 	type ProfileTabKey,
 } from "@/components/profile/profile-tabs";
 import { authClient } from "@/lib/auth-client";
+import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
+import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export default function MeScreen() {
 	const router = useRouter();
+	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
 	const dimensions = useWindowDimensions();
 	const session = authClient.useSession();
@@ -46,6 +52,8 @@ export default function MeScreen() {
 	>(null);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [isEditOpen, setIsEditOpen] = useState(false);
+	const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
+	const [isChangingAvatar, setIsChangingAvatar] = useState(false);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
 		...orpc.meProfile.queryOptions(),
@@ -80,7 +88,9 @@ export default function MeScreen() {
 	const displayName = profile?.name ?? currentUser?.name ?? "我";
 	const displayEmail = currentUser?.email ?? "登录账号";
 	const displayHandle = profile?.handle ? `@${profile.handle}` : displayEmail;
+	const avatarImage = profile?.image ?? currentUser?.image;
 	const avatarInitial = displayName.slice(0, 1);
+	const updateProfile = useMutation(orpc.updateProfile.mutationOptions());
 
 	const feedItemsByTab = useMemo(
 		() => ({
@@ -118,6 +128,43 @@ export default function MeScreen() {
 
 	const openCreate = () => {
 		router.push("/create" as Href);
+	};
+
+	const openAvatarPreview = () => {
+		fireHaptic();
+		setIsAvatarPreviewOpen(true);
+	};
+
+	const changeAvatar = async () => {
+		fireHaptic();
+		setIsChangingAvatar(true);
+		try {
+			const uploaded = await pickAndUploadAvatar();
+			if (!uploaded) return;
+
+			await updateProfile.mutateAsync({
+				bio: profile?.bio?.trim() ?? "",
+				gender:
+					profile?.gender === "male" || profile?.gender === "female"
+						? profile.gender
+						: "unknown",
+				handle: profile?.handle?.trim() ?? "",
+				image: uploaded.url,
+				name: displayName.trim() || "我",
+			});
+			await profileQuery.refetch();
+			await queryClient.refetchQueries();
+			toast.show({ variant: "success", label: "头像已更换" });
+		} catch (error) {
+			if (isRequestTimeoutError(error)) return;
+			toast.show({
+				variant: "danger",
+				label: "头像更换失败",
+				description: error instanceof Error ? error.message : undefined,
+			});
+		} finally {
+			setIsChangingAvatar(false);
+		}
 	};
 
 	const refreshTab = async (tab: ProfileTabKey) => {
@@ -159,11 +206,12 @@ export default function MeScreen() {
 						displayHandle={displayHandle}
 						displayName={displayName}
 						headerHeight={headerHeight}
-						image={profile?.image ?? currentUser?.image}
+						image={avatarImage}
 						isAccountLoading={isAccountLoading}
 						isProfileLoading={isProfileLoading}
 						profile={profile}
 						topChromeHeight={topChromeHeight}
+						onAvatarPress={openAvatarPreview}
 						onMeasuredHeight={(height) => {
 							setMeasuredHeaderHeight((current) =>
 								current === height ? current : height,
@@ -176,11 +224,12 @@ export default function MeScreen() {
 					<MeStickyChrome
 						avatarInitial={avatarInitial}
 						displayName={displayName}
-						image={profile?.image ?? currentUser?.image}
+						image={avatarImage}
 						isEditDisabled={isProfileLoading}
 						miniProfileStyle={miniProfileStyle}
 						style={style}
 						topChromeHeight={topChromeHeight}
+						onAvatarPress={openAvatarPreview}
 						onEdit={() => {
 							fireHaptic();
 							setIsEditOpen(true);
@@ -189,7 +238,7 @@ export default function MeScreen() {
 						onSearch={openSearch}
 					/>
 				)}
-				renderTabBar={({ elevated, onSelect }) => (
+				renderTabBar={({ elevated, onSelect, pageWidth, pagerScrollX }) => (
 					<ProfileTabBar
 						accentColor={accentColor}
 						activeTab={activeTab}
@@ -197,6 +246,8 @@ export default function MeScreen() {
 						elevated={elevated}
 						foregroundColor={foregroundColor}
 						mutedColor={mutedColor}
+						pageWidth={pageWidth}
+						pagerScrollX={pagerScrollX}
 						onSelect={onSelect}
 					/>
 				)}
@@ -220,10 +271,22 @@ export default function MeScreen() {
 			<ProfileMenuDrawer
 				displayHandle={displayHandle}
 				displayName={displayName}
-				image={profile?.image ?? currentUser?.image}
+				image={avatarImage}
 				isVisible={isMenuOpen}
 				onClose={() => setIsMenuOpen(false)}
 				onSignOut={signOut}
+			/>
+
+			<AvatarPreviewModal
+				displayName={displayName}
+				image={avatarImage}
+				initial={avatarInitial}
+				insetsBottom={insets.bottom}
+				insetsTop={insets.top}
+				isChanging={isChangingAvatar || updateProfile.isPending}
+				isVisible={isAvatarPreviewOpen}
+				onChangeAvatar={changeAvatar}
+				onClose={() => setIsAvatarPreviewOpen(false)}
 			/>
 
 			<MeEditProfileSheetHost
@@ -240,5 +303,114 @@ export default function MeScreen() {
 				}}
 			/>
 		</View>
+	);
+}
+
+function AvatarPreviewModal({
+	displayName,
+	image,
+	initial,
+	insetsBottom,
+	insetsTop,
+	isChanging,
+	isVisible,
+	onChangeAvatar,
+	onClose,
+}: {
+	displayName: string;
+	image?: null | string;
+	initial: string;
+	insetsBottom: number;
+	insetsTop: number;
+	isChanging: boolean;
+	isVisible: boolean;
+	onChangeAvatar: () => void;
+	onClose: () => void;
+}) {
+	const accentForegroundColor = useThemeColor("accent-foreground");
+	const dimensions = useWindowDimensions();
+	const previewSize = Math.min(dimensions.width - 48, 320);
+
+	return (
+		<Modal
+			animationType="fade"
+			onRequestClose={onClose}
+			transparent
+			visible={isVisible}
+		>
+			<View className="flex-1 bg-black">
+				<Pressable className="absolute inset-0" onPress={onClose} />
+				<View
+					className="absolute right-4 left-4 flex-row justify-end"
+					style={{ top: insetsTop + 12 }}
+				>
+					<Button
+						isIconOnly
+						variant="ghost"
+						className="rounded-full bg-white/15"
+						accessibilityLabel="关闭头像预览"
+						onPress={onClose}
+					>
+						<Ionicons name="close" size={22} color="#ffffff" />
+					</Button>
+				</View>
+
+				<View className="flex-1 items-center justify-center px-6">
+					{image ? (
+						<Image
+							source={{ uri: image }}
+							contentFit="cover"
+							className="bg-white/10"
+							style={{
+								borderRadius: previewSize / 2,
+								height: previewSize,
+								width: previewSize,
+							}}
+						/>
+					) : (
+						<View
+							accessibilityLabel={displayName}
+							className="items-center justify-center bg-white/10"
+							style={{
+								borderRadius: previewSize / 2,
+								height: previewSize,
+								width: previewSize,
+							}}
+						>
+							<Text.Paragraph
+								weight="bold"
+								style={{ color: "#ffffff", fontSize: 88, lineHeight: 104 }}
+							>
+								{initial}
+							</Text.Paragraph>
+						</View>
+					)}
+				</View>
+
+				<View
+					className="absolute right-4 left-4"
+					style={{ bottom: Math.max(insetsBottom, 16) }}
+				>
+					<Button
+						variant="primary"
+						className="rounded-full"
+						feedbackVariant="scale-ripple"
+						isDisabled={isChanging}
+						onPress={onChangeAvatar}
+					>
+						{isChanging ? (
+							<Spinner size="sm" color={accentForegroundColor} />
+						) : (
+							<Ionicons
+								name="camera-outline"
+								size={18}
+								color={accentForegroundColor}
+							/>
+						)}
+						<Button.Label>{isChanging ? "更换中" : "更换头像"}</Button.Label>
+					</Button>
+				</View>
+			</View>
+		</Modal>
 	);
 }

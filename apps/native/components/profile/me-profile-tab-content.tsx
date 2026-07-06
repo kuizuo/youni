@@ -1,6 +1,10 @@
 import { PressableFeedback, Text, useThemeColor } from "heroui-native";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { Platform, View } from "react-native";
+import Animated, {
+	type SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 
 import { NoteCard } from "@/components/note-card";
 import {
@@ -10,6 +14,8 @@ import {
 } from "@/components/profile/profile-tabs";
 import { ErrorState, FeedSkeleton } from "@/components/social-states";
 import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
+
+const TAB_INDICATOR_WIDTH = 96;
 
 export type ProfileFeedNote = Parameters<typeof NoteCard>[0]["note"];
 export type ProfileFeedItem = ReturnType<
@@ -28,6 +34,8 @@ export function ProfileTabBar({
 	foregroundColor,
 	mutedColor,
 	onSelect,
+	pageWidth,
+	pagerScrollX,
 }: {
 	accentColor: string;
 	activeTab: ProfileTabKey;
@@ -36,7 +44,22 @@ export function ProfileTabBar({
 	foregroundColor: string;
 	mutedColor: string;
 	onSelect: (tab: ProfileTabKey) => void;
+	pageWidth: number;
+	pagerScrollX: SharedValue<number>;
 }) {
+	const [barWidth, setBarWidth] = useState(0);
+
+	const indicatorStyle = useAnimatedStyle(() => ({
+		transform: [
+			{
+				translateX:
+					(pageWidth ? pagerScrollX.value / pageWidth : 0) *
+						(barWidth / PROFILE_TABS.length) +
+					(barWidth / PROFILE_TABS.length - TAB_INDICATOR_WIDTH) / 2,
+			},
+		],
+	}));
+
 	return (
 		<View
 			style={{
@@ -45,7 +68,15 @@ export function ProfileTabBar({
 				boxShadow: elevated ? "0 1px 0 rgba(0, 0, 0, 0.07)" : undefined,
 			}}
 		>
-			<View className="mx-auto h-full w-full max-w-xl flex-row items-center">
+			<View
+				className="relative mx-auto h-full w-full max-w-xl flex-row items-center"
+				onLayout={(event) => {
+					const nextWidth = Math.ceil(event.nativeEvent.layout.width);
+					setBarWidth((current) =>
+						current === nextWidth ? current : nextWidth,
+					);
+				}}
+			>
 				{PROFILE_TABS.map((tab) => {
 					const selected = tab.key === activeTab;
 					return (
@@ -58,19 +89,30 @@ export function ProfileTabBar({
 						>
 							<Text.Paragraph
 								weight="bold"
-								style={{ color: selected ? foregroundColor : mutedColor }}
+								style={{
+									color: selected ? foregroundColor : mutedColor,
+									fontSize: 14,
+									lineHeight: 18,
+								}}
 							>
 								{tab.label}
 							</Text.Paragraph>
-							<View
-								className="absolute bottom-0 h-1 w-24 rounded-full"
-								style={{
-									backgroundColor: selected ? accentColor : "transparent",
-								}}
-							/>
 						</PressableFeedback>
 					);
 				})}
+				{barWidth ? (
+					<Animated.View
+						pointerEvents="none"
+						className="absolute bottom-0 left-0 h-1 rounded-full"
+						style={[
+							{
+								backgroundColor: accentColor,
+								width: TAB_INDICATOR_WIDTH,
+							},
+							indicatorStyle,
+						]}
+					/>
+				) : null}
 			</View>
 		</View>
 	);

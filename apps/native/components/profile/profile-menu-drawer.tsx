@@ -1,14 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import {
-	Avatar,
-	Button,
-	PressableFeedback,
-	Surface,
-	Text,
-	useThemeColor,
-} from "heroui-native";
+import { Avatar, Button, Surface, Text, useThemeColor } from "heroui-native";
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn, SlideInLeft } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -93,7 +86,7 @@ export function ProfileMenuDrawer({
 				<Animated.View
 					entering={SlideInLeft.duration(220)}
 					style={{
-						paddingBottom: insets.bottom + 14,
+						paddingBottom: Math.max(insets.bottom * 0.25, 8),
 						paddingTop: insets.top + 18,
 						width: drawerWidth,
 					}}
@@ -110,7 +103,11 @@ export function ProfileMenuDrawer({
 									<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
 								</Avatar>
 								<View className="min-w-0 flex-1">
-									<Text.Paragraph weight="bold" numberOfLines={1}>
+									<Text.Paragraph
+										weight="bold"
+										numberOfLines={1}
+										style={{ lineHeight: 22 }}
+									>
 										{displayName}
 									</Text.Paragraph>
 									<Text.Paragraph
@@ -165,15 +162,6 @@ export function ProfileMenuDrawer({
 						</View>
 					</Animated.View>
 				</Animated.View>
-				<PressableFeedback
-					accessibilityLabel="关闭菜单"
-					accessibilityRole="button"
-					className="absolute size-10 items-center justify-center rounded-full bg-white/20"
-					style={{ left: drawerWidth + 10, top: insets.top + 16 }}
-					onPress={onClose}
-				>
-					<Ionicons name="close" size={20} color="#ffffff" />
-				</PressableFeedback>
 			</View>
 		</Modal>
 	);

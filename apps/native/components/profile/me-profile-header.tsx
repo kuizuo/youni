@@ -20,6 +20,7 @@ export function MeProfileHeader({
 	isAccountLoading,
 	isProfileLoading,
 	onMeasuredHeight,
+	onAvatarPress,
 	onOpenConnections,
 	profile,
 	topChromeHeight,
@@ -32,6 +33,7 @@ export function MeProfileHeader({
 	isAccountLoading: boolean;
 	isProfileLoading: boolean;
 	onMeasuredHeight: (height: number) => void;
+	onAvatarPress: () => void;
 	onOpenConnections: (type: "followers" | "following") => void;
 	profile?: {
 		bio?: null | string;
@@ -58,16 +60,26 @@ export function MeProfileHeader({
 				}}
 			>
 				<View className="flex-row items-center gap-4">
-					<View className="size-24 items-center justify-center overflow-hidden rounded-full border border-white/50 bg-black/20">
-						{isAccountLoading ? (
-							<Skeleton className="size-24 rounded-full" />
-						) : (
-							<Avatar size="lg" alt={displayName} className="size-24">
-								{image ? <Avatar.Image source={{ uri: image }} /> : null}
-								<Avatar.Fallback>{avatarInitial}</Avatar.Fallback>
-							</Avatar>
-						)}
-					</View>
+					<Button
+						isIconOnly
+						variant="ghost"
+						className="size-22 rounded-full p-0"
+						accessibilityLabel="查看头像"
+						feedbackVariant="scale-ripple"
+						isDisabled={isAccountLoading}
+						onPress={onAvatarPress}
+					>
+						<View className="size-22 items-center justify-center overflow-hidden rounded-full border border-white/50 bg-black/20">
+							{isAccountLoading ? (
+								<Skeleton className="size-22 rounded-full" />
+							) : (
+								<Avatar size="lg" alt={displayName} className="size-22">
+									{image ? <Avatar.Image source={{ uri: image }} /> : null}
+									<Avatar.Fallback>{avatarInitial}</Avatar.Fallback>
+								</Avatar>
+							)}
+						</View>
+					</Button>
 
 					<View className="min-w-0 flex-1 gap-2">
 						{isAccountLoading ? (
@@ -80,7 +92,7 @@ export function MeProfileHeader({
 								<Text.Paragraph
 									weight="bold"
 									numberOfLines={1}
-									style={{ color: "#ffffff", fontSize: 26 }}
+									style={{ color: "#ffffff", fontSize: 26, lineHeight: 34 }}
 								>
 									{displayName}
 								</Text.Paragraph>
@@ -143,6 +155,7 @@ export function MeProfileTopChrome({
 	image,
 	isEditDisabled,
 	miniProfileStyle,
+	onAvatarPress,
 	onEdit,
 	onMenu,
 	onSearch,
@@ -153,6 +166,7 @@ export function MeProfileTopChrome({
 	image?: null | string;
 	isEditDisabled: boolean;
 	miniProfileStyle: StyleProp<ViewStyle>;
+	onAvatarPress: () => void;
 	onEdit: () => void;
 	onMenu: () => void;
 	onSearch: () => void;
@@ -173,14 +187,28 @@ export function MeProfileTopChrome({
 				className="min-w-0 flex-1 flex-row items-center justify-center gap-2 px-3"
 				style={miniProfileStyle}
 			>
-				<Avatar size="sm" alt={displayName} className="border border-white">
-					{image ? <Avatar.Image source={{ uri: image }} /> : null}
-					<Avatar.Fallback>{avatarInitial}</Avatar.Fallback>
-				</Avatar>
+				<Button
+					isIconOnly
+					size="sm"
+					variant="ghost"
+					className="size-7 rounded-full p-0"
+					accessibilityLabel="查看头像"
+					feedbackVariant="scale-ripple"
+					onPress={onAvatarPress}
+				>
+					<Avatar
+						size="sm"
+						alt={displayName}
+						className="size-7 border border-white"
+					>
+						{image ? <Avatar.Image source={{ uri: image }} /> : null}
+						<Avatar.Fallback>{avatarInitial}</Avatar.Fallback>
+					</Avatar>
+				</Button>
 				<Text.Paragraph
 					weight="bold"
 					numberOfLines={1}
-					style={{ color: "#ffffff" }}
+					style={{ color: "#ffffff", lineHeight: 22 }}
 				>
 					{displayName}
 				</Text.Paragraph>
