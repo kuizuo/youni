@@ -31,12 +31,14 @@ export function FeedSkeleton() {
 
 export function EmptyState({
 	icon = "sparkles-outline",
+	iconColor,
 	title,
 	description,
 	actionLabel,
 	onAction,
 }: {
 	icon?: keyof typeof Ionicons.glyphMap;
+	iconColor?: string;
 	title: string;
 	description: string;
 	actionLabel?: string;
@@ -47,7 +49,7 @@ export function EmptyState({
 	return (
 		<View className="mx-6 my-14 items-center gap-3 px-6 py-4">
 			<View className="size-12 items-center justify-center">
-				<Ionicons name={icon} size={26} color={accentColor} />
+				<Ionicons name={icon} size={26} color={iconColor ?? accentColor} />
 			</View>
 			<Text.Paragraph align="center" weight="semibold">
 				{title}

@@ -2,9 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
 import { PressableFeedback, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
-
-import { AppSeparator } from "@/components/shared/app-separator";
-
+import type { NotificationIconColor } from "@/components/messages/notification-colors";
 import { NOTIFICATION_SHORTCUTS } from "./constants";
 import type { MessageGroupSummary } from "./types";
 
@@ -17,73 +15,63 @@ export function NotificationShortcutsSection({
 }) {
 	return (
 		<View className="bg-background">
-			<View className="px-4 py-3">
-				<View className="gap-2">
-					<Text.Paragraph
-						type="body-sm"
-						weight="semibold"
-						className="text-foreground"
-					>
-						互动消息
-					</Text.Paragraph>
-					<View className="gap-2">
-						{NOTIFICATION_SHORTCUTS.map((item) => {
-							const group = messageGroups.find((group) => group.id === item.id);
-							return (
-								<NotificationShortcut
-									key={item.id}
-									description={item.description}
-									icon={item.icon}
-									title={item.title}
-									unreadCount={group?.unreadCount ?? 0}
-									onPress={() => onOpenAction(item.href)}
-								/>
-							);
-						})}
-					</View>
+			<View className="px-2 py-2">
+				<View className="flex-row gap-1">
+					{NOTIFICATION_SHORTCUTS.map((item) => {
+						const group = messageGroups.find((group) => group.id === item.id);
+						return (
+							<NotificationShortcut
+								key={item.id}
+								icon={item.icon}
+								iconColor={item.iconColor}
+								title={item.title}
+								unreadCount={group?.unreadCount ?? 0}
+								onPress={() => onOpenAction(item.href)}
+							/>
+						);
+					})}
 				</View>
 			</View>
-			<AppSeparator />
 		</View>
 	);
 }
 
 function NotificationShortcut({
-	description,
 	icon,
+	iconColor,
 	onPress,
 	title,
 	unreadCount,
 }: {
-	description: string;
 	icon: keyof typeof Ionicons.glyphMap;
+	iconColor: NotificationIconColor;
 	onPress: () => void;
 	title: string;
 	unreadCount: number;
 }) {
-	const mutedColor = useThemeColor("muted");
-	const foregroundColor = useThemeColor("foreground");
+	const resolvedIconColor = useThemeColor(iconColor);
 
 	return (
 		<PressableFeedback
 			accessibilityRole="button"
 			accessibilityLabel={title}
-			className="flex-row items-center gap-3 rounded-2xl bg-content2 px-3 py-3"
+			className="min-w-0 flex-1 items-center gap-1 rounded-2xl px-1 py-2"
 			onPress={onPress}
 		>
-			<View className="size-11 items-center justify-center rounded-full bg-background">
-				<Ionicons name={icon} size={22} color={foregroundColor} />
+			<View className="size-8 items-center justify-center">
+				<Ionicons name={icon} size={21} color={resolvedIconColor} />
 			</View>
-			<View className="min-w-0 flex-1">
-				<Text.Paragraph weight="semibold" numberOfLines={1}>
-					{title}
-				</Text.Paragraph>
-				<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
-					{description}
-				</Text.Paragraph>
-			</View>
+			<Text.Paragraph
+				type="body-sm"
+				weight="semibold"
+				align="center"
+				numberOfLines={1}
+				className="text-foreground"
+			>
+				{title}
+			</Text.Paragraph>
 			{unreadCount > 0 ? (
-				<View className="min-w-6 items-center rounded-full bg-accent px-2 py-1">
+				<View className="absolute top-1 right-4 min-w-5 items-center rounded-full bg-accent px-1.5 py-0.5">
 					<Text.Paragraph
 						type="body-xs"
 						weight="semibold"
@@ -92,9 +80,7 @@ function NotificationShortcut({
 						{unreadCount > 99 ? "99+" : unreadCount}
 					</Text.Paragraph>
 				</View>
-			) : (
-				<Ionicons name="chevron-forward" size={18} color={mutedColor} />
-			)}
+			) : null}
 		</PressableFeedback>
 	);
 }

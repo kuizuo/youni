@@ -2,8 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Text, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 
-import { AppSeparator } from "@/components/shared/app-separator";
-
 import { HEADER_HEIGHT } from "./constants";
 
 export function MessagesHeader({
@@ -47,7 +45,6 @@ export function MessagesHeader({
 					<Ionicons name="add" size={26} color={foregroundColor} />
 				</Button>
 			</View>
-			<AppSeparator />
 		</View>
 	);
 }

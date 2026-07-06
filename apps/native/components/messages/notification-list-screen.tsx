@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Spinner } from "heroui-native";
-import { useMemo } from "react";
+import { Spinner, useThemeColor } from "heroui-native";
+import { useEffect, useMemo, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -22,8 +22,10 @@ export default function NotificationListScreen() {
 	const params = useLocalSearchParams<{ kind?: string | string[] }>();
 	const kind = getNotificationKind(getRouteParam(params.kind));
 	const config = NOTIFICATION_KIND_CONFIG[kind];
+	const emptyIconColor = useThemeColor(config.iconColor);
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
+	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const notifications = useInfiniteQuery({
 		queryKey: ["notifications", kind],
 		queryFn: ({ pageParam }) =>
@@ -42,32 +44,31 @@ export default function NotificationListScreen() {
 			([] as NotificationItem[]),
 		[notifications.data?.pages],
 	);
-	const markAllRead = useMutation({
-		mutationFn: () =>
-			client.notifications.markAllRead({
-				category: config.category,
-				types: [...config.types],
-			}),
-		onSuccess: async () => {
-			await queryClient.invalidateQueries();
-		},
-	});
-	const deleteAll = useMutation({
-		mutationFn: () =>
-			client.notifications.deleteAll({
-				category: config.category,
-				types: [...config.types],
-			}),
-		onSuccess: async () => {
-			await queryClient.invalidateQueries();
-		},
-	});
 	const deleteOne = useMutation({
 		mutationFn: (id: string) => client.notifications.delete({ id }),
 		onSuccess: async () => {
 			await queryClient.invalidateQueries();
 		},
 	});
+
+	useEffect(() => {
+		void client.notifications
+			.markAllRead({
+				category: config.category,
+				types: [...config.types],
+			})
+			.then(() => queryClient.invalidateQueries())
+			.catch(() => undefined);
+	}, [config.category, config.types]);
+
+	const refreshNotifications = async () => {
+		setIsManuallyRefreshing(true);
+		try {
+			await notifications.refetch();
+		} finally {
+			setIsManuallyRefreshing(false);
+		}
+	};
 
 	const openItem = async (item: NotificationItem) => {
 		fireHaptic();
@@ -105,19 +106,9 @@ export default function NotificationListScreen() {
 	return (
 		<View className="flex-1 bg-background">
 			<NotificationListHeader
-				isClearing={deleteAll.isPending}
-				isMarkingAllRead={markAllRead.isPending}
 				title={config.title}
 				topInset={insets.top}
 				onBack={() => router.back()}
-				onClear={() => {
-					fireHaptic();
-					deleteAll.mutate();
-				}}
-				onMarkAllRead={() => {
-					fireHaptic();
-					markAllRead.mutate();
-				}}
 			/>
 
 			<FlatList
@@ -127,10 +118,8 @@ export default function NotificationListScreen() {
 				keyExtractor={(item) => item.id}
 				refreshControl={
 					<RefreshControl
-						refreshing={
-							notifications.isRefetching && !notifications.isFetchingNextPage
-						}
-						onRefresh={() => notifications.refetch()}
+						refreshing={isManuallyRefreshing}
+						onRefresh={refreshNotifications}
 					/>
 				}
 				renderItem={({ item }) => (
@@ -170,6 +159,7 @@ export default function NotificationListScreen() {
 					) : (
 						<EmptyState
 							icon={config.emptyIcon}
+							iconColor={emptyIconColor}
 							title={config.emptyTitle}
 							description="新的动态会显示在这里。"
 						/>
