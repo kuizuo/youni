@@ -205,7 +205,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	const pages = useMemo(() => Children.toArray(children), [children]);
 
 	return (
-		<View className="flex-1" style={{ backgroundColor: headerColor }}>
+		<View className="flex-1" style={{ backgroundColor }}>
 			<Animated.ScrollView
 				className="flex-1"
 				onScroll={onScroll}

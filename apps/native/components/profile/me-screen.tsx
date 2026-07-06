@@ -185,7 +185,7 @@ export default function MeScreen() {
 	};
 
 	return (
-		<View className="flex-1" style={{ backgroundColor: PROFILE_HERO_COLOR }}>
+		<View className="flex-1" style={{ backgroundColor }}>
 			<ProfileCollapsibleTabs
 				activeTab={activeTab}
 				backgroundColor={backgroundColor}
