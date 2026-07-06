@@ -7,7 +7,6 @@ import {
 	Nunito_600SemiBold,
 	Nunito_700Bold,
 } from "@expo-google-fonts/nunito";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -23,8 +22,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AppThemeProvider } from "@/lib/contexts/app-theme-context";
 import { PushNotificationBridge } from "@/lib/notifications/push-notification-bridge";
+import { ReactNativeQueryProvider } from "@/lib/query/react-native-query";
 import { useAppToast } from "@/utils/app-toast";
-import { queryClient } from "@/utils/orpc";
 import { setRequestToastHandler } from "@/utils/request-toast";
 
 export const unstable_settings = {
@@ -107,7 +106,7 @@ export default function Layout() {
 	}
 
 	return (
-		<QueryClientProvider client={queryClient}>
+		<ReactNativeQueryProvider>
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<SafeAreaProvider>
 					<KeyboardProvider>
@@ -138,6 +137,6 @@ export default function Layout() {
 					</KeyboardProvider>
 				</SafeAreaProvider>
 			</GestureHandlerRootView>
-		</QueryClientProvider>
+		</ReactNativeQueryProvider>
 	);
 }
