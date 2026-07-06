@@ -108,14 +108,17 @@ export async function listRootComments({
 	limit,
 	noteId,
 	offset,
+	sort = "hot",
 	viewerId,
 }: {
 	limit: number;
 	noteId: string;
 	offset: number;
+	sort?: "hot" | "latest";
 	viewerId?: string;
 }) {
-	const rows = await createDb()
+	const db = createDb();
+	const rows = await db
 		.select({
 			id: comment.id,
 			content: comment.content,
@@ -128,8 +131,14 @@ export async function listRootComments({
 		})
 		.from(comment)
 		.innerJoin(user, eq(comment.userId, user.id))
+		.leftJoin(commentLike, eq(commentLike.commentId, comment.id))
 		.where(and(eq(comment.noteId, noteId), isNull(comment.parentId)))
-		.orderBy(desc(comment.createdAt))
+		.groupBy(comment.id)
+		.orderBy(
+			...(sort === "hot"
+				? [desc(count(commentLike.commentId)), desc(comment.createdAt)]
+				: [desc(comment.createdAt)]),
+		)
 		.limit(limit + 1)
 		.offset(offset);
 	const page = toPage(rows, limit, offset);
@@ -213,6 +222,7 @@ export const commentsRouter = {
 				noteId: input.noteId,
 				limit: input.limit,
 				offset: input.offset,
+				sort: input.sort,
 				viewerId: context.session?.user.id,
 			});
 		}),

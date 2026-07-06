@@ -20,6 +20,7 @@ import {
 	listInput,
 	meFeedInput,
 	paginatedListInput,
+	profileHandleInput,
 	profileInput,
 	profileUpdateInput,
 } from "./schemas";
@@ -205,6 +206,22 @@ export const profilesRouter = {
 				profile,
 				notes: await hydrateContentNotes(rows, context.session?.user.id),
 			};
+		}),
+
+	profileByHandle: publicProcedure
+		.input(profileHandleInput)
+		.handler(async ({ input, context }) => {
+			const [row] = await createDb()
+				.select({ id: user.id })
+				.from(user)
+				.where(and(eq(user.handle, input.handle), eq(user.status, "active")))
+				.limit(1);
+
+			if (!row) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
+			return getProfile(row.id, context.session?.user.id);
 		}),
 
 	me: protectedProcedure.handler(async ({ context }) => {

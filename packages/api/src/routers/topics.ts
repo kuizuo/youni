@@ -8,7 +8,12 @@ import {
 	selectContentNoteRows,
 } from "../lib/content-notes";
 import { containsInsensitive } from "../lib/search";
-import { listInput, paginatedListInput, topicDetailInput } from "./schemas";
+import {
+	listInput,
+	paginatedListInput,
+	topicDetailInput,
+	topicNameInput,
+} from "./schemas";
 import { toNumber, toPage } from "./utils";
 
 export async function getTopicNoteIds(keyword: string) {
@@ -273,5 +278,25 @@ export const topicsRouter = {
 				},
 				notes: page,
 			};
+		}),
+
+	topicByName: publicProcedure
+		.input(topicNameInput)
+		.handler(async ({ input }) => {
+			const [row] = await createDb()
+				.select({
+					id: topic.id,
+					name: topic.name,
+					createdAt: topic.createdAt,
+				})
+				.from(topic)
+				.where(eq(topic.name, input.name))
+				.limit(1);
+
+			if (!row) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
+			return row;
 		}),
 };

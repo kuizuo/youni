@@ -47,6 +47,7 @@ function StackLayout() {
 			<Stack.Screen name="drafts" />
 			<Stack.Screen name="forgot-password" />
 			<Stack.Screen name="history" />
+			<Stack.Screen name="missing/[kind]" />
 			<Stack.Screen name="note/[id]" />
 			<Stack.Screen name="notifications/[kind]" />
 			<Stack.Screen name="user/[id]" />

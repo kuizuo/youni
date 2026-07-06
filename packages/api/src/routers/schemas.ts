@@ -2,6 +2,9 @@ import z from "zod";
 
 export const idInput = z.object({ id: z.string().min(1) });
 export const profileInput = z.object({ userId: z.string().min(1) });
+export const profileHandleInput = z.object({
+	handle: z.string().trim().min(1).max(30),
+});
 export const connectionsInput = profileInput.extend({
 	type: z.enum(["following", "followers"]),
 	limit: z.number().int().min(1).max(60).default(30),
@@ -22,6 +25,9 @@ export const topicDetailInput = z.object({
 	limit: z.number().int().min(1).max(60).default(20),
 	offset: z.number().int().min(0).default(0),
 	sort: z.enum(["hot", "latest"]).default("hot"),
+});
+export const topicNameInput = z.object({
+	name: z.string().trim().min(1).max(24),
 });
 
 export const noteCreateInput = z.object({
@@ -69,6 +75,7 @@ export const noteCommentsInput = z.object({
 	noteId: z.string().min(1),
 	limit: z.number().int().min(1).max(60).default(20),
 	offset: z.number().int().min(0).default(0),
+	sort: z.enum(["hot", "latest"]).default("hot"),
 });
 export const commentRepliesInput = z.object({
 	parentId: z.string().min(1),
