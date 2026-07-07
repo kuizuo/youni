@@ -127,10 +127,20 @@ export default function NotificationListScreen() {
 			} as unknown as Href);
 			return;
 		}
-		if (
-			(item.targetType === "note" || item.targetType === "comment") &&
-			(item.noteId || item.targetId)
-		) {
+		if (item.targetType === "comment" && item.noteId) {
+			const noteParams: { commentId?: string; id: string } = {
+				id: item.noteId,
+			};
+			if (item.targetId) {
+				noteParams.commentId = item.targetId;
+			}
+			router.push({
+				pathname: "/note/[id]",
+				params: noteParams,
+			} as unknown as Href);
+			return;
+		}
+		if (item.targetType === "note" && (item.noteId || item.targetId)) {
 			router.push({
 				pathname: "/note/[id]",
 				params: { id: item.noteId ?? item.targetId ?? "" },

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	Avatar,
 	Button,
+	cn,
 	PressableFeedback,
 	Spinner,
 	Text,
@@ -17,6 +18,11 @@ import { formatRelativeTime } from "@/utils/format";
 import { orpc } from "@/utils/orpc";
 
 import type { CommentSort, NoteComment } from "./types";
+
+function commentTreeContains(comment: NoteComment, commentId: string): boolean {
+	if (comment.id === commentId) return true;
+	return comment.replies.some((reply) => commentTreeContains(reply, commentId));
+}
 
 export function CommentSectionHeader({
 	commentCount,
@@ -102,20 +108,27 @@ export function CommentFooter({
 }
 
 export function CommentItem({
+	anchoredTargetComment,
 	comment,
 	depth,
 	onReply,
 	redirectTo,
+	targetCommentId,
+	targetRootCommentId,
 }: {
+	anchoredTargetComment?: NoteComment | null;
 	comment: NoteComment;
 	depth: number;
 	onReply: (comment: NoteComment) => void;
 	redirectTo: string;
+	targetCommentId?: null | string;
+	targetRootCommentId?: null | string;
 }) {
 	const socialActions = useSocialActions();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
 	const [isExpanded, setIsExpanded] = useState(false);
+	const isTarget = comment.id === targetCommentId;
 	const shouldFetchReplies =
 		isExpanded && comment.replyCount > comment.replies.length;
 	const repliesQuery = useQuery({
@@ -127,6 +140,15 @@ export function CommentItem({
 	const replies = isExpanded
 		? ((repliesQuery.data?.items ?? comment.replies) as NoteComment[])
 		: comment.replies;
+	const shouldRenderAnchoredTarget =
+		depth === 0 &&
+		anchoredTargetComment &&
+		targetRootCommentId === comment.id &&
+		anchoredTargetComment.id !== comment.id &&
+		!commentTreeContains(comment, anchoredTargetComment.id);
+	const visibleReplies = shouldRenderAnchoredTarget
+		? [anchoredTargetComment, ...replies]
+		: replies;
 	const hiddenReplyCount = Math.max(
 		0,
 		comment.replyCount - comment.replies.length,
@@ -154,7 +176,12 @@ export function CommentItem({
 	};
 
 	return (
-		<View className={depth > 0 ? "ml-9 gap-3" : "gap-3"}>
+		<View
+			className={cn(
+				depth > 0 ? "ml-9 gap-3" : "gap-3",
+				isTarget ? "rounded-2xl bg-accent-soft px-3 pt-3" : undefined,
+			)}
+		>
 			<View className="flex-row gap-2.5">
 				<Avatar size="sm" alt={comment.authorName} className="size-8">
 					{comment.authorImage ? (
@@ -223,15 +250,18 @@ export function CommentItem({
 					</View>
 				</View>
 			</View>
-			{replies.length > 0 ? (
+			{visibleReplies.length > 0 ? (
 				<View className="gap-3">
-					{replies.map((reply) => (
+					{visibleReplies.map((reply) => (
 						<CommentItem
 							key={reply.id}
+							anchoredTargetComment={anchoredTargetComment}
 							comment={reply}
 							depth={depth + 1}
 							onReply={onReply}
 							redirectTo={redirectTo}
+							targetCommentId={targetCommentId}
+							targetRootCommentId={targetRootCommentId}
 						/>
 					))}
 				</View>

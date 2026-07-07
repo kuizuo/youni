@@ -55,9 +55,27 @@ const COMMENTS_PAGE_SIZE = 20;
 const DEFAULT_EMOJI_PANEL_HEIGHT = 304;
 const INPUT_ACCESSORY_GAP = 8;
 
+function commentTreeContains(comment: NoteComment, commentId: string): boolean {
+	if (comment.id === commentId) return true;
+	return comment.replies.some((reply) => commentTreeContains(reply, commentId));
+}
+
+function findCommentRootIndex(comments: NoteComment[], commentId: string) {
+	return comments.findIndex((comment) =>
+		commentTreeContains(comment, commentId),
+	);
+}
+
 export default function NoteDetailScreen() {
-	const params = useLocalSearchParams<{ id?: string | string[] }>();
+	const params = useLocalSearchParams<{
+		commentId?: string | string[];
+		id?: string | string[];
+	}>();
 	const id = getRouteParam(params.id) ?? "";
+	const targetCommentId = getRouteParam(params.commentId);
+	const targetCommentScrollKey = targetCommentId
+		? `${id}:${targetCommentId}`
+		: null;
 	const router = useRouter();
 	const socialActions = useSocialActions();
 	const insets = useSafeAreaInsets();
@@ -67,6 +85,7 @@ export default function NoteDetailScreen() {
 	const { width } = useWindowDimensions();
 	const pageWidth = Math.min(width, 560);
 	const imageHeight = Math.min(620, Math.max(380, pageWidth * 1.08));
+	const commentListRef = useRef<FlatList<NoteComment>>(null);
 	const commentInputRef = useRef<TextInput>(null);
 	const commentTextRef = useRef("");
 	const isCommentComposerOpenRef = useRef(false);
@@ -85,6 +104,9 @@ export default function NoteDetailScreen() {
 	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const [scrolledTargetCommentKey, setScrolledTargetCommentKey] = useState<
+		null | string
+	>(null);
 	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
 	const [commentSelection, setCommentSelection] = useState<TextSelection>({
 		end: 0,
@@ -130,6 +152,12 @@ export default function NoteDetailScreen() {
 		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
 		enabled: Boolean(id && note.data && commentsEnabled),
 	});
+	const targetCommentAnchor = useQuery({
+		...orpc.commentAnchor.queryOptions({
+			input: { id: targetCommentId || "missing" },
+		}),
+		enabled: Boolean(targetCommentId),
+	});
 
 	const images = useMemo(() => note.data?.images ?? [], [note.data?.images]);
 	const rootComments = useMemo(
@@ -138,9 +166,38 @@ export default function NoteDetailScreen() {
 				[]) as NoteComment[],
 		[comments.data?.pages],
 	);
+	const anchoredTargetComment = targetCommentAnchor.data?.comment as
+		| NoteComment
+		| undefined;
+	const targetRootCommentId =
+		targetCommentAnchor.data?.rootCommentId ?? targetCommentId;
+	const targetCommentRootIndex = useMemo(() => {
+		if (!targetCommentId) return -1;
+
+		if (targetRootCommentId) {
+			const rootIndex = rootComments.findIndex(
+				(comment) => comment.id === targetRootCommentId,
+			);
+			if (rootIndex >= 0) return rootIndex;
+		}
+
+		return findCommentRootIndex(rootComments, targetCommentId);
+	}, [rootComments, targetCommentId, targetRootCommentId]);
 	const isSelf = socialActions.currentUserId === authorId;
 	const isFollowing = Boolean(authorProfile.data?.profile.isFollowing);
 	const canSendComment = commentsEnabled && commentText.trim().length > 0;
+	const hasScrolledToTargetComment =
+		targetCommentScrollKey !== null &&
+		scrolledTargetCommentKey === targetCommentScrollKey;
+	const scrollToCommentIndex = useCallback((index: number) => {
+		requestAnimationFrame(() => {
+			commentListRef.current?.scrollToIndex({
+				animated: true,
+				index,
+				viewPosition: 0.22,
+			});
+		});
+	}, []);
 	const closeCommentComposer = useCallback(
 		({ dismissKeyboard = false }: { dismissKeyboard?: boolean } = {}) => {
 			isEmojiKeyboardOpenRef.current = false;
@@ -216,6 +273,46 @@ export default function NoteDetailScreen() {
 			hideSubscription.remove();
 		};
 	}, [closeCommentComposer]);
+
+	useEffect(() => {
+		if (
+			!targetCommentId ||
+			!targetCommentScrollKey ||
+			hasScrolledToTargetComment ||
+			!commentsEnabled ||
+			comments.isLoading ||
+			(targetCommentAnchor.isLoading && targetCommentRootIndex < 0)
+		) {
+			return;
+		}
+
+		if (targetCommentRootIndex >= 0) {
+			setScrolledTargetCommentKey(targetCommentScrollKey);
+			scrollToCommentIndex(targetCommentRootIndex);
+			return;
+		}
+
+		if (
+			comments.hasNextPage &&
+			!comments.isFetching &&
+			!comments.isFetchingNextPage
+		) {
+			void comments.fetchNextPage();
+		}
+	}, [
+		comments.fetchNextPage,
+		comments.hasNextPage,
+		comments.isFetching,
+		comments.isFetchingNextPage,
+		comments.isLoading,
+		commentsEnabled,
+		hasScrolledToTargetComment,
+		targetCommentAnchor.isLoading,
+		targetCommentScrollKey,
+		scrollToCommentIndex,
+		targetCommentId,
+		targetCommentRootIndex,
+	]);
 
 	const focusCommentInput = () => {
 		setTimeout(() => {
@@ -400,6 +497,17 @@ export default function NoteDetailScreen() {
 		}
 	};
 
+	const handleScrollToCommentIndexFailed = (info: {
+		averageItemLength: number;
+		index: number;
+	}) => {
+		const offset = Math.max(0, info.averageItemLength * info.index);
+		commentListRef.current?.scrollToOffset({ animated: true, offset });
+		setTimeout(() => {
+			scrollToCommentIndex(info.index);
+		}, 160);
+	};
+
 	const toggleLike = () => {
 		if (!note.data) return;
 		if (socialActions.pending.like(note.data.id)) return;
@@ -504,6 +612,7 @@ export default function NoteDetailScreen() {
 			className="flex-1 bg-background"
 		>
 			<FlatList
+				ref={commentListRef}
 				className="mx-auto w-full max-w-xl bg-background"
 				contentContainerClassName="bg-background pb-32"
 				data={rootComments}
@@ -515,6 +624,7 @@ export default function NoteDetailScreen() {
 				keyboardShouldPersistTaps="handled"
 				showsVerticalScrollIndicator={false}
 				onScrollBeginDrag={closeEmojiKeyboardFromContent}
+				onScrollToIndexFailed={handleScrollToCommentIndexFailed}
 				onTouchStart={closeEmojiKeyboardFromContent}
 				onEndReached={() => {
 					if (
@@ -565,6 +675,7 @@ export default function NoteDetailScreen() {
 				renderItem={({ item }) => (
 					<View className="px-4 pb-4">
 						<CommentItem
+							anchoredTargetComment={anchoredTargetComment}
 							comment={item}
 							depth={0}
 							onReply={(nextComment) => {
@@ -574,6 +685,8 @@ export default function NoteDetailScreen() {
 								});
 							}}
 							redirectTo={`/note/${id}`}
+							targetCommentId={targetCommentId}
+							targetRootCommentId={targetRootCommentId}
 						/>
 					</View>
 				)}

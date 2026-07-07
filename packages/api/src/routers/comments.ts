@@ -39,6 +39,26 @@ type RawCommentRow = {
 	userId: string;
 };
 
+async function getRawCommentById(commentId: string) {
+	const [row] = await createDb()
+		.select({
+			id: comment.id,
+			content: comment.content,
+			createdAt: comment.createdAt,
+			noteId: comment.noteId,
+			parentId: comment.parentId,
+			userId: comment.userId,
+			authorName: user.name,
+			authorImage: user.image,
+		})
+		.from(comment)
+		.innerJoin(user, eq(comment.userId, user.id))
+		.where(eq(comment.id, commentId))
+		.limit(1);
+
+	return row;
+}
+
 async function hydrateComments({
 	rows,
 	viewerId,
@@ -193,6 +213,44 @@ export async function listCommentReplies({
 	};
 }
 
+async function getCommentById({
+	commentId,
+	viewerId,
+}: {
+	commentId: string;
+	viewerId?: string;
+}) {
+	const row = await getRawCommentById(commentId);
+	if (!row) return null;
+
+	return hydrateComments({
+		rows: [row],
+		viewerId,
+		withPreviewReplies: false,
+	}).then((items) => items[0] ?? null);
+}
+
+async function getRootCommentId(commentId: string) {
+	let currentId = commentId;
+	let parentId: null | string | undefined;
+
+	do {
+		const [row] = await createDb()
+			.select({ id: comment.id, parentId: comment.parentId })
+			.from(comment)
+			.where(eq(comment.id, currentId))
+			.limit(1);
+		if (!row) return currentId;
+		currentId = row.id;
+		parentId = row.parentId;
+		if (parentId) {
+			currentId = parentId;
+		}
+	} while (parentId);
+
+	return currentId;
+}
+
 async function collectCommentDescendantIds(rootId: string) {
 	const db = createDb();
 	const ids = [rootId];
@@ -236,6 +294,23 @@ export const commentsRouter = {
 				offset: input.offset,
 				viewerId: context.session?.user.id,
 			});
+		}),
+
+	commentAnchor: publicProcedure
+		.input(idInput)
+		.handler(async ({ input, context }) => {
+			const targetComment = await getCommentById({
+				commentId: input.id,
+				viewerId: context.session?.user.id,
+			});
+			if (!targetComment) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
+			return {
+				comment: targetComment,
+				rootCommentId: await getRootCommentId(input.id),
+			};
 		}),
 
 	addComment: activeUserProcedure

@@ -7,7 +7,7 @@ export type SocialNavigationIntent =
 	| { type: "chatSettings"; id: string }
 	| { redirectTo?: string; type: "login" }
 	| { type: "messages" }
-	| { type: "note"; id: string }
+	| { commentId?: string; type: "note"; id: string }
 	| { type: "publish" }
 	| { type: "search" }
 	| { type: "topic"; id: string }
@@ -48,7 +48,9 @@ export function toSocialHref(intent: SocialNavigationIntent): Href {
 		case "note":
 			return {
 				pathname: "/note/[id]",
-				params: { id: intent.id },
+				params: intent.commentId
+					? { id: intent.id, commentId: intent.commentId }
+					: { id: intent.id },
 			} as unknown as Href;
 		case "publish":
 			return "/publish" as Href;
@@ -85,6 +87,14 @@ export function getNotificationIntent(
 
 	if (targetType === "note" && (noteId || targetId)) {
 		return { type: "note", id: noteId ?? targetId ?? "" };
+	}
+
+	if (targetType === "comment" && noteId) {
+		return {
+			type: "note",
+			id: noteId,
+			commentId: targetId ?? undefined,
+		};
 	}
 
 	if (targetType === "user" && targetId) {
