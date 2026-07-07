@@ -9,7 +9,7 @@ import {
 	Text,
 	useThemeColor,
 } from "heroui-native";
-import { useState } from "react";
+import { type RefObject, useState } from "react";
 import { View } from "react-native";
 
 import { AppSeparator } from "@/components/shared/app-separator";
@@ -114,6 +114,7 @@ export function CommentItem({
 	onReply,
 	redirectTo,
 	targetCommentId,
+	targetCommentRef,
 	targetRootCommentId,
 }: {
 	anchoredTargetComment?: NoteComment | null;
@@ -122,6 +123,7 @@ export function CommentItem({
 	onReply: (comment: NoteComment) => void;
 	redirectTo: string;
 	targetCommentId?: null | string;
+	targetCommentRef?: RefObject<View | null>;
 	targetRootCommentId?: null | string;
 }) {
 	const socialActions = useSocialActions();
@@ -177,6 +179,7 @@ export function CommentItem({
 
 	return (
 		<View
+			ref={isTarget ? targetCommentRef : undefined}
 			className={cn(
 				depth > 0 ? "ml-9 gap-3" : "gap-3",
 				isTarget ? "rounded-2xl bg-accent-soft px-3 pt-3" : undefined,
@@ -261,6 +264,7 @@ export function CommentItem({
 							onReply={onReply}
 							redirectTo={redirectTo}
 							targetCommentId={targetCommentId}
+							targetCommentRef={targetCommentRef}
 							targetRootCommentId={targetRootCommentId}
 						/>
 					))}

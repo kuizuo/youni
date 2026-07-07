@@ -87,7 +87,7 @@ export function AuthorTopBar({
 					onPress={onOpenAuthor}
 					className="min-w-0 flex-1 flex-row items-center gap-2"
 				>
-					<Avatar size="sm" alt={author.name}>
+					<Avatar size="sm" alt={author.name} className="size-8">
 						{author.image ? (
 							<Avatar.Image source={{ uri: author.image }} />
 						) : null}
@@ -97,11 +97,6 @@ export function AuthorTopBar({
 						<Text.Paragraph weight="semibold" numberOfLines={1}>
 							{author.name}
 						</Text.Paragraph>
-						{author.handle ? (
-							<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
-								@{author.handle}
-							</Text.Paragraph>
-						) : null}
 					</View>
 				</PressableFeedback>
 				{isSelf ? (

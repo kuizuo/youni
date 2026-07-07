@@ -26,6 +26,7 @@ import { AppSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
+import { useAppToast } from "@/utils/app-toast";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { client, orpc, queryClient } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
@@ -66,6 +67,15 @@ function findCommentRootIndex(comments: NoteComment[], commentId: string) {
 	);
 }
 
+function isNotFoundError(error: unknown) {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		(error as { code?: unknown }).code === "NOT_FOUND"
+	);
+}
+
 export default function NoteDetailScreen() {
 	const params = useLocalSearchParams<{
 		commentId?: string | string[];
@@ -78,6 +88,7 @@ export default function NoteDetailScreen() {
 		: null;
 	const router = useRouter();
 	const socialActions = useSocialActions();
+	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
@@ -85,7 +96,11 @@ export default function NoteDetailScreen() {
 	const { width } = useWindowDimensions();
 	const pageWidth = Math.min(width, 560);
 	const imageHeight = Math.min(620, Math.max(380, pageWidth * 1.08));
+	const topBarHeight = insets.top + 64;
 	const commentListRef = useRef<FlatList<NoteComment>>(null);
+	const commentScrollOffsetRef = useRef(0);
+	const pendingTargetScrollKeyRef = useRef<null | string>(null);
+	const targetCommentRef = useRef<View | null>(null);
 	const commentInputRef = useRef<TextInput>(null);
 	const commentTextRef = useRef("");
 	const isCommentComposerOpenRef = useRef(false);
@@ -107,6 +122,8 @@ export default function NoteDetailScreen() {
 	const [scrolledTargetCommentKey, setScrolledTargetCommentKey] = useState<
 		null | string
 	>(null);
+	const [handledMissingTargetCommentKey, setHandledMissingTargetCommentKey] =
+		useState<null | string>(null);
 	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
 	const [commentSelection, setCommentSelection] = useState<TextSelection>({
 		end: 0,
@@ -157,6 +174,8 @@ export default function NoteDetailScreen() {
 			input: { id: targetCommentId || "missing" },
 		}),
 		enabled: Boolean(targetCommentId),
+		retry: (failureCount, error) =>
+			isNotFoundError(error) ? false : failureCount < 2,
 	});
 
 	const images = useMemo(() => note.data?.images ?? [], [note.data?.images]);
@@ -189,6 +208,10 @@ export default function NoteDetailScreen() {
 	const hasScrolledToTargetComment =
 		targetCommentScrollKey !== null &&
 		scrolledTargetCommentKey === targetCommentScrollKey;
+	const isTargetCommentMissing =
+		targetCommentId !== undefined &&
+		targetCommentAnchor.isError &&
+		isNotFoundError(targetCommentAnchor.error);
 	const scrollToCommentIndex = useCallback((index: number) => {
 		requestAnimationFrame(() => {
 			commentListRef.current?.scrollToIndex({
@@ -198,6 +221,53 @@ export default function NoteDetailScreen() {
 			});
 		});
 	}, []);
+	const scrollToCommentSection = useCallback(() => {
+		requestAnimationFrame(() => {
+			if (rootComments.length > 0) {
+				commentListRef.current?.scrollToIndex({
+					animated: true,
+					index: 0,
+					viewPosition: 0.18,
+				});
+				return;
+			}
+
+			commentListRef.current?.scrollToEnd({ animated: true });
+		});
+	}, [rootComments.length]);
+	const scheduleTargetCommentAlignment = useCallback(
+		(scrollKey: string) => {
+			let attempts = 0;
+			const align = () => {
+				const targetNode = targetCommentRef.current;
+				if (!targetNode) {
+					attempts += 1;
+					if (attempts <= 8) {
+						setTimeout(align, 80);
+						return;
+					}
+					pendingTargetScrollKeyRef.current = null;
+					return;
+				}
+
+				targetNode.measureInWindow((_x, y) => {
+					const desiredY = Math.max(insets.top + 88, 112);
+					const delta = y - desiredY;
+					if (Math.abs(delta) > 8) {
+						commentListRef.current?.scrollToOffset({
+							animated: true,
+							offset: Math.max(0, commentScrollOffsetRef.current + delta),
+						});
+					}
+					setScrolledTargetCommentKey(scrollKey);
+					pendingTargetScrollKeyRef.current = null;
+				});
+			};
+
+			setTimeout(align, 260);
+		},
+		[insets.top],
+	);
 	const closeCommentComposer = useCallback(
 		({ dismissKeyboard = false }: { dismissKeyboard?: boolean } = {}) => {
 			isEmojiKeyboardOpenRef.current = false;
@@ -279,6 +349,8 @@ export default function NoteDetailScreen() {
 			!targetCommentId ||
 			!targetCommentScrollKey ||
 			hasScrolledToTargetComment ||
+			isTargetCommentMissing ||
+			!note.data ||
 			!commentsEnabled ||
 			comments.isLoading ||
 			(targetCommentAnchor.isLoading && targetCommentRootIndex < 0)
@@ -287,8 +359,12 @@ export default function NoteDetailScreen() {
 		}
 
 		if (targetCommentRootIndex >= 0) {
-			setScrolledTargetCommentKey(targetCommentScrollKey);
+			if (pendingTargetScrollKeyRef.current === targetCommentScrollKey) {
+				return;
+			}
+			pendingTargetScrollKeyRef.current = targetCommentScrollKey;
 			scrollToCommentIndex(targetCommentRootIndex);
+			scheduleTargetCommentAlignment(targetCommentScrollKey);
 			return;
 		}
 
@@ -307,11 +383,46 @@ export default function NoteDetailScreen() {
 		comments.isLoading,
 		commentsEnabled,
 		hasScrolledToTargetComment,
+		isTargetCommentMissing,
+		note.data,
+		scheduleTargetCommentAlignment,
 		targetCommentAnchor.isLoading,
 		targetCommentScrollKey,
 		scrollToCommentIndex,
 		targetCommentId,
 		targetCommentRootIndex,
+	]);
+
+	useEffect(() => {
+		if (
+			!targetCommentScrollKey ||
+			!isTargetCommentMissing ||
+			!note.data ||
+			(commentsEnabled && comments.isLoading) ||
+			handledMissingTargetCommentKey === targetCommentScrollKey
+		) {
+			return;
+		}
+
+		pendingTargetScrollKeyRef.current = null;
+		setHandledMissingTargetCommentKey(targetCommentScrollKey);
+		setScrolledTargetCommentKey(targetCommentScrollKey);
+		scrollToCommentSection();
+		setTimeout(() => {
+			toast.show({
+				variant: "warning",
+				label: "评论已被删除",
+			});
+		}, 360);
+	}, [
+		comments.isLoading,
+		commentsEnabled,
+		handledMissingTargetCommentKey,
+		isTargetCommentMissing,
+		note.data,
+		scrollToCommentSection,
+		targetCommentScrollKey,
+		toast.show,
 	]);
 
 	const focusCommentInput = () => {
@@ -611,10 +722,32 @@ export default function NoteDetailScreen() {
 			}
 			className="flex-1 bg-background"
 		>
+			<View
+				pointerEvents="box-none"
+				style={{
+					left: 0,
+					position: "absolute",
+					right: 0,
+					top: 0,
+					zIndex: 20,
+				}}
+			>
+				<AuthorTopBar
+					author={note.data.author}
+					isFollowing={isFollowing}
+					isSelf={isSelf}
+					onBack={goBack}
+					onFollow={toggleFollow}
+					onOpenAuthor={() =>
+						socialActions.goTo({ type: "user", id: authorId })
+					}
+				/>
+			</View>
 			<FlatList
 				ref={commentListRef}
 				className="mx-auto w-full max-w-xl bg-background"
 				contentContainerClassName="bg-background pb-32"
+				contentContainerStyle={{ paddingTop: topBarHeight }}
 				data={rootComments}
 				keyExtractor={(item) => item.id}
 				refreshing={isManuallyRefreshing}
@@ -622,7 +755,11 @@ export default function NoteDetailScreen() {
 					void refreshAll();
 				}}
 				keyboardShouldPersistTaps="handled"
+				scrollEventThrottle={16}
 				showsVerticalScrollIndicator={false}
+				onScroll={(event) => {
+					commentScrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+				}}
 				onScrollBeginDrag={closeEmojiKeyboardFromContent}
 				onScrollToIndexFailed={handleScrollToCommentIndexFailed}
 				onTouchStart={closeEmojiKeyboardFromContent}
@@ -638,16 +775,6 @@ export default function NoteDetailScreen() {
 				onEndReachedThreshold={0.4}
 				ListHeaderComponent={
 					<View>
-						<AuthorTopBar
-							author={note.data.author}
-							isFollowing={isFollowing}
-							isSelf={isSelf}
-							onBack={goBack}
-							onFollow={toggleFollow}
-							onOpenAuthor={() =>
-								socialActions.goTo({ type: "user", id: authorId })
-							}
-						/>
 						<ImageCarousel
 							activeIndex={activeImageIndex}
 							images={images}
@@ -686,6 +813,7 @@ export default function NoteDetailScreen() {
 							}}
 							redirectTo={`/note/${id}`}
 							targetCommentId={targetCommentId}
+							targetCommentRef={targetCommentRef}
 							targetRootCommentId={targetRootCommentId}
 						/>
 					</View>
