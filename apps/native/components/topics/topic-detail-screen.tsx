@@ -4,8 +4,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
-import { useMemo, useState } from "react";
-import { Platform, Share, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NoteCard } from "@/components/note-card";
@@ -25,6 +25,13 @@ import { getRouteParam } from "@/utils/route-params";
 
 const PAGE_SIZE = 20;
 
+type TopicSummary = {
+	discussionCount: number;
+	id: string;
+	name: string;
+	noteCount: number;
+};
+
 export default function TopicDetailScreen() {
 	const params = useLocalSearchParams<{ id?: string | string[] }>();
 	const id = getRouteParam(params.id) ?? "";
@@ -35,6 +42,7 @@ export default function TopicDetailScreen() {
 	const accentColor = useThemeColor("accent");
 	const [sort, setSort] = useState<TopicSort>("hot");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const [topicSummary, setTopicSummary] = useState<TopicSummary>();
 	const queryKey = useMemo(
 		() => nativeQueryKeys.topic.detail(id, sort),
 		[id, sort],
@@ -53,6 +61,18 @@ export default function TopicDetailScreen() {
 		enabled: Boolean(id),
 	});
 	const topicInfo = topic.data?.pages[0]?.topic;
+	useEffect(() => {
+		if (!topicInfo) return;
+
+		setTopicSummary({
+			discussionCount: topicInfo.discussionCount,
+			id: topicInfo.id,
+			name: topicInfo.name,
+			noteCount: topicInfo.noteCount,
+		});
+	}, [topicInfo]);
+	const displayedTopicInfo =
+		topicInfo ?? (topicSummary?.id === id ? topicSummary : undefined);
 	const notes = useMemo(
 		() => topic.data?.pages.flatMap((page) => page.notes.items) ?? [],
 		[topic.data?.pages],
@@ -66,10 +86,6 @@ export default function TopicDetailScreen() {
 		router.replace("/search" as Href);
 	};
 
-	const shareTopic = async () => {
-		if (!topicInfo?.name) return;
-		await Share.share({ message: `#${topicInfo.name}` }).catch(() => undefined);
-	};
 	const refreshTopic = async () => {
 		setIsManuallyRefreshing(true);
 		try {
@@ -79,14 +95,10 @@ export default function TopicDetailScreen() {
 		}
 	};
 
-	if (!id || (topic.isError && notes.length === 0)) {
+	if (!id || (topic.isError && notes.length === 0 && !displayedTopicInfo)) {
 		return (
 			<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-				<TopicTopBar
-					foregroundColor={foregroundColor}
-					onBack={goBack}
-					onShare={shareTopic}
-				/>
+				<TopicTopBar foregroundColor={foregroundColor} onBack={goBack} />
 				<ErrorState
 					title="话题没有打开"
 					description="话题可能不存在，或者网络暂时不可用。"
@@ -128,14 +140,13 @@ export default function TopicDetailScreen() {
 					<TopicHeader
 						accentColor={accentColor}
 						foregroundColor={foregroundColor}
-						isLoading={topic.isLoading}
+						isLoading={topic.isLoading && !displayedTopicInfo}
 						sort={sort}
-						topicName={topicInfo?.name}
-						discussionCount={topicInfo?.discussionCount ?? 0}
-						noteCount={topicInfo?.noteCount ?? 0}
+						topicName={displayedTopicInfo?.name}
+						discussionCount={displayedTopicInfo?.discussionCount ?? 0}
+						noteCount={displayedTopicInfo?.noteCount ?? 0}
 						topInset={insets.top}
 						onBack={goBack}
-						onShare={shareTopic}
 						onSortChange={setSort}
 					/>
 				}
@@ -154,6 +165,12 @@ export default function TopicDetailScreen() {
 				ListEmptyComponent={
 					topic.isLoading ? (
 						<FeedSkeleton />
+					) : topic.isError ? (
+						<ErrorState
+							title="图文没有加载出来"
+							description="请检查网络后重试。"
+							onRetry={() => topic.refetch()}
+						/>
 					) : (
 						<EmptyState
 							icon="images-outline"

@@ -15,7 +15,6 @@ export function TopicHeader({
 	isLoading,
 	noteCount,
 	onBack,
-	onShare,
 	onSortChange,
 	sort,
 	topInset,
@@ -27,7 +26,6 @@ export function TopicHeader({
 	isLoading: boolean;
 	noteCount: number;
 	onBack: () => void;
-	onShare: () => void;
 	onSortChange: (sort: TopicSort) => void;
 	sort: TopicSort;
 	topInset: number;
@@ -42,11 +40,7 @@ export function TopicHeader({
 					</Text.Heading>
 				</View>
 
-				<TopicTopBar
-					foregroundColor={foregroundColor}
-					onBack={onBack}
-					onShare={onShare}
-				/>
+				<TopicTopBar foregroundColor={foregroundColor} onBack={onBack} />
 
 				<View className="gap-4 px-4 pt-8 pb-8">
 					<View className="flex-row items-start justify-between gap-4">

@@ -1,5 +1,7 @@
-import { Avatar, Button, PressableFeedback, Text } from "heroui-native";
+import { Avatar, PressableFeedback, Text } from "heroui-native";
 import { View } from "react-native";
+
+import { FollowButton } from "@/components/users/follow-button";
 
 import type { ConnectionType, ConnectionUser } from "./types";
 
@@ -51,15 +53,12 @@ export function ConnectionRow({
 				</Text.Paragraph>
 			</View>
 			{isSelf ? null : (
-				<Button
+				<FollowButton
 					size="sm"
-					variant={item.isFollowing ? "outline" : "primary"}
 					className="rounded-full px-4"
-					feedbackVariant="scale-ripple"
+					isFollowing={item.isFollowing}
 					onPress={toggleFollow}
-				>
-					<Button.Label>{item.isFollowing ? "已关注" : "关注"}</Button.Label>
-				</Button>
+				/>
 			)}
 		</PressableFeedback>
 	);

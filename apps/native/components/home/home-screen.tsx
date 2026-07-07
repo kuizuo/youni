@@ -57,7 +57,7 @@ export default function HomeScreen() {
 		}
 	}, [followingFeed.data, sessionUserId]);
 	const cachedFollowingNotes =
-		cachedFollowingFeed?.userId === sessionUserId
+		cachedFollowingFeed && cachedFollowingFeed.userId === sessionUserId
 			? cachedFollowingFeed.notes
 			: [];
 	const followingNotes = sessionUserId

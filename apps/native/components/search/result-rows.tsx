@@ -14,6 +14,7 @@ import type {
 	TopicSearchItem,
 	UserSearchItem,
 } from "@/components/search/search-utils";
+import { FollowButton } from "@/components/users/follow-button";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { formatCount } from "@/utils/format";
 
@@ -97,15 +98,12 @@ export function UserResultRow({
 					<Button.Label>我</Button.Label>
 				</Button>
 			) : (
-				<Button
+				<FollowButton
 					size="sm"
-					variant={item.isFollowing ? "secondary" : "primary"}
 					className="rounded-full px-4"
-					feedbackVariant="scale-ripple"
+					isFollowing={item.isFollowing}
 					onPress={() => onToggleFollow(item.id)}
-				>
-					<Button.Label>{item.isFollowing ? "已关注" : "关注"}</Button.Label>
-				</Button>
+				/>
 			)}
 		</View>
 	);

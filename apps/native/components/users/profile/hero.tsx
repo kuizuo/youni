@@ -6,9 +6,10 @@ import {
 	Skeleton,
 	Spinner,
 	Text,
-	useThemeColor,
 } from "heroui-native";
 import { View } from "react-native";
+
+import { FollowButton } from "@/components/users/follow-button";
 
 import { PROFILE_HEADER_HEIGHT, PROFILE_HERO_COLOR } from "./constants";
 import type { UserProfileData } from "./types";
@@ -42,8 +43,6 @@ export function UserProfileHero({
 	topChromeHeight: number;
 	topInset: number;
 }) {
-	const accentForegroundColor = useThemeColor("accent-foreground");
-
 	return (
 		<View
 			className="overflow-hidden"
@@ -142,25 +141,12 @@ export function UserProfileHero({
 						</Button>
 					) : (
 						<>
-							<Button
-								variant={isFollowing ? "secondary" : "primary"}
+							<FollowButton
 								className="flex-1 rounded-full"
-								feedbackVariant="scale-ripple"
+								isFollowing={isFollowing}
+								showIcon
 								onPress={onToggleFollow}
-							>
-								<Ionicons
-									name={
-										isFollowing ? "checkmark-outline" : "person-add-outline"
-									}
-									size={16}
-									color={isFollowing ? "#ffffff" : accentForegroundColor}
-								/>
-								<Button.Label
-									className={isFollowing ? "text-white" : undefined}
-								>
-									{isFollowing ? "已关注" : "关注"}
-								</Button.Label>
-							</Button>
+							/>
 							<Button
 								variant="secondary"
 								className="flex-1 rounded-full bg-white/15"

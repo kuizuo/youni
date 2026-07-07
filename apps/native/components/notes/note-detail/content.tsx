@@ -12,6 +12,7 @@ import { Image, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 import { AppHeading } from "@/components/shared/app-heading";
+import { FollowButton } from "@/components/users/follow-button";
 import { formatRelativeTime } from "@/utils/format";
 
 import { parseInlineTokens } from "./utils";
@@ -102,14 +103,11 @@ export function AuthorTopBar({
 				{isSelf ? (
 					<View className="w-16" />
 				) : (
-					<Button
+					<FollowButton
 						size="sm"
-						variant={isFollowing ? "secondary" : "primary"}
-						feedbackVariant="scale-ripple"
+						isFollowing={isFollowing}
 						onPress={onFollow}
-					>
-						<Button.Label>{isFollowing ? "已关注" : "关注"}</Button.Label>
-					</Button>
+					/>
 				)}
 			</View>
 		</View>

@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import {
 	Avatar,
-	Button,
 	ListGroup,
 	Spinner,
 	Switch,
@@ -16,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { AppSeparator } from "@/components/shared/app-separator";
 import { ErrorState } from "@/components/social-states";
+import { FollowButton } from "@/components/users/follow-button";
 import {
 	applyConversationBlockedResult,
 	invalidateConversation,
@@ -178,21 +178,12 @@ export default function ChatSettingsScreen() {
 									{data.peer.handle ? `@${data.peer.handle}` : data.peer.email}
 								</Text.Paragraph>
 							</View>
-							<Button
-								variant={isFollowing ? "secondary" : "primary"}
+							<FollowButton
 								className="min-w-32 rounded-full"
-								feedbackVariant="scale-ripple"
+								isFollowing={isFollowing}
+								showIcon
 								onPress={toggleFollow}
-							>
-								<Ionicons
-									name={
-										isFollowing ? "checkmark-outline" : "person-add-outline"
-									}
-									size={16}
-									color={foregroundColor}
-								/>
-								<Button.Label>{isFollowing ? "已关注" : "关注"}</Button.Label>
-							</Button>
+							/>
 						</View>
 
 						<ListGroup
