@@ -15,7 +15,7 @@ import {
 import { NoteCard } from "@/components/note-card";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
-import { client, orpc, queryClient } from "@/utils/orpc";
+import { client, orpc } from "@/utils/orpc";
 import { flattenPages } from "@/utils/pagination";
 
 export default function HomeScreen() {
@@ -61,7 +61,7 @@ export default function HomeScreen() {
 				await followingFeed.refetch();
 				return;
 			}
-			await queryClient.resetQueries({ queryKey: discoverQueryKey });
+			await discoverFeed.refetch();
 		} finally {
 			setIsManuallyRefreshing(false);
 		}
