@@ -26,6 +26,7 @@ export type ContentNoteMutationInput = {
 	title: string;
 	content: string;
 	images: string[];
+	imageMetas: Array<{ height: number; url: string; width: number }>;
 	topics: string[];
 	locationName?: string;
 	visibility: "public" | "followers" | "private";
@@ -49,6 +50,7 @@ export type ContentNoteRow = {
 	title: string;
 	content: string;
 	images: string[];
+	imageMetas: Array<{ height: number; url: string; width: number }>;
 	cover: string | null;
 	locationName: string | null;
 	visibility: "public" | "followers" | "private";
@@ -108,6 +110,7 @@ type AdminContentNoteRow = {
 	content: string;
 	cover: string | null;
 	images: string[];
+	imageMetas: Array<{ height: number; url: string; width: number }>;
 	locationName: string | null;
 	visibility: "public" | "followers" | "private";
 	components: Array<{
@@ -137,6 +140,7 @@ const contentNoteRowFields = {
 	title: note.title,
 	content: note.content,
 	images: note.images,
+	imageMetas: note.imageMetas,
 	cover: note.cover,
 	locationName: note.locationName,
 	visibility: note.visibility,
@@ -160,6 +164,7 @@ const adminContentNoteRowFields = {
 	content: note.content,
 	cover: note.cover,
 	images: note.images,
+	imageMetas: note.imageMetas,
 	locationName: note.locationName,
 	visibility: note.visibility,
 	components: note.components,
@@ -186,6 +191,34 @@ function uniqueTopics(values: string[]) {
 				.filter((value) => value.length > 0),
 		),
 	).slice(0, 8);
+}
+
+function normalizeImageMetas(input: ContentNoteMutationInput) {
+	const imageSet = new Set(input.images);
+	const metasByUrl = new Map(
+		input.imageMetas
+			.filter(
+				(meta) =>
+					imageSet.has(meta.url) &&
+					Number.isFinite(meta.width) &&
+					Number.isFinite(meta.height) &&
+					meta.width > 0 &&
+					meta.height > 0,
+			)
+			.map((meta) => [
+				meta.url,
+				{
+					height: Math.round(meta.height),
+					url: meta.url,
+					width: Math.round(meta.width),
+				},
+			]),
+	);
+
+	return input.images.flatMap((url) => {
+		const meta = metasByUrl.get(url);
+		return meta ? [meta] : [];
+	});
 }
 
 function getMissingPublishItems(
@@ -499,6 +532,7 @@ export async function updateDraftContentNote({
 	const topicNames = uniqueTopics(input.topics);
 	const status = input.submitMode === "draft" ? "draft" : "audit";
 	const cover = input.images[0];
+	const imageMetas = normalizeImageMetas(input);
 	const title = input.title.trim();
 	const content = input.content.trim();
 
@@ -512,6 +546,7 @@ export async function updateDraftContentNote({
 			title: title || "未命名草稿",
 			content,
 			images: input.images,
+			imageMetas,
 			cover: cover ?? null,
 			locationName: input.locationName || null,
 			visibility: input.visibility,
@@ -542,6 +577,7 @@ export async function createContentNote({
 	const db = createDb();
 	const topicNames = uniqueTopics(input.topics);
 	const cover = input.images[0];
+	const imageMetas = normalizeImageMetas(input);
 	const title = input.title.trim();
 	const content = input.content.trim();
 	const status = input.submitMode === "draft" ? "draft" : "audit";
@@ -556,6 +592,7 @@ export async function createContentNote({
 			title: title || "未命名草稿",
 			content,
 			images: input.images,
+			imageMetas,
 			cover: cover ?? null,
 			locationName: input.locationName || null,
 			visibility: input.visibility,

@@ -1,6 +1,6 @@
 import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,6 +23,11 @@ export default function HomeScreen() {
 	const insets = useSafeAreaInsets();
 	const [activeTab, setActiveTab] = useState<HomeTab>("discover");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const [cachedFollowingFeed, setCachedFollowingFeed] = useState<{
+		notes: HomeFeedNote[];
+		userId: string;
+	} | null>(null);
+	const sessionUserId = socialNavigation.session.data?.user?.id;
 	const input = useMemo(() => ({ limit: 30 }), []);
 	const discoverQueryKey = useMemo(() => nativeQueryKeys.home.discover(), []);
 	const discoverFeed = useInfiniteQuery({
@@ -37,15 +42,28 @@ export default function HomeScreen() {
 	});
 	const followingFeed = useQuery({
 		...orpc.followingFeed.queryOptions({ input }),
-		enabled:
-			activeTab === "following" && Boolean(socialNavigation.session.data?.user),
+		enabled: activeTab === "following" && Boolean(sessionUserId),
 	});
 	const discoverNotes = useMemo(
 		() => flattenPages<HomeFeedNote>(discoverFeed.data?.pages),
 		[discoverFeed.data?.pages],
 	);
-	const notes =
-		activeTab === "following" ? (followingFeed.data ?? []) : discoverNotes;
+	useEffect(() => {
+		if (sessionUserId && followingFeed.data) {
+			setCachedFollowingFeed({
+				notes: followingFeed.data,
+				userId: sessionUserId,
+			});
+		}
+	}, [followingFeed.data, sessionUserId]);
+	const cachedFollowingNotes =
+		cachedFollowingFeed?.userId === sessionUserId
+			? cachedFollowingFeed.notes
+			: [];
+	const followingNotes = sessionUserId
+		? (followingFeed.data ?? cachedFollowingNotes)
+		: [];
+	const notes = activeTab === "following" ? followingNotes : discoverNotes;
 	const isActiveLoading =
 		activeTab === "following"
 			? followingFeed.isLoading

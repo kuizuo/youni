@@ -11,6 +11,8 @@ import { Image } from "react-native";
 
 import { useSocialActions } from "@/lib/social/use-social-actions";
 
+const DEFAULT_IMAGE_ASPECT_RATIO = 1;
+
 type NoteCardProps = {
 	compact?: boolean;
 	note: {
@@ -26,6 +28,7 @@ type NoteCardProps = {
 		collectedCount?: number;
 		cover: null | string;
 		id: string;
+		imageMetas?: Array<{ height: number; url: string; width: number }>;
 		liked?: boolean;
 		likedCount: number;
 		status?: "audit" | "draft" | "hidden" | "published" | "rejected";
@@ -40,6 +43,13 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 	const dangerColor = useThemeColor("danger");
 	const liked = Boolean(note.liked);
 	const likedCount = note.likedCount;
+	const coverImageMeta = note.imageMetas?.find(
+		(item) => item.url === note.cover,
+	);
+	const imageAspectRatio =
+		coverImageMeta?.width && coverImageMeta.height
+			? coverImageMeta.width / coverImageMeta.height
+			: DEFAULT_IMAGE_ASPECT_RATIO;
 
 	const openDetail = () => {
 		socialActions.goTo({ type: "note", id: note.id });
@@ -75,18 +85,14 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 						<Image
 							source={{ uri: note.cover }}
 							resizeMode="cover"
-							className={
-								compact ? "h-48 w-full bg-content2" : "h-72 w-full bg-content2"
-							}
+							className="w-full bg-content2"
+							style={{ aspectRatio: imageAspectRatio }}
 						/>
 					) : (
 						<Surface
 							variant="secondary"
-							className={
-								compact
-									? "h-48 w-full items-center justify-center gap-1 rounded-none"
-									: "h-72 w-full items-center justify-center gap-1 rounded-none"
-							}
+							className="w-full items-center justify-center gap-1 rounded-none"
+							style={{ aspectRatio: DEFAULT_IMAGE_ASPECT_RATIO }}
 						>
 							<Ionicons
 								name="document-text-outline"

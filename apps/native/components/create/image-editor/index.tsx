@@ -46,6 +46,7 @@ import {
 	loadEditorImage,
 	MAX_EXPORTED_BYTES,
 	makeCenteredCropRect,
+	makeExportSize,
 	makeInitialSnapshot,
 	pointInText,
 	rectsEqual,
@@ -920,6 +921,10 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 			const snapshotRect = editorStateRef.current.cropDirty
 				? editorStateRef.current.cropRect
 				: imageRect;
+			const exportSize = makeExportSize(snapshotRect, sourceImage);
+			if (!exportSize) {
+				throw new Error("图片导出失败");
+			}
 			const snapshot = await renderEditorExport({
 				canvasSize,
 				cropRect: snapshotRect,
@@ -960,11 +965,13 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 				},
 				fileName: exported.fileName,
 				fileSize: exported.fileSize,
+				height: exportSize.height,
 				isEdited: true,
 				mimeType: "image/jpeg",
 				originalUri: image.originalUri ?? image.uri,
 				remoteUrl: undefined,
 				uri: exported.uri,
+				width: exportSize.width,
 			});
 		} catch (error) {
 			toast.show({

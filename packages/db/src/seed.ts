@@ -135,7 +135,361 @@ const seedTopics = [
 	"运动",
 ];
 
-const seedNotes = [
+type SeedImageMeta = { height: number; url: string; width: number };
+type SeedNote = {
+	authorKey: (typeof seedUsers)[number]["key"];
+	content: string;
+	id: string;
+	imageMetas?: SeedImageMeta[];
+	images: string[];
+	publishedAt: Date | null;
+	status: "audit" | "draft" | "hidden" | "published" | "rejected";
+	title: string;
+	topics: string[];
+};
+
+const seedImageSizes = [
+	{ height: 1200, width: 900 },
+	{ height: 900, width: 900 },
+	{ height: 900, width: 1200 },
+	{ height: 1350, width: 900 },
+	{ height: 675, width: 1200 },
+	{ height: 1100, width: 880 },
+];
+
+function unsplashPhoto(photoId: string, width: number, height: number) {
+	return `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=${width}&h=${height}&q=80`;
+}
+
+function imageMeta(url: string, width: number, height: number): SeedImageMeta {
+	return { height, url, width };
+}
+
+function imageMetasForSeedNote(item: SeedNote, noteIndex: number) {
+	if (item.imageMetas) return item.imageMetas;
+	return item.images.map((url, imageIndex) => {
+		const size =
+			seedImageSizes[(noteIndex + imageIndex) % seedImageSizes.length];
+		if (!size) throw new Error("Missing seed image size");
+		return imageMeta(url, size.width, size.height);
+	});
+}
+
+const masonryNoteSeeds = [
+	{
+		authorKey: "lin",
+		height: 1200,
+		photoId: "1515886657613-9f3515b0c78f",
+		title: "白衬衫和牛仔裤，周一也能很轻松",
+		topics: ["穿搭", "灵感"],
+		width: 900,
+	},
+	{
+		authorKey: "momo",
+		height: 900,
+		photoId: "1495474472287-4d71bcdd2085",
+		title: "这杯冰拿铁的比例刚刚好",
+		topics: ["咖啡", "周末"],
+		width: 900,
+	},
+	{
+		authorKey: "ash",
+		height: 760,
+		photoId: "1482049016688-2d3e1b311543",
+		title: "十分钟早餐：烤吐司、鸡蛋和水果",
+		topics: ["美食"],
+		width: 1180,
+	},
+	{
+		authorKey: "nana",
+		height: 1350,
+		photoId: "1519710164239-da123dc03ef4",
+		title: "阅读角换了暖光灯，晚上安静很多",
+		topics: ["家居", "好物"],
+		width: 900,
+	},
+	{
+		authorKey: "qiqi",
+		height: 960,
+		photoId: "1556228578-8c89e6adf883",
+		title: "通勤包里只留三件护肤小物",
+		topics: ["护肤", "好物"],
+		width: 900,
+	},
+	{
+		authorKey: "kuizuo",
+		height: 675,
+		photoId: "1497366754035-f200968a6e72",
+		title: "把工作台清空后，思路也跟着清楚了",
+		topics: ["灵感", "好物"],
+		width: 1200,
+	},
+	{
+		authorKey: "momo",
+		height: 1280,
+		photoId: "1500530855697-b586d89ba3ee",
+		title: "傍晚散步，路过一片很柔和的光",
+		topics: ["旅行", "摄影"],
+		width: 900,
+	},
+	{
+		authorKey: "ash",
+		height: 900,
+		photoId: "1502224562085-639556652f33",
+		title: "晨跑结束后的空气很清醒",
+		topics: ["运动", "周末"],
+		width: 900,
+	},
+	{
+		authorKey: "lin",
+		height: 740,
+		photoId: "1483985988355-763728e1935b",
+		title: "逛店时看到一组低饱和配色",
+		topics: ["穿搭", "好物"],
+		width: 1180,
+	},
+	{
+		authorKey: "nana",
+		height: 1320,
+		photoId: "1618220179428-22790b461013",
+		title: "小户型边柜收纳，桌面终于不乱了",
+		topics: ["家居"],
+		width: 900,
+	},
+	{
+		authorKey: "qiqi",
+		height: 900,
+		photoId: "1522335789203-aabd1fc54bc9",
+		title: "周末补水面膜和一本书",
+		topics: ["护肤", "周末"],
+		width: 900,
+	},
+	{
+		authorKey: "momo",
+		height: 720,
+		photoId: "1501339847302-ac426a4a7cbb",
+		title: "社区咖啡店的靠窗位很适合久坐",
+		topics: ["咖啡"],
+		width: 1180,
+	},
+	{
+		authorKey: "ash",
+		height: 1250,
+		photoId: "1517438322307-e67111335449",
+		title: "酸奶碗里多加一点坚果更满足",
+		topics: ["美食", "运动"],
+		width: 900,
+	},
+	{
+		authorKey: "lin",
+		height: 900,
+		photoId: "1492691527719-9d1e07e534b4",
+		title: "拍照前先找干净背景",
+		topics: ["摄影", "灵感"],
+		width: 900,
+	},
+	{
+		authorKey: "nana",
+		height: 700,
+		photoId: "1541643600914-78b084683601",
+		title: "香氛放在玄关，回家第一秒就放松",
+		topics: ["家居", "好物"],
+		width: 1180,
+	},
+	{
+		authorKey: "qiqi",
+		height: 1260,
+		photoId: "1524504388940-b1c1722653e1",
+		title: "今天的轻运动打卡：拉伸二十分钟",
+		topics: ["运动", "护肤"],
+		width: 900,
+	},
+	{
+		authorKey: "kuizuo",
+		height: 900,
+		photoId: "1497366811353-6870744d04b2",
+		title: "会议记录整理成三行重点",
+		topics: ["灵感"],
+		width: 900,
+	},
+	{
+		authorKey: "momo",
+		height: 735,
+		photoId: "1500534314209-a25ddb2bd429",
+		title: "沿河走到天黑，城市慢慢安静下来",
+		topics: ["旅行", "周末"],
+		width: 1180,
+	},
+	{
+		authorKey: "lin",
+		height: 1280,
+		photoId: "1544005313-94ddf0286df2",
+		title: "黑白灰也可以有层次感",
+		topics: ["穿搭"],
+		width: 900,
+	},
+	{
+		authorKey: "ash",
+		height: 900,
+		photoId: "1498804103079-a6351b050096",
+		title: "冷萃偏清爽，下午喝刚好",
+		topics: ["咖啡", "周末"],
+		width: 900,
+	},
+	{
+		authorKey: "nana",
+		height: 720,
+		photoId: "1534528741775-53994a69daeb",
+		title: "给床头换了一束花",
+		topics: ["家居", "灵感"],
+		width: 1180,
+	},
+	{
+		authorKey: "qiqi",
+		height: 1320,
+		photoId: "1527980965255-d3b416303d12",
+		title: "护手霜和润唇膏是冬天的安全感",
+		topics: ["护肤", "好物"],
+		width: 900,
+	},
+	{
+		authorKey: "momo",
+		height: 900,
+		photoId: "1494790108377-be9c29b29330",
+		title: "今天遇到一个很会聊天的店主",
+		topics: ["周末", "灵感"],
+		width: 900,
+	},
+	{
+		authorKey: "ash",
+		height: 700,
+		photoId: "1500648767791-00dcc994a43e",
+		title: "背包轻一点，出门也更愿意走远一点",
+		topics: ["旅行", "好物"],
+		width: 1180,
+	},
+	{
+		authorKey: "lin",
+		height: 1300,
+		photoId: "1508214751196-bcfd4ca60f91",
+		title: "今天的妆面只保留一点光泽",
+		topics: ["护肤", "穿搭"],
+		width: 900,
+	},
+	{
+		authorKey: "nana",
+		height: 900,
+		photoId: "1519710164239-da123dc03ef4",
+		title: "把书按颜色排了一遍",
+		topics: ["家居", "摄影"],
+		width: 900,
+	},
+	{
+		authorKey: "qiqi",
+		height: 730,
+		photoId: "1556228720-195a672e8a03",
+		title: "早上出门前的精简流程",
+		topics: ["护肤"],
+		width: 1180,
+	},
+	{
+		authorKey: "kuizuo",
+		height: 1260,
+		photoId: "1497366754035-f200968a6e72",
+		title: "把待办拆小以后，下午推进得更顺",
+		topics: ["灵感"],
+		width: 900,
+	},
+	{
+		authorKey: "momo",
+		height: 900,
+		photoId: "1500530855697-b586d89ba3ee",
+		title: "晴天适合拍树影",
+		topics: ["摄影", "周末"],
+		width: 900,
+	},
+	{
+		authorKey: "ash",
+		height: 690,
+		photoId: "1482049016688-2d3e1b311543",
+		title: "把剩余食材做成开放三明治",
+		topics: ["美食"],
+		width: 1180,
+	},
+	{
+		authorKey: "lin",
+		height: 1300,
+		photoId: "1515886657613-9f3515b0c78f",
+		title: "长外套和运动鞋，走路很舒服",
+		topics: ["穿搭", "旅行"],
+		width: 900,
+	},
+	{
+		authorKey: "nana",
+		height: 900,
+		photoId: "1618220179428-22790b461013",
+		title: "给餐桌留白以后，吃饭更有仪式感",
+		topics: ["家居", "美食"],
+		width: 900,
+	},
+	{
+		authorKey: "qiqi",
+		height: 720,
+		photoId: "1522335789203-aabd1fc54bc9",
+		title: "睡前护肤只做两步",
+		topics: ["护肤", "好物"],
+		width: 1180,
+	},
+	{
+		authorKey: "momo",
+		height: 1280,
+		photoId: "1501339847302-ac426a4a7cbb",
+		title: "下午四点的咖啡店最安静",
+		topics: ["咖啡", "摄影"],
+		width: 900,
+	},
+	{
+		authorKey: "ash",
+		height: 900,
+		photoId: "1502224562085-639556652f33",
+		title: "今天跑完没有看配速，只看心情",
+		topics: ["运动"],
+		width: 900,
+	},
+	{
+		authorKey: "lin",
+		height: 700,
+		photoId: "1483985988355-763728e1935b",
+		title: "试衣间灯光不好，也能看出版型",
+		topics: ["穿搭", "好物"],
+		width: 1180,
+	},
+] satisfies Array<{
+	authorKey: (typeof seedUsers)[number]["key"];
+	height: number;
+	photoId: string;
+	title: string;
+	topics: string[];
+	width: number;
+}>;
+
+const masonrySeedNotes: SeedNote[] = masonryNoteSeeds.map((item, index) => {
+	const url = unsplashPhoto(item.photoId, item.width, item.height);
+	return {
+		id: `seed-note-masonry-${String(index + 1).padStart(2, "0")}`,
+		authorKey: item.authorKey,
+		status: "published",
+		title: item.title,
+		content:
+			"这条内容用于本地发现页瀑布流和无限下拉测试。封面比例刻意做了差异，方便直观看到两列列表的真实高度变化。",
+		images: [url],
+		imageMetas: [imageMeta(url, item.width, item.height)],
+		topics: item.topics,
+		publishedAt: new Date(now.getTime() - 1000 * 60 * (30 + index * 17)),
+	};
+});
+
+const seedNotes: SeedNote[] = [
 	{
 		id: "seed-note-kuizuo-inspiration",
 		authorKey: "kuizuo",
@@ -287,6 +641,7 @@ const seedNotes = [
 		topics: ["运营"],
 		publishedAt: null,
 	},
+	...masonrySeedNotes,
 ];
 
 const seedConversations = [
@@ -426,6 +781,14 @@ async function ensureUser(
 	return row.id;
 }
 
+function chunks<T>(items: T[], size: number) {
+	const result: T[][] = [];
+	for (let index = 0; index < items.length; index += size) {
+		result.push(items.slice(index, index + size));
+	}
+	return result;
+}
+
 async function main() {
 	const db = createDb();
 
@@ -508,17 +871,19 @@ async function main() {
 		.from(topic);
 	const topicIds = new Map(topicRows.map((item) => [item.name, item.id]));
 
-	for (const item of seedNotes) {
+	for (const [noteIndex, item] of seedNotes.entries()) {
 		const authorId = userIds.get(item.authorKey);
 		if (!authorId) throw new Error(`Missing author ${item.authorKey}`);
 		const cover = item.images[0];
 		if (!cover) throw new Error(`Missing cover image for ${item.id}`);
+		const imageMetas = imageMetasForSeedNote(item, noteIndex);
 
 		await db.insert(note).values({
 			id: item.id,
 			title: item.title,
 			content: item.content,
 			images: item.images,
+			imageMetas,
 			cover,
 			status: item.status,
 			publishedAt: item.publishedAt,
@@ -556,6 +921,16 @@ async function main() {
 	) {
 		throw new Error("Missing seed users");
 	}
+	const engagementUserIds = [
+		lin,
+		momo,
+		ash,
+		nana,
+		qiqi,
+		admin,
+		operator,
+		kuizuo,
+	];
 
 	await db.insert(comment).values([
 		{
@@ -693,6 +1068,16 @@ async function main() {
 			{ noteId: "seed-note-photo-light", userId: qiqi },
 		])
 		.onConflictDoNothing();
+	const masonryLikeRows = masonrySeedNotes.flatMap((item, index) =>
+		engagementUserIds
+			.slice(0, (index % 5) + 1)
+			.map((userId) => ({ noteId: item.id, userId })),
+	);
+	if (masonryLikeRows.length > 0) {
+		for (const rows of chunks(masonryLikeRows, 40)) {
+			await db.insert(noteLike).values(rows).onConflictDoNothing();
+		}
+	}
 
 	await db
 		.insert(noteCollection)
@@ -709,6 +1094,16 @@ async function main() {
 			{ noteId: "seed-note-photo-light", userId: admin },
 		])
 		.onConflictDoNothing();
+	const masonryCollectionRows = masonrySeedNotes.flatMap((item, index) =>
+		engagementUserIds
+			.slice(0, index % 3)
+			.map((userId) => ({ noteId: item.id, userId })),
+	);
+	if (masonryCollectionRows.length > 0) {
+		for (const rows of chunks(masonryCollectionRows, 40)) {
+			await db.insert(noteCollection).values(rows).onConflictDoNothing();
+		}
+	}
 
 	await db
 		.insert(follow)

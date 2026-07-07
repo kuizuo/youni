@@ -23,12 +23,14 @@ export type ComposerImage = {
 	asset?: NoteImageUploadAsset;
 	fileName?: null | string;
 	fileSize?: null | number;
+	height?: number;
 	id: string;
 	isEdited?: boolean;
 	mimeType?: null | string;
 	originalUri?: string;
 	remoteUrl?: string;
 	uri: string;
+	width?: number;
 };
 type AdvancedOptions = {
 	allowComment: boolean;
@@ -86,10 +88,12 @@ async function createComposerImageFromAsset(
 			asset,
 			fileName: asset.fileName,
 			fileSize: asset.fileSize,
+			height: asset.height,
 			id: `${asset.assetId ?? asset.uri}-${asset.uri}`,
 			mimeType: asset.mimeType,
 			originalUri: asset.uri,
 			uri: asset.uri,
+			width: asset.width,
 		};
 	}
 
@@ -111,10 +115,12 @@ async function createComposerImageFromAsset(
 		},
 		fileName,
 		fileSize,
+		height: converted.height,
 		id: `${asset.assetId ?? asset.uri}-${converted.uri}`,
 		mimeType: "image/jpeg",
 		originalUri: asset.uri,
 		uri: converted.uri,
+		width: converted.width,
 	};
 }
 
@@ -251,12 +257,19 @@ export function useCreateComposer({
 		const draftContent = draftQuery.data.content ?? "";
 		setContent(draftContent);
 		setImages(
-			(draftQuery.data.images ?? []).map((url) => ({
-				id: url,
-				originalUri: url,
-				remoteUrl: url,
-				uri: url,
-			})),
+			(draftQuery.data.images ?? []).map((url) => {
+				const meta = (draftQuery.data.imageMetas ?? []).find(
+					(item) => item.url === url,
+				);
+				return {
+					height: meta?.height,
+					id: url,
+					originalUri: url,
+					remoteUrl: url,
+					uri: url,
+					width: meta?.width,
+				};
+			}),
 		);
 		setTopics(
 			mergeTopics(
@@ -276,12 +289,23 @@ export function useCreateComposer({
 		setHydratedDraftId(draftId);
 	}, [draftId, draftQuery.data, hydratedDraftId]);
 
+	const imageMetasFrom = (items: ComposerImage[]) =>
+		items.flatMap((image) => {
+			const url = image.remoteUrl ?? image.uri;
+			return image.width && image.height
+				? [{ height: image.height, url, width: image.width }]
+				: [];
+		});
+
 	const uploadLocalImages = async () => {
 		const localAssets = images.flatMap((image) =>
 			image.asset ? [image.asset] : [],
 		);
 		if (localAssets.length === 0) {
-			return images.map((image) => image.remoteUrl ?? image.uri);
+			return {
+				imageMetas: imageMetasFrom(images),
+				images: images.map((image) => image.remoteUrl ?? image.uri),
+			};
 		}
 
 		setIsUploadingImages(true);
@@ -296,30 +320,38 @@ export function useCreateComposer({
 					throw new Error("图片上传失败");
 				}
 				return {
+					height: image.height,
 					id: item.url,
 					originalUri: image.originalUri ?? image.uri,
 					remoteUrl: item.url,
 					uri: item.url,
+					width: image.width,
 				};
 			});
 			setImages(nextImages);
-			return nextImages.map((image) => image.remoteUrl ?? image.uri);
+			return {
+				imageMetas: imageMetasFrom(nextImages),
+				images: nextImages.map((image) => image.remoteUrl ?? image.uri),
+			};
 		} finally {
 			setIsUploadingImages(false);
 		}
 	};
 
-	const buildPayload = async (submitMode: PublishSubmitMode) => ({
-		title: title.trim(),
-		content: content.trim(),
-		images: await uploadLocalImages(),
-		topics,
-		locationName: undefined,
-		visibility,
-		components: [],
-		advancedOptions,
-		submitMode,
-	});
+	const buildPayload = async (submitMode: PublishSubmitMode) => {
+		const uploadedImages = await uploadLocalImages();
+		return {
+			title: title.trim(),
+			content: content.trim(),
+			...uploadedImages,
+			topics,
+			locationName: undefined,
+			visibility,
+			components: [],
+			advancedOptions,
+			submitMode,
+		};
+	};
 	const isSubmitting =
 		createMutation.isPending ||
 		updateDraftMutation.isPending ||

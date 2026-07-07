@@ -9,10 +9,31 @@ dotenv.config({
 });
 
 export default defineConfig({
-	schema: "./src/schema",
+	schema: "./src/schema/index.ts",
 	out: "./src/migrations",
 	dialect: "sqlite",
 	driver: "d1-http",
+	tablesFilter: [
+		"account",
+		"comment",
+		"comment_like",
+		"direct_conversation",
+		"direct_conversation_participant",
+		"direct_message",
+		"follow",
+		"note",
+		"note_collection",
+		"note_like",
+		"note_topic",
+		"note_view_history",
+		"notification",
+		"notification_push_token",
+		"session",
+		"topic",
+		"user",
+		"user_block",
+		"verification",
+	],
 	dbCredentials: {
 		accountId: process.env.CLOUDFLARE_ACCOUNT_ID || "",
 		databaseId:

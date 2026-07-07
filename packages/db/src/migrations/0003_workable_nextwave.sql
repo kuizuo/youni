@@ -1,0 +1,1 @@
+ALTER TABLE `note` ADD `image_metas` text DEFAULT '[]' NOT NULL;

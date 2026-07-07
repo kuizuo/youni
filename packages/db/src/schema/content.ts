@@ -33,6 +33,10 @@ export const note = sqliteTable(
 			.$type<string[]>()
 			.default(sql`'[]'`)
 			.notNull(),
+		imageMetas: text("image_metas", { mode: "json" })
+			.$type<Array<{ height: number; url: string; width: number }>>()
+			.default(sql`'[]'`)
+			.notNull(),
 		cover: text("cover"),
 		locationName: text("location_name"),
 		visibility: text("visibility", { enum: noteVisibilities })
@@ -194,13 +198,10 @@ export const noteViewHistory = sqliteTable(
 			.references(() => user.id, { onDelete: "cascade" }),
 		viewedAt: timestampColumn("viewed_at").defaultNow().notNull(),
 		createdAt: timestampColumn("created_at").defaultNow().notNull(),
-		updatedAt: timestampColumn("updated_at")
-			.defaultNow()
-			.$onUpdate(() => /* @__PURE__ */ new Date())
-			.notNull(),
+		updatedAt: timestampColumn("updated_at").defaultNow().notNull(),
 	},
 	(table) => [
-		primaryKey({ columns: [table.userId, table.noteId] }),
+		primaryKey({ columns: [table.noteId, table.userId] }),
 		index("note_view_history_user_viewed_idx").on(table.userId, table.viewedAt),
 		index("note_view_history_note_idx").on(table.noteId),
 	],
