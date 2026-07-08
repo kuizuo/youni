@@ -112,8 +112,7 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 			setErrorMessage(message);
 			toast.show({
 				variant: "danger",
-				label: "Google 登录失败",
-				description: message,
+				label: message,
 			});
 			return;
 		}
@@ -151,8 +150,7 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 				setErrorMessage(message);
 				toast.show({
 					variant: "danger",
-					label: "Google 登录失败",
-					description: message,
+					label: message,
 				});
 				return;
 			}
@@ -174,8 +172,7 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 			setErrorMessage(message);
 			toast.show({
 				variant: "danger",
-				label: "Google 登录失败",
-				description: message,
+				label: message,
 			});
 		} finally {
 			setIsSubmitting(false);

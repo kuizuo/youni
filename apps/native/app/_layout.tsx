@@ -117,7 +117,7 @@ export default function Layout() {
 										contentWrapper: toastContentWrapper,
 										defaultProps: {
 											isSwipeable: true,
-											placement: "bottom",
+											placement: "top",
 										},
 										insets: {
 											bottom: 92,

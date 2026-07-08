@@ -99,7 +99,6 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 			toast.show({
 				variant: "warning",
 				label: "暂不支持编辑动图",
-				description: "GIF 可以继续发布，但不能进入图片编辑器。",
 			});
 			return;
 		}

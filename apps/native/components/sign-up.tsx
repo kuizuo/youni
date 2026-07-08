@@ -65,8 +65,7 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 						setErrorMessage(message);
 						toast.show({
 							variant: "danger",
-							label: "注册失败",
-							description: error.error?.message,
+							label: message,
 						});
 					},
 					onSuccess() {
@@ -88,8 +87,7 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 			setErrorMessage("注册失败，请稍后重试");
 			toast.show({
 				variant: "danger",
-				label: "注册失败",
-				description: error instanceof Error ? error.message : undefined,
+				label: error instanceof Error ? error.message : "注册失败，请稍后重试",
 			});
 		} finally {
 			setIsSubmitting(false);

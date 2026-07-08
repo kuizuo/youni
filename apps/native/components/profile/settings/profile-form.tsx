@@ -65,14 +65,12 @@ export function SettingsProfileForm({
 			onSuccess: async () => {
 				await onProfileSaved();
 				await queryClient.refetchQueries();
-				toast.show({ variant: "success", label: "资料已保存" });
 			},
 			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
-					label: "保存失败",
-					description: error.message,
+					label: error.message,
 				});
 			},
 		}),
@@ -101,14 +99,12 @@ export function SettingsProfileForm({
 			const uploaded = await pickAndUploadAvatar();
 			if (uploaded) {
 				setAvatarUrl(uploaded.url);
-				toast.show({ variant: "success", label: "头像已上传，保存后生效" });
 			}
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
 			toast.show({
 				variant: "danger",
-				label: "头像上传失败",
-				description: error instanceof Error ? error.message : undefined,
+				label: error instanceof Error ? error.message : "头像上传失败",
 			});
 		} finally {
 			setIsUploadingAvatar(false);

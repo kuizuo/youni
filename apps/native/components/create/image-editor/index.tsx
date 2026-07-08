@@ -790,9 +790,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 			} catch (error) {
 				toast.show({
 					variant: "danger",
-					label: "裁切失败",
-					description:
-						error instanceof Error ? error.message : "请稍后再试一次。",
+					label: error instanceof Error ? error.message : "裁切失败",
 				});
 			} finally {
 				setIsApplyingTool(false);
@@ -976,8 +974,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		} catch (error) {
 			toast.show({
 				variant: "danger",
-				label: "图片保存失败",
-				description: error instanceof Error ? error.message : "请稍后重试。",
+				label: error instanceof Error ? error.message : "图片保存失败",
 			});
 		} finally {
 			setIsSaving(false);

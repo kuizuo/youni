@@ -155,13 +155,11 @@ export default function MeScreen() {
 			});
 			await profileQuery.refetch();
 			await queryClient.refetchQueries();
-			toast.show({ variant: "success", label: "头像已更换" });
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
 			toast.show({
 				variant: "danger",
-				label: "头像更换失败",
-				description: error instanceof Error ? error.message : undefined,
+				label: error instanceof Error ? error.message : "头像更换失败",
 			});
 		} finally {
 			setIsChangingAvatar(false);

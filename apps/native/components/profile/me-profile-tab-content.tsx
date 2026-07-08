@@ -13,17 +13,18 @@ import {
 	type ProfileTabKey,
 } from "@/components/profile/profile-tabs";
 import { ErrorState, FeedSkeleton } from "@/components/social-states";
-import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
 
 const TAB_INDICATOR_WIDTH = 96;
+const FEED_HORIZONTAL_PADDING = 24;
+const FEED_COLUMN_GAP = 12;
+const FEED_ITEM_GAP = 12;
+const COMPACT_CARD_BODY_HEIGHT = 82;
 
 export type ProfileFeedNote = Parameters<typeof NoteCard>[0]["note"];
-export type ProfileFeedItem = ReturnType<
-	typeof createTwoColumnFeed<ProfileFeedNote>
->[number];
+export type ProfileFeedItem = ProfileFeedNote;
 
 export function createProfileFeedItems(notes: ProfileFeedNote[]) {
-	return createTwoColumnFeed(notes);
+	return notes;
 }
 
 export function ProfileTabBar({
@@ -138,6 +139,11 @@ export function ProfileTabPage({
 	width: number;
 }) {
 	const backgroundColor = useThemeColor("background");
+	const cardWidth = Math.max(
+		1,
+		(width - FEED_HORIZONTAL_PADDING - FEED_COLUMN_GAP) / 2,
+	);
+	const masonryColumns = createMasonryColumns(feedItems, cardWidth);
 
 	return (
 		<View style={{ backgroundColor }}>
@@ -157,25 +163,17 @@ export function ProfileTabPage({
 						onRetry={onRetry}
 					/>
 				) : feedItems.length > 0 ? (
-					<View className="gap-3 px-3">
-						{feedItems.reduce<ReactNode[]>((rows, item, index) => {
-							if (index % 2 === 1) return rows;
-							const nextItem = feedItems[index + 1];
-							rows.push(
-								<View
-									key={`row-${item.id}`}
-									className="flex-row items-start gap-3"
-								>
-									<FeedCell item={item} />
-									{nextItem ? (
-										<FeedCell item={nextItem} />
-									) : (
-										<View className="flex-1 basis-0" />
-									)}
-								</View>,
-							);
-							return rows;
-						}, [])}
+					<View className="flex-row items-start gap-3 px-3">
+						{masonryColumns.map((column, index) => (
+							<View
+								key={index === 0 ? "left-column" : "right-column"}
+								className="flex-1 gap-3"
+							>
+								{column.map((item) => (
+									<FeedCell key={item.id} item={item} />
+								))}
+							</View>
+						))}
 					</View>
 				) : (
 					emptyState
@@ -186,9 +184,41 @@ export function ProfileTabPage({
 }
 
 function FeedCell({ item }: { item: ProfileFeedItem }) {
-	return (
-		<View className="flex-1 basis-0">
-			{item.type === "item" ? <NoteCard compact note={item.item} /> : null}
-		</View>
+	return <NoteCard compact note={item} />;
+}
+
+function createMasonryColumns(items: ProfileFeedItem[], cardWidth: number) {
+	const left: ProfileFeedItem[] = [];
+	const right: ProfileFeedItem[] = [];
+	let leftHeight = 0;
+	let rightHeight = 0;
+
+	for (const item of items) {
+		const estimatedHeight =
+			estimateCompactNoteCardHeight(item, cardWidth) + FEED_ITEM_GAP;
+		if (leftHeight <= rightHeight) {
+			left.push(item);
+			leftHeight += estimatedHeight;
+		} else {
+			right.push(item);
+			rightHeight += estimatedHeight;
+		}
+	}
+
+	return [left, right];
+}
+
+function estimateCompactNoteCardHeight(
+	item: ProfileFeedItem,
+	cardWidth: number,
+) {
+	const coverImageMeta = item.imageMetas?.find(
+		(meta) => meta.url === item.cover,
 	);
+	const imageAspectRatio =
+		coverImageMeta?.width && coverImageMeta.height
+			? coverImageMeta.width / coverImageMeta.height
+			: 1;
+	const imageHeight = cardWidth / imageAspectRatio;
+	return imageHeight + COMPACT_CARD_BODY_HEIGHT;
 }

@@ -65,8 +65,7 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 						setErrorMessage(message);
 						toast.show({
 							variant: "danger",
-							label: "登录失败",
-							description: error.error?.message,
+							label: message,
 						});
 					},
 					onSuccess() {
@@ -87,8 +86,7 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 			setErrorMessage("登录失败，请稍后重试");
 			toast.show({
 				variant: "danger",
-				label: "登录失败",
-				description: error instanceof Error ? error.message : undefined,
+				label: error instanceof Error ? error.message : "登录失败，请稍后重试",
 			});
 		} finally {
 			setIsSubmitting(false);

@@ -67,17 +67,14 @@ export default function ForgotPasswordScreen() {
 						setErrorMessage(message);
 						toast.show({
 							variant: "danger",
-							label: "发送失败",
-							description: message,
+							label: message,
 						});
 					},
 					onSuccess() {
 						setHasSent(true);
 						setResendCooldown(RESEND_COOLDOWN_SECONDS);
 						toast.show({
-							variant: "success",
 							label: "验证码已发送",
-							description: "如果邮箱存在，请查看邮件并输入验证码。",
 						});
 					},
 				},
@@ -90,8 +87,7 @@ export default function ForgotPasswordScreen() {
 			if (!isRequestTimeoutError(error)) {
 				toast.show({
 					variant: "danger",
-					label: "发送失败",
-					description: error instanceof Error ? error.message : undefined,
+					label: error instanceof Error ? error.message : "发送失败",
 				});
 			}
 		} finally {
@@ -133,15 +129,12 @@ export default function ForgotPasswordScreen() {
 						setErrorMessage(message);
 						toast.show({
 							variant: "danger",
-							label: "重置失败",
-							description: message,
+							label: message,
 						});
 					},
 					onSuccess() {
 						toast.show({
-							variant: "success",
 							label: "密码已重置",
-							description: "请用新密码登录。",
 						});
 						router.replace("/login" as Href);
 					},
@@ -155,8 +148,7 @@ export default function ForgotPasswordScreen() {
 			if (!isRequestTimeoutError(error)) {
 				toast.show({
 					variant: "danger",
-					label: "重置失败",
-					description: error instanceof Error ? error.message : undefined,
+					label: error instanceof Error ? error.message : "重置失败",
 				});
 			}
 		} finally {

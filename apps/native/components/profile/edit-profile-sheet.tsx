@@ -54,14 +54,12 @@ export function EditProfileSheet({
 		orpc.updateProfile.mutationOptions({
 			onSuccess: async () => {
 				await onSaved();
-				toast.show({ variant: "success", label: "资料已保存" });
 			},
 			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
-					label: "保存失败",
-					description: error.message,
+					label: error.message,
 				});
 			},
 		}),
@@ -86,14 +84,12 @@ export function EditProfileSheet({
 			const uploaded = await pickAndUploadAvatar();
 			if (uploaded) {
 				setAvatarUrl(uploaded.url);
-				toast.show({ variant: "success", label: "头像已上传，保存后生效" });
 			}
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
 			toast.show({
 				variant: "danger",
-				label: "头像上传失败",
-				description: error instanceof Error ? error.message : undefined,
+				label: error instanceof Error ? error.message : "头像上传失败",
 			});
 		} finally {
 			setIsUploadingAvatar(false);

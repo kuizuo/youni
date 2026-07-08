@@ -210,7 +210,6 @@ export default function NoteDetailScreen() {
 			onSuccess: async () => {
 				setIsActionMenuVisible(false);
 				await queryClient.invalidateQueries();
-				toast.show({ variant: "success", label: "图文已删除" });
 				goBack();
 			},
 		}),

@@ -1,5 +1,4 @@
 type RequestToastOptions = {
-	description?: string;
 	id?: string;
 	label: string;
 	variant?: "danger" | "default" | "success" | "warning";

@@ -35,7 +35,7 @@ export default function ScanScreen() {
 			socialNavigation.replaceWith({ type: "user", id: userId });
 			return;
 		}
-		toast.show({ label: "已识别二维码", description: data.slice(0, 80) });
+		toast.show({ label: "已识别二维码" });
 	};
 
 	if (!permission) {
@@ -132,7 +132,6 @@ export default function ScanScreen() {
 							onPress={() =>
 								toast.show({
 									label: "相册入口已打开",
-									description: "当前先支持相机扫码。",
 								})
 							}
 						/>

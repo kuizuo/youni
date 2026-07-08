@@ -15,7 +15,7 @@ import { View } from "react-native";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
-export type AppToastOptions = Omit<ToastShowConfig, "icon"> & {
+export type AppToastOptions = Omit<ToastShowConfig, "description" | "icon"> & {
 	iconName?: IconName;
 };
 
@@ -50,7 +50,7 @@ function AppToastContent({
 	options: AppToastOptions;
 	props: ToastComponentProps;
 }) {
-	const variant = options.variant ?? "accent";
+	const variant = options.variant ?? "default";
 	const iconColor = useThemeColor(
 		variant === "default" ? "muted" : `${variant}-soft-foreground`,
 	);
@@ -89,9 +89,6 @@ function AppToastContent({
 			<View className="min-w-0 flex-1 gap-0.5">
 				{options.label ? (
 					<Toast.Title className="pr-1">{options.label}</Toast.Title>
-				) : null}
-				{options.description ? (
-					<Toast.Description>{options.description}</Toast.Description>
 				) : null}
 			</View>
 			{options.actionLabel ? (

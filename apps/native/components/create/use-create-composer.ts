@@ -214,21 +214,13 @@ export function useCreateComposer({
 				resetForm();
 				await queryClient.invalidateQueries();
 				const isDraft = variables.submitMode === "draft";
-				toast.show({
-					variant: "success",
-					label: isDraft ? "已保存草稿" : "已提交审核",
-					description: isDraft
-						? "草稿已保存到你的主页。"
-						: "可以先查看这篇内容。",
-				});
 				router.replace((isDraft ? "/me" : `/note/${result.id}`) as Href);
 			},
 			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
-					label: "发布失败",
-					description: error.message,
+					label: error.message,
 				});
 			},
 			onSettled: () => {
@@ -242,21 +234,13 @@ export function useCreateComposer({
 				resetForm();
 				await queryClient.invalidateQueries();
 				const isDraft = variables.submitMode === "draft";
-				toast.show({
-					variant: "success",
-					label: isDraft ? "草稿已保存" : "已提交审核",
-					description: isDraft
-						? "修改已保存到我的草稿。"
-						: "可以先查看这篇内容。",
-				});
 				router.replace((isDraft ? "/drafts" : `/note/${result.id}`) as Href);
 			},
 			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
-					label: pendingSubmitMode === "draft" ? "保存失败" : "发布失败",
-					description: error.message,
+					label: error.message,
 				});
 			},
 			onSettled: () => {
@@ -269,19 +253,13 @@ export function useCreateComposer({
 			onSuccess: async (result) => {
 				resetForm();
 				await queryClient.invalidateQueries();
-				toast.show({
-					variant: "success",
-					label: "已提交审核",
-					description: "审核通过后会重新展示。",
-				});
 				router.replace(`/note/${result.id}` as Href);
 			},
 			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
-					label: "提交失败",
-					description: error.message,
+					label: error.message,
 				});
 			},
 			onSettled: () => {
@@ -464,8 +442,7 @@ export function useCreateComposer({
 			setPendingSubmitMode(null);
 			toast.show({
 				variant: "danger",
-				label: submitMode === "draft" ? "保存失败" : "发布失败",
-				description: error instanceof Error ? error.message : "图片上传失败",
+				label: error instanceof Error ? error.message : "图片上传失败",
 			});
 		}
 	};
@@ -491,7 +468,6 @@ export function useCreateComposer({
 			toast.show({
 				variant: "warning",
 				label: "需要允许访问相册",
-				description: "允许后才能选择图片发布。",
 			});
 			return;
 		}
@@ -529,7 +505,6 @@ export function useCreateComposer({
 			toast.show({
 				variant: "danger",
 				label: "图片处理失败",
-				description: "当前图片格式暂时无法处理，请换一张图片。",
 			});
 		} finally {
 			setIsAddingImages(false);
@@ -581,7 +556,6 @@ export function useCreateComposer({
 			toast.show({
 				variant: "warning",
 				label: "登录后再保存",
-				description: "请先登录账号，再保存草稿。",
 			});
 			return;
 		}
@@ -597,7 +571,6 @@ export function useCreateComposer({
 			toast.show({
 				variant: "warning",
 				label: "登录后再发布",
-				description: "请先登录账号，再提交笔记。",
 			});
 			return;
 		}
@@ -605,8 +578,7 @@ export function useCreateComposer({
 		if (!canPublish) {
 			toast.show({
 				variant: "warning",
-				label: "还不能发布",
-				description: `还差：${missingItems.join("、")}`,
+				label: `还差：${missingItems.join("、")}`,
 			});
 			return;
 		}
