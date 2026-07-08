@@ -106,16 +106,13 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 		setEditingImageId(image.id);
 	};
 
-	if (
-		composer.isEditingDraft &&
-		(composer.draftQuery.isLoading || !composer.draftQuery.data)
-	) {
+	if (composer.isLoadingExistingContent) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background">
-				{composer.draftQuery.isError ? (
+				{composer.loadExistingContentError ? (
 					<ErrorState
-						description="草稿暂时没有加载出来，请稍后重试。"
-						onRetry={() => composer.draftQuery.refetch()}
+						description="图文暂时没有加载出来，请稍后重试。"
+						onRetry={composer.retryLoadExistingContent}
 					/>
 				) : (
 					<Spinner />
@@ -181,6 +178,8 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					isSubmitting={composer.isSubmitting}
 					isUploadingImages={composer.isUploadingImages}
 					pendingSubmitMode={composer.pendingSubmitMode}
+					publishLabel={composer.isEditingNote ? "提交审核" : "发布笔记"}
+					showSaveDraft={!composer.isEditingNote}
 					onPublish={composer.publish}
 					onSaveDraft={composer.saveDraft}
 				/>

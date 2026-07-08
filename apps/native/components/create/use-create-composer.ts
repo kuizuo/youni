@@ -131,7 +131,10 @@ type UseCreateComposerOptions = {
 export function useCreateComposer({
 	onRequestClose,
 }: UseCreateComposerOptions) {
-	const params = useLocalSearchParams<{ draftId?: string | string[] }>();
+	const params = useLocalSearchParams<{
+		draftId?: string | string[];
+		noteId?: string | string[];
+	}>();
 	const session = authClient.useSession();
 	const { toast } = useAppToast();
 	const [hasAuthenticated, setHasAuthenticated] = useState(false);
@@ -148,9 +151,13 @@ export function useCreateComposer({
 	const [isAddingImages, setIsAddingImages] = useState(false);
 	const [isUploadingImages, setIsUploadingImages] = useState(false);
 	const [hydratedDraftId, setHydratedDraftId] = useState<null | string>(null);
+	const [hydratedNoteId, setHydratedNoteId] = useState<null | string>(null);
 	const rawDraftId = params.draftId;
+	const rawNoteId = params.noteId;
 	const draftId = Array.isArray(rawDraftId) ? rawDraftId[0] : rawDraftId;
+	const noteId = Array.isArray(rawNoteId) ? rawNoteId[0] : rawNoteId;
 	const isEditingDraft = Boolean(draftId);
+	const isEditingNote = Boolean(noteId && !draftId);
 	const isAuthenticated = Boolean(session.data?.user) || hasAuthenticated;
 
 	useEffect(() => {
@@ -183,6 +190,12 @@ export function useCreateComposer({
 		}),
 		enabled: Boolean(draftId && isAuthenticated),
 	});
+	const editNoteQuery = useQuery({
+		...orpc.editById.queryOptions({
+			input: { id: noteId || "missing" },
+		}),
+		enabled: Boolean(isEditingNote && noteId && isAuthenticated),
+	});
 
 	const resetForm = () => {
 		setTitle("");
@@ -192,6 +205,7 @@ export function useCreateComposer({
 		setVisibility("public");
 		setAdvancedOptions(DEFAULT_ADVANCED_OPTIONS);
 		setHydratedDraftId(null);
+		setHydratedNoteId(null);
 	};
 
 	const createMutation = useMutation(
@@ -250,6 +264,31 @@ export function useCreateComposer({
 			},
 		}),
 	);
+	const updateNoteMutation = useMutation(
+		orpc.updateNote.mutationOptions({
+			onSuccess: async (result) => {
+				resetForm();
+				await queryClient.invalidateQueries();
+				toast.show({
+					variant: "success",
+					label: "已提交审核",
+					description: "审核通过后会重新展示。",
+				});
+				router.replace(`/note/${result.id}` as Href);
+			},
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({
+					variant: "danger",
+					label: "提交失败",
+					description: error.message,
+				});
+			},
+			onSettled: () => {
+				setPendingSubmitMode(null);
+			},
+		}),
+	);
 
 	useEffect(() => {
 		if (!draftId || !draftQuery.data || hydratedDraftId === draftId) return;
@@ -288,6 +327,44 @@ export function useCreateComposer({
 		});
 		setHydratedDraftId(draftId);
 	}, [draftId, draftQuery.data, hydratedDraftId]);
+
+	useEffect(() => {
+		if (!noteId || !editNoteQuery.data || hydratedNoteId === noteId) return;
+		setTitle(editNoteQuery.data.title ?? "");
+		const noteContent = editNoteQuery.data.content ?? "";
+		setContent(noteContent);
+		setImages(
+			(editNoteQuery.data.images ?? []).map((url) => {
+				const meta = (editNoteQuery.data.imageMetas ?? []).find(
+					(item) => item.url === url,
+				);
+				return {
+					height: meta?.height,
+					id: url,
+					originalUri: url,
+					remoteUrl: url,
+					uri: url,
+					width: meta?.width,
+				};
+			}),
+		);
+		setTopics(
+			mergeTopics(
+				editNoteQuery.data.topics ?? [],
+				extractTopicsFromContent(noteContent),
+			),
+		);
+		setVisibility(editNoteQuery.data.visibility ?? "public");
+		setAdvancedOptions({
+			allowComment:
+				editNoteQuery.data.advancedOptions.allowComment ??
+				DEFAULT_ADVANCED_OPTIONS.allowComment,
+			allowShare:
+				editNoteQuery.data.advancedOptions.allowShare ??
+				DEFAULT_ADVANCED_OPTIONS.allowShare,
+		});
+		setHydratedNoteId(noteId);
+	}, [editNoteQuery.data, hydratedNoteId, noteId]);
 
 	const imageMetasFrom = (items: ComposerImage[]) =>
 		items.flatMap((image) => {
@@ -355,12 +432,28 @@ export function useCreateComposer({
 	const isSubmitting =
 		createMutation.isPending ||
 		updateDraftMutation.isPending ||
+		updateNoteMutation.isPending ||
 		isAddingImages ||
 		isUploadingImages;
 
 	const submitNote = async (submitMode: PublishSubmitMode) => {
 		try {
 			const payload = await buildPayload(submitMode);
+			if (isEditingNote && noteId) {
+				updateNoteMutation.mutate({
+					id: noteId,
+					title: payload.title,
+					content: payload.content,
+					images: payload.images,
+					imageMetas: payload.imageMetas,
+					topics: payload.topics,
+					locationName: payload.locationName,
+					visibility: payload.visibility,
+					components: payload.components,
+					advancedOptions: payload.advancedOptions,
+				});
+				return;
+			}
 			if (draftId) {
 				updateDraftMutation.mutate({ id: draftId, ...payload });
 				return;
@@ -381,6 +474,10 @@ export function useCreateComposer({
 		fireHaptic();
 		if (onRequestClose) {
 			onRequestClose();
+			return;
+		}
+		if (isEditingNote && noteId) {
+			router.replace(`/note/${noteId}` as Href);
 			return;
 		}
 		router.replace((draftId ? "/drafts" : "/") as Href);
@@ -479,6 +576,7 @@ export function useCreateComposer({
 	const saveDraft = () => {
 		fireHaptic();
 		if (isSubmitting) return;
+		if (isEditingNote) return;
 		if (!isAuthenticated) {
 			toast.show({
 				variant: "warning",
@@ -549,10 +647,16 @@ export function useCreateComposer({
 		content,
 		cycleVisibility,
 		draftQuery,
+		editNoteQuery,
 		goBack,
 		images,
 		isAddingImages,
 		isEditingDraft,
+		isEditingNote,
+		isLoadingExistingContent:
+			(isEditingDraft && (draftQuery.isLoading || !draftQuery.data)) ||
+			(isEditingNote && (editNoteQuery.isLoading || !editNoteQuery.data)),
+		loadExistingContentError: draftQuery.isError || editNoteQuery.isError,
 		isSubmitting,
 		isUploadingImages,
 		pendingSubmitMode,
@@ -563,6 +667,13 @@ export function useCreateComposer({
 		setAllowShare,
 		setContent: setComposerContent,
 		setTitle,
+		retryLoadExistingContent: () => {
+			if (isEditingDraft) {
+				void draftQuery.refetch();
+				return;
+			}
+			void editNoteQuery.refetch();
+		},
 		title,
 		updateImage,
 		insertMention,

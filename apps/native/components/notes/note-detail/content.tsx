@@ -10,7 +10,10 @@ import { useMemo } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { Image, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
+import {
+	APP_HEADER_ICON_SIZE,
+	AppHeaderIconButton,
+} from "@/components/shared/app-header";
 import { AppHeading } from "@/components/shared/app-heading";
 import { FollowButton } from "@/components/users/follow-button";
 import { formatRelativeTime } from "@/utils/format";
@@ -47,9 +50,11 @@ export function SimpleTopBar({ onBack }: { onBack: () => void }) {
 export function AuthorTopBar({
 	author,
 	isFollowing,
+	isMenuVisible,
 	isSelf,
 	onBack,
 	onFollow,
+	onOpenMenu,
 	onOpenAuthor,
 }: {
 	author: {
@@ -59,11 +64,14 @@ export function AuthorTopBar({
 		name: string;
 	};
 	isFollowing: boolean;
+	isMenuVisible: boolean;
 	isSelf: boolean;
 	onBack: () => void;
 	onFollow: () => void;
+	onOpenMenu: () => void;
 	onOpenAuthor: () => void;
 }) {
+	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
 	const insets = useSafeAreaInsets();
 
@@ -101,7 +109,13 @@ export function AuthorTopBar({
 					</View>
 				</PressableFeedback>
 				{isSelf ? (
-					<View className="w-16" />
+					<AppHeaderIconButton
+						variant={isMenuVisible ? "secondary" : "ghost"}
+						accessibilityLabel="更多操作"
+						color={foregroundColor}
+						icon="ellipsis-horizontal"
+						onPress={onOpenMenu}
+					/>
 				) : (
 					<FollowButton
 						size="sm"

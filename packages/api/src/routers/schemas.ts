@@ -75,6 +75,15 @@ export const noteCreateInput = z.object({
 export const draftUpdateInput = noteCreateInput.extend({
 	id: z.string().min(1),
 });
+export const noteEditInput = noteCreateInput
+	.extend({
+		id: z.string().min(1),
+	})
+	.omit({ submitMode: true });
+export const noteVisibilityUpdateInput = z.object({
+	id: z.string().min(1),
+	visibility: z.enum(["public", "followers", "private"]),
+});
 
 export const commentInput = z.object({
 	noteId: z.string().min(1),

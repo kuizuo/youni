@@ -12,7 +12,7 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import type { SQL } from "drizzle-orm";
-import { and, count, desc, eq, inArray, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
 import { containsInsensitive } from "./search";
 
 export type ContentNoteStatus =
@@ -43,6 +43,12 @@ export type ContentNoteMutationInput = {
 		isOriginal: boolean;
 	};
 	submitMode: "draft" | "publish";
+};
+export type ContentNoteEditInput = Omit<
+	ContentNoteMutationInput,
+	"submitMode"
+> & {
+	id: string;
 };
 
 export type ContentNoteRow = {
@@ -418,9 +424,9 @@ export async function listMeContentNoteRows(
 	limit: number,
 ) {
 	if (tab === "notes") {
-		return selectContentNoteRows(and(eq(note.userId, userId))).then((items) =>
-			items.slice(0, limit),
-		);
+		return selectContentNoteRows(
+			and(eq(note.userId, userId), ne(note.status, "hidden")),
+		).then((items) => items.slice(0, limit));
 	}
 
 	if (tab === "collections") {
@@ -429,7 +435,7 @@ export async function listMeContentNoteRows(
 			.from(noteCollection)
 			.innerJoin(note, eq(noteCollection.noteId, note.id))
 			.innerJoin(user, eq(note.userId, user.id))
-			.where(eq(noteCollection.userId, userId))
+			.where(and(eq(noteCollection.userId, userId), ne(note.status, "hidden")))
 			.orderBy(desc(noteCollection.createdAt))
 			.limit(limit);
 	}
@@ -442,6 +448,7 @@ export async function listMeContentNoteRows(
 		.where(
 			and(
 				eq(noteLike.userId, userId),
+				ne(note.status, "hidden"),
 				or(
 					and(eq(note.status, "published"), eq(note.visibility, "public")),
 					eq(note.userId, userId),
@@ -476,6 +483,7 @@ export async function listViewedContentNoteRows(userId: string, limit: number) {
 		.where(
 			and(
 				eq(noteViewHistory.userId, userId),
+				ne(note.status, "hidden"),
 				or(
 					and(eq(note.status, "published"), eq(note.visibility, "public")),
 					eq(note.userId, userId),
@@ -495,6 +503,25 @@ export async function getDraftContentNoteById({
 }) {
 	const [row] = await selectContentNoteRows(
 		and(eq(note.id, id), eq(note.userId, userId), eq(note.status, "draft")),
+	);
+
+	if (!row) {
+		throw new ORPCError("NOT_FOUND");
+	}
+
+	const [item] = await hydrateContentNotes([row], userId);
+	return item;
+}
+
+export async function getEditableContentNoteById({
+	id,
+	userId,
+}: {
+	id: string;
+	userId: string;
+}) {
+	const [row] = await selectContentNoteRows(
+		and(eq(note.id, id), eq(note.userId, userId), ne(note.status, "hidden")),
 	);
 
 	if (!row) {
@@ -567,6 +594,71 @@ export async function updateDraftContentNote({
 	return { id: input.id, status };
 }
 
+export async function updateEditableContentNote({
+	input,
+	userId,
+}: {
+	input: ContentNoteEditInput;
+	userId: string;
+}) {
+	const db = createDb();
+	const [existing] = await db
+		.select({ id: note.id })
+		.from(note)
+		.where(
+			and(
+				eq(note.id, input.id),
+				eq(note.userId, userId),
+				ne(note.status, "hidden"),
+			),
+		)
+		.limit(1);
+
+	if (!existing) {
+		throw new ORPCError("NOT_FOUND");
+	}
+
+	const topicNames = uniqueTopics(input.topics);
+	assertPublishReady({ ...input, submitMode: "publish" }, topicNames);
+
+	const cover = input.images[0];
+	const imageMetas = normalizeImageMetas({ ...input, submitMode: "publish" });
+
+	await db
+		.update(note)
+		.set({
+			title: input.title.trim(),
+			content: input.content.trim(),
+			images: input.images,
+			imageMetas,
+			cover: cover ?? null,
+			locationName: input.locationName || null,
+			visibility: input.visibility,
+			components: input.components,
+			advancedOptions: input.advancedOptions,
+			status: "audit",
+			rejectionReason: null,
+			publishedAt: null,
+			draftSavedAt: null,
+		})
+		.where(
+			and(
+				eq(note.id, input.id),
+				eq(note.userId, userId),
+				ne(note.status, "hidden"),
+			),
+		);
+
+	await syncNoteTopics({
+		db,
+		noteId: input.id,
+		topicNames,
+		clearExisting: true,
+	});
+
+	return { id: input.id, status: "audit" as const };
+}
+
 export async function createContentNote({
 	input,
 	userId,
@@ -610,6 +702,57 @@ export async function createContentNote({
 	await syncNoteTopics({ db, noteId: createdNote.id, topicNames });
 
 	return { id: createdNote.id, status };
+}
+
+export async function updateContentNoteVisibility({
+	id,
+	userId,
+	visibility,
+}: {
+	id: string;
+	userId: string;
+	visibility: "followers" | "private" | "public";
+}) {
+	const [updated] = await createDb()
+		.update(note)
+		.set({ visibility })
+		.where(
+			and(eq(note.id, id), eq(note.userId, userId), ne(note.status, "hidden")),
+		)
+		.returning({ id: note.id, visibility: note.visibility });
+
+	if (!updated) {
+		throw new ORPCError("NOT_FOUND");
+	}
+
+	return updated;
+}
+
+export async function softDeleteContentNote({
+	id,
+	userId,
+}: {
+	id: string;
+	userId: string;
+}) {
+	const [updated] = await createDb()
+		.update(note)
+		.set({
+			status: "hidden",
+			rejectionReason: null,
+			publishedAt: null,
+			draftSavedAt: null,
+		})
+		.where(
+			and(eq(note.id, id), eq(note.userId, userId), ne(note.status, "hidden")),
+		)
+		.returning({ id: note.id });
+
+	if (!updated) {
+		throw new ORPCError("NOT_FOUND");
+	}
+
+	return { ok: true };
 }
 
 export async function hydrateAdminContentNotes<T extends { id: string }>(

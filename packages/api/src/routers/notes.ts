@@ -8,7 +8,7 @@ import {
 	noteLike,
 	noteViewHistory,
 } from "@youni/db/schema/index";
-import { and, count, eq, inArray, or } from "drizzle-orm";
+import { and, count, eq, inArray, ne, or } from "drizzle-orm";
 import {
 	activeUserProcedure,
 	protectedProcedure,
@@ -17,11 +17,15 @@ import {
 import {
 	createContentNote,
 	getDraftContentNoteById,
+	getEditableContentNoteById,
 	hydrateContentNotes,
 	listDraftContentNotes,
 	listViewedContentNoteRows,
 	selectContentNoteRows,
+	softDeleteContentNote,
+	updateContentNoteVisibility,
 	updateDraftContentNote,
+	updateEditableContentNote,
 } from "../lib/content-notes";
 import { notifyNoteOwner } from "../lib/notifications";
 import { listRootComments } from "./comments";
@@ -30,6 +34,8 @@ import {
 	idInput,
 	listInput,
 	noteCreateInput,
+	noteEditInput,
+	noteVisibilityUpdateInput,
 	paginatedListInput,
 } from "./schemas";
 import { getSearchNoteWhereClause } from "./topics";
@@ -52,6 +58,25 @@ async function recordNoteView(noteId: string, userId: string) {
 				updatedAt: now,
 			},
 		});
+}
+
+async function canViewNoteDetail(
+	row: Awaited<ReturnType<typeof selectContentNoteRows>>[number],
+	viewerId?: string,
+) {
+	if (viewerId && row.userId === viewerId) return true;
+	if (row.status !== "published") return false;
+	if (row.visibility === "public") return true;
+	if (row.visibility !== "followers" || !viewerId) return false;
+
+	const [followingRow] = await createDb()
+		.select({ followingId: follow.followingId })
+		.from(follow)
+		.where(
+			and(eq(follow.followerId, viewerId), eq(follow.followingId, row.userId)),
+		)
+		.limit(1);
+	return Boolean(followingRow);
 }
 
 export const notesRouter = {
@@ -109,22 +134,10 @@ export const notesRouter = {
 
 	byId: publicProcedure.input(idInput).handler(async ({ input, context }) => {
 		const [row] = await selectContentNoteRows(
-			context.session?.user.id
-				? and(
-						eq(note.id, input.id),
-						or(
-							and(eq(note.status, "published"), eq(note.visibility, "public")),
-							eq(note.userId, context.session.user.id),
-						),
-					)
-				: and(
-						eq(note.id, input.id),
-						eq(note.status, "published"),
-						eq(note.visibility, "public"),
-					),
+			and(eq(note.id, input.id), ne(note.status, "hidden")),
 		);
 
-		if (!row) {
+		if (!row || !(await canViewNoteDetail(row, context.session?.user.id))) {
 			throw new ORPCError("NOT_FOUND");
 		}
 
@@ -159,11 +172,48 @@ export const notesRouter = {
 			});
 		}),
 
+	editById: protectedProcedure
+		.input(idInput)
+		.handler(async ({ input, context }) => {
+			return getEditableContentNoteById({
+				id: input.id,
+				userId: context.session.user.id,
+			});
+		}),
+
 	updateDraft: activeUserProcedure
 		.input(draftUpdateInput)
 		.handler(async ({ input, context }) => {
 			return updateDraftContentNote({
 				input,
+				userId: context.session.user.id,
+			});
+		}),
+
+	updateNote: activeUserProcedure
+		.input(noteEditInput)
+		.handler(async ({ input, context }) => {
+			return updateEditableContentNote({
+				input,
+				userId: context.session.user.id,
+			});
+		}),
+
+	updateNoteVisibility: activeUserProcedure
+		.input(noteVisibilityUpdateInput)
+		.handler(async ({ input, context }) => {
+			return updateContentNoteVisibility({
+				id: input.id,
+				userId: context.session.user.id,
+				visibility: input.visibility,
+			});
+		}),
+
+	deleteMyNote: activeUserProcedure
+		.input(idInput)
+		.handler(async ({ input, context }) => {
+			return softDeleteContentNote({
+				id: input.id,
 				userId: context.session.user.id,
 			});
 		}),

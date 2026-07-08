@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -10,6 +10,7 @@ import {
 } from "heroui-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+	Alert,
 	FlatList,
 	Keyboard,
 	KeyboardAvoidingView,
@@ -26,10 +27,15 @@ import { AppSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
-import { useAppToast } from "@/utils/app-toast";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
+import { useAppToast } from "@/utils/app-toast";
 import { client, orpc, queryClient } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
+import {
+	NoteActionMenu,
+	type NoteVisibility,
+	NoteVisibilitySheet,
+} from "./note-detail/action-menu";
 import { BottomIconAction } from "./note-detail/bottom-actions";
 import { CommentComposerPanel } from "./note-detail/comment-composer";
 import {
@@ -118,6 +124,8 @@ export default function NoteDetailScreen() {
 	const [isCommentComposerOpen, setIsCommentComposerOpen] = useState(false);
 	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
+	const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
+	const [isVisibilitySheetOpen, setIsVisibilitySheetOpen] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [scrolledTargetCommentKey, setScrolledTargetCommentKey] = useState<
 		null | string
@@ -177,6 +185,36 @@ export default function NoteDetailScreen() {
 		retry: (failureCount, error) =>
 			isNotFoundError(error) ? false : failureCount < 2,
 	});
+	const updateVisibilityMutation = useMutation(
+		orpc.updateNoteVisibility.mutationOptions({
+			onError: (error) => {
+				toast.show({
+					variant: "danger",
+					label: error instanceof Error ? error.message : "权限设置失败",
+				});
+			},
+			onSuccess: async () => {
+				setIsVisibilitySheetOpen(false);
+				await queryClient.invalidateQueries();
+			},
+		}),
+	);
+	const deleteNoteMutation = useMutation(
+		orpc.deleteMyNote.mutationOptions({
+			onError: (error) => {
+				toast.show({
+					variant: "danger",
+					label: error instanceof Error ? error.message : "删除失败",
+				});
+			},
+			onSuccess: async () => {
+				setIsActionMenuVisible(false);
+				await queryClient.invalidateQueries();
+				toast.show({ variant: "success", label: "图文已删除" });
+				goBack();
+			},
+		}),
+	);
 
 	const images = useMemo(() => note.data?.images ?? [], [note.data?.images]);
 	const rootComments = useMemo(
@@ -652,6 +690,56 @@ export default function NoteDetailScreen() {
 		);
 	};
 
+	const openActionMenu = () => {
+		if (!isSelf) return;
+		fireHaptic();
+		setIsActionMenuVisible(true);
+	};
+
+	const openEditNote = () => {
+		if (!note.data) return;
+		fireHaptic();
+		setIsActionMenuVisible(false);
+		router.push({
+			pathname: "/publish",
+			params: { noteId: note.data.id },
+		} as unknown as Href);
+	};
+
+	const openVisibilitySettings = () => {
+		if (!note.data) return;
+		fireHaptic();
+		setIsActionMenuVisible(false);
+		setIsVisibilitySheetOpen(true);
+	};
+
+	const updateVisibility = (visibility: NoteVisibility) => {
+		if (!note.data || updateVisibilityMutation.isPending) return;
+		fireHaptic();
+		if (visibility === note.data.visibility) {
+			setIsVisibilitySheetOpen(false);
+			return;
+		}
+		updateVisibilityMutation.mutate({ id: note.data.id, visibility });
+	};
+
+	const confirmDeleteNote = () => {
+		if (!note.data || deleteNoteMutation.isPending) return;
+		fireHaptic();
+		setIsActionMenuVisible(false);
+		Alert.alert("删除图文", "删除后这篇图文将不再对任何人可见。", [
+			{ text: "取消", style: "cancel" },
+			{
+				text: "删除",
+				style: "destructive",
+				onPress: () => {
+					if (!note.data) return;
+					deleteNoteMutation.mutate({ id: note.data.id });
+				},
+			},
+		]);
+	};
+
 	const sendComment = () => {
 		if (
 			!note.data ||
@@ -735,9 +823,11 @@ export default function NoteDetailScreen() {
 				<AuthorTopBar
 					author={note.data.author}
 					isFollowing={isFollowing}
+					isMenuVisible={isActionMenuVisible}
 					isSelf={isSelf}
 					onBack={goBack}
 					onFollow={toggleFollow}
+					onOpenMenu={openActionMenu}
 					onOpenAuthor={() =>
 						socialActions.goTo({ type: "user", id: authorId })
 					}
@@ -951,6 +1041,21 @@ export default function NoteDetailScreen() {
 					</View>
 				)}
 			</View>
+			<NoteActionMenu
+				isVisible={isActionMenuVisible}
+				topInset={insets.top}
+				onClose={() => setIsActionMenuVisible(false)}
+				onDelete={confirmDeleteNote}
+				onEdit={openEditNote}
+				onOpenVisibility={openVisibilitySettings}
+			/>
+			<NoteVisibilitySheet
+				isOpen={isVisibilitySheetOpen}
+				isSaving={updateVisibilityMutation.isPending}
+				value={note.data.visibility}
+				onOpenChange={setIsVisibilitySheetOpen}
+				onSelect={updateVisibility}
+			/>
 		</KeyboardAvoidingView>
 	);
 }
