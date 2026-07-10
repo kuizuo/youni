@@ -8,12 +8,6 @@ import {
 	selectContentNoteRows,
 } from "../lib/content-notes";
 import { containsInsensitive } from "../lib/search";
-import {
-	listInput,
-	paginatedListInput,
-	topicDetailInput,
-	topicNameInput,
-} from "./schemas";
 import { toNumber, toPage } from "./utils";
 
 export async function getTopicNoteIds(keyword: string) {
@@ -115,7 +109,7 @@ async function getPublicTopicStats(topicIds: string[]) {
 }
 
 export const topicsRouter = {
-	topics: publicProcedure.input(listInput).handler(async ({ input }) => {
+	topics: publicProcedure.topics.handler(async ({ input }) => {
 		const db = createDb();
 		const rows = input.keyword
 			? await db
@@ -160,50 +154,47 @@ export const topicsRouter = {
 		}));
 	}),
 
-	searchTopics: publicProcedure
-		.input(paginatedListInput)
-		.handler(async ({ input }) => {
-			const db = createDb();
-			const rows = input.keyword
-				? await db
-						.select({
-							id: topic.id,
-							name: topic.name,
-							createdAt: topic.createdAt,
-						})
-						.from(topic)
-						.where(containsInsensitive(topic.name, input.keyword))
-						.orderBy(desc(topic.createdAt))
-						.limit(input.limit + 1)
-						.offset(input.offset)
-				: await db
-						.select({
-							id: topic.id,
-							name: topic.name,
-							createdAt: topic.createdAt,
-						})
-						.from(topic)
-						.orderBy(desc(topic.createdAt))
-						.limit(input.limit + 1)
-						.offset(input.offset);
-			const page = toPage(rows, input.limit, input.offset);
-			const topicIds = page.items.map((row) => row.id);
-			const { discussionsByTopic, notesByTopic } =
-				await getPublicTopicStats(topicIds);
+	searchTopics: publicProcedure.searchTopics.handler(async ({ input }) => {
+		const db = createDb();
+		const rows = input.keyword
+			? await db
+					.select({
+						id: topic.id,
+						name: topic.name,
+						createdAt: topic.createdAt,
+					})
+					.from(topic)
+					.where(containsInsensitive(topic.name, input.keyword))
+					.orderBy(desc(topic.createdAt))
+					.limit(input.limit + 1)
+					.offset(input.offset)
+			: await db
+					.select({
+						id: topic.id,
+						name: topic.name,
+						createdAt: topic.createdAt,
+					})
+					.from(topic)
+					.orderBy(desc(topic.createdAt))
+					.limit(input.limit + 1)
+					.offset(input.offset);
+		const page = toPage(rows, input.limit, input.offset);
+		const topicIds = page.items.map((row) => row.id);
+		const { discussionsByTopic, notesByTopic } =
+			await getPublicTopicStats(topicIds);
 
-			return {
-				...page,
-				items: page.items.map((row) => ({
-					...row,
-					discussionCount: discussionsByTopic.get(row.id) ?? 0,
-					noteCount: notesByTopic.get(row.id) ?? 0,
-				})),
-			};
-		}),
+		return {
+			...page,
+			items: page.items.map((row) => ({
+				...row,
+				discussionCount: discussionsByTopic.get(row.id) ?? 0,
+				noteCount: notesByTopic.get(row.id) ?? 0,
+			})),
+		};
+	}),
 
-	topicDetail: publicProcedure
-		.input(topicDetailInput)
-		.handler(async ({ input, context }) => {
+	topicDetail: publicProcedure.topicDetail.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const [topicRow] = await db
 				.select({
@@ -278,25 +269,24 @@ export const topicsRouter = {
 				},
 				notes: page,
 			};
-		}),
+		},
+	),
 
-	topicByName: publicProcedure
-		.input(topicNameInput)
-		.handler(async ({ input }) => {
-			const [row] = await createDb()
-				.select({
-					id: topic.id,
-					name: topic.name,
-					createdAt: topic.createdAt,
-				})
-				.from(topic)
-				.where(eq(topic.name, input.name))
-				.limit(1);
+	topicByName: publicProcedure.topicByName.handler(async ({ input }) => {
+		const [row] = await createDb()
+			.select({
+				id: topic.id,
+				name: topic.name,
+				createdAt: topic.createdAt,
+			})
+			.from(topic)
+			.where(eq(topic.name, input.name))
+			.limit(1);
 
-			if (!row) {
-				throw new ORPCError("NOT_FOUND");
-			}
+		if (!row) {
+			throw new ORPCError("NOT_FOUND");
+		}
 
-			return row;
-		}),
+		return row;
+	}),
 };

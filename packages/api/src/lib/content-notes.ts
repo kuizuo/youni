@@ -13,14 +13,20 @@ import {
 } from "@youni/db/schema/index";
 import type { SQL } from "drizzle-orm";
 import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
+import type {
+	AdminHydratedContentNote,
+	ContentNoteRow,
+	ContentNoteStatus,
+	HydratedContentNote,
+} from "../contracts/content-note-types";
 import { containsInsensitive } from "./search";
 
-export type ContentNoteStatus =
-	| "audit"
-	| "draft"
-	| "published"
-	| "rejected"
-	| "hidden";
+export type {
+	AdminHydratedContentNote,
+	ContentNoteRow,
+	ContentNoteStatus,
+	HydratedContentNote,
+} from "../contracts/content-note-types";
 
 export type ContentNoteMutationInput = {
 	title: string;
@@ -49,96 +55,6 @@ export type ContentNoteEditInput = Omit<
 	"submitMode"
 > & {
 	id: string;
-};
-
-export type ContentNoteRow = {
-	id: string;
-	title: string;
-	content: string;
-	images: string[];
-	imageMetas: Array<{ height: number; url: string; width: number }>;
-	cover: string | null;
-	locationName: string | null;
-	visibility: "public" | "followers" | "private";
-	components: Array<{
-		options?: string[];
-		title: string;
-		type: "file" | "poll";
-		value?: string;
-	}>;
-	advancedOptions: {
-		allowComment: boolean;
-		allowShare: boolean;
-		contentDisclosure?: string | null;
-		isOriginal: boolean;
-	};
-	status: ContentNoteStatus;
-	rejectionReason: string | null;
-	publishedAt: Date | null;
-	draftSavedAt: Date | null;
-	createdAt: Date;
-	updatedAt: Date;
-	userId: string;
-	authorName: string;
-	authorImage: string | null;
-	authorHandle: string | null;
-};
-
-export type HydratedContentNote = ContentNoteRow & {
-	topics: string[];
-	likedCount: number;
-	collectedCount: number;
-	commentCount: number;
-	liked: boolean;
-	collected: boolean;
-	author: {
-		id: string;
-		name: string;
-		image: string | null;
-		handle: string | null;
-		isFollowing: boolean;
-	};
-};
-
-export type AdminHydratedContentNote<
-	T extends { id: string } = AdminContentNoteRow,
-> = T & {
-	topics: string[];
-	topicDetails: { id: string; name: string }[];
-	likedCount: number;
-	commentCount: number;
-	collectedCount: number;
-};
-
-type AdminContentNoteRow = {
-	id: string;
-	title: string;
-	content: string;
-	cover: string | null;
-	images: string[];
-	imageMetas: Array<{ height: number; url: string; width: number }>;
-	locationName: string | null;
-	visibility: "public" | "followers" | "private";
-	components: Array<{
-		options?: string[];
-		title: string;
-		type: "file" | "poll";
-		value?: string;
-	}>;
-	advancedOptions: {
-		allowComment: boolean;
-		allowShare: boolean;
-		contentDisclosure?: string | null;
-		isOriginal: boolean;
-	};
-	status: ContentNoteStatus;
-	rejectionReason: string | null;
-	createdAt: Date;
-	publishedAt: Date | null;
-	draftSavedAt: Date | null;
-	userId: string;
-	authorName: string;
-	authorEmail: string;
 };
 
 const contentNoteRowFields = {
@@ -883,6 +799,9 @@ export async function getAdminContentNoteDetail(id: string) {
 	}
 
 	const [detail] = await hydrateAdminContentNotes([row]);
+	if (!detail) {
+		throw new ORPCError("INTERNAL_SERVER_ERROR");
+	}
 	const [comments, likedUsers, collectedUsers] = await Promise.all([
 		db
 			.select({

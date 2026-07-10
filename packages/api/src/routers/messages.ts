@@ -9,32 +9,8 @@ import {
 	userBlock,
 } from "@youni/db/schema/index";
 import { and, count, desc, eq, gt, ne } from "drizzle-orm";
-import z from "zod";
-
 import { activeUserProcedure, protectedProcedure } from "../index";
 import { notifyMessage } from "../lib/notifications";
-
-const conversationInput = z.object({
-	conversationId: z.string().min(1),
-	limit: z.number().int().min(1).max(80).default(40),
-});
-
-const conversationActionInput = z.object({
-	conversationId: z.string().min(1),
-});
-
-const blockInput = conversationActionInput.extend({
-	blocked: z.boolean(),
-});
-
-const startInput = z.object({
-	userId: z.string().min(1),
-});
-
-const sendInput = z.object({
-	conversationId: z.string().min(1),
-	content: z.string().trim().min(1).max(1000),
-});
 
 function createMemberKey(leftUserId: string, rightUserId: string) {
 	return [leftUserId, rightUserId].sort().join(":");
@@ -220,132 +196,131 @@ async function getConversationState(conversationId: string, viewerId: string) {
 }
 
 export const messagesRouter = {
-	start: protectedProcedure
-		.input(startInput)
-		.handler(async ({ input, context }) => {
+	start: protectedProcedure.messages.start.handler(
+		async ({ input, context }) => {
 			const conversationId = await ensureConversation(
 				context.session.user.id,
 				input.userId,
 			);
 			const peer = await getPeer(conversationId, context.session.user.id);
 			return { id: conversationId, peer };
-		}),
+		},
+	),
 
-	conversations: protectedProcedure.handler(async ({ context }) => {
-		const viewerId = context.session.user.id;
-		const db = createDb();
-		const rows = await db
-			.select({
-				id: directConversation.id,
-				clearedAt: directConversationParticipant.clearedAt,
-				updatedAt: directConversation.updatedAt,
-				lastReadAt: directConversationParticipant.lastReadAt,
-			})
-			.from(directConversationParticipant)
-			.innerJoin(
-				directConversation,
-				eq(directConversationParticipant.conversationId, directConversation.id),
-			)
-			.where(eq(directConversationParticipant.userId, viewerId))
-			.orderBy(desc(directConversation.updatedAt))
-			.limit(60);
-
-		return Promise.all(
-			rows.map(async (row) => {
-				const unreadAfter = getLatestDate(row.lastReadAt, row.clearedAt);
-				const [peer, [lastMessage], [unread]] = await Promise.all([
-					getPeer(row.id, viewerId),
-					db
-						.select({
-							id: directMessage.id,
-							content: directMessage.content,
-							senderId: directMessage.senderId,
-							createdAt: directMessage.createdAt,
-						})
-						.from(directMessage)
-						.where(getVisibleMessageWhere(row.id, row.clearedAt))
-						.orderBy(desc(directMessage.createdAt))
-						.limit(1),
-					db
-						.select({ value: count() })
-						.from(directMessage)
-						.where(
-							unreadAfter
-								? and(
-										eq(directMessage.conversationId, row.id),
-										ne(directMessage.senderId, viewerId),
-										gt(directMessage.createdAt, unreadAfter),
-									)
-								: and(
-										eq(directMessage.conversationId, row.id),
-										ne(directMessage.senderId, viewerId),
-									),
-						),
-				]);
-
-				return {
-					id: row.id,
-					peer,
-					lastMessage: lastMessage ?? null,
-					unreadCount: toNumber(unread?.value),
-					updatedAt: row.updatedAt,
-				};
-			}),
-		);
-	}),
-
-	byId: protectedProcedure
-		.input(conversationInput)
-		.handler(async ({ input, context }) => {
+	conversations: protectedProcedure.messages.conversations.handler(
+		async ({ context }) => {
 			const viewerId = context.session.user.id;
-			const participant = await assertParticipant(
-				input.conversationId,
-				viewerId,
+			const db = createDb();
+			const rows = await db
+				.select({
+					id: directConversation.id,
+					clearedAt: directConversationParticipant.clearedAt,
+					updatedAt: directConversation.updatedAt,
+					lastReadAt: directConversationParticipant.lastReadAt,
+				})
+				.from(directConversationParticipant)
+				.innerJoin(
+					directConversation,
+					eq(
+						directConversationParticipant.conversationId,
+						directConversation.id,
+					),
+				)
+				.where(eq(directConversationParticipant.userId, viewerId))
+				.orderBy(desc(directConversation.updatedAt))
+				.limit(60);
+
+			return Promise.all(
+				rows.map(async (row) => {
+					const unreadAfter = getLatestDate(row.lastReadAt, row.clearedAt);
+					const [peer, [lastMessage], [unread]] = await Promise.all([
+						getPeer(row.id, viewerId),
+						db
+							.select({
+								id: directMessage.id,
+								content: directMessage.content,
+								senderId: directMessage.senderId,
+								createdAt: directMessage.createdAt,
+							})
+							.from(directMessage)
+							.where(getVisibleMessageWhere(row.id, row.clearedAt))
+							.orderBy(desc(directMessage.createdAt))
+							.limit(1),
+						db
+							.select({ value: count() })
+							.from(directMessage)
+							.where(
+								unreadAfter
+									? and(
+											eq(directMessage.conversationId, row.id),
+											ne(directMessage.senderId, viewerId),
+											gt(directMessage.createdAt, unreadAfter),
+										)
+									: and(
+											eq(directMessage.conversationId, row.id),
+											ne(directMessage.senderId, viewerId),
+										),
+							),
+					]);
+
+					return {
+						id: row.id,
+						peer,
+						lastMessage: lastMessage ?? null,
+						unreadCount: toNumber(unread?.value),
+						updatedAt: row.updatedAt,
+					};
+				}),
+			);
+		},
+	),
+
+	byId: protectedProcedure.messages.byId.handler(async ({ input, context }) => {
+		const viewerId = context.session.user.id;
+		const participant = await assertParticipant(input.conversationId, viewerId);
+
+		const db = createDb();
+		const [state, rows] = await Promise.all([
+			getConversationState(input.conversationId, viewerId),
+			db
+				.select({
+					id: directMessage.id,
+					content: directMessage.content,
+					senderId: directMessage.senderId,
+					createdAt: directMessage.createdAt,
+				})
+				.from(directMessage)
+				.where(
+					getVisibleMessageWhere(input.conversationId, participant.clearedAt),
+				)
+				.orderBy(desc(directMessage.createdAt))
+				.limit(input.limit),
+		]);
+
+		await db
+			.update(directConversationParticipant)
+			.set({ lastReadAt: new Date(), updatedAt: new Date() })
+			.where(
+				and(
+					eq(
+						directConversationParticipant.conversationId,
+						input.conversationId,
+					),
+					eq(directConversationParticipant.userId, viewerId),
+				),
 			);
 
-			const db = createDb();
-			const [state, rows] = await Promise.all([
-				getConversationState(input.conversationId, viewerId),
-				db
-					.select({
-						id: directMessage.id,
-						content: directMessage.content,
-						senderId: directMessage.senderId,
-						createdAt: directMessage.createdAt,
-					})
-					.from(directMessage)
-					.where(
-						getVisibleMessageWhere(input.conversationId, participant.clearedAt),
-					)
-					.orderBy(desc(directMessage.createdAt))
-					.limit(input.limit),
-			]);
+		return {
+			id: input.conversationId,
+			peer: state.peer,
+			hasBlockedPeer: state.hasBlockedPeer,
+			isBlockedByPeer: state.isBlockedByPeer,
+			messages: rows.reverse(),
+		};
+	}),
 
-			await db
-				.update(directConversationParticipant)
-				.set({ lastReadAt: new Date(), updatedAt: new Date() })
-				.where(
-					and(
-						eq(
-							directConversationParticipant.conversationId,
-							input.conversationId,
-						),
-						eq(directConversationParticipant.userId, viewerId),
-					),
-				);
-
-			return {
-				id: input.conversationId,
-				peer: state.peer,
-				hasBlockedPeer: state.hasBlockedPeer,
-				isBlockedByPeer: state.isBlockedByPeer,
-				messages: rows.reverse(),
-			};
-		}),
-
-	settings: protectedProcedure
-		.input(conversationActionInput)
-		.handler(async ({ input, context }) => {
+	settings: protectedProcedure.messages.settings.handler(
+		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
 			await assertParticipant(input.conversationId, viewerId);
 			const state = await getConversationState(input.conversationId, viewerId);
@@ -353,11 +328,11 @@ export const messagesRouter = {
 				id: input.conversationId,
 				...state,
 			};
-		}),
+		},
+	),
 
-	setBlocked: activeUserProcedure
-		.input(blockInput)
-		.handler(async ({ input, context }) => {
+	setBlocked: activeUserProcedure.messages.setBlocked.handler(
+		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
 			await assertParticipant(input.conversationId, viewerId);
 			const peer = await getPeer(input.conversationId, viewerId);
@@ -387,11 +362,11 @@ export const messagesRouter = {
 				blocked: state.hasBlockedPeer,
 				isBlockedByPeer: state.isBlockedByPeer,
 			};
-		}),
+		},
+	),
 
-	clear: activeUserProcedure
-		.input(conversationActionInput)
-		.handler(async ({ input, context }) => {
+	clear: activeUserProcedure.messages.clear.handler(
+		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
 			await assertParticipant(input.conversationId, viewerId);
 			const now = new Date();
@@ -409,11 +384,11 @@ export const messagesRouter = {
 				);
 
 			return { clearedAt: now, ok: true };
-		}),
+		},
+	),
 
-	send: activeUserProcedure
-		.input(sendInput)
-		.handler(async ({ input, context }) => {
+	send: activeUserProcedure.messages.send.handler(
+		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
 			await assertParticipant(input.conversationId, viewerId);
 			const peer = await getPeer(input.conversationId, viewerId);
@@ -482,5 +457,6 @@ export const messagesRouter = {
 			]);
 
 			return message;
-		}),
+		},
+	),
 };

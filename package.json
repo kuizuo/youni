@@ -12,6 +12,7 @@
 			"@cloudflare/workers-types": "^4.20251213.0",
 			"hono": "^4.8.2",
 			"@orpc/server": "^1.13.14",
+			"@orpc/contract": "^1.13.14",
 			"@orpc/openapi": "^1.13.14",
 			"@orpc/zod": "^1.13.14",
 			"better-auth": "1.6.9",

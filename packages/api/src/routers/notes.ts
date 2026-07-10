@@ -29,15 +29,6 @@ import {
 } from "../lib/content-notes";
 import { notifyNoteOwner } from "../lib/notifications";
 import { listRootComments } from "./comments";
-import {
-	draftUpdateInput,
-	idInput,
-	listInput,
-	noteCreateInput,
-	noteEditInput,
-	noteVisibilityUpdateInput,
-	paginatedListInput,
-} from "./schemas";
 import { getSearchNoteWhereClause } from "./topics";
 import { toNumber, toPage } from "./utils";
 
@@ -80,7 +71,7 @@ async function canViewNoteDetail(
 }
 
 export const notesRouter = {
-	feed: publicProcedure.input(listInput).handler(async ({ input, context }) => {
+	feed: publicProcedure.feed.handler(async ({ input, context }) => {
 		const whereClause = await getSearchNoteWhereClause(input.keyword);
 		const rows = (await selectContentNoteRows(whereClause)).slice(
 			0,
@@ -89,9 +80,8 @@ export const notesRouter = {
 		return hydrateContentNotes(rows, context.session?.user.id);
 	}),
 
-	followingFeed: protectedProcedure
-		.input(listInput)
-		.handler(async ({ input, context }) => {
+	followingFeed: protectedProcedure.followingFeed.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const followingRows = await db
 				.select({ followingId: follow.followingId })
@@ -114,11 +104,11 @@ export const notesRouter = {
 			).slice(0, input.limit);
 
 			return hydrateContentNotes(rows, context.session.user.id);
-		}),
+		},
+	),
 
-	searchNotes: publicProcedure
-		.input(paginatedListInput)
-		.handler(async ({ input, context }) => {
+	searchNotes: publicProcedure.searchNotes.handler(
+		async ({ input, context }) => {
 			const whereClause = await getSearchNoteWhereClause(input.keyword);
 			const rows = (await selectContentNoteRows(whereClause)).slice(
 				input.offset,
@@ -130,9 +120,10 @@ export const notesRouter = {
 				...page,
 				items: await hydrateContentNotes(page.items, context.session?.user.id),
 			};
-		}),
+		},
+	),
 
-	byId: publicProcedure.input(idInput).handler(async ({ input, context }) => {
+	byId: publicProcedure.byId.handler(async ({ input, context }) => {
 		const [row] = await selectContentNoteRows(
 			and(eq(note.id, input.id), ne(note.status, "hidden")),
 		);
@@ -142,6 +133,9 @@ export const notesRouter = {
 		}
 
 		const [item] = await hydrateContentNotes([row], context.session?.user.id);
+		if (!item) {
+			throw new ORPCError("INTERNAL_SERVER_ERROR");
+		}
 		const comments = await listRootComments({
 			noteId: input.id,
 			limit: 20,
@@ -159,66 +153,64 @@ export const notesRouter = {
 		};
 	}),
 
-	drafts: protectedProcedure.handler(async ({ context }) => {
+	drafts: protectedProcedure.drafts.handler(async ({ context }) => {
 		return listDraftContentNotes(context.session.user.id);
 	}),
 
-	draftById: protectedProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	draftById: protectedProcedure.draftById.handler(
+		async ({ input, context }) => {
 			return getDraftContentNoteById({
 				id: input.id,
 				userId: context.session.user.id,
 			});
-		}),
+		},
+	),
 
-	editById: protectedProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
-			return getEditableContentNoteById({
-				id: input.id,
-				userId: context.session.user.id,
-			});
-		}),
+	editById: protectedProcedure.editById.handler(async ({ input, context }) => {
+		return getEditableContentNoteById({
+			id: input.id,
+			userId: context.session.user.id,
+		});
+	}),
 
-	updateDraft: activeUserProcedure
-		.input(draftUpdateInput)
-		.handler(async ({ input, context }) => {
+	updateDraft: activeUserProcedure.updateDraft.handler(
+		async ({ input, context }) => {
 			return updateDraftContentNote({
 				input,
 				userId: context.session.user.id,
 			});
-		}),
+		},
+	),
 
-	updateNote: activeUserProcedure
-		.input(noteEditInput)
-		.handler(async ({ input, context }) => {
+	updateNote: activeUserProcedure.updateNote.handler(
+		async ({ input, context }) => {
 			return updateEditableContentNote({
 				input,
 				userId: context.session.user.id,
 			});
-		}),
+		},
+	),
 
-	updateNoteVisibility: activeUserProcedure
-		.input(noteVisibilityUpdateInput)
-		.handler(async ({ input, context }) => {
+	updateNoteVisibility: activeUserProcedure.updateNoteVisibility.handler(
+		async ({ input, context }) => {
 			return updateContentNoteVisibility({
 				id: input.id,
 				userId: context.session.user.id,
 				visibility: input.visibility,
 			});
-		}),
+		},
+	),
 
-	deleteMyNote: activeUserProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	deleteMyNote: activeUserProcedure.deleteMyNote.handler(
+		async ({ input, context }) => {
 			return softDeleteContentNote({
 				id: input.id,
 				userId: context.session.user.id,
 			});
-		}),
+		},
+	),
 
-	creatorStats: protectedProcedure.handler(async ({ context }) => {
+	creatorStats: protectedProcedure.creatorStats.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 		const db = createDb();
 		const [statusRows, [likeCount], [collectionCount], [commentCount]] =
@@ -266,9 +258,8 @@ export const notesRouter = {
 		};
 	}),
 
-	viewHistory: protectedProcedure
-		.input(listInput)
-		.handler(async ({ input, context }) => {
+	viewHistory: protectedProcedure.viewHistory.handler(
+		async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const rows = await listViewedContentNoteRows(userId, input.limit);
 			const hydratedRows = await hydrateContentNotes(rows, userId);
@@ -278,11 +269,11 @@ export const notesRouter = {
 				note: item,
 				viewedAt: viewedAtById.get(item.id) ?? item.updatedAt,
 			}));
-		}),
+		},
+	),
 
-	deleteViewHistory: protectedProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	deleteViewHistory: protectedProcedure.deleteViewHistory.handler(
+		async ({ input, context }) => {
 			await createDb()
 				.delete(noteViewHistory)
 				.where(
@@ -293,28 +284,28 @@ export const notesRouter = {
 				);
 
 			return { ok: true };
-		}),
+		},
+	),
 
-	clearViewHistory: protectedProcedure.handler(async ({ context }) => {
-		await createDb()
-			.delete(noteViewHistory)
-			.where(eq(noteViewHistory.userId, context.session.user.id));
+	clearViewHistory: protectedProcedure.clearViewHistory.handler(
+		async ({ context }) => {
+			await createDb()
+				.delete(noteViewHistory)
+				.where(eq(noteViewHistory.userId, context.session.user.id));
 
-		return { ok: true };
+			return { ok: true };
+		},
+	),
+
+	create: activeUserProcedure.create.handler(async ({ input, context }) => {
+		return createContentNote({
+			input,
+			userId: context.session.user.id,
+		});
 	}),
 
-	create: activeUserProcedure
-		.input(noteCreateInput)
-		.handler(async ({ input, context }) => {
-			return createContentNote({
-				input,
-				userId: context.session.user.id,
-			});
-		}),
-
-	toggleLike: activeUserProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	toggleLike: activeUserProcedure.toggleLike.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const whereClause = and(
 				eq(noteLike.noteId, input.id),
@@ -345,11 +336,11 @@ export const notesRouter = {
 				.from(noteLike)
 				.where(eq(noteLike.noteId, input.id));
 			return { liked, likedCount: toNumber(row?.value) };
-		}),
+		},
+	),
 
-	toggleCollect: activeUserProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	toggleCollect: activeUserProcedure.toggleCollect.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const whereClause = and(
 				eq(noteCollection.noteId, input.id),
@@ -380,5 +371,6 @@ export const notesRouter = {
 				.from(noteCollection)
 				.where(eq(noteCollection.noteId, input.id));
 			return { collected, collectedCount: toNumber(row?.value) };
-		}),
+		},
+	),
 };

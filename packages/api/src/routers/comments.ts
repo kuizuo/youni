@@ -2,31 +2,10 @@ import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import { comment, commentLike, note, user } from "@youni/db/schema/index";
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
+import type { CommentListRow } from "../contracts/comments-output";
 import { activeUserProcedure, publicProcedure } from "../index";
 import { notifyCommentOwner, notifyNoteOwner } from "../lib/notifications";
-import {
-	commentInput,
-	commentRepliesInput,
-	idInput,
-	noteCommentsInput,
-} from "./schemas";
 import { toNumber, toPage } from "./utils";
-
-type CommentListRow = {
-	authorImage: null | string;
-	authorName: string;
-	canDelete: boolean;
-	content: string;
-	createdAt: Date;
-	id: string;
-	liked: boolean;
-	likedCount: number;
-	noteId: string;
-	parentId: null | string;
-	replies: CommentListRow[];
-	replyCount: number;
-	userId: string;
-};
 
 type RawCommentRow = {
 	authorImage: null | string;
@@ -273,32 +252,29 @@ async function collectCommentDescendantIds(rootId: string) {
 }
 
 export const commentsRouter = {
-	comments: publicProcedure
-		.input(noteCommentsInput)
-		.handler(async ({ input, context }) => {
-			return listRootComments({
-				noteId: input.noteId,
-				limit: input.limit,
-				offset: input.offset,
-				sort: input.sort,
-				viewerId: context.session?.user.id,
-			});
-		}),
+	comments: publicProcedure.comments.handler(async ({ input, context }) => {
+		return listRootComments({
+			noteId: input.noteId,
+			limit: input.limit,
+			offset: input.offset,
+			sort: input.sort,
+			viewerId: context.session?.user.id,
+		});
+	}),
 
-	commentReplies: publicProcedure
-		.input(commentRepliesInput)
-		.handler(async ({ input, context }) => {
+	commentReplies: publicProcedure.commentReplies.handler(
+		async ({ input, context }) => {
 			return listCommentReplies({
 				parentId: input.parentId,
 				limit: input.limit,
 				offset: input.offset,
 				viewerId: context.session?.user.id,
 			});
-		}),
+		},
+	),
 
-	commentAnchor: publicProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	commentAnchor: publicProcedure.commentAnchor.handler(
+		async ({ input, context }) => {
 			const targetComment = await getCommentById({
 				commentId: input.id,
 				viewerId: context.session?.user.id,
@@ -311,11 +287,11 @@ export const commentsRouter = {
 				comment: targetComment,
 				rootCommentId: await getRootCommentId(input.id),
 			};
-		}),
+		},
+	),
 
-	addComment: activeUserProcedure
-		.input(commentInput)
-		.handler(async ({ input, context }) => {
+	addComment: activeUserProcedure.addComment.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const parentComment = input.parentId
 				? await db
@@ -381,11 +357,11 @@ export const commentsRouter = {
 				});
 			}
 			return created;
-		}),
+		},
+	),
 
-	toggleCommentLike: activeUserProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	toggleCommentLike: activeUserProcedure.toggleCommentLike.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const [targetComment] = await db
 				.select({ id: comment.id })
@@ -426,11 +402,11 @@ export const commentsRouter = {
 				.from(commentLike)
 				.where(eq(commentLike.commentId, input.id));
 			return { liked, likedCount: toNumber(row?.value) };
-		}),
+		},
+	),
 
-	deleteComment: activeUserProcedure
-		.input(idInput)
-		.handler(async ({ input, context }) => {
+	deleteComment: activeUserProcedure.deleteComment.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const [targetComment] = await db
 				.select({ id: comment.id, userId: comment.userId })
@@ -453,5 +429,6 @@ export const commentsRouter = {
 			await db.delete(comment).where(inArray(comment.id, ids));
 
 			return { ok: true };
-		}),
+		},
+	),
 };

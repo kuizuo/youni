@@ -17,17 +17,13 @@ import {
 } from "@youni/db/schema/index";
 import { hashPassword } from "better-auth/crypto";
 import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
-import z from "zod";
 
 import {
 	type AdminUserRuleResult,
 	type AdminUserStatus,
-	adminUserRoleOptions,
-	adminUserStatusOptions,
 	checkCreateUserPermission,
 	checkManageUserPermission,
 	checkSelfUserManagement,
-	manageableUserStatusOptions,
 	parseAdminUserRole,
 	parseAdminUserStatus,
 } from "../admin-user-governance";
@@ -42,34 +38,32 @@ import {
 } from "../lib/content-notes";
 import { containsInsensitive } from "../lib/search";
 
-const userRoleInput = z.enum(adminUserRoleOptions);
-const userStatusInput = z.enum(adminUserStatusOptions);
-const manageableUserStatusInput = z.enum(manageableUserStatusOptions);
+const adminProcedure = protectedProcedure.admin.use(
+	async ({ context, next }) => {
+		const role = parseAdminUserRole(context.account.role);
+		const status = parseAdminUserStatus(context.account.status);
 
-const adminProcedure = protectedProcedure.use(async ({ context, next }) => {
-	const role = parseAdminUserRole(context.account.role);
-	const status = parseAdminUserStatus(context.account.status);
+		if (
+			!role ||
+			!status ||
+			status !== "active" ||
+			!hasAdminPermission(role, { backoffice: ["access"] })
+		) {
+			throw new ORPCError("FORBIDDEN");
+		}
 
-	if (
-		!role ||
-		!status ||
-		status !== "active" ||
-		!hasAdminPermission(role, { backoffice: ["access"] })
-	) {
-		throw new ORPCError("FORBIDDEN");
-	}
-
-	return next({
-		context: {
-			...context,
-			adminUser: {
-				...context.account,
-				role,
-				status,
+		return next({
+			context: {
+				...context,
+				adminUser: {
+					...context.account,
+					role,
+					status,
+				},
 			},
-		},
-	});
-});
+		});
+	},
+);
 
 function adminPermissionProcedure(permissions: AdminPermissionRequest) {
 	return adminProcedure.use(async ({ context, next }) => {
@@ -78,91 +72,6 @@ function adminPermissionProcedure(permissions: AdminPermissionRequest) {
 		return next({ context });
 	});
 }
-
-const adminListInput = z.object({
-	keyword: z.string().trim().optional(),
-	status: z
-		.enum(["draft", "audit", "published", "rejected", "hidden"])
-		.optional(),
-	limit: z.number().int().min(1).max(200).default(10),
-	offset: z.number().int().min(0).default(0),
-});
-
-const idInput = z.object({ id: z.string().min(1) });
-
-const statusInput = z.object({
-	id: z.string().min(1),
-	status: z.enum(["draft", "audit", "published", "rejected", "hidden"]),
-	rejectionReason: z.string().trim().max(200).optional(),
-});
-
-const topicInput = z.object({
-	id: z.string().min(1).optional(),
-	name: z.string().trim().min(1).max(24),
-});
-
-const userListInput = z.object({
-	keyword: z.string().trim().optional(),
-	status: userStatusInput.optional(),
-	limit: z.number().int().min(1).max(200).default(10),
-	offset: z.number().int().min(0).default(0),
-});
-
-const topicListInput = z.object({
-	keyword: z.string().trim().optional(),
-	limit: z.number().int().min(1).max(200).default(10),
-	offset: z.number().int().min(0).default(0),
-});
-
-const userStatusChangeInput = z.object({
-	id: z.string().min(1),
-	status: userStatusInput,
-});
-
-const userCreateInput = z.object({
-	name: z.string().trim().min(1).max(50),
-	email: z.string().trim().toLowerCase().email(),
-	password: z.string().min(8).max(128),
-	role: userRoleInput.default("user"),
-	status: manageableUserStatusInput.default("active"),
-	image: z.string().trim().url().optional().or(z.literal("")),
-	handle: z
-		.string()
-		.trim()
-		.min(2)
-		.max(30)
-		.regex(/^[a-zA-Z0-9_]+$/)
-		.optional()
-		.or(z.literal("")),
-	bio: z.string().trim().max(160).optional(),
-	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
-});
-
-const userUpdateInput = userCreateInput.omit({ password: true }).extend({
-	id: z.string().min(1),
-	status: userStatusInput,
-	password: z.string().min(8).max(128).optional().or(z.literal("")),
-});
-
-const currentProfileInput = z.object({
-	name: z.string().trim().min(1).max(50),
-	image: z.string().trim().url().optional().or(z.literal("")),
-	handle: z
-		.string()
-		.trim()
-		.min(2)
-		.max(30)
-		.regex(/^[a-zA-Z0-9_]+$/)
-		.optional()
-		.or(z.literal("")),
-	bio: z.string().trim().max(160).optional(),
-	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
-});
-
-const userRestoreInput = z.object({
-	id: z.string().min(1),
-	status: manageableUserStatusInput.default("active"),
-});
 
 function createId() {
 	return crypto.randomUUID();
@@ -290,7 +199,7 @@ async function getUserForAdmin(id: string) {
 }
 
 export const adminRouter = {
-	me: adminProcedure.handler(async ({ context }) => {
+	me: adminProcedure.me.handler(async ({ context }) => {
 		const [profile] = await createDb()
 			.select({
 				id: user.id,
@@ -320,46 +229,46 @@ export const adminRouter = {
 		};
 	}),
 
-	updateCurrentProfile: adminPermissionProcedure({ profile: ["update"] })
-		.input(currentProfileInput)
-		.handler(async ({ input, context }) => {
-			try {
-				const [updated] = await createDb()
-					.update(user)
-					.set({
-						name: input.name,
-						image: normalizeText(input.image),
-						handle: normalizeText(input.handle),
-						bio: normalizeText(input.bio),
-						gender: input.gender,
-						updatedAt: new Date(),
-					})
-					.where(eq(user.id, context.adminUser.id))
-					.returning({
-						id: user.id,
-						name: user.name,
-						email: user.email,
-						image: user.image,
-						handle: user.handle,
-						bio: user.bio,
-						gender: user.gender,
-						role: user.role,
-						status: user.status,
-						createdAt: user.createdAt,
-						updatedAt: user.updatedAt,
-					});
+	updateCurrentProfile: adminPermissionProcedure({
+		profile: ["update"],
+	}).updateCurrentProfile.handler(async ({ input, context }) => {
+		try {
+			const [updated] = await createDb()
+				.update(user)
+				.set({
+					name: input.name,
+					image: normalizeText(input.image),
+					handle: normalizeText(input.handle),
+					bio: normalizeText(input.bio),
+					gender: input.gender,
+					updatedAt: new Date(),
+				})
+				.where(eq(user.id, context.adminUser.id))
+				.returning({
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					image: user.image,
+					handle: user.handle,
+					bio: user.bio,
+					gender: user.gender,
+					role: user.role,
+					status: user.status,
+					createdAt: user.createdAt,
+					updatedAt: user.updatedAt,
+				});
 
-				if (!updated) {
-					throw new ORPCError("NOT_FOUND");
-				}
-
-				return updated;
-			} catch (error) {
-				duplicateProfileError(error);
+			if (!updated) {
+				throw new ORPCError("NOT_FOUND");
 			}
-		}),
 
-	overview: adminPermissionProcedure({ dashboard: ["view"] }).handler(
+			return updated;
+		} catch (error) {
+			duplicateProfileError(error);
+		}
+	}),
+
+	overview: adminPermissionProcedure({ dashboard: ["view"] }).overview.handler(
 		async () => {
 			const db = createDb();
 			const [
@@ -409,33 +318,32 @@ export const adminRouter = {
 		},
 	),
 
-	notes: adminPermissionProcedure({ note: ["list"] })
-		.input(adminListInput)
-		.handler(async ({ input }) => {
+	notes: adminPermissionProcedure({ note: ["list"] }).notes.handler(
+		async ({ input }) => {
 			return listAdminContentNotes(input);
-		}),
+		},
+	),
 
-	noteDetail: adminPermissionProcedure({ note: ["detail"] })
-		.input(idInput)
-		.handler(async ({ input }) => {
+	noteDetail: adminPermissionProcedure({ note: ["detail"] }).noteDetail.handler(
+		async ({ input }) => {
 			return getAdminContentNoteDetail(input.id);
-		}),
+		},
+	),
 
-	updateNoteStatus: adminPermissionProcedure({ note: ["audit"] })
-		.input(statusInput)
-		.handler(async ({ input }) => {
-			return updateContentNoteStatus(input);
-		}),
+	updateNoteStatus: adminPermissionProcedure({
+		note: ["audit"],
+	}).updateNoteStatus.handler(async ({ input }) => {
+		return updateContentNoteStatus(input);
+	}),
 
-	deleteNote: adminPermissionProcedure({ note: ["delete"] })
-		.input(idInput)
-		.handler(async ({ input }) => {
+	deleteNote: adminPermissionProcedure({ note: ["delete"] }).deleteNote.handler(
+		async ({ input }) => {
 			return deleteContentNote(input.id);
-		}),
+		},
+	),
 
-	topics: adminPermissionProcedure({ topic: ["list"] })
-		.input(topicListInput)
-		.handler(async ({ input }) => {
+	topics: adminPermissionProcedure({ topic: ["list"] }).topics.handler(
+		async ({ input }) => {
 			const db = createDb();
 			const whereClause = input.keyword
 				? containsInsensitive(topic.name, input.keyword)
@@ -490,40 +398,40 @@ export const adminRouter = {
 				})),
 				total: toNumber(totalRow?.value),
 			};
-		}),
+		},
+	),
 
-	topicDetail: adminPermissionProcedure({ topic: ["detail"] })
-		.input(idInput)
-		.handler(async ({ input }) => {
-			const db = createDb();
-			const [topicRow] = await db
-				.select({
-					id: topic.id,
-					name: topic.name,
-					createdAt: topic.createdAt,
-					updatedAt: topic.updatedAt,
-				})
-				.from(topic)
-				.where(eq(topic.id, input.id))
-				.limit(1);
+	topicDetail: adminPermissionProcedure({
+		topic: ["detail"],
+	}).topicDetail.handler(async ({ input }) => {
+		const db = createDb();
+		const [topicRow] = await db
+			.select({
+				id: topic.id,
+				name: topic.name,
+				createdAt: topic.createdAt,
+				updatedAt: topic.updatedAt,
+			})
+			.from(topic)
+			.where(eq(topic.id, input.id))
+			.limit(1);
 
-			if (!topicRow) {
-				throw new ORPCError("NOT_FOUND");
-			}
+		if (!topicRow) {
+			throw new ORPCError("NOT_FOUND");
+		}
 
-			const notes = await listAdminContentNotesByTopic(input.id);
-			return {
-				topic: {
-					...topicRow,
-					noteCount: notes.length,
-				},
-				notes,
-			};
-		}),
+		const notes = await listAdminContentNotesByTopic(input.id);
+		return {
+			topic: {
+				...topicRow,
+				noteCount: notes.length,
+			},
+			notes,
+		};
+	}),
 
-	saveTopic: adminPermissionProcedure({ topic: ["save"] })
-		.input(topicInput)
-		.handler(async ({ input }) => {
+	saveTopic: adminPermissionProcedure({ topic: ["save"] }).saveTopic.handler(
+		async ({ input }) => {
 			const db = createDb();
 			if (input.id) {
 				const [updated] = await db
@@ -548,19 +456,19 @@ export const adminRouter = {
 				.where(eq(topic.name, input.name))
 				.limit(1);
 			return existing;
-		}),
+		},
+	),
 
-	deleteTopic: adminPermissionProcedure({ topic: ["delete"] })
-		.input(idInput)
-		.handler(async ({ input }) => {
-			const db = createDb();
-			await db.delete(topic).where(eq(topic.id, input.id));
-			return { ok: true };
-		}),
+	deleteTopic: adminPermissionProcedure({
+		topic: ["delete"],
+	}).deleteTopic.handler(async ({ input }) => {
+		const db = createDb();
+		await db.delete(topic).where(eq(topic.id, input.id));
+		return { ok: true };
+	}),
 
-	users: adminPermissionProcedure({ user: ["list"] })
-		.input(userListInput)
-		.handler(async ({ input }) => {
+	users: adminPermissionProcedure({ user: ["list"] }).users.handler(
+		async ({ input }) => {
 			const db = createDb();
 			const conditions = [
 				input.status
@@ -658,11 +566,11 @@ export const adminRouter = {
 				})),
 				total: toNumber(totalRow?.value),
 			};
-		}),
+		},
+	),
 
-	userDetail: adminPermissionProcedure({ user: ["get"] })
-		.input(idInput)
-		.handler(async ({ input }) => {
+	userDetail: adminPermissionProcedure({ user: ["get"] }).userDetail.handler(
+		async ({ input }) => {
 			const db = createDb();
 			const [userRow] = await db
 				.select({
@@ -737,11 +645,11 @@ export const adminRouter = {
 				followers,
 				following,
 			};
-		}),
+		},
+	),
 
-	createUser: adminPermissionProcedure({ user: ["create"] })
-		.input(userCreateInput)
-		.handler(async ({ input, context }) => {
+	createUser: adminPermissionProcedure({ user: ["create"] }).createUser.handler(
+		async ({ input, context }) => {
 			if (input.role !== "user") {
 				assertAdminPermission(context.adminUser.role, { user: ["set-role"] });
 			}
@@ -794,11 +702,11 @@ export const adminRouter = {
 			} catch (error) {
 				duplicateUserError(error);
 			}
-		}),
+		},
+	),
 
-	updateUser: adminPermissionProcedure({ user: ["update"] })
-		.input(userUpdateInput)
-		.handler(async ({ input, context }) => {
+	updateUser: adminPermissionProcedure({ user: ["update"] }).updateUser.handler(
+		async ({ input, context }) => {
 			const target = await getUserForAdmin(input.id);
 			if (input.role !== target.role) {
 				assertAdminPermission(context.adminUser.role, { user: ["set-role"] });
@@ -911,130 +819,131 @@ export const adminRouter = {
 			} catch (error) {
 				duplicateUserError(error);
 			}
-		}),
+		},
+	),
 
-	updateUserStatus: adminPermissionProcedure({ user: ["ban"] })
-		.input(userStatusChangeInput)
-		.handler(async ({ input, context }) => {
-			const target = await getUserForAdmin(input.id);
-			const targetRole = parseAdminUserRole(target.role);
-			if (!targetRole) {
-				throw new ORPCError("BAD_REQUEST");
-			}
-			assertAdminUserRule(
-				checkSelfUserManagement({
-					actorId: context.adminUser.id,
-					desiredRole: targetRole,
-					desiredStatus: input.status,
-					target,
-				}),
-			);
-			assertAdminUserRule(
-				checkManageUserPermission({
-					actorRole: context.adminUser.role,
-					desiredRole: targetRole,
-					target,
-				}),
-			);
+	updateUserStatus: adminPermissionProcedure({
+		user: ["ban"],
+	}).updateUserStatus.handler(async ({ input, context }) => {
+		const target = await getUserForAdmin(input.id);
+		const targetRole = parseAdminUserRole(target.role);
+		if (!targetRole) {
+			throw new ORPCError("BAD_REQUEST");
+		}
+		assertAdminUserRule(
+			checkSelfUserManagement({
+				actorId: context.adminUser.id,
+				desiredRole: targetRole,
+				desiredStatus: input.status,
+				target,
+			}),
+		);
+		assertAdminUserRule(
+			checkManageUserPermission({
+				actorRole: context.adminUser.role,
+				desiredRole: targetRole,
+				target,
+			}),
+		);
 
-			const db = createDb();
-			const updateUserQuery = db
-				.update(user)
-				.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
-				.where(eq(user.id, input.id))
-				.returning();
+		const db = createDb();
+		const updateUserQuery = db
+			.update(user)
+			.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
+			.where(eq(user.id, input.id))
+			.returning();
 
-			if (shouldRevokeSessions(input.status)) {
-				const [updatedUsers] = await db.batch([
-					updateUserQuery,
-					db.delete(session).where(eq(session.userId, input.id)),
-				]);
-
-				return updatedUsers[0];
-			}
-
-			const [updated] = await updateUserQuery;
-			return updated;
-		}),
-
-	softDeleteUser: adminPermissionProcedure({ user: ["delete"] })
-		.input(idInput)
-		.handler(async ({ input, context }) => {
-			const target = await getUserForAdmin(input.id);
-			const targetRole = parseAdminUserRole(target.role);
-			if (!targetRole) {
-				throw new ORPCError("BAD_REQUEST");
-			}
-			assertAdminUserRule(
-				checkSelfUserManagement({
-					actorId: context.adminUser.id,
-					desiredRole: targetRole,
-					desiredStatus: "deleted",
-					target,
-				}),
-			);
-			assertAdminUserRule(
-				checkManageUserPermission({
-					actorRole: context.adminUser.role,
-					desiredRole: targetRole,
-					target,
-				}),
-			);
-
-			const db = createDb();
-			const [deletedUsers] = await db.batch([
-				db
-					.update(user)
-					.set({ ...authStatusPatch("deleted"), updatedAt: new Date() })
-					.where(eq(user.id, input.id))
-					.returning(),
+		if (shouldRevokeSessions(input.status)) {
+			const [updatedUsers] = await db.batch([
+				updateUserQuery,
 				db.delete(session).where(eq(session.userId, input.id)),
 			]);
 
-			return deletedUsers[0];
-		}),
+			return updatedUsers[0];
+		}
 
-	restoreUser: adminPermissionProcedure({ user: ["restore"] })
-		.input(userRestoreInput)
-		.handler(async ({ input, context }) => {
-			const target = await getUserForAdmin(input.id);
-			const targetRole = parseAdminUserRole(target.role);
-			if (!targetRole) {
-				throw new ORPCError("BAD_REQUEST");
-			}
-			assertAdminUserRule(
-				checkSelfUserManagement({
-					actorId: context.adminUser.id,
-					desiredRole: targetRole,
-					desiredStatus: input.status,
-					target,
-				}),
-			);
-			assertAdminUserRule(
-				checkManageUserPermission({
-					actorRole: context.adminUser.role,
-					desiredRole: targetRole,
-					target,
-				}),
-			);
+		const [updated] = await updateUserQuery;
+		return updated;
+	}),
 
-			const db = createDb();
-			const updateUserQuery = db
+	softDeleteUser: adminPermissionProcedure({
+		user: ["delete"],
+	}).softDeleteUser.handler(async ({ input, context }) => {
+		const target = await getUserForAdmin(input.id);
+		const targetRole = parseAdminUserRole(target.role);
+		if (!targetRole) {
+			throw new ORPCError("BAD_REQUEST");
+		}
+		assertAdminUserRule(
+			checkSelfUserManagement({
+				actorId: context.adminUser.id,
+				desiredRole: targetRole,
+				desiredStatus: "deleted",
+				target,
+			}),
+		);
+		assertAdminUserRule(
+			checkManageUserPermission({
+				actorRole: context.adminUser.role,
+				desiredRole: targetRole,
+				target,
+			}),
+		);
+
+		const db = createDb();
+		const [deletedUsers] = await db.batch([
+			db
 				.update(user)
-				.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
+				.set({ ...authStatusPatch("deleted"), updatedAt: new Date() })
 				.where(eq(user.id, input.id))
-				.returning();
+				.returning(),
+			db.delete(session).where(eq(session.userId, input.id)),
+		]);
 
-			if (shouldRevokeSessions(input.status)) {
-				const [updatedUsers] = await db.batch([
-					updateUserQuery,
-					db.delete(session).where(eq(session.userId, input.id)),
-				]);
+		return deletedUsers[0];
+	}),
 
-				return updatedUsers[0];
-			}
+	restoreUser: adminPermissionProcedure({
+		user: ["restore"],
+	}).restoreUser.handler(async ({ input, context }) => {
+		const target = await getUserForAdmin(input.id);
+		const targetRole = parseAdminUserRole(target.role);
+		if (!targetRole) {
+			throw new ORPCError("BAD_REQUEST");
+		}
+		assertAdminUserRule(
+			checkSelfUserManagement({
+				actorId: context.adminUser.id,
+				desiredRole: targetRole,
+				desiredStatus: input.status,
+				target,
+			}),
+		);
+		assertAdminUserRule(
+			checkManageUserPermission({
+				actorRole: context.adminUser.role,
+				desiredRole: targetRole,
+				target,
+			}),
+		);
 
-			const [updated] = await updateUserQuery;
-			return updated;
-		}),
+		const db = createDb();
+		const updateUserQuery = db
+			.update(user)
+			.set({ ...authStatusPatch(input.status), updatedAt: new Date() })
+			.where(eq(user.id, input.id))
+			.returning();
+
+		if (shouldRevokeSessions(input.status)) {
+			const [updatedUsers] = await db.batch([
+				updateUserQuery,
+				db.delete(session).where(eq(session.userId, input.id)),
+			]);
+
+			return updatedUsers[0];
+		}
+
+		const [updated] = await updateUserQuery;
+		return updated;
+	}),
 };

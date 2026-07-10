@@ -1,15 +1,14 @@
-import { ORPCError, os } from "@orpc/server";
+import { implement, ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import { user } from "@youni/db/schema/index";
 import { eq } from "drizzle-orm";
 
 import type { Context } from "./context";
+import { appContract } from "./contracts";
 
-export const o = os.$context<Context>();
+export const publicProcedure = implement(appContract).$context<Context>();
 
-export const publicProcedure = o;
-
-const requireAuth = o.middleware(async ({ context, next }) => {
+const requireAuth = publicProcedure.middleware(async ({ context, next }) => {
 	if (!context.session?.user) {
 		throw new ORPCError("UNAUTHORIZED");
 	}

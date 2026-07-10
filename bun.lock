@@ -191,6 +191,7 @@
       "name": "@youni/api",
       "dependencies": {
         "@orpc/client": "catalog:",
+        "@orpc/contract": "catalog:",
         "@orpc/openapi": "catalog:",
         "@orpc/server": "catalog:",
         "@orpc/zod": "catalog:",
@@ -294,6 +295,7 @@
     "@better-auth/i18n": "1.6.9",
     "@cloudflare/workers-types": "^4.20251213.0",
     "@orpc/client": "^1.13.14",
+    "@orpc/contract": "^1.13.14",
     "@orpc/openapi": "^1.13.14",
     "@orpc/server": "^1.13.14",
     "@orpc/tanstack-query": "^1.13.14",

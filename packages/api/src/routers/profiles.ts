@@ -15,15 +15,6 @@ import {
 } from "../lib/content-notes";
 import { notifyFollow } from "../lib/notifications";
 import { containsInsensitive } from "../lib/search";
-import {
-	connectionsInput,
-	listInput,
-	meFeedInput,
-	paginatedListInput,
-	profileHandleInput,
-	profileInput,
-	profileUpdateInput,
-} from "./schemas";
 import { toNumber, toPage } from "./utils";
 
 async function getProfile(userId: string, viewerId?: string) {
@@ -94,9 +85,8 @@ async function getProfile(userId: string, viewerId?: string) {
 }
 
 export const profilesRouter = {
-	searchUsers: publicProcedure
-		.input(listInput)
-		.handler(async ({ input, context }) => {
+	searchUsers: publicProcedure.searchUsers.handler(
+		async ({ input, context }) => {
 			const keyword = input.keyword?.trim();
 			if (!keyword) return [];
 
@@ -119,11 +109,11 @@ export const profilesRouter = {
 			return Promise.all(
 				rows.map((row) => getProfile(row.id, context.session?.user.id)),
 			);
-		}),
+		},
+	),
 
-	searchUsersPage: publicProcedure
-		.input(paginatedListInput)
-		.handler(async ({ input, context }) => {
+	searchUsersPage: publicProcedure.searchUsersPage.handler(
+		async ({ input, context }) => {
 			const keyword = input.keyword?.trim();
 			if (!keyword) return { items: [], hasMore: false, nextOffset: null };
 
@@ -151,11 +141,11 @@ export const profilesRouter = {
 					page.items.map((row) => getProfile(row.id, context.session?.user.id)),
 				),
 			};
-		}),
+		},
+	),
 
-	connections: publicProcedure
-		.input(connectionsInput)
-		.handler(async ({ input, context }) => {
+	connections: publicProcedure.connections.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const rows =
 				input.type === "following"
@@ -187,30 +177,28 @@ export const profilesRouter = {
 			return Promise.all(
 				rows.map((row) => getProfile(row.userId, context.session?.user.id)),
 			);
-		}),
+		},
+	),
 
-	profile: publicProcedure
-		.input(profileInput)
-		.handler(async ({ input, context }) => {
-			const profile = await getProfile(input.userId, context.session?.user.id);
-			const rows = (
-				await selectContentNoteRows(
-					and(
-						eq(note.userId, input.userId),
-						eq(note.status, "published"),
-						eq(note.visibility, "public"),
-					),
-				)
-			).slice(0, 30);
-			return {
-				profile,
-				notes: await hydrateContentNotes(rows, context.session?.user.id),
-			};
-		}),
+	profile: publicProcedure.profile.handler(async ({ input, context }) => {
+		const profile = await getProfile(input.userId, context.session?.user.id);
+		const rows = (
+			await selectContentNoteRows(
+				and(
+					eq(note.userId, input.userId),
+					eq(note.status, "published"),
+					eq(note.visibility, "public"),
+				),
+			)
+		).slice(0, 30);
+		return {
+			profile,
+			notes: await hydrateContentNotes(rows, context.session?.user.id),
+		};
+	}),
 
-	profileByHandle: publicProcedure
-		.input(profileHandleInput)
-		.handler(async ({ input, context }) => {
+	profileByHandle: publicProcedure.profileByHandle.handler(
+		async ({ input, context }) => {
 			const [row] = await createDb()
 				.select({ id: user.id })
 				.from(user)
@@ -222,9 +210,10 @@ export const profilesRouter = {
 			}
 
 			return getProfile(row.id, context.session?.user.id);
-		}),
+		},
+	),
 
-	me: protectedProcedure.handler(async ({ context }) => {
+	me: protectedProcedure.me.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 		const [profile, rows, collectedRows, likedRows] = await Promise.all([
 			getProfile(userId, userId),
@@ -264,22 +253,19 @@ export const profilesRouter = {
 		};
 	}),
 
-	meProfile: protectedProcedure.handler(async ({ context }) => {
+	meProfile: protectedProcedure.meProfile.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 		return getProfile(userId, userId);
 	}),
 
-	meFeed: protectedProcedure
-		.input(meFeedInput)
-		.handler(async ({ input, context }) => {
-			const userId = context.session.user.id;
-			const rows = await listMeContentNoteRows(userId, input.tab, input.limit);
-			return hydrateContentNotes(rows, userId);
-		}),
+	meFeed: protectedProcedure.meFeed.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+		const rows = await listMeContentNoteRows(userId, input.tab, input.limit);
+		return hydrateContentNotes(rows, userId);
+	}),
 
-	updateProfile: activeUserProcedure
-		.input(profileUpdateInput)
-		.handler(async ({ input, context }) => {
+	updateProfile: activeUserProcedure.updateProfile.handler(
+		async ({ input, context }) => {
 			const db = createDb();
 			const [updated] = await db
 				.update(user)
@@ -293,11 +279,11 @@ export const profilesRouter = {
 				.where(eq(user.id, context.session.user.id))
 				.returning();
 			return updated;
-		}),
+		},
+	),
 
-	toggleFollow: activeUserProcedure
-		.input(profileInput)
-		.handler(async ({ input, context }) => {
+	toggleFollow: activeUserProcedure.toggleFollow.handler(
+		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
 			if (viewerId === input.userId) {
 				throw new ORPCError("BAD_REQUEST");
@@ -332,5 +318,6 @@ export const profilesRouter = {
 				.from(follow)
 				.where(eq(follow.followingId, input.userId));
 			return { following, followerCount: toNumber(row?.value) };
-		}),
+		},
+	),
 };
