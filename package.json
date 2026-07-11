@@ -1,5 +1,6 @@
 {
 	"name": "youni",
+	"version": "1.0.0",
 	"private": true,
 	"workspaces": {
 		"packages": [
@@ -43,6 +44,7 @@
 		"db:generate": "turbo -F @youni/db db:generate",
 		"db:migrate": "turbo -F @youni/db db:migrate",
 		"deploy": "turbo -F @youni/infra deploy",
+		"release": "bumpp --git-check --commit 'chore(release): v%s' --tag 'v%s' --push",
 		"destroy": "turbo -F @youni/infra destroy",
 		"check": "biome check --write ."
 	},
@@ -56,6 +58,7 @@
 		"@cloudflare/workers-types": "catalog:",
 		"@types/node": "^22.13.14",
 		"@youni/config": "workspace:*",
+		"bumpp": "^11.1.0",
 		"turbo": "^2.8.12",
 		"typescript": "^6"
 	},
