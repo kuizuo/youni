@@ -1,6 +1,13 @@
 {
 	"expo": {
+		"owner": "kuizuo",
 		"scheme": "youni",
+		"updates": {
+			"url": "https://u.expo.dev/b9972331-7d91-43c0-ad64-3282d625f644"
+		},
+		"runtimeVersion": {
+			"policy": "sdkVersion"
+		},
 		"ios": {
 			"bundleIdentifier": "com.kuizuo.youni"
 		},
@@ -64,6 +71,11 @@
 		"experiments": {
 			"typedRoutes": true,
 			"reactCompiler": true
+		},
+		"extra": {
+			"eas": {
+				"projectId": "b9972331-7d91-43c0-ad64-3282d625f644"
+			}
 		}
 	}
 }
