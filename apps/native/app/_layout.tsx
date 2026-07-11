@@ -18,13 +18,17 @@ import {
 	KeyboardAvoidingView,
 	KeyboardProvider,
 } from "react-native-keyboard-controller";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+	SafeAreaProvider,
+	useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { AppThemeProvider } from "@/lib/contexts/app-theme-context";
 import { PushNotificationBridge } from "@/lib/notifications/push-notification-bridge";
 import { ReactNativeQueryProvider } from "@/lib/query/react-native-query";
 import { useAppToast } from "@/utils/app-toast";
 import { setRequestToastHandler } from "@/utils/request-toast";
+import { getAppToastInsets } from "@/utils/toast-insets";
 
 export const unstable_settings = {
 	initialRouteName: "(tabs)",
@@ -72,7 +76,9 @@ function RequestToastBridge() {
 	return null;
 }
 
-export default function Layout() {
+function AppContent() {
+	const safeAreaInsets = useSafeAreaInsets();
+	const toastInsets = getAppToastInsets(safeAreaInsets);
 	const toastContentWrapper = useCallback(
 		(children: ReactNode) => (
 			<KeyboardAvoidingView
@@ -86,6 +92,33 @@ export default function Layout() {
 		),
 		[],
 	);
+
+	return (
+		<KeyboardProvider>
+			<AppThemeProvider>
+				<HeroUINativeProvider
+					config={{
+						toast: {
+							contentWrapper: toastContentWrapper,
+							defaultProps: {
+								isSwipeable: true,
+								placement: "top",
+							},
+							insets: toastInsets,
+							maxVisibleToasts: 2,
+						},
+					}}
+				>
+					<RequestToastBridge />
+					<PushNotificationBridge />
+					<StackLayout />
+				</HeroUINativeProvider>
+			</AppThemeProvider>
+		</KeyboardProvider>
+	);
+}
+
+export default function Layout() {
 	const [fontsLoaded, fontError] = useFonts({
 		Nunito_300Light,
 		Nunito_400Regular,
@@ -108,32 +141,7 @@ export default function Layout() {
 		<ReactNativeQueryProvider>
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<SafeAreaProvider>
-					<KeyboardProvider>
-						<AppThemeProvider>
-							<HeroUINativeProvider
-								config={{
-									toast: {
-										contentWrapper: toastContentWrapper,
-										defaultProps: {
-											isSwipeable: true,
-											placement: "top",
-										},
-										insets: {
-											bottom: 92,
-											left: 16,
-											right: 16,
-											top: 12,
-										},
-										maxVisibleToasts: 2,
-									},
-								}}
-							>
-								<RequestToastBridge />
-								<PushNotificationBridge />
-								<StackLayout />
-							</HeroUINativeProvider>
-						</AppThemeProvider>
-					</KeyboardProvider>
+					<AppContent />
 				</SafeAreaProvider>
 			</GestureHandlerRootView>
 		</ReactNativeQueryProvider>

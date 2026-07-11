@@ -282,9 +282,6 @@ export default function MeScreen() {
 								isError={commentsFeed.isError || profileQuery.isError}
 								isLoading={commentsFeed.isLoading}
 								width={contentWidth}
-								onDeleted={async () => {
-									await queryClient.invalidateQueries();
-								}}
 								onRetry={() => {
 									void refreshTab("comments", {
 										showRefreshControl: false,

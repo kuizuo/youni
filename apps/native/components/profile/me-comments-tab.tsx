@@ -17,10 +17,15 @@ import { Alert, Platform, Pressable, View } from "react-native";
 
 import { ListDivider } from "@/components/create/create-ui";
 import { EmptyState, ErrorState } from "@/components/social-states";
+import { removeMyComment } from "@/lib/query/my-comments-cache";
+import {
+	invalidateComment,
+	invalidateNote,
+} from "@/lib/query/optimistic-cache";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { formatRelativeTime } from "@/utils/format";
-import { orpc } from "@/utils/orpc";
+import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export function MeCommentsTab({
@@ -29,7 +34,6 @@ export function MeCommentsTab({
 	comments,
 	isError,
 	isLoading,
-	onDeleted,
 	onRetry,
 	width,
 }: {
@@ -38,7 +42,6 @@ export function MeCommentsTab({
 	comments: MyCommentRow[];
 	isError: boolean;
 	isLoading: boolean;
-	onDeleted: () => Promise<unknown>;
 	onRetry: () => void;
 	width: number;
 }) {
@@ -50,17 +53,51 @@ export function MeCommentsTab({
 		null,
 	);
 	const suppressPressRef = useRef(false);
+	const myCommentsOptions = orpc.myComments.queryOptions({
+		input: { limit: 30 },
+	});
 	const deleteComment = useMutation(
-		orpc.deleteComment.mutationOptions({
-			onError: (error) => {
+		orpc.deleteComment.mutationOptions<{
+			noteId?: string;
+			previous?: MyCommentRow[];
+		}>({
+			onError: (error, _variables, context) => {
+				if (context?.previous) {
+					queryClient.setQueryData(
+						myCommentsOptions.queryKey,
+						context.previous,
+					);
+				}
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
 					label: error instanceof Error ? error.message : "评论删除失败",
 				});
 			},
-			onSuccess: async () => {
-				await onDeleted();
+			onMutate: async (input) => {
+				await queryClient.cancelQueries({
+					queryKey: myCommentsOptions.queryKey,
+				});
+				const previous = queryClient.getQueryData<MyCommentRow[]>(
+					myCommentsOptions.queryKey,
+				);
+				const deletedComment = previous?.find((item) => item.id === input.id);
+				queryClient.setQueryData<MyCommentRow[]>(
+					myCommentsOptions.queryKey,
+					(current) => removeMyComment(current, input.id),
+				);
+				return { noteId: deletedComment?.noteId, previous };
+			},
+			onSettled: async (_data, _error, variables, context) => {
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: myCommentsOptions.queryKey,
+					}),
+					invalidateComment(variables.id),
+					context?.noteId ? invalidateNote(context.noteId) : Promise.resolve(),
+				]);
+			},
+			onSuccess: () => {
 				toast.show({ variant: "success", label: "评论已删除" });
 			},
 		}),
