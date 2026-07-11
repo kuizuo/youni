@@ -115,7 +115,7 @@ function WordWrap({
 				isEditing ? (
 					<View
 						key={item}
-						className="h-10 flex-row items-center rounded-full border border-border bg-content2 pr-1 pl-4"
+						className="h-10 flex-row items-center rounded-full border border-border bg-transparent pr-1 pl-4"
 					>
 						<Text.Paragraph numberOfLines={1} className="text-foreground">
 							{item}
@@ -136,12 +136,12 @@ function WordWrap({
 					<Button
 						key={item}
 						size="sm"
-						variant="secondary"
-						className="rounded-full px-4"
+						variant="outline"
+						className="h-10 rounded-full border-border bg-transparent px-4"
 						feedbackVariant="scale-ripple"
 						onPress={() => onPressWord(item)}
 					>
-						<Button.Label>{item}</Button.Label>
+						<Button.Label className="text-foreground">{item}</Button.Label>
 					</Button>
 				),
 			)}
