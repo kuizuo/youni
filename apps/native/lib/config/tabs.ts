@@ -2,7 +2,7 @@ import type { SFSymbolIcon } from "expo-router/unstable-native-tabs";
 
 import type { SingleColorIconName } from "@/components/icons/single-color";
 
-export type TabRouteName = "index" | "messages" | "create" | "me";
+export type TabRouteName = "index" | "search" | "create" | "messages" | "me";
 
 export type TabIconName = Extract<
 	SingleColorIconName,
@@ -36,6 +36,14 @@ export const TABS: readonly TabConfig[] = [
 		iconFocusedName: "home-fill",
 		iosIconName: "house",
 		iosIconSelectedName: "house.fill",
+	},
+	{
+		name: "search",
+		label: "搜索",
+		iconName: "search",
+		iconFocusedName: "search-fill",
+		iosIconName: "magnifyingglass",
+		iosIconSelectedName: "magnifyingglass",
 	},
 	{
 		name: "create",

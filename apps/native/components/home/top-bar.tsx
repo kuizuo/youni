@@ -1,12 +1,10 @@
-import { PressableFeedback, Text, useThemeColor } from "heroui-native";
+import { PressableFeedback, Text } from "heroui-native";
 import { View } from "react-native";
 
 import {
 	APP_HEADER_HEIGHT,
-	APP_HEADER_ICON_SIZE,
 	APP_HEADER_TITLE_FONT_SIZE,
 	AppHeader,
-	AppHeaderIconButton,
 } from "@/components/shared/app-header";
 
 import { HOME_TABS, type HomeTab } from "./types";
@@ -14,17 +12,12 @@ import { HOME_TABS, type HomeTab } from "./types";
 export function HomeTopBar({
 	activeTab,
 	topInset,
-	onSearch,
 	onTabChange,
 }: {
 	activeTab: HomeTab;
 	topInset: number;
-	onSearch: () => void;
 	onTabChange: (tab: HomeTab) => void;
 }) {
-	const mutedColor = useThemeColor("muted");
-	const foregroundColor = useThemeColor("foreground");
-
 	return (
 		<AppHeader
 			topInset={topInset}
@@ -39,15 +32,6 @@ export function HomeTopBar({
 						/>
 					))}
 				</View>
-			}
-			right={
-				<AppHeaderIconButton
-					accessibilityLabel="搜索"
-					color={activeTab === "discover" ? foregroundColor : mutedColor}
-					icon="search-outline"
-					iconSize={APP_HEADER_ICON_SIZE}
-					onPress={onSearch}
-				/>
 			}
 		/>
 	);

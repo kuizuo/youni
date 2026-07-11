@@ -30,11 +30,11 @@ import { flattenPages } from "@/utils/pagination";
 export function SearchResults({
 	activeKeyword,
 	activeTab,
-	bottomInset,
+	contentBottomPadding,
 }: {
 	activeKeyword: string;
 	activeTab: SearchTabKey;
-	bottomInset: number;
+	contentBottomPadding: number;
 }) {
 	const router = useRouter();
 	const socialActions = useSocialActions();
@@ -146,7 +146,7 @@ export function SearchResults({
 				contentContainerStyle={{
 					paddingTop: 8,
 					paddingHorizontal: 4,
-					paddingBottom: bottomInset + 28,
+					paddingBottom: contentBottomPadding,
 				}}
 				renderItem={({ item }) => (
 					<View className="px-1 pb-2">
@@ -204,7 +204,7 @@ export function SearchResults({
 				}}
 				onEndReachedThreshold={0.4}
 				contentContainerStyle={{
-					paddingBottom: bottomInset + 28,
+					paddingBottom: contentBottomPadding,
 				}}
 				ItemSeparatorComponent={ListSeparator}
 				renderItem={({ item }) => (
@@ -266,7 +266,7 @@ export function SearchResults({
 			}}
 			onEndReachedThreshold={0.4}
 			contentContainerStyle={{
-				paddingBottom: bottomInset + 28,
+				paddingBottom: contentBottomPadding,
 			}}
 			ItemSeparatorComponent={ListSeparator}
 			renderItem={({ item }) => (

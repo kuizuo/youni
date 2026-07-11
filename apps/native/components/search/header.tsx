@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import {
 	Button,
 	PressableFeedback,
@@ -11,7 +10,6 @@ import {
 	SEARCH_TABS,
 	type SearchTabKey,
 } from "@/components/search/search-utils";
-import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 import { AppSeparator } from "@/components/shared/app-separator";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
@@ -20,7 +18,6 @@ export function SearchHeader({
 	canSubmitKeyword,
 	hasActiveSearch,
 	keyword,
-	onBack,
 	onChangeKeyword,
 	onChangeTab,
 	onClearSearch,
@@ -31,7 +28,6 @@ export function SearchHeader({
 	canSubmitKeyword: boolean;
 	hasActiveSearch: boolean;
 	keyword: string;
-	onBack: () => void;
 	onChangeKeyword: (value: string) => void;
 	onChangeTab: (tab: SearchTabKey) => void;
 	onClearSearch: () => void;
@@ -39,7 +35,6 @@ export function SearchHeader({
 	topInset: number;
 }) {
 	const mutedColor = useThemeColor("muted");
-	const foregroundColor = useThemeColor("foreground");
 
 	return (
 		<View
@@ -47,21 +42,6 @@ export function SearchHeader({
 			style={{ paddingTop: Math.max(topInset, 8) + 6 }}
 		>
 			<View className="flex-row items-center gap-2 pb-3">
-				<Button
-					isIconOnly
-					variant="ghost"
-					className="h-11 w-11 rounded-full"
-					feedbackVariant="scale-ripple"
-					accessibilityLabel="返回"
-					onPress={onBack}
-				>
-					<Ionicons
-						name="chevron-back"
-						size={APP_HEADER_ICON_SIZE}
-						color={foregroundColor}
-					/>
-				</Button>
-
 				<SearchField
 					value={keyword}
 					onChange={onChangeKeyword}

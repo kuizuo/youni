@@ -50,6 +50,7 @@ export default function TabsLayout() {
 			}}
 		>
 			<Tabs.Screen name="index" options={{ title: "发现" }} />
+			<Tabs.Screen name="search" options={{ title: "搜索" }} />
 			<Tabs.Screen name="create" options={{ title: "发布" }} />
 			<Tabs.Screen name="messages" options={{ title: "消息" }} />
 			<Tabs.Screen name="me" options={{ title: "我的" }} />

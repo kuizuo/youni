@@ -1,5 +1,4 @@
-import type { Href } from "expo-router";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,7 +19,6 @@ import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { getRouteParam } from "@/utils/route-params";
 
 export default function SearchScreen() {
-	const router = useRouter();
 	const params = useLocalSearchParams<{
 		actionAt?: string | string[];
 		keyword?: string | string[];
@@ -40,6 +38,8 @@ export default function SearchScreen() {
 	const normalizedKeyword = keyword.trim();
 	const canSubmitKeyword = normalizedKeyword.length > 0;
 	const quickWords = uniqueWords([...recentWords, ...QUICK_WORDS], 12);
+	const contentBottomPadding =
+		process.env.EXPO_OS === "ios" ? insets.bottom + 28 : 128;
 
 	const updateRecentWords = useCallback(
 		(updater: (items: string[]) => string[]) => {
@@ -102,14 +102,6 @@ export default function SearchScreen() {
 		applyKeyword(nextKeyword);
 	}, [applyKeyword, params.actionAt, params.keyword, params.source]);
 
-	const goBack = () => {
-		if (router.canGoBack()) {
-			router.back();
-			return;
-		}
-		router.replace("/" as Href);
-	};
-
 	const submitSearch = () => {
 		applyKeyword(keyword);
 	};
@@ -160,7 +152,6 @@ export default function SearchScreen() {
 				hasActiveSearch={hasActiveSearch}
 				keyword={keyword}
 				topInset={insets.top}
-				onBack={goBack}
 				onChangeKeyword={setKeyword}
 				onChangeTab={setActiveTab}
 				onClearSearch={clearSearch}
@@ -171,11 +162,11 @@ export default function SearchScreen() {
 				<SearchResults
 					activeKeyword={activeKeyword}
 					activeTab={activeTab}
-					bottomInset={insets.bottom}
+					contentBottomPadding={contentBottomPadding}
 				/>
 			) : (
 				<SearchHome
-					bottomInset={insets.bottom}
+					contentBottomPadding={contentBottomPadding}
 					isEditingHistory={isEditingHistory}
 					quickWords={quickWords}
 					recentWords={recentWords}

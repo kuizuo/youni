@@ -54,7 +54,6 @@ function StackLayout() {
 			<Stack.Screen name="publish" />
 			<Stack.Screen name="register" />
 			<Stack.Screen name="scan" />
-			<Stack.Screen name="search" />
 			<Stack.Screen name="settings" />
 			<Stack.Screen name="topic/[id]" />
 			<Stack.Screen name="user-connections" />

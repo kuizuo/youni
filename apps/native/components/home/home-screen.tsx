@@ -90,7 +90,6 @@ export default function HomeScreen() {
 			<HomeTopBar
 				activeTab={activeTab}
 				topInset={insets.top}
-				onSearch={() => socialNavigation.goTo({ type: "search" })}
 				onTabChange={setActiveTab}
 			/>
 			<FlashList

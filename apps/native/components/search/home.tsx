@@ -5,7 +5,7 @@ import { ScrollView, View } from "react-native";
 import { AppSeparator } from "@/components/shared/app-separator";
 
 export function SearchHome({
-	bottomInset,
+	contentBottomPadding,
 	isEditingHistory,
 	onClearHistory,
 	onDeleteHistoryWord,
@@ -15,7 +15,7 @@ export function SearchHome({
 	quickWords,
 	recentWords,
 }: {
-	bottomInset: number;
+	contentBottomPadding: number;
 	isEditingHistory: boolean;
 	onClearHistory: () => void;
 	onDeleteHistoryWord: (word: string) => void;
@@ -31,7 +31,7 @@ export function SearchHome({
 		<ScrollView
 			className="flex-1 bg-background"
 			contentContainerClassName="mx-auto w-full max-w-xl gap-7 px-4 pt-5"
-			contentContainerStyle={{ paddingBottom: bottomInset + 28 }}
+			contentContainerStyle={{ paddingBottom: contentBottomPadding }}
 			keyboardShouldPersistTaps="handled"
 		>
 			{recentWords.length > 0 ? (
