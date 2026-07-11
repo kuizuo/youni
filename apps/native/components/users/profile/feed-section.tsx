@@ -1,13 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, useThemeColor } from "heroui-native";
-import type { ReactNode } from "react";
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 
 import { NoteCard } from "@/components/note-card";
 import { EmptyState, FeedSkeleton } from "@/components/social-states";
-import { createTwoColumnFeed } from "@/lib/utils/two-column-feed";
 
-import type { UserFeedItem, UserFeedNote } from "./types";
+import type { UserFeedNote } from "./types";
+
+const FEED_MAX_WIDTH = 576;
+const FEED_HORIZONTAL_PADDING = 24;
+const FEED_COLUMN_GAP = 12;
+const FEED_ITEM_GAP = 12;
+const COMPACT_CARD_BODY_HEIGHT = 82;
 
 export function UserProfileFeedSection({
 	isLoading,
@@ -17,7 +21,13 @@ export function UserProfileFeedSection({
 	notes: UserFeedNote[];
 }) {
 	const mutedColor = useThemeColor("muted");
-	const feedItems = createTwoColumnFeed(notes);
+	const dimensions = useWindowDimensions();
+	const feedWidth = Math.min(dimensions.width, FEED_MAX_WIDTH);
+	const cardWidth = Math.max(
+		1,
+		(feedWidth - FEED_HORIZONTAL_PADDING - FEED_COLUMN_GAP) / 2,
+	);
+	const masonryColumns = createMasonryColumns(notes, cardWidth);
 
 	return (
 		<>
@@ -38,26 +48,18 @@ export function UserProfileFeedSection({
 			<View className="mx-auto w-full max-w-xl pt-3">
 				{isLoading ? (
 					<FeedSkeleton />
-				) : feedItems.length > 0 ? (
-					<View className="gap-3 px-3">
-						{feedItems.reduce<ReactNode[]>((rows, item, index) => {
-							if (index % 2 === 1) return rows;
-							const nextItem = feedItems[index + 1];
-							rows.push(
-								<View
-									key={`row-${item.id}`}
-									className="flex-row items-start gap-3"
-								>
-									<FeedCell item={item} />
-									{nextItem ? (
-										<FeedCell item={nextItem} />
-									) : (
-										<View className="flex-1 basis-0" />
-									)}
-								</View>,
-							);
-							return rows;
-						}, [])}
+				) : notes.length > 0 ? (
+					<View className="flex-row items-start gap-3 px-3">
+						{masonryColumns.map((column, index) => (
+							<View
+								key={index === 0 ? "left-column" : "right-column"}
+								className="flex-1 gap-3"
+							>
+								{column.map((item) => (
+									<FeedCell key={item.id} item={item} />
+								))}
+							</View>
+						))}
 					</View>
 				) : (
 					<EmptyState
@@ -71,10 +73,39 @@ export function UserProfileFeedSection({
 	);
 }
 
-function FeedCell({ item }: { item: UserFeedItem }) {
-	return (
-		<View className="flex-1 basis-0">
-			{item.type === "item" ? <NoteCard compact note={item.item} /> : null}
-		</View>
+function FeedCell({ item }: { item: UserFeedNote }) {
+	return <NoteCard compact note={item} />;
+}
+
+function createMasonryColumns(items: UserFeedNote[], cardWidth: number) {
+	const left: UserFeedNote[] = [];
+	const right: UserFeedNote[] = [];
+	let leftHeight = 0;
+	let rightHeight = 0;
+
+	for (const item of items) {
+		const estimatedHeight =
+			estimateCompactNoteCardHeight(item, cardWidth) + FEED_ITEM_GAP;
+		if (leftHeight <= rightHeight) {
+			left.push(item);
+			leftHeight += estimatedHeight;
+		} else {
+			right.push(item);
+			rightHeight += estimatedHeight;
+		}
+	}
+
+	return [left, right];
+}
+
+function estimateCompactNoteCardHeight(item: UserFeedNote, cardWidth: number) {
+	const coverImageMeta = item.imageMetas?.find(
+		(meta) => meta.url === item.cover,
 	);
+	const imageAspectRatio =
+		coverImageMeta?.width && coverImageMeta.height
+			? coverImageMeta.width / coverImageMeta.height
+			: 1;
+	const imageHeight = cardWidth / imageAspectRatio;
+	return imageHeight + COMPACT_CARD_BODY_HEIGHT;
 }

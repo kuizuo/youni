@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, useThemeColor } from "heroui-native";
+import { Button, cn, useThemeColor } from "heroui-native";
 import type { ComponentProps } from "react";
 
 type FollowButtonProps = {
@@ -9,6 +9,7 @@ type FollowButtonProps = {
 	onPress: () => void;
 	showIcon?: boolean;
 	size?: ComponentProps<typeof Button>["size"];
+	tone?: "default" | "hero";
 };
 
 export function FollowButton({
@@ -18,16 +19,25 @@ export function FollowButton({
 	onPress,
 	showIcon = false,
 	size = "sm",
+	tone = "default",
 }: FollowButtonProps) {
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const foregroundColor = useThemeColor("foreground");
-	const iconColor = isFollowing ? foregroundColor : accentForegroundColor;
+	const isHeroFollowing = tone === "hero" && isFollowing;
+	const iconColor = isHeroFollowing
+		? "#ffffff"
+		: isFollowing
+			? foregroundColor
+			: accentForegroundColor;
 
 	return (
 		<Button
 			size={size}
 			variant={isFollowing ? "outline" : "primary"}
-			className={className}
+			className={cn(
+				isHeroFollowing ? "border border-white/35 bg-white/16" : null,
+				className,
+			)}
 			feedbackVariant="scale-ripple"
 			isDisabled={isDisabled}
 			onPress={onPress}
@@ -39,7 +49,9 @@ export function FollowButton({
 					color={iconColor}
 				/>
 			) : null}
-			<Button.Label>{isFollowing ? "已关注" : "关注"}</Button.Label>
+			<Button.Label className={isHeroFollowing ? "text-white" : undefined}>
+				{isFollowing ? "已关注" : "关注"}
+			</Button.Label>
 		</Button>
 	);
 }

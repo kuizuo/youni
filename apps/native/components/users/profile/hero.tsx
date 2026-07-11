@@ -142,9 +142,11 @@ export function UserProfileHero({
 					) : (
 						<>
 							<FollowButton
-								className="flex-1 rounded-full"
+								className="h-12 flex-1 rounded-full"
 								isFollowing={isFollowing}
 								showIcon
+								size="md"
+								tone="hero"
 								onPress={onToggleFollow}
 							/>
 							<Button
