@@ -53,7 +53,7 @@ Run from the repository root unless noted.
 - Before starting a dev server, check whether the expected port is already listening. If the matching service is already running, reuse it instead of starting another process.
 - Web expects `VITE_SERVER_URL`.
 - Native expects `EXPO_PUBLIC_SERVER_URL`.
-- Server expects the Cloudflare D1 `DB` binding from Alchemy plus values such as `CORS_ORIGIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google auth/model keys, and `ADMIN_EMAILS`.
+- Server expects the Cloudflare D1 `DB` binding from Alchemy plus values such as `CORS_ORIGIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and Google auth/model keys.
 - Env files currently exist under `apps/server/.env`, `apps/web/.env`, `apps/native/.env`, and `packages/infra/.env`. Do not print secrets in logs or responses.
 
 ## Architecture Notes
@@ -64,7 +64,7 @@ Run from the repository root unless noted.
 - Auth is configured in `packages/auth/src/index.ts`; do not create separate auth setup in app folders.
 - Database access should go through `createDb()` from `@youni/db`.
 - Shared database tables are exported from `packages/db/src/schema/index.ts`.
-- Admin-only API behavior belongs in `packages/api/src/routers/admin.ts`; admin access is based on `ADMIN_EMAILS`.
+- Admin-only API behavior belongs in `packages/api/src/routers/admin.ts`; admin access is based on the user's stored role.
 - User-facing social behavior belongs in `packages/api/src/routers/social.ts`.
 - Notification behavior belongs in `packages/api/src/routers/notifications.ts` and `packages/api/src/lib/notifications.ts`.
 - The `todo` router and schema still exist as starter-stack functionality; do not expand them unless the task explicitly concerns todo behavior.
