@@ -29,6 +29,7 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useCSSVariable } from "uniwind";
 
 import {
 	getPhotoPermissionMode,
@@ -41,6 +42,21 @@ import { useAppToast } from "@/utils/app-toast";
 
 const PAGE_SIZE = 80;
 const ADD_MORE_ID = "__add_more__";
+const BRAND_COLOR_FALLBACK = "#76dd85";
+const BRAND_FOREGROUND_FALLBACK = "#132817";
+
+function useBrandThemeColors() {
+	const [brand, brandForeground] = useCSSVariable([
+		"--brand",
+		"--brand-foreground",
+	]);
+	return [
+		typeof brand === "string" ? brand : BRAND_COLOR_FALLBACK,
+		typeof brandForeground === "string"
+			? brandForeground
+			: BRAND_FOREGROUND_FALLBACK,
+	] as const;
+}
 
 type LibraryItem = {
 	asset: MediaLibrary.Asset;
@@ -591,6 +607,8 @@ function PickerHeader({
 	onComplete: () => void;
 	selectedCount: number;
 }) {
+	const [themeColor, themeForegroundColor] = useBrandThemeColors();
+
 	return (
 		<View style={styles.header}>
 			<Pressable accessibilityLabel="关闭相册" hitSlop={12} onPress={onClose}>
@@ -603,10 +621,11 @@ function PickerHeader({
 				onPress={onComplete}
 				style={[
 					styles.doneButton,
+					{ backgroundColor: themeColor },
 					selectedCount === 0 && styles.doneButtonDisabled,
 				]}
 			>
-				<Text style={styles.doneText}>
+				<Text style={[styles.doneText, { color: themeForegroundColor }]}>
 					{isCompleting
 						? "处理中"
 						: `完成${selectedCount ? `(${selectedCount})` : ""}`}
@@ -678,6 +697,7 @@ function PhotoTile({
 	size: number;
 }) {
 	const selected = selectionNumber > 0;
+	const [themeColor, themeForegroundColor] = useBrandThemeColors();
 	return (
 		<Pressable
 			accessibilityLabel={
@@ -696,10 +716,18 @@ function PhotoTile({
 				style={[
 					styles.selectionBadge,
 					selected && styles.selectionBadgeSelected,
+					selected && {
+						backgroundColor: themeColor,
+						borderColor: themeColor,
+					},
 				]}
 			>
 				{selected ? (
-					<Text style={styles.selectionNumber}>{selectionNumber}</Text>
+					<Text
+						style={[styles.selectionNumber, { color: themeForegroundColor }]}
+					>
+						{selectionNumber}
+					</Text>
 				) : null}
 			</View>
 			{item.kind === "camera" ? (
@@ -720,11 +748,13 @@ function PickerTabs({
 	onAlbumPress: () => void;
 	onCameraPress: () => void;
 }) {
+	const [themeColor] = useBrandThemeColors();
+
 	return (
 		<View style={[styles.tabs, { paddingBottom: Math.max(bottomInset, 12) }]}>
 			<Pressable style={styles.tab} onPress={onAlbumPress}>
 				<Text style={[styles.tabText, styles.tabTextActive]}>相册</Text>
-				<View style={styles.tabIndicator} />
+				<View style={[styles.tabIndicator, { backgroundColor: themeColor }]} />
 			</Pressable>
 			<Pressable style={styles.tab} onPress={onCameraPress}>
 				<Text style={styles.tabText}>拍照</Text>
@@ -747,6 +777,7 @@ function AlbumPicker({
 	selectedAlbum: MediaLibrary.Album | null;
 }) {
 	const rows: Array<MediaLibrary.Album | null> = [null, ...albums];
+	const [themeColor] = useBrandThemeColors();
 	return (
 		<View style={styles.albumPickerRoot}>
 			<Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
@@ -776,7 +807,7 @@ function AlbumPicker({
 									) : null}
 								</View>
 								{selected ? (
-									<Ionicons color="#f6e52d" name="checkmark" size={23} />
+									<Ionicons color={themeColor} name="checkmark" size={23} />
 								) : null}
 							</Pressable>
 						);
@@ -822,6 +853,8 @@ function CameraPage({
 	onTakePicture: () => void;
 	onUsePicture: () => void;
 }) {
+	const [themeColor, themeForegroundColor] = useBrandThemeColors();
+
 	if (!cameraPermission?.granted) {
 		return (
 			<View style={[styles.cameraPermission, { paddingTop: insets.top }]}>
@@ -839,10 +872,17 @@ function CameraPage({
 				</Text>
 				{!cameraPermission || cameraPermission.canAskAgain ? (
 					<Pressable
-						style={styles.permissionButton}
+						style={[styles.permissionButton, { backgroundColor: themeColor }]}
 						onPress={() => void onRequestPermission()}
 					>
-						<Text style={styles.permissionButtonText}>允许使用相机</Text>
+						<Text
+							style={[
+								styles.permissionButtonText,
+								{ color: themeForegroundColor },
+							]}
+						>
+							允许使用相机
+						</Text>
 					</Pressable>
 				) : null}
 			</View>
@@ -864,13 +904,18 @@ function CameraPage({
 						<Text style={styles.previewButtonText}>重拍</Text>
 					</Pressable>
 					<Pressable
-						style={[styles.previewButton, styles.previewButtonPrimary]}
+						style={[
+							styles.previewButton,
+							styles.previewButtonPrimary,
+							{ backgroundColor: themeColor },
+						]}
 						onPress={onUsePicture}
 					>
 						<Text
 							style={[
 								styles.previewButtonText,
 								styles.previewButtonPrimaryText,
+								{ color: themeForegroundColor },
 							]}
 						>
 							使用照片
@@ -951,7 +996,6 @@ const styles = StyleSheet.create({
 	},
 	doneButton: {
 		alignItems: "center",
-		backgroundColor: "#eafa2d",
 		borderRadius: 18,
 		minWidth: 66,
 		paddingHorizontal: 12,
@@ -1007,8 +1051,6 @@ const styles = StyleSheet.create({
 	},
 	selectionBadgeSelected: {
 		alignItems: "center",
-		backgroundColor: "#eafa2d",
-		borderColor: "#eafa2d",
 		justifyContent: "center",
 	},
 	selectionNumber: { color: "#101010", fontSize: 12, fontWeight: "800" },
@@ -1035,7 +1077,6 @@ const styles = StyleSheet.create({
 	tabText: { color: "#888", fontSize: 16, fontWeight: "600" },
 	tabTextActive: { color: "#fff", fontWeight: "800" },
 	tabIndicator: {
-		backgroundColor: "#eafa2d",
 		borderRadius: 3,
 		height: 4,
 		marginTop: 7,
@@ -1096,7 +1137,6 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 	},
 	permissionButton: {
-		backgroundColor: "#eafa2d",
 		borderRadius: 20,
 		marginTop: 8,
 		paddingHorizontal: 22,
@@ -1177,7 +1217,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		paddingVertical: 13,
 	},
-	previewButtonPrimary: { backgroundColor: "#eafa2d" },
+	previewButtonPrimary: {},
 	previewButtonText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 	previewButtonPrimaryText: { color: "#111" },
 });

@@ -20,6 +20,8 @@
 	--color-overlay-backdrop: var(--backdrop);
 	--color-primary: var(--accent);
 	--color-primary-foreground: var(--accent-foreground);
+	--color-brand: var(--brand);
+	--color-brand-foreground: var(--brand-foreground);
 }
 
 @layer theme {
@@ -39,8 +41,10 @@
 			--muted: hsl(240, 4%, 45%);
 			--default: hsl(240, 6%, 92%);
 			--default-foreground: hsl(240, 10%, 12%);
-			--accent: hsl(78, 91%, 58%);
-			--accent-foreground: hsl(70, 23%, 6%);
+			--accent: hsl(129, 60%, 66%);
+			--accent-foreground: hsl(130, 25%, 10%);
+			--brand: hsl(129, 60%, 66%);
+			--brand-foreground: hsl(130, 25%, 10%);
 			--field-background: hsl(0, 0%, 100%);
 			--field-foreground: hsl(240, 10%, 12%);
 			--field-placeholder: hsl(240, 4%, 48%);
@@ -85,8 +89,10 @@
 			--muted: hsl(240, 5%, 68%);
 			--default: hsl(240, 6%, 19%);
 			--default-foreground: hsl(0, 0%, 96%);
-			--accent: hsl(78, 91%, 58%);
-			--accent-foreground: hsl(70, 23%, 6%);
+			--accent: hsl(129, 60%, 66%);
+			--accent-foreground: hsl(130, 25%, 10%);
+			--brand: hsl(129, 60%, 66%);
+			--brand-foreground: hsl(130, 25%, 10%);
 			--field-background: hsl(240, 7%, 15%);
 			--field-foreground: hsl(0, 0%, 96%);
 			--field-placeholder: hsl(240, 5%, 64%);
