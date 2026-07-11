@@ -1,5 +1,5 @@
 import { hashPassword } from "better-auth/crypto";
-import { and, eq, inArray, or } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { closeDb, createDb } from "./index";
 import {
 	account,
@@ -27,7 +27,7 @@ const seedUsers = [
 		key: "admin",
 		id: "seed-user-admin",
 		name: "Youni Admin",
-		email: "admin@youni.local",
+		email: "admin@youni.app",
 		handle: "youni_admin",
 		bio: "内容审核与社区运营",
 		image:
@@ -39,7 +39,7 @@ const seedUsers = [
 		key: "operator",
 		id: "seed-user-operator",
 		name: "Youni Operator",
-		email: "operator@youni.local",
+		email: "operator@youni.app",
 		handle: "youni_operator",
 		bio: "社区内容运营",
 		image:
@@ -51,7 +51,7 @@ const seedUsers = [
 		key: "kuizuo",
 		id: "seed-user-kuizuo",
 		name: "愧怍",
-		email: "kuizuo@youni.local",
+		email: "kuizuo@youni.app",
 		handle: "kuizuo",
 		bio: "Youni 的产品体验测试账号。",
 		image:
@@ -63,7 +63,7 @@ const seedUsers = [
 		key: "lin",
 		id: "seed-user-lin",
 		name: "林一一",
-		email: "lin@youni.local",
+		email: "lin@youni.app",
 		handle: "lin_daily",
 		bio: "记录穿搭、咖啡和周末散步。",
 		image:
@@ -75,7 +75,7 @@ const seedUsers = [
 		key: "momo",
 		id: "seed-user-momo",
 		name: "Momo",
-		email: "momo@youni.local",
+		email: "momo@youni.app",
 		handle: "momo_list",
 		bio: "喜欢整理城市里的小灵感。",
 		image:
@@ -87,7 +87,7 @@ const seedUsers = [
 		key: "ash",
 		id: "seed-user-ash",
 		name: "阿树",
-		email: "ash@youni.local",
+		email: "ash@youni.app",
 		handle: "ash_weekend",
 		bio: "周末出逃和简单食谱。",
 		image:
@@ -99,7 +99,7 @@ const seedUsers = [
 		key: "nana",
 		id: "seed-user-nana",
 		name: "Nana",
-		email: "nana@youni.local",
+		email: "nana@youni.app",
 		handle: "nana_home",
 		bio: "家居角落、香氛和日常收纳。",
 		image:
@@ -111,7 +111,7 @@ const seedUsers = [
 		key: "qiqi",
 		id: "seed-user-qiqi",
 		name: "七七",
-		email: "qiqi@youni.local",
+		email: "qiqi@youni.app",
 		handle: "qiqi_notes",
 		bio: "拍照、护肤和轻运动打卡。",
 		image:
@@ -717,32 +717,42 @@ async function ensureUser(
 	db: ReturnType<typeof createDb>,
 	item: (typeof seedUsers)[number],
 ) {
-	const [row] = await db
-		.insert(user)
-		.values({
-			id: item.id,
-			name: item.name,
-			email: item.email,
-			emailVerified: true,
-			handle: item.handle,
-			bio: item.bio,
-			image: item.image,
-			role: item.role,
-			status: "active",
-		})
-		.onConflictDoUpdate({
-			target: user.email,
-			set: {
-				name: item.name,
-				emailVerified: true,
-				handle: item.handle,
-				bio: item.bio,
-				image: item.image,
-				role: item.role,
-				status: "active",
-			},
-		})
-		.returning({ id: user.id });
+	const [existingUser] = await db
+		.select({ id: user.id })
+		.from(user)
+		.where(
+			or(
+				eq(user.id, item.id),
+				eq(user.email, item.email),
+				eq(user.handle, item.handle),
+			),
+		)
+		.orderBy(
+			sql`case when ${user.id} = ${item.id} then 0 when ${user.email} = ${item.email} then 1 else 2 end`,
+		)
+		.limit(1);
+
+	const userValues = {
+		name: item.name,
+		email: item.email,
+		emailVerified: true,
+		handle: item.handle,
+		bio: item.bio,
+		image: item.image,
+		role: item.role,
+		status: "active" as const,
+	};
+
+	const [row] = existingUser
+		? await db
+				.update(user)
+				.set(userValues)
+				.where(eq(user.id, existingUser.id))
+				.returning({ id: user.id })
+		: await db
+				.insert(user)
+				.values({ id: item.id, ...userValues })
+				.returning({ id: user.id });
 
 	if (!row) {
 		throw new Error(`Failed to seed user ${item.email}`);
@@ -1286,10 +1296,10 @@ async function main() {
 	}
 
 	console.log("Seed completed");
-	console.log(`Admin: admin@youni.local / ${adminPassword}`);
-	console.log(`Operator: operator@youni.local / ${adminPassword}`);
-	console.log(`Demo: kuizuo@youni.local / ${demoPassword}`);
-	console.log(`Demo: lin@youni.local / ${demoPassword}`);
+	console.log(`Admin: admin@youni.app / ${adminPassword}`);
+	console.log(`Operator: operator@youni.app / ${adminPassword}`);
+	console.log(`Demo: kuizuo@youni.app / ${demoPassword}`);
+	console.log(`Demo: lin@youni.app / ${demoPassword}`);
 }
 
 main()
