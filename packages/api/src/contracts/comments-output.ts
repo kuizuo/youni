@@ -14,7 +14,25 @@ export type CommentListRow = {
 	userId: string;
 };
 
+export type MyCommentRow = {
+	canOpenNote: boolean;
+	content: string;
+	createdAt: Date;
+	id: string;
+	noteId: string;
+	notePreview: null | {
+		cover: null | string;
+		title: string;
+	};
+	parentId: null | string;
+	replyToComment: null | {
+		authorName: string;
+		content: string;
+	};
+};
+
 export type CommentsOutputs = {
+	myComments: MyCommentRow[];
 	comments: {
 		items: CommentListRow[];
 		hasMore: boolean;

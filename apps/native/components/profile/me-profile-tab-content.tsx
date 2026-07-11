@@ -14,7 +14,7 @@ import {
 } from "@/components/profile/profile-tabs";
 import { ErrorState, FeedSkeleton } from "@/components/social-states";
 
-const TAB_INDICATOR_WIDTH = 96;
+const TAB_INDICATOR_MAX_WIDTH = 96;
 const FEED_HORIZONTAL_PADDING = 24;
 const FEED_COLUMN_GAP = 12;
 const FEED_ITEM_GAP = 12;
@@ -49,14 +49,15 @@ export function ProfileTabBar({
 	pagerScrollX: SharedValue<number>;
 }) {
 	const [barWidth, setBarWidth] = useState(0);
+	const tabWidth = barWidth / PROFILE_TABS.length;
+	const indicatorWidth = Math.min(TAB_INDICATOR_MAX_WIDTH, tabWidth * 0.72);
 
 	const indicatorStyle = useAnimatedStyle(() => ({
 		transform: [
 			{
 				translateX:
-					(pageWidth ? pagerScrollX.value / pageWidth : 0) *
-						(barWidth / PROFILE_TABS.length) +
-					(barWidth / PROFILE_TABS.length - TAB_INDICATOR_WIDTH) / 2,
+					(pageWidth ? pagerScrollX.value / pageWidth : 0) * tabWidth +
+					(tabWidth - indicatorWidth) / 2,
 			},
 		],
 	}));
@@ -108,7 +109,7 @@ export function ProfileTabBar({
 						style={[
 							{
 								backgroundColor: accentColor,
-								width: TAB_INDICATOR_WIDTH,
+								width: indicatorWidth,
 							},
 							indicatorStyle,
 						]}

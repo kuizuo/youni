@@ -1,9 +1,19 @@
 import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
-import { comment, commentLike, note, user } from "@youni/db/schema/index";
+import {
+	comment,
+	commentLike,
+	follow,
+	note,
+	user,
+} from "@youni/db/schema/index";
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { CommentListRow } from "../contracts/comments-output";
-import { activeUserProcedure, publicProcedure } from "../index";
+import {
+	activeUserProcedure,
+	protectedProcedure,
+	publicProcedure,
+} from "../index";
 import { notifyCommentOwner, notifyNoteOwner } from "../lib/notifications";
 import { toNumber, toPage } from "./utils";
 
@@ -252,6 +262,97 @@ async function collectCommentDescendantIds(rootId: string) {
 }
 
 export const commentsRouter = {
+	myComments: protectedProcedure.myComments.handler(
+		async ({ input, context }) => {
+			const db = createDb();
+			const viewerId = context.session.user.id;
+			const rows = await db
+				.select({
+					id: comment.id,
+					content: comment.content,
+					createdAt: comment.createdAt,
+					noteId: comment.noteId,
+					parentId: comment.parentId,
+					noteAuthorId: note.userId,
+					noteCover: note.cover,
+					noteStatus: note.status,
+					noteTitle: note.title,
+					noteVisibility: note.visibility,
+				})
+				.from(comment)
+				.innerJoin(note, eq(comment.noteId, note.id))
+				.where(eq(comment.userId, viewerId))
+				.orderBy(desc(comment.createdAt))
+				.limit(input.limit);
+
+			const followerOnlyAuthorIds = Array.from(
+				new Set(
+					rows.flatMap((row) =>
+						row.noteAuthorId !== viewerId &&
+						row.noteStatus === "published" &&
+						row.noteVisibility === "followers"
+							? [row.noteAuthorId]
+							: [],
+					),
+				),
+			);
+			const parentIds = Array.from(
+				new Set(rows.flatMap((row) => (row.parentId ? [row.parentId] : []))),
+			);
+			const [followingRows, parentRows] = await Promise.all([
+				followerOnlyAuthorIds.length > 0
+					? db
+							.select({ followingId: follow.followingId })
+							.from(follow)
+							.where(
+								and(
+									eq(follow.followerId, viewerId),
+									inArray(follow.followingId, followerOnlyAuthorIds),
+								),
+							)
+					: Promise.resolve([]),
+				parentIds.length > 0
+					? db
+							.select({
+								authorName: user.name,
+								content: comment.content,
+								id: comment.id,
+							})
+							.from(comment)
+							.innerJoin(user, eq(comment.userId, user.id))
+							.where(inArray(comment.id, parentIds))
+					: Promise.resolve([]),
+			]);
+			const followingSet = new Set(followingRows.map((row) => row.followingId));
+			const parentById = new Map(parentRows.map((row) => [row.id, row]));
+
+			return rows.map((row) => {
+				const canOpenNote =
+					row.noteStatus !== "hidden" &&
+					(row.noteAuthorId === viewerId ||
+						(row.noteStatus === "published" &&
+							(row.noteVisibility === "public" ||
+								(row.noteVisibility === "followers" &&
+									followingSet.has(row.noteAuthorId)))));
+
+				return {
+					id: row.id,
+					content: row.content,
+					createdAt: row.createdAt,
+					noteId: row.noteId,
+					parentId: row.parentId,
+					replyToComment: row.parentId
+						? (parentById.get(row.parentId) ?? null)
+						: null,
+					canOpenNote,
+					notePreview: canOpenNote
+						? { cover: row.noteCover, title: row.noteTitle }
+						: null,
+				};
+			});
+		},
+	),
+
 	comments: publicProcedure.comments.handler(async ({ input, context }) => {
 		return listRootComments({
 			noteId: input.noteId,

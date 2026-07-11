@@ -6,6 +6,7 @@ export const MAX_PROFILE_WIDTH = 576;
 
 export const PROFILE_TABS = [
 	{ key: "notes", label: "笔记", icon: null },
+	{ key: "comments", label: "评论", icon: null },
 	{ key: "collections", label: "收藏", icon: null },
 	{ key: "liked", label: "赞过", icon: null },
 ] as const;

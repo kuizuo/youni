@@ -23,7 +23,14 @@ export const commentRepliesInput = z.object({
 	offset: z.number().int().min(0).default(0),
 });
 
+export const myCommentsInput = z.object({
+	limit: z.number().int().min(1).max(60).default(30),
+});
+
 export const commentsContract = {
+	myComments: procedure
+		.input(myCommentsInput)
+		.output(output<CommentsOutputs["myComments"]>()),
 	comments: procedure
 		.input(noteCommentsInput)
 		.output(output<CommentsOutputs["comments"]>()),

@@ -23,6 +23,15 @@ export function MeTabEmptyState({
 			<EmptyState title="还没有赞过" description="赞过的内容会显示在这里。" />
 		);
 	}
+	if (tab === "comments") {
+		return (
+			<EmptyState
+				icon="chatbubble-ellipses-outline"
+				title="还没有评论"
+				description="发表过的评论和回复会出现在这里。"
+			/>
+		);
+	}
 	return (
 		<EmptyState
 			icon="add-circle-outline"

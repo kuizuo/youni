@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MeEditProfileSheetHost } from "@/components/profile/me/edit-profile-sheet-host";
 import { MeTabEmptyState } from "@/components/profile/me/empty-state";
 import { MeStickyChrome } from "@/components/profile/me/sticky-chrome";
+import { MeCommentsTab } from "@/components/profile/me-comments-tab";
 import { MeProfileHeader } from "@/components/profile/me-profile-header";
 import {
 	createProfileFeedItems,
@@ -78,8 +79,15 @@ export default function MeScreen() {
 		}),
 		enabled: isAuthenticated && activeTab === "liked",
 	});
-	const feedQueries = {
+	const commentsFeed = useQuery({
+		...orpc.myComments.queryOptions({
+			input: { limit: PROFILE_FEED_LIMIT },
+		}),
+		enabled: isAuthenticated && activeTab === "comments",
+	});
+	const tabQueries = {
 		collections: collectionsFeed,
+		comments: commentsFeed,
 		liked: likedFeed,
 		notes: notesFeed,
 	};
@@ -112,7 +120,7 @@ export default function MeScreen() {
 		360,
 		dimensions.height - topChromeHeight - PROFILE_TAB_BAR_HEIGHT,
 	);
-	const activeFeed = feedQueries[activeTab];
+	const activeFeed = tabQueries[activeTab];
 
 	const signOut = () => {
 		authClient.signOut();
@@ -176,7 +184,7 @@ export default function MeScreen() {
 			setIsManuallyRefreshing(true);
 		}
 		try {
-			await Promise.all([profileQuery.refetch(), feedQueries[tab].refetch()]);
+			await Promise.all([profileQuery.refetch(), tabQueries[tab].refetch()]);
 		} finally {
 			if (showRefreshControl) {
 				setIsManuallyRefreshing(false);
@@ -266,18 +274,37 @@ export default function MeScreen() {
 			>
 				{PROFILE_TABS.map((tab) => (
 					<ProfileTabPane key={tab.key}>
-						<ProfileTabPage
-							emptyState={
-								<MeTabEmptyState tab={tab.key} onCreate={openCreate} />
-							}
-							feedItems={feedItemsByTab[tab.key]}
-							isError={feedQueries[tab.key].isError || profileQuery.isError}
-							isLoading={feedQueries[tab.key].isLoading}
-							width={contentWidth}
-							onRetry={() => {
-								void refreshTab(tab.key, { showRefreshControl: false });
-							}}
-						/>
+						{tab.key === "comments" ? (
+							<MeCommentsTab
+								authorImage={avatarImage}
+								authorName={displayName}
+								comments={commentsFeed.data ?? []}
+								isError={commentsFeed.isError || profileQuery.isError}
+								isLoading={commentsFeed.isLoading}
+								width={contentWidth}
+								onDeleted={async () => {
+									await queryClient.invalidateQueries();
+								}}
+								onRetry={() => {
+									void refreshTab("comments", {
+										showRefreshControl: false,
+									});
+								}}
+							/>
+						) : (
+							<ProfileTabPage
+								emptyState={
+									<MeTabEmptyState tab={tab.key} onCreate={openCreate} />
+								}
+								feedItems={feedItemsByTab[tab.key]}
+								isError={tabQueries[tab.key].isError || profileQuery.isError}
+								isLoading={tabQueries[tab.key].isLoading}
+								width={contentWidth}
+								onRetry={() => {
+									void refreshTab(tab.key, { showRefreshControl: false });
+								}}
+							/>
+						)}
 					</ProfileTabPane>
 				))}
 			</ProfileCollapsibleTabs>
