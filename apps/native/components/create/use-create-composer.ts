@@ -4,43 +4,55 @@ import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { Platform } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Platform } from "react-native";
 
-import { authClient } from "@/lib/auth-client";
+import type {
+	AdvancedOptions,
+	ComposerImage,
+	ComposerSnapshot,
+	NoteVisibility,
+	PublishSubmitMode,
+} from "@/components/create/create-types";
 import {
-	type NoteImageUploadAsset,
-	uploadNoteImages,
-} from "@/lib/note-image-upload";
+	clearDraftRecovery,
+	consumeDraftRecovery,
+	setDraftRecovery,
+} from "@/components/create/draft-recovery";
+import { authClient } from "@/lib/auth-client";
+import { uploadNoteImages } from "@/lib/note-image-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
-type NoteVisibility = "followers" | "private" | "public";
-type PublishSubmitMode = "draft" | "publish";
-export type ComposerImage = {
-	asset?: NoteImageUploadAsset;
-	fileName?: null | string;
-	fileSize?: null | number;
-	height?: number;
-	id: string;
-	isEdited?: boolean;
-	mimeType?: null | string;
-	originalUri?: string;
-	remoteUrl?: string;
-	uri: string;
-	width?: number;
-};
-type AdvancedOptions = {
-	allowComment: boolean;
-	allowShare: boolean;
-};
-
 const DEFAULT_ADVANCED_OPTIONS: AdvancedOptions = {
 	allowComment: true,
 	allowShare: true,
 };
+
+function composerSignature(
+	composer: Pick<
+		ComposerSnapshot,
+		"advancedOptions" | "content" | "images" | "title" | "topics" | "visibility"
+	>,
+) {
+	return JSON.stringify({
+		advancedOptions: composer.advancedOptions,
+		content: composer.content,
+		images: composer.images.map((image) => ({
+			height: image.height,
+			id: image.id,
+			isEdited: image.isEdited,
+			remoteUrl: image.remoteUrl,
+			uri: image.uri,
+			width: image.width,
+		})),
+		title: composer.title,
+		topics: composer.topics,
+		visibility: composer.visibility,
+	});
+}
 
 function extractTopicsFromContent(value: string) {
 	const topics = new Set<string>();
@@ -134,6 +146,7 @@ export function useCreateComposer({
 	const params = useLocalSearchParams<{
 		draftId?: string | string[];
 		noteId?: string | string[];
+		recoverDraft?: string | string[];
 	}>();
 	const session = authClient.useSession();
 	const { toast } = useAppToast();
@@ -149,13 +162,21 @@ export function useCreateComposer({
 	const [pendingSubmitMode, setPendingSubmitMode] =
 		useState<PublishSubmitMode | null>(null);
 	const [isAddingImages, setIsAddingImages] = useState(false);
+	const [isOptimisticDraftSaving, setIsOptimisticDraftSaving] = useState(false);
 	const [isUploadingImages, setIsUploadingImages] = useState(false);
 	const [hydratedDraftId, setHydratedDraftId] = useState<null | string>(null);
 	const [hydratedNoteId, setHydratedNoteId] = useState<null | string>(null);
+	const draftBaselineRef = useRef<null | string>(null);
+	const recoveredDraftRef = useRef(false);
+	const optimisticDraftSaveRef = useRef<ComposerSnapshot | null>(null);
 	const rawDraftId = params.draftId;
 	const rawNoteId = params.noteId;
+	const rawRecoverDraft = params.recoverDraft;
 	const draftId = Array.isArray(rawDraftId) ? rawDraftId[0] : rawDraftId;
 	const noteId = Array.isArray(rawNoteId) ? rawNoteId[0] : rawNoteId;
+	const shouldRecoverDraft = Array.isArray(rawRecoverDraft)
+		? rawRecoverDraft[0] === "1"
+		: rawRecoverDraft === "1";
 	const isEditingDraft = Boolean(draftId);
 	const isEditingNote = Boolean(noteId && !draftId);
 	const isAuthenticated = Boolean(session.data?.user) || hasAuthenticated;
@@ -177,6 +198,31 @@ export function useCreateComposer({
 		[content, images.length, title, topics.length],
 	);
 	const canPublish = missingItems.length === 0;
+	const hasSavableContent =
+		title.trim().length > 0 || content.trim().length > 0 || images.length > 0;
+	const hasUnsavedChanges =
+		hasSavableContent ||
+		topics.length > 0 ||
+		visibility !== "public" ||
+		advancedOptions.allowComment !== DEFAULT_ADVANCED_OPTIONS.allowComment ||
+		advancedOptions.allowShare !== DEFAULT_ADVANCED_OPTIONS.allowShare;
+	const currentComposerSignature = useMemo(
+		() =>
+			composerSignature({
+				advancedOptions,
+				content,
+				images,
+				title,
+				topics,
+				visibility,
+			}),
+		[advancedOptions, content, images, title, topics, visibility],
+	);
+	const hasDraftChanges =
+		isEditingDraft &&
+		(recoveredDraftRef.current ||
+			(draftBaselineRef.current !== null &&
+				draftBaselineRef.current !== currentComposerSignature));
 	const visibilityLabel =
 		visibility === "public"
 			? "公开可见"
@@ -196,6 +242,8 @@ export function useCreateComposer({
 		}),
 		enabled: Boolean(isEditingNote && noteId && isAuthenticated),
 	});
+	const draftsOptions = orpc.drafts.queryOptions();
+	const creatorStatsOptions = orpc.creatorStats.queryOptions();
 
 	const resetForm = () => {
 		setTitle("");
@@ -206,17 +254,84 @@ export function useCreateComposer({
 		setAdvancedOptions(DEFAULT_ADVANCED_OPTIONS);
 		setHydratedDraftId(null);
 		setHydratedNoteId(null);
+		draftBaselineRef.current = null;
+		recoveredDraftRef.current = false;
+	};
+
+	const snapshotComposer = (): ComposerSnapshot => ({
+		advancedOptions: { ...advancedOptions },
+		content,
+		draftId,
+		images: images.map((image) => ({
+			...image,
+			asset: image.asset ? { ...image.asset } : undefined,
+		})),
+		title,
+		topics: [...topics],
+		visibility,
+	});
+
+	const invalidateDraftData = async () => {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: draftsOptions.queryKey }),
+			queryClient.invalidateQueries({ queryKey: creatorStatsOptions.queryKey }),
+		]);
+	};
+
+	const finishOptimisticDraftSave = async () => {
+		const completedSnapshot = optimisticDraftSaveRef.current;
+		optimisticDraftSaveRef.current = null;
+		if (completedSnapshot) clearDraftRecovery(completedSnapshot);
+		setIsOptimisticDraftSaving(false);
+		await invalidateDraftData();
+	};
+
+	const failOptimisticDraftSave = (_error: unknown) => {
+		const optimisticSave = optimisticDraftSaveRef.current;
+		if (!optimisticSave) return;
+
+		optimisticDraftSaveRef.current = null;
+		setIsOptimisticDraftSaving(false);
+		setPendingSubmitMode(null);
+
+		toast.show({
+			actionLabel: "重新编辑",
+			id: "draft-save-status",
+			label: "草稿保存失败",
+			onActionPress: ({ hide }) => {
+				hide();
+				setDraftRecovery(optimisticSave);
+				router.push({
+					pathname: "/publish",
+					params: {
+						...(optimisticSave.draftId
+							? { draftId: optimisticSave.draftId }
+							: {}),
+						recoverDraft: "1",
+					},
+				} as unknown as Href);
+			},
+			variant: "danger",
+		});
+		void invalidateDraftData();
 	};
 
 	const createMutation = useMutation(
 		orpc.create.mutationOptions({
 			onSuccess: async (result, variables) => {
+				if (variables.submitMode === "draft") {
+					await finishOptimisticDraftSave();
+					return;
+				}
 				resetForm();
 				await queryClient.invalidateQueries();
-				const isDraft = variables.submitMode === "draft";
-				router.replace((isDraft ? "/me" : `/note/${result.id}`) as Href);
+				router.replace(`/note/${result.id}` as Href);
 			},
-			onError: (error) => {
+			onError: (error, variables) => {
+				if (variables.submitMode === "draft") {
+					failOptimisticDraftSave(error);
+					return;
+				}
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
@@ -231,12 +346,19 @@ export function useCreateComposer({
 	const updateDraftMutation = useMutation(
 		orpc.updateDraft.mutationOptions({
 			onSuccess: async (result, variables) => {
+				if (variables.submitMode === "draft") {
+					await finishOptimisticDraftSave();
+					return;
+				}
 				resetForm();
 				await queryClient.invalidateQueries();
-				const isDraft = variables.submitMode === "draft";
-				router.replace((isDraft ? "/drafts" : `/note/${result.id}`) as Href);
+				router.replace(`/note/${result.id}` as Href);
 			},
-			onError: (error) => {
+			onError: (error, variables) => {
+				if (variables.submitMode === "draft") {
+					failOptimisticDraftSave(error);
+					return;
+				}
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
@@ -269,51 +391,76 @@ export function useCreateComposer({
 	);
 
 	useEffect(() => {
-		if (!draftId || !draftQuery.data || hydratedDraftId === draftId) return;
-		setTitle(draftQuery.data.title ?? "");
-		const draftContent = draftQuery.data.content ?? "";
-		setContent(draftContent);
-		setImages(
-			(draftQuery.data.images ?? []).map((url) => {
-				const meta = (draftQuery.data.imageMetas ?? []).find(
-					(item) => item.url === url,
-				);
-				return {
-					height: meta?.height,
-					id: url,
-					originalUri: url,
-					remoteUrl: url,
-					uri: url,
-					width: meta?.width,
-				};
-			}),
-		);
-		setTopics(
-			mergeTopics(
-				draftQuery.data.topics ?? [],
-				extractTopicsFromContent(draftContent),
-			),
-		);
-		setVisibility(draftQuery.data.visibility ?? "public");
-		setAdvancedOptions({
-			allowComment:
-				draftQuery.data.advancedOptions.allowComment ??
-				DEFAULT_ADVANCED_OPTIONS.allowComment,
-			allowShare:
-				draftQuery.data.advancedOptions.allowShare ??
-				DEFAULT_ADVANCED_OPTIONS.allowShare,
-		});
-		setHydratedDraftId(draftId);
-	}, [draftId, draftQuery.data, hydratedDraftId]);
+		if (!shouldRecoverDraft) return;
+		const snapshot = consumeDraftRecovery();
+		if (!snapshot) return;
+
+		setTitle(snapshot.title);
+		setContent(snapshot.content);
+		setImages(snapshot.images);
+		setTopics(snapshot.topics);
+		setVisibility(snapshot.visibility);
+		setAdvancedOptions(snapshot.advancedOptions);
+		setHydratedDraftId(snapshot.draftId ?? null);
+		draftBaselineRef.current = null;
+		recoveredDraftRef.current = Boolean(snapshot.draftId);
+	}, [shouldRecoverDraft]);
 
 	useEffect(() => {
-		if (!noteId || !editNoteQuery.data || hydratedNoteId === noteId) return;
-		setTitle(editNoteQuery.data.title ?? "");
-		const noteContent = editNoteQuery.data.content ?? "";
+		if (shouldRecoverDraft) return;
+		const draft = draftQuery.data;
+		if (!draftId || !draft || hydratedDraftId === draftId) return;
+		setTitle(draft.title ?? "");
+		const draftContent = draft.content ?? "";
+		setContent(draftContent);
+		const draftImages = (draft.images ?? []).map((url) => {
+			const meta = (draft.imageMetas ?? []).find((item) => item.url === url);
+			return {
+				height: meta?.height,
+				id: url,
+				originalUri: url,
+				remoteUrl: url,
+				uri: url,
+				width: meta?.width,
+			};
+		});
+		const draftTopics = mergeTopics(
+			draft.topics ?? [],
+			extractTopicsFromContent(draftContent),
+		);
+		const draftVisibility = draft.visibility ?? "public";
+		const draftAdvancedOptions = {
+			allowComment:
+				draft.advancedOptions.allowComment ??
+				DEFAULT_ADVANCED_OPTIONS.allowComment,
+			allowShare:
+				draft.advancedOptions.allowShare ?? DEFAULT_ADVANCED_OPTIONS.allowShare,
+		};
+		setImages(draftImages);
+		setTopics(draftTopics);
+		setVisibility(draftVisibility);
+		setAdvancedOptions(draftAdvancedOptions);
+		setHydratedDraftId(draftId);
+		draftBaselineRef.current = composerSignature({
+			advancedOptions: draftAdvancedOptions,
+			content: draftContent,
+			images: draftImages,
+			title: draft.title ?? "",
+			topics: draftTopics,
+			visibility: draftVisibility,
+		});
+		recoveredDraftRef.current = false;
+	}, [draftId, draftQuery.data, hydratedDraftId, shouldRecoverDraft]);
+
+	useEffect(() => {
+		const editableNote = editNoteQuery.data;
+		if (!noteId || !editableNote || hydratedNoteId === noteId) return;
+		setTitle(editableNote.title ?? "");
+		const noteContent = editableNote.content ?? "";
 		setContent(noteContent);
 		setImages(
-			(editNoteQuery.data.images ?? []).map((url) => {
-				const meta = (editNoteQuery.data.imageMetas ?? []).find(
+			(editableNote.images ?? []).map((url) => {
+				const meta = (editableNote.imageMetas ?? []).find(
 					(item) => item.url === url,
 				);
 				return {
@@ -328,17 +475,17 @@ export function useCreateComposer({
 		);
 		setTopics(
 			mergeTopics(
-				editNoteQuery.data.topics ?? [],
+				editableNote.topics ?? [],
 				extractTopicsFromContent(noteContent),
 			),
 		);
-		setVisibility(editNoteQuery.data.visibility ?? "public");
+		setVisibility(editableNote.visibility ?? "public");
 		setAdvancedOptions({
 			allowComment:
-				editNoteQuery.data.advancedOptions.allowComment ??
+				editableNote.advancedOptions.allowComment ??
 				DEFAULT_ADVANCED_OPTIONS.allowComment,
 			allowShare:
-				editNoteQuery.data.advancedOptions.allowShare ??
+				editableNote.advancedOptions.allowShare ??
 				DEFAULT_ADVANCED_OPTIONS.allowShare,
 		});
 		setHydratedNoteId(noteId);
@@ -352,22 +499,25 @@ export function useCreateComposer({
 				: [];
 		});
 
-	const uploadLocalImages = async () => {
-		const localAssets = images.flatMap((image) =>
+	const uploadLocalImages = async (
+		composerImages: ComposerImage[],
+		trackComposerState: boolean,
+	) => {
+		const localAssets = composerImages.flatMap((image) =>
 			image.asset ? [image.asset] : [],
 		);
 		if (localAssets.length === 0) {
 			return {
-				imageMetas: imageMetasFrom(images),
-				images: images.map((image) => image.remoteUrl ?? image.uri),
+				imageMetas: imageMetasFrom(composerImages),
+				images: composerImages.map((image) => image.remoteUrl ?? image.uri),
 			};
 		}
 
-		setIsUploadingImages(true);
+		if (trackComposerState) setIsUploadingImages(true);
 		try {
 			const uploaded = await uploadNoteImages(localAssets);
 			let uploadedIndex = 0;
-			const nextImages = images.map((image) => {
+			const nextImages = composerImages.map((image) => {
 				if (!image.asset) return image;
 				const item = uploaded[uploadedIndex];
 				uploadedIndex += 1;
@@ -383,27 +533,38 @@ export function useCreateComposer({
 					width: image.width,
 				};
 			});
-			setImages(nextImages);
+			if (trackComposerState) setImages(nextImages);
 			return {
 				imageMetas: imageMetasFrom(nextImages),
 				images: nextImages.map((image) => image.remoteUrl ?? image.uri),
 			};
 		} finally {
-			setIsUploadingImages(false);
+			if (trackComposerState) setIsUploadingImages(false);
 		}
 	};
 
-	const buildPayload = async (submitMode: PublishSubmitMode) => {
-		const uploadedImages = await uploadLocalImages();
-		return {
-			title: title.trim(),
-			content: content.trim(),
-			...uploadedImages,
-			topics,
-			locationName: undefined,
-			visibility,
-			components: [],
+	const buildPayload = async (
+		submitMode: PublishSubmitMode,
+		snapshot?: ComposerSnapshot,
+	) => {
+		const source = snapshot ?? {
 			advancedOptions,
+			content,
+			images,
+			title,
+			topics,
+			visibility,
+		};
+		const uploadedImages = await uploadLocalImages(source.images, !snapshot);
+		return {
+			title: source.title.trim(),
+			content: source.content.trim(),
+			...uploadedImages,
+			topics: source.topics,
+			locationName: undefined,
+			visibility: source.visibility,
+			components: [],
+			advancedOptions: source.advancedOptions,
 			submitMode,
 		};
 	};
@@ -412,11 +573,15 @@ export function useCreateComposer({
 		updateDraftMutation.isPending ||
 		updateNoteMutation.isPending ||
 		isAddingImages ||
+		isOptimisticDraftSaving ||
 		isUploadingImages;
 
-	const submitNote = async (submitMode: PublishSubmitMode) => {
+	const submitNote = async (
+		submitMode: PublishSubmitMode,
+		snapshot?: ComposerSnapshot,
+	) => {
 		try {
-			const payload = await buildPayload(submitMode);
+			const payload = await buildPayload(submitMode, snapshot);
 			if (isEditingNote && noteId) {
 				updateNoteMutation.mutate({
 					id: noteId,
@@ -438,6 +603,10 @@ export function useCreateComposer({
 			}
 			createMutation.mutate(payload);
 		} catch (error) {
+			if (submitMode === "draft" && optimisticDraftSaveRef.current) {
+				failOptimisticDraftSave(error);
+				return;
+			}
 			if (isRequestTimeoutError(error)) return;
 			setPendingSubmitMode(null);
 			toast.show({
@@ -447,17 +616,58 @@ export function useCreateComposer({
 		}
 	};
 
-	const goBack = () => {
-		fireHaptic();
+	const leaveComposer = () => {
 		if (onRequestClose) {
 			onRequestClose();
 			return;
 		}
-		if (isEditingNote && noteId) {
-			router.replace(`/note/${noteId}` as Href);
+		if (router.canGoBack()) {
+			router.back();
 			return;
 		}
-		router.replace((draftId ? "/drafts" : "/") as Href);
+		router.replace("/" as Href);
+	};
+
+	const goBack = () => {
+		fireHaptic();
+		if (hasDraftChanges) {
+			Alert.alert("放弃草稿修改？", "当前修改还没有保存，返回后将会丢失。", [
+				{ style: "cancel", text: "继续编辑" },
+				{
+					onPress: leaveComposer,
+					style: "destructive",
+					text: "放弃并返回",
+				},
+			]);
+			return;
+		}
+		leaveComposer();
+	};
+
+	const goToDrafts = () => {
+		resetForm();
+		if (onRequestClose) {
+			router.push("/drafts" as Href);
+			return;
+		}
+		router.replace("/drafts" as Href);
+	};
+
+	const openDrafts = () => {
+		fireHaptic();
+		if (!hasUnsavedChanges) {
+			goToDrafts();
+			return;
+		}
+
+		Alert.alert("打开我的草稿？", "当前未保存的内容会丢失。", [
+			{ style: "cancel", text: "取消" },
+			{
+				onPress: goToDrafts,
+				style: "destructive",
+				text: "放弃并打开",
+			},
+		]);
 	};
 
 	const addImage = async () => {
@@ -559,8 +769,28 @@ export function useCreateComposer({
 			});
 			return;
 		}
-		setPendingSubmitMode("draft");
-		void submitNote("draft");
+		if (!hasSavableContent) {
+			toast.show({
+				variant: "warning",
+				label: "还没有可保存的内容",
+			});
+			return;
+		}
+
+		const snapshot = snapshotComposer();
+		setIsOptimisticDraftSaving(true);
+		clearDraftRecovery();
+		setDraftRecovery(snapshot);
+		optimisticDraftSaveRef.current = snapshot;
+
+		toast.show({
+			id: "draft-save-status",
+			label: "已存入草稿",
+			variant: "success",
+		});
+		void submitNote("draft", snapshot);
+		resetForm();
+		leaveComposer();
 	};
 
 	const publish = () => {
@@ -626,12 +856,16 @@ export function useCreateComposer({
 		isEditingDraft,
 		isEditingNote,
 		isLoadingExistingContent:
-			(isEditingDraft && (draftQuery.isLoading || !draftQuery.data)) ||
+			(isEditingDraft &&
+				!shouldRecoverDraft &&
+				(draftQuery.isLoading || !draftQuery.data)) ||
 			(isEditingNote && (editNoteQuery.isLoading || !editNoteQuery.data)),
-		loadExistingContentError: draftQuery.isError || editNoteQuery.isError,
+		loadExistingContentError:
+			(!shouldRecoverDraft && draftQuery.isError) || editNoteQuery.isError,
 		isSubmitting,
 		isUploadingImages,
 		pendingSubmitMode,
+		openDrafts,
 		publish,
 		removeImage,
 		saveDraft,

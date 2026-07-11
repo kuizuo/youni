@@ -5,7 +5,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ContentEditor } from "@/components/create/content-editor";
 import { CreateHeader } from "@/components/create/create-header";
-import type { InlineTrigger } from "@/components/create/create-types";
+import type {
+	ComposerImage,
+	InlineTrigger,
+} from "@/components/create/create-types";
 import { findInlineTrigger } from "@/components/create/inline-trigger";
 import { MediaStrip } from "@/components/create/media-strip";
 import { PublishingOptions } from "@/components/create/publishing-options";
@@ -17,7 +20,7 @@ import { isGifImage } from "@/utils/media";
 import { AdvancedOptionsSheet } from "./create-sheets";
 import { ImageEditor } from "./image-editor";
 import type { TextSelection } from "./linked-composer-input";
-import { type ComposerImage, useCreateComposer } from "./use-create-composer";
+import { useCreateComposer } from "./use-create-composer";
 
 type CreateScreenProps = {
 	onRequestClose?: () => void;
@@ -126,7 +129,12 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 			className="flex-1 bg-background"
 		>
 			<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-				<CreateHeader mutedColor={mutedColor} onBack={composer.goBack} />
+				<CreateHeader
+					mutedColor={mutedColor}
+					onBack={composer.goBack}
+					onOpenDrafts={composer.openDrafts}
+					showDrafts={!composer.isEditingDraft && !composer.isEditingNote}
+				/>
 
 				<ScrollView
 					contentInsetAdjustmentBehavior="automatic"

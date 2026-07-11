@@ -15,7 +15,7 @@ import { View } from "react-native";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
-export type AppToastOptions = Omit<ToastShowConfig, "description" | "icon"> & {
+export type AppToastOptions = Omit<ToastShowConfig, "icon"> & {
 	iconName?: IconName;
 };
 
@@ -51,6 +51,7 @@ function AppToastContent({
 	props: ToastComponentProps;
 }) {
 	const variant = options.variant ?? "default";
+	const hasDescription = Boolean(options.description);
 	const iconColor = useThemeColor(
 		variant === "default" ? "muted" : `${variant}-soft-foreground`,
 	);
@@ -70,7 +71,10 @@ function AppToastContent({
 			placement={options.placement}
 			isSwipeable={options.isSwipeable}
 			animation={options.animation}
-			className="flex-row items-start gap-3 overflow-hidden border border-border-secondary bg-surface px-4 py-3"
+			className={cn(
+				"flex-row gap-3 overflow-hidden border border-border-secondary bg-surface px-4 py-3",
+				hasDescription ? "items-start" : "items-center",
+			)}
 		>
 			<View
 				className={cn(
@@ -80,15 +84,26 @@ function AppToastContent({
 			/>
 			<View
 				className={cn(
-					"mt-0.5 size-9 items-center justify-center rounded-full",
+					"size-9 items-center justify-center rounded-full",
+					hasDescription && "mt-0.5",
 					TOAST_ICON_BACKGROUND_CLASS_BY_VARIANT[variant],
 				)}
 			>
 				<Ionicons name={iconName} size={20} color={iconColor} />
 			</View>
-			<View className="min-w-0 flex-1 gap-0.5">
+			<View
+				className={cn(
+					"min-w-0 flex-1 gap-0.5",
+					!hasDescription && "justify-center",
+				)}
+			>
 				{options.label ? (
 					<Toast.Title className="pr-1">{options.label}</Toast.Title>
+				) : null}
+				{options.description ? (
+					<Toast.Description className="pr-1">
+						{options.description}
+					</Toast.Description>
 				) : null}
 			</View>
 			{options.actionLabel ? (
@@ -96,7 +111,7 @@ function AppToastContent({
 					{options.actionLabel}
 				</Toast.Action>
 			) : (
-				<Toast.Close className="-mt-1 -mr-2" />
+				<Toast.Close className={cn("-mr-2", hasDescription && "-mt-1")} />
 			)}
 		</Toast>
 	);

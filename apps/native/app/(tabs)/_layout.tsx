@@ -4,18 +4,19 @@ import { useThemeColor } from "heroui-native";
 import { Platform } from "react-native";
 
 import { FloatingTabBar } from "@/components/navigation/floating-tab-bar";
+import { shouldShowTabBar } from "@/lib/config/tab-bar-visibility";
 import { TABS } from "@/lib/config/tabs";
 
 export default function TabsLayout() {
 	const accentColor = useThemeColor("accent-soft-foreground");
 	const mutedColor = useThemeColor("muted");
 	const pathname = usePathname();
-	const isPublishRoute = pathname === "/create";
+	const showTabBar = shouldShowTabBar(pathname);
 
 	if (Platform.OS === "ios") {
 		return (
 			<NativeTabs
-				hidden={isPublishRoute}
+				hidden={!showTabBar}
 				iconColor={mutedColor}
 				minimizeBehavior="onScrollDown"
 				tintColor={accentColor}
@@ -42,8 +43,7 @@ export default function TabsLayout() {
 				tabBarStyle: { display: "none" },
 			}}
 			tabBar={(props) => {
-				const activeRoute = props.state.routes[props.state.index];
-				if (activeRoute?.name === "create") {
+				if (!showTabBar) {
 					return null;
 				}
 				return <FloatingTabBar {...props} />;

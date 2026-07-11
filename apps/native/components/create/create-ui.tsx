@@ -5,7 +5,7 @@ import { Image, View } from "react-native";
 
 import { AppSeparator } from "@/components/shared/app-separator";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
-import type { ComposerImage } from "./use-create-composer";
+import type { ComposerImage } from "./create-types";
 
 export type IoniconName = keyof typeof Ionicons.glyphMap;
 

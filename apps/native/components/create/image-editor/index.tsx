@@ -22,7 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
-import type { ComposerImage } from "../use-create-composer";
+import type { ComposerImage } from "../create-types";
 import { EditorCanvas } from "./editor-canvas";
 import { EditorBottomControls, EditorTopBar } from "./editor-controls";
 import { renderEditorExport } from "./export-renderer";

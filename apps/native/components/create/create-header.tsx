@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { PressableFeedback } from "heroui-native";
+import { Button, PressableFeedback } from "heroui-native";
 import { View } from "react-native";
 
 import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
@@ -7,12 +7,16 @@ import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
 export function CreateHeader({
 	mutedColor,
 	onBack,
+	onOpenDrafts,
+	showDrafts,
 }: {
 	mutedColor: string;
 	onBack: () => void;
+	onOpenDrafts: () => void;
+	showDrafts: boolean;
 }) {
 	return (
-		<View className="h-14 justify-center px-4">
+		<View className="h-14 flex-row items-center justify-between px-4">
 			<PressableFeedback
 				accessibilityLabel="返回"
 				accessibilityRole="button"
@@ -26,6 +30,18 @@ export function CreateHeader({
 					color={mutedColor}
 				/>
 			</PressableFeedback>
+			{showDrafts ? (
+				<Button
+					accessibilityLabel="打开我的草稿"
+					className="h-10 rounded-full px-3"
+					feedbackVariant="scale-ripple"
+					onPress={onOpenDrafts}
+					size="sm"
+					variant="ghost"
+				>
+					<Button.Label>草稿</Button.Label>
+				</Button>
+			) : null}
 		</View>
 	);
 }

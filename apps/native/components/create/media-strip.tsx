@@ -1,9 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { PressableFeedback } from "heroui-native";
 import { ScrollView } from "react-native";
-
+import type { ComposerImage } from "./create-types";
 import { MediaTile } from "./create-ui";
-import type { ComposerImage } from "./use-create-composer";
 
 export function MediaStrip({
 	images,
