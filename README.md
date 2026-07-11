@@ -57,7 +57,7 @@ cp apps/native/.env.example apps/native/.env
 | 文件 | 主要内容 |
 | --- | --- |
 | `packages/infra/.env` | Alchemy 加密密码、Cloudflare 账号 ID 和 API Token |
-| `apps/server/.env` | 服务地址、登录密钥、管理员邮箱、D1 数据库 ID，以及可选的 Google、邮件和 R2 配置 |
+| `apps/server/.env` | 服务地址、登录密钥、D1 数据库 ID，以及可选的 Google、邮件和 R2 配置 |
 | `apps/web/.env` | 管理后台连接的服务端地址 |
 | `apps/native/.env` | 用户端连接的服务端地址，以及可选的 Google 登录配置 |
 
@@ -83,7 +83,6 @@ openssl rand -base64 32
 
 补充说明：
 
-- `ADMIN_EMAILS` 用逗号分隔后台管理员邮箱。
 - Google 登录和 AI 能力需要填写对应的 Google 配置；不使用时可以留空。
 - `RESEND_API_KEY` 留空时，本地重置密码验证码会输出到服务端日志。
 - 真机调试时，`localhost` 指向手机自身，需要把用户端的服务地址改成电脑在局域网中的地址。
@@ -98,7 +97,15 @@ bun run db:migrate
 bun run db:seed
 ```
 
-`db:seed` 会写入本地体验所需的演示数据，可按需跳过。
+`db:seed` 会写入本地体验所需的演示数据。
+
+可使用以下账号登录：
+
+| 类型 | 邮箱 | 密码 |
+| --- | --- | --- |
+| 管理员 | `admin@youni.app` | `Admin123456` |
+| 测试账号1 | `test@youni.app` | `Demo123456` |
+| 测试账号2 | `momo@youni.app` | `Demo123456` |
 
 ### 4. 启动项目
 
@@ -123,25 +130,6 @@ bun run dev:server  # 启动 Cloudflare 本地环境、后台和服务端
 ```
 
 启动用户端后，可以用 Expo Go 扫码，或按终端提示在 iOS、Android 或浏览器中打开。
-
-## 常用命令
-
-| 命令 | 用途 |
-| --- | --- |
-| `bun run dev` | 启动完整开发环境 |
-| `bun run dev:native` | 只启动用户端 |
-| `bun run dev:web` | 只启动管理后台 |
-| `bun run dev:server` | 启动 Cloudflare 本地环境、后台和服务端 |
-| `bun run build` | 构建所有应用和共享包 |
-| `bun run check-types` | 检查类型问题 |
-| `bun run check` | 格式化并检查项目文件 |
-| `bun run db:generate` | 根据数据表变更生成迁移文件 |
-| `bun run db:migrate` | 执行数据库迁移 |
-| `bun run db:push` | 将当前数据表结构直接同步到 D1 |
-| `bun run db:seed` | 写入演示数据 |
-| `bun run db:studio` | 打开数据库管理界面 |
-| `bun run deploy` | 部署到 Cloudflare |
-| `bun run destroy` | 删除由本项目创建的 Cloudflare 资源 |
 
 ## 数据库变更
 
@@ -179,11 +167,6 @@ bun run deploy
 
 > `bun run destroy` 会删除项目管理的云端资源，仅在确定不再需要这些资源时使用。
 
-## 开发约定
+## 许可证
 
-- 统一使用 Bun，不要混用 npm、yarn 或 pnpm。
-- 用户端页面放在 `apps/native/app`，可复用界面放在 `apps/native/components`。
-- 管理后台页面放在 `apps/web/src/routes`。
-- 业务接口放在 `packages/api/src/routers`，登录配置统一放在 `packages/auth`。
-- 数据表先修改 `packages/db/src/schema`，再生成迁移文件。
-- 提交代码前至少运行 `bun run check-types` 和 `bun run check`。
+[Apache License 2.0](./LICENSE)
