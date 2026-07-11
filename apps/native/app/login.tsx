@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
 import { Stack, useRouter } from "expo-router";
-import { Button, Text, useThemeColor } from "heroui-native";
+import { Button, useThemeColor } from "heroui-native";
 import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -45,17 +45,10 @@ export default function LoginScreen() {
 				<View className="mx-auto w-full max-w-sm flex-1 justify-center gap-5 px-4">
 					<View className="items-center gap-3">
 						<YouniMark size={50} />
-						<View className="items-center gap-1.5">
+						<View className="items-center">
 							<AppHeading type="h1" align="center" className="text-foreground">
 								登录 Youni
 							</AppHeading>
-							<Text.Paragraph
-								color="muted"
-								align="center"
-								className="leading-6"
-							>
-								登录后可以发布、收藏、点赞、评论和查看消息。
-							</Text.Paragraph>
 						</View>
 					</View>
 

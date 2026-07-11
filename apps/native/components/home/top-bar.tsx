@@ -1,4 +1,4 @@
-import { PressableFeedback, Text } from "heroui-native";
+import { PressableFeedback, Typography } from "heroui-native";
 import { View } from "react-native";
 
 import {
@@ -54,13 +54,13 @@ function HomeTabButton({
 			style={{ height: APP_HEADER_HEIGHT }}
 			onPress={onPress}
 		>
-			<Text.Paragraph
+			<Typography.Paragraph
 				weight={isActive ? "bold" : "normal"}
 				className={isActive ? "text-foreground" : "text-muted"}
 				style={{ fontSize: APP_HEADER_TITLE_FONT_SIZE }}
 			>
 				{label}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 			<View
 				className={
 					isActive

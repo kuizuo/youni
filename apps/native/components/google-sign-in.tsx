@@ -1,7 +1,7 @@
 import type * as GoogleSignInNative from "@react-native-google-signin/google-signin";
 import { env } from "@youni/env/native";
 import Constants from "expo-constants";
-import { Text, useThemeColor } from "heroui-native";
+import { Typography, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
@@ -187,9 +187,9 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 				onPress={submit}
 			/>
 			{errorMessage ? (
-				<Text.Paragraph type="body-sm" style={{ color: dangerColor }}>
+				<Typography.Paragraph type="body-sm" style={{ color: dangerColor }}>
 					{errorMessage}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			) : null}
 		</View>
 	);

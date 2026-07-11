@@ -25,7 +25,7 @@ function AdminProfileRoute() {
 
 	if (profile.isLoading || !user) {
 		return (
-			<AdminPage title="个人主页" description="查看当前后台账号资料。">
+			<AdminPage title="个人主页">
 				<ProfileSkeleton />
 			</AdminPage>
 		);
@@ -47,7 +47,6 @@ function AdminProfileRoute() {
 	return (
 		<AdminPage
 			title="个人主页"
-			description="查看当前账号对外展示资料和后台身份。"
 			actions={
 				<Button
 					size="sm"

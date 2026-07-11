@@ -2,7 +2,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { Spinner, Text } from "heroui-native";
+import { Spinner, Typography } from "heroui-native";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
 
@@ -323,9 +323,9 @@ function PagingFooter({
 	if (!hasMore) {
 		return (
 			<View className="items-center py-5">
-				<Text.Paragraph type="body-xs" color="muted">
+				<Typography.Paragraph type="body-xs" color="muted">
 					没有更多了
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 		);
 	}

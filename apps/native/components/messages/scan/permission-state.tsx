@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Text } from "heroui-native";
+import { Button, Typography } from "heroui-native";
 import { View } from "react-native";
 
 export function CameraPermissionState({
@@ -12,9 +12,9 @@ export function CameraPermissionState({
 	return (
 		<View className="flex-1 items-center justify-center gap-4 bg-black px-8">
 			<Ionicons name="camera-outline" size={44} color="#ffffff" />
-			<Text.Paragraph align="center" style={{ color: "#ffffff" }}>
+			<Typography.Paragraph align="center" style={{ color: "#ffffff" }}>
 				需要相机权限才能扫一扫。
-			</Text.Paragraph>
+			</Typography.Paragraph>
 			<Button className="rounded-full" onPress={onRequestPermission}>
 				<Button.Label>允许相机权限</Button.Label>
 			</Button>

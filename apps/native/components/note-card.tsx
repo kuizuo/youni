@@ -4,7 +4,7 @@ import {
 	Avatar as HeroAvatar,
 	PressableFeedback,
 	Surface,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { Image } from "react-native";
@@ -99,9 +99,9 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 								size={32}
 								color={mutedColor}
 							/>
-							<Text.Paragraph type="body-xs" color="muted">
+							<Typography.Paragraph type="body-xs" color="muted">
 								暂无封面
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</Surface>
 					)}
 				</PressableFeedback>
@@ -139,14 +139,14 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 								{note.author.name.slice(0, 1)}
 							</HeroAvatar.Fallback>
 						</HeroAvatar>
-						<Text.Paragraph
+						<Typography.Paragraph
 							type={compact ? "body-xs" : "body-sm"}
 							color="muted"
 							numberOfLines={1}
 							className="min-w-0 flex-1 text-muted/90"
 						>
 							{note.author.name}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</PressableFeedback>
 
 					<PressableFeedback
@@ -161,13 +161,13 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 							size={18}
 							color={liked ? dangerColor : mutedColor}
 						/>
-						<Text.Paragraph
+						<Typography.Paragraph
 							type="body-xs"
 							weight={liked ? "semibold" : undefined}
 							style={{ color: liked ? dangerColor : mutedColor }}
 						>
 							{likedCount}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</PressableFeedback>
 				</Card.Footer>
 			</Card.Body>

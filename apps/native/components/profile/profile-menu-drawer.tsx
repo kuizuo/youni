@@ -1,7 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { Avatar, Button, Surface, Text, useThemeColor } from "heroui-native";
+import {
+	Avatar,
+	Button,
+	Surface,
+	Typography,
+	useThemeColor,
+} from "heroui-native";
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn, SlideInLeft } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -103,20 +109,20 @@ export function ProfileMenuDrawer({
 									<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
 								</Avatar>
 								<View className="min-w-0 flex-1">
-									<Text.Paragraph
+									<Typography.Paragraph
 										weight="bold"
 										numberOfLines={1}
 										style={{ lineHeight: 22 }}
 									>
 										{displayName}
-									</Text.Paragraph>
-									<Text.Paragraph
+									</Typography.Paragraph>
+									<Typography.Paragraph
 										type="body-sm"
 										color="muted"
 										numberOfLines={1}
 									>
 										{displayHandle}
-									</Text.Paragraph>
+									</Typography.Paragraph>
 								</View>
 							</View>
 
@@ -155,9 +161,9 @@ export function ProfileMenuDrawer({
 							</Button>
 							<View className="flex-row items-center gap-2 px-3 pt-1">
 								<YouniMark size={18} />
-								<Text.Paragraph type="body-xs" color="muted">
+								<Typography.Paragraph type="body-xs" color="muted">
 									Youni
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</View>
 						</View>
 					</Animated.View>
@@ -190,9 +196,9 @@ function AppearanceButton({
 			/>
 			<Button.Label>外观</Button.Label>
 			<View className="ml-auto rounded-full bg-content2 px-2 py-1">
-				<Text.Paragraph type="body-xs" color="muted">
+				<Typography.Paragraph type="body-xs" color="muted">
 					{isDark ? "深色" : "浅色"}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 		</Button>
 	);

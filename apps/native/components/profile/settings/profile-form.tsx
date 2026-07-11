@@ -6,9 +6,9 @@ import {
 	Label,
 	Spinner,
 	Surface,
-	Text,
 	TextArea,
 	TextField,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useEffect, useState } from "react";
@@ -118,7 +118,7 @@ export function SettingsProfileForm({
 		<Surface className="gap-4 rounded-3xl p-4">
 			<View className="flex-row items-center justify-between gap-3">
 				<View className="min-w-0 flex-1">
-					<Text.Paragraph weight="bold">编辑主页</Text.Paragraph>
+					<Typography.Paragraph weight="bold">编辑主页</Typography.Paragraph>
 				</View>
 				<EditableAvatar
 					alt={name || displayName}

@@ -35,7 +35,6 @@ export function ConnectionsEmptyState({
 		<EmptyState
 			icon="people-outline"
 			title={activeType === "following" ? "还没有关注" : "还没有粉丝"}
-			description="有新的关系后，会显示在这里。"
 		/>
 	);
 }

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Text, useThemeColor } from "heroui-native";
+import { Button, Typography, useThemeColor } from "heroui-native";
 import { Modal, Pressable, View } from "react-native";
 
 import { EditProfileSheet } from "@/components/profile/edit-profile-sheet";
@@ -44,9 +44,9 @@ export function MeEditProfileSheetHost({
 					style={{ backgroundColor }}
 				>
 					<View className="flex-row items-center justify-between border-separator border-b px-5 py-4">
-						<Text.Paragraph weight="bold" style={{ fontSize: 20 }}>
+						<Typography.Paragraph weight="bold" style={{ fontSize: 20 }}>
 							编辑资料
-						</Text.Paragraph>
+						</Typography.Paragraph>
 						<Button
 							accessibilityLabel="关闭"
 							className="rounded-full"

@@ -3,7 +3,7 @@ import {
 	Avatar,
 	Button,
 	PressableFeedback,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useMemo } from "react";
@@ -103,9 +103,9 @@ export function AuthorTopBar({
 						<Avatar.Fallback>{author.name.slice(0, 1)}</Avatar.Fallback>
 					</Avatar>
 					<View className="min-w-0 flex-1">
-						<Text.Paragraph weight="semibold" numberOfLines={1}>
+						<Typography.Paragraph weight="semibold" numberOfLines={1}>
 							{author.name}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
 				</PressableFeedback>
 				{isSelf ? (
@@ -157,9 +157,9 @@ export function ImageCarousel({
 				style={{ width: pageWidth, height: imageHeight }}
 			>
 				<Ionicons name="document-text-outline" size={34} color={mutedColor} />
-				<Text.Paragraph type="body-sm" color="muted">
+				<Typography.Paragraph type="body-sm" color="muted">
 					暂无封面
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 		);
 	}
@@ -238,21 +238,21 @@ export function NoteBody({
 								accessibilityLabel={`查看话题 ${topic}`}
 								onPress={() => onTopicPress(topic)}
 							>
-								<Text.Paragraph
+								<Typography.Paragraph
 									type="body-sm"
 									weight="semibold"
 									className="text-accent"
 								>
 									#{topic}
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</PressableFeedback>
 						))}
 					</View>
 				) : null}
 			</View>
-			<Text.Paragraph type="body-xs" color="muted">
+			<Typography.Paragraph type="body-xs" color="muted">
 				{formatRelativeTime(createdAt)}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</View>
 	);
 }
@@ -269,11 +269,11 @@ function LinkedText({
 	const tokens = useMemo(() => parseInlineTokens(value), [value]);
 
 	return (
-		<Text.Paragraph className="text-foreground leading-6">
+		<Typography.Paragraph className="text-foreground leading-6">
 			{tokens.map((token) => {
 				if (token.type === "mention") {
 					return (
-						<Text.Paragraph
+						<Typography.Paragraph
 							key={token.key}
 							accessibilityRole="link"
 							weight="semibold"
@@ -281,12 +281,12 @@ function LinkedText({
 							onPress={() => onMentionPress(token.value)}
 						>
 							{token.text}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					);
 				}
 				if (token.type === "topic") {
 					return (
-						<Text.Paragraph
+						<Typography.Paragraph
 							key={token.key}
 							accessibilityRole="link"
 							weight="semibold"
@@ -294,11 +294,11 @@ function LinkedText({
 							onPress={() => onTopicPress(token.value)}
 						>
 							{token.text}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					);
 				}
 				return token.text;
 			})}
-		</Text.Paragraph>
+		</Typography.Paragraph>
 	);
 }

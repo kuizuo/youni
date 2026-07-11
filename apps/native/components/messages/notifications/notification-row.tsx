@@ -1,5 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Avatar, PressableFeedback, Text, useThemeColor } from "heroui-native";
+import {
+	Avatar,
+	PressableFeedback,
+	Typography,
+	useThemeColor,
+} from "heroui-native";
 import { View } from "react-native";
 import ReanimatedSwipeable, {
 	type SwipeableMethods,
@@ -48,20 +53,24 @@ export function NotificationRow({
 							{item.isRead ? null : (
 								<View className="size-2 rounded-full bg-accent" />
 							)}
-							<Text.Paragraph
+							<Typography.Paragraph
 								weight="semibold"
 								numberOfLines={1}
 								className="min-w-0 flex-1 text-foreground"
 							>
 								{item.title}
-							</Text.Paragraph>
-							<Text.Paragraph type="body-xs" color="muted">
+							</Typography.Paragraph>
+							<Typography.Paragraph type="body-xs" color="muted">
 								{formatRelativeTime(item.createdAt)}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</View>
-						<Text.Paragraph type="body-sm" color="muted" numberOfLines={2}>
+						<Typography.Paragraph
+							type="body-sm"
+							color="muted"
+							numberOfLines={2}
+						>
 							{item.body}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
 				</View>
 			</PressableFeedback>
@@ -96,13 +105,13 @@ function SwipeDeleteAction({
 						size={21}
 						color={dangerForegroundColor}
 					/>
-					<Text.Paragraph
+					<Typography.Paragraph
 						type="body-xs"
 						weight="semibold"
 						style={{ color: dangerForegroundColor }}
 					>
 						删除
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</View>
 			</PressableFeedback>
 		</View>

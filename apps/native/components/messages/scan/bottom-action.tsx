@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Text } from "heroui-native";
+import { Typography } from "heroui-native";
 import { Pressable, View } from "react-native";
 
 export function ScanBottomAction({
@@ -20,9 +20,9 @@ export function ScanBottomAction({
 			<View className="size-16 items-center justify-center rounded-full bg-white/20">
 				<Ionicons name={icon} size={30} color="#ffffff" />
 			</View>
-			<Text.Paragraph weight="semibold" style={{ color: "#ffffff" }}>
+			<Typography.Paragraph weight="semibold" style={{ color: "#ffffff" }}>
 				{label}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</Pressable>
 	);
 }

@@ -127,7 +127,7 @@ export default function MessagesScreen() {
 							title={isAuthenticated ? "还没有私信" : "登录后查看私信"}
 							description={
 								isAuthenticated
-									? "去用户主页点击发私信，聊天会出现在这里。"
+									? undefined
 									: "登录后可以查看聊天记录和未读消息。"
 							}
 							actionLabel={isAuthenticated ? "去发现" : "去登录"}

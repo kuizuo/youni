@@ -181,7 +181,7 @@ function AdminSettingsRoute() {
 		: "暂无记录";
 
 	return (
-		<AdminPage title="设置" description="管理当前后台账号和权限信息。">
+		<AdminPage title="设置">
 			<form
 				className="mx-auto flex w-full max-w-5xl flex-col gap-4"
 				onSubmit={submitForm}

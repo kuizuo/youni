@@ -4,8 +4,8 @@ import {
 	Input,
 	Label,
 	Spinner,
-	Text,
 	TextField,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useState } from "react";
@@ -98,9 +98,9 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 	return (
 		<View className="gap-3 pt-3">
 			{errorMessage ? (
-				<Text.Paragraph type="body-sm" style={{ color: dangerColor }}>
+				<Typography.Paragraph type="body-sm" style={{ color: dangerColor }}>
 					{errorMessage}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			) : null}
 
 			<TextField>

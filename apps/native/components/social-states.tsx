@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Alert, Button, Skeleton, Text, useThemeColor } from "heroui-native";
+import {
+	Alert,
+	Button,
+	Skeleton,
+	Typography,
+	useThemeColor,
+} from "heroui-native";
 import { View } from "react-native";
 
 export function FeedSkeleton() {
@@ -40,7 +46,7 @@ export function EmptyState({
 	icon?: keyof typeof Ionicons.glyphMap;
 	iconColor?: string;
 	title: string;
-	description: string;
+	description?: string;
 	actionLabel?: string;
 	onAction?: () => void;
 }) {
@@ -51,12 +57,14 @@ export function EmptyState({
 			<View className="size-12 items-center justify-center">
 				<Ionicons name={icon} size={26} color={iconColor ?? accentColor} />
 			</View>
-			<Text.Paragraph align="center" weight="semibold">
+			<Typography.Paragraph align="center" weight="semibold">
 				{title}
-			</Text.Paragraph>
-			<Text.Paragraph align="center" color="muted" type="body-sm">
-				{description}
-			</Text.Paragraph>
+			</Typography.Paragraph>
+			{description ? (
+				<Typography.Paragraph align="center" color="muted" type="body-sm">
+					{description}
+				</Typography.Paragraph>
+			) : null}
 			{actionLabel && onAction ? (
 				<Button
 					size="sm"

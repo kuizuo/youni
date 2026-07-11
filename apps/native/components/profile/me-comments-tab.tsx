@@ -9,7 +9,7 @@ import {
 	BottomSheet,
 	ListGroup,
 	Skeleton,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useRef, useState } from "react";
@@ -187,72 +187,68 @@ export function MeCommentsTab({
 									<Avatar.Fallback>{authorName.slice(0, 1)}</Avatar.Fallback>
 								</Avatar>
 								<View className="min-w-0 flex-1 gap-2">
-									<Text.Paragraph
+									<Typography.Paragraph
 										numberOfLines={1}
 										type="body-sm"
 										weight="semibold"
 									>
 										{authorName}
-									</Text.Paragraph>
-									<Text.Paragraph
+									</Typography.Paragraph>
+									<Typography.Paragraph
 										numberOfLines={2}
 										className="text-foreground leading-5"
 									>
 										{comment.content}
-									</Text.Paragraph>
+									</Typography.Paragraph>
 									{comment.parentId ? (
 										<View className="gap-1 border-border-secondary border-l-2 pl-2.5">
 											{comment.replyToComment ? (
 												<>
-													<Text.Paragraph type="body-xs" color="muted">
+													<Typography.Paragraph type="body-xs" color="muted">
 														{comment.replyToComment.authorName}
-													</Text.Paragraph>
-													<Text.Paragraph
+													</Typography.Paragraph>
+													<Typography.Paragraph
 														numberOfLines={2}
 														type="body-sm"
 														color="muted"
 													>
 														{comment.replyToComment.content}
-													</Text.Paragraph>
+													</Typography.Paragraph>
 												</>
 											) : (
-												<Text.Paragraph type="body-xs" color="muted">
+												<Typography.Paragraph type="body-xs" color="muted">
 													原评论已删除
-												</Text.Paragraph>
+												</Typography.Paragraph>
 											)}
 										</View>
 									) : null}
 									{comment.canOpenNote && comment.notePreview ? (
 										<View className="min-w-0 flex-row items-center gap-1.5">
-											<Text.Paragraph type="body-xs" color="muted">
+											<Typography.Paragraph type="body-xs" color="muted">
 												来自图文 ·
-											</Text.Paragraph>
-											<Text.Paragraph
+											</Typography.Paragraph>
+											<Typography.Paragraph
 												numberOfLines={1}
 												type="body-xs"
 												className="min-w-0 flex-1"
 											>
 												{comment.notePreview.title}
-											</Text.Paragraph>
+											</Typography.Paragraph>
 										</View>
 									) : (
-										<Text.Paragraph type="body-xs" color="muted">
+										<Typography.Paragraph type="body-xs" color="muted">
 											来自图文 · 原图文已不可见
-										</Text.Paragraph>
+										</Typography.Paragraph>
 									)}
-									<Text.Paragraph type="body-xs" color="muted">
+									<Typography.Paragraph type="body-xs" color="muted">
 										{formatRelativeTime(comment.createdAt, "刚刚")}
-									</Text.Paragraph>
+									</Typography.Paragraph>
 								</View>
 							</Pressable>
 						</View>
 					))
 				) : (
-					<EmptyState
-						icon="chatbubble-ellipses-outline"
-						title="还没有评论"
-						description="发表过的评论和回复会出现在这里。"
-					/>
+					<EmptyState icon="chatbubble-ellipses-outline" title="还没有评论" />
 				)}
 			</View>
 

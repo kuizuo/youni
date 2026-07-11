@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Text, useThemeColor } from "heroui-native";
+import { Button, Typography, useThemeColor } from "heroui-native";
 import { ScrollView, View } from "react-native";
 
 import { AppSeparator } from "@/components/shared/app-separator";
@@ -37,9 +37,9 @@ export function SearchHome({
 			{recentWords.length > 0 ? (
 				<View className="gap-3">
 					<View className="flex-row items-center justify-between">
-						<Text.Paragraph weight="semibold" className="text-foreground">
+						<Typography.Paragraph weight="semibold" className="text-foreground">
 							历史记录
-						</Text.Paragraph>
+						</Typography.Paragraph>
 						{isEditingHistory ? (
 							<View className="flex-row items-center gap-3">
 								<Button
@@ -87,9 +87,9 @@ export function SearchHome({
 			) : null}
 
 			<View className="gap-3">
-				<Text.Paragraph weight="semibold" className="text-foreground">
+				<Typography.Paragraph weight="semibold" className="text-foreground">
 					推荐搜索
-				</Text.Paragraph>
+				</Typography.Paragraph>
 				<WordWrap words={quickWords} onPressWord={onPressWord} />
 			</View>
 		</ScrollView>
@@ -117,9 +117,9 @@ function WordWrap({
 						key={item}
 						className="h-10 flex-row items-center rounded-full border border-border bg-transparent pr-1 pl-4"
 					>
-						<Text.Paragraph numberOfLines={1} className="text-foreground">
+						<Typography.Paragraph numberOfLines={1} className="text-foreground">
 							{item}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 						<Button
 							isIconOnly
 							size="sm"

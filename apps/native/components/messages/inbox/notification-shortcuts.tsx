@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
-import { PressableFeedback, Text, useThemeColor } from "heroui-native";
+import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import type { NotificationIconColor } from "@/components/messages/notification-colors";
 import { NOTIFICATION_SHORTCUTS } from "./constants";
@@ -61,7 +61,7 @@ function NotificationShortcut({
 			<View className="size-8 items-center justify-center">
 				<Ionicons name={icon} size={21} color={resolvedIconColor} />
 			</View>
-			<Text.Paragraph
+			<Typography.Paragraph
 				type="body-sm"
 				weight="semibold"
 				align="center"
@@ -69,16 +69,16 @@ function NotificationShortcut({
 				className="text-foreground"
 			>
 				{title}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 			{unreadCount > 0 ? (
 				<View className="absolute top-1 right-4 min-w-5 items-center rounded-full bg-accent px-1.5 py-0.5">
-					<Text.Paragraph
+					<Typography.Paragraph
 						type="body-xs"
 						weight="semibold"
 						className="text-accent-foreground"
 					>
 						{unreadCount > 99 ? "99+" : unreadCount}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</View>
 			) : null}
 		</PressableFeedback>

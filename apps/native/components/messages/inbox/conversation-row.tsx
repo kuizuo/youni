@@ -1,5 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Avatar, PressableFeedback, Text, useThemeColor } from "heroui-native";
+import {
+	Avatar,
+	PressableFeedback,
+	Typography,
+	useThemeColor,
+} from "heroui-native";
 import { View } from "react-native";
 
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
@@ -33,33 +38,33 @@ export function ConversationRow({ item }: { item: ConversationItem }) {
 			</Avatar>
 			<View className="min-w-0 flex-1 gap-1">
 				<View className="flex-row items-center gap-2">
-					<Text.Paragraph
+					<Typography.Paragraph
 						weight="semibold"
 						className="min-w-0 flex-1 text-foreground"
 						numberOfLines={1}
 					>
 						{item.peer.name}
-					</Text.Paragraph>
-					<Text.Paragraph type="body-xs" color="muted">
+					</Typography.Paragraph>
+					<Typography.Paragraph type="body-xs" color="muted">
 						{formatRelativeTime(
 							item.lastMessage?.createdAt ?? item.updatedAt,
 							"暂无",
 						)}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</View>
-				<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
+				<Typography.Paragraph type="body-sm" color="muted" numberOfLines={1}>
 					{lastMessage}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 			{item.unreadCount > 0 ? (
 				<View className="min-w-6 items-center rounded-full bg-accent px-2 py-1">
-					<Text.Paragraph
+					<Typography.Paragraph
 						type="body-xs"
 						weight="semibold"
 						className="text-accent-foreground"
 					>
 						{item.unreadCount > 99 ? "99+" : item.unreadCount}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</View>
 			) : (
 				<Ionicons name="chevron-forward" size={18} color={mutedColor} />

@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { Button, Text, useThemeColor } from "heroui-native";
+import { Button, Typography, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -105,19 +105,19 @@ export default function ScanScreen() {
 										color="#ffffff"
 									/>
 								</Button>
-								<Text.Paragraph style={{ color: "#ffffff" }}>
+								<Typography.Paragraph style={{ color: "#ffffff" }}>
 									轻触照亮
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</View>
 						</ScanFrame>
-						<Text.Paragraph
+						<Typography.Paragraph
 							align="center"
 							weight="semibold"
 							className="pt-12"
 							style={{ color: "#ffffff" }}
 						>
 							请将二维码对准扫码框中心
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
 
 					<View className="flex-row items-center justify-around px-12">

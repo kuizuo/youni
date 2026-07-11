@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Text, useThemeColor } from "heroui-native";
+import { Button, Typography, useThemeColor } from "heroui-native";
 import type { RefObject } from "react";
 import { TextInput, View } from "react-native";
 import { EmojiKeyboard, type EmojiType } from "rn-emoji-keyboard";
@@ -51,13 +51,13 @@ export function ChatInputBar({
 		<View className="bg-background">
 			<AppSeparator />
 			{disabledReason ? (
-				<Text.Paragraph
+				<Typography.Paragraph
 					type="body-xs"
 					color="muted"
 					className="px-4 pt-3 text-center"
 				>
 					{disabledReason}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			) : null}
 			<View
 				className="flex-row items-end gap-2 px-3 pt-3"

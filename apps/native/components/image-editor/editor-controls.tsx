@@ -1,4 +1,4 @@
-import { Button, PressableFeedback, Spinner, Text } from "heroui-native";
+import { Button, PressableFeedback, Spinner, Typography } from "heroui-native";
 import { ScrollView, View } from "react-native";
 
 import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
@@ -382,12 +382,12 @@ function RatioButton({
 				isActive ? "bg-white" : "bg-white/10"
 			}`}
 		>
-			<Text.Paragraph
+			<Typography.Paragraph
 				type="body-xs"
 				className={isActive ? "text-black" : "text-white"}
 			>
 				{label}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</PressableFeedback>
 	);
 }

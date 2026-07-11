@@ -212,7 +212,6 @@ export default function NotificationListScreen() {
 							icon={config.emptyIcon}
 							iconColor={emptyIconColor}
 							title={config.emptyTitle}
-							description="新的动态会显示在这里。"
 						/>
 					)
 				}

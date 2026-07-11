@@ -4,7 +4,7 @@ import {
 	Avatar,
 	PressableFeedback,
 	Spinner,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useMemo } from "react";
@@ -60,9 +60,9 @@ export function InlineTopicPicker({
 		<View className="gap-2 rounded-xl bg-content2 px-3 py-3">
 			<View className="flex-row items-center gap-2">
 				<Ionicons name="pricetag-outline" size={16} color={mutedColor} />
-				<Text.Paragraph type="body-xs" color="muted">
+				<Typography.Paragraph type="body-xs" color="muted">
 					选择话题
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 			<ScrollView
 				horizontal
@@ -111,9 +111,9 @@ export function InlineMentionPicker({
 		<View className="gap-2 rounded-xl bg-content2 px-3 py-3">
 			<View className="flex-row items-center gap-2">
 				<Ionicons name="at-outline" size={16} color={mutedColor} />
-				<Text.Paragraph type="body-xs" color="muted">
+				<Typography.Paragraph type="body-xs" color="muted">
 					选择用户
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 			{users.isLoading ? (
 				<View className="items-center py-3">
@@ -136,20 +136,24 @@ export function InlineMentionPicker({
 								<Avatar.Fallback>{item.name.slice(0, 1)}</Avatar.Fallback>
 							</Avatar>
 							<View className="min-w-0 flex-1">
-								<Text.Paragraph weight="semibold" numberOfLines={1}>
+								<Typography.Paragraph weight="semibold" numberOfLines={1}>
 									{item.name}
-								</Text.Paragraph>
-								<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+								</Typography.Paragraph>
+								<Typography.Paragraph
+									type="body-xs"
+									color="muted"
+									numberOfLines={1}
+								>
 									{formatMentionHandle(item.handle ?? item.name)}
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</View>
 						</PressableFeedback>
 					))}
 				</View>
 			) : (
-				<Text.Paragraph type="body-sm" color="muted" className="py-2">
+				<Typography.Paragraph type="body-sm" color="muted" className="py-2">
 					没有找到用户。
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			)}
 		</View>
 	);

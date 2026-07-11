@@ -1,4 +1,4 @@
-import { Spinner, Text } from "heroui-native";
+import { Spinner, Typography } from "heroui-native";
 import { View } from "react-native";
 
 export function DiscoverFooter({
@@ -23,9 +23,9 @@ export function DiscoverFooter({
 	if (!hasMore) {
 		return (
 			<View className="items-center py-5">
-				<Text.Paragraph type="body-xs" color="muted">
+				<Typography.Paragraph type="body-xs" color="muted">
 					没有更多了
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 		);
 	}

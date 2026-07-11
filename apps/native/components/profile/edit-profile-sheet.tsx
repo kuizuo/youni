@@ -7,9 +7,9 @@ import {
 	Input,
 	Label,
 	Spinner,
-	Text,
 	TextArea,
 	TextField,
+	Typography,
 	useBottomSheetAwareHandlers,
 	useThemeColor,
 } from "heroui-native";
@@ -138,12 +138,16 @@ export function EditProfileSheet({
 							onPress={chooseAvatar}
 						/>
 						<View className="min-w-0 flex-1">
-							<Text.Paragraph weight="bold" numberOfLines={1}>
+							<Typography.Paragraph weight="bold" numberOfLines={1}>
 								{name || displayName}
-							</Text.Paragraph>
-							<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
+							</Typography.Paragraph>
+							<Typography.Paragraph
+								type="body-sm"
+								color="muted"
+								numberOfLines={1}
+							>
 								{handle ? `@${handle}` : "设置公开资料"}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</View>
 					</View>
 
@@ -190,9 +194,9 @@ export function EditProfileSheet({
 					</TextField>
 
 					<View className="gap-2">
-						<Text.Paragraph type="body-sm" weight="semibold">
+						<Typography.Paragraph type="body-sm" weight="semibold">
 							性别
-						</Text.Paragraph>
+						</Typography.Paragraph>
 						<View className="flex-row rounded-full bg-content2 p-1">
 							<GenderButton
 								isActive={gender === "unknown"}

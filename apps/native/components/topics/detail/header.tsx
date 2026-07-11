@@ -1,4 +1,4 @@
-import { PressableFeedback, Skeleton, Text } from "heroui-native";
+import { PressableFeedback, Skeleton, Typography } from "heroui-native";
 import { View } from "react-native";
 
 import { AppHeading } from "@/components/shared/app-heading";
@@ -35,9 +35,12 @@ export function TopicHeader({
 		<View className="bg-background" style={{ paddingTop: topInset }}>
 			<View className="overflow-hidden">
 				<View className="absolute top-10 right-6 size-36 rotate-12 items-center justify-center opacity-5">
-					<Text.Heading type="h1" style={{ fontSize: 140, color: accentColor }}>
+					<Typography.Heading
+						type="h1"
+						style={{ fontSize: 140, color: accentColor }}
+					>
 						#
-					</Text.Heading>
+					</Typography.Heading>
 				</View>
 
 				<TopicTopBar foregroundColor={foregroundColor} onBack={onBack} />
@@ -60,12 +63,12 @@ export function TopicHeader({
 									>
 										# {topicName ?? "话题"}
 									</AppHeading>
-									<Text.Paragraph type="body-sm" color="muted">
+									<Typography.Paragraph type="body-sm" color="muted">
 										{formatCount(noteCount)} 篇图文
 										{discussionCount > 0
 											? `  |  ${formatCount(discussionCount)} 条讨论`
 											: ""}
-									</Text.Paragraph>
+									</Typography.Paragraph>
 								</>
 							)}
 						</View>

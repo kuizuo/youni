@@ -5,7 +5,7 @@ import {
 	Avatar,
 	Button,
 	PressableFeedback,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { View } from "react-native";
@@ -52,26 +52,30 @@ export function UserResultRow({
 
 				<View className="min-w-0 flex-1 gap-1">
 					<View className="gap-0.5">
-						<Text.Paragraph
+						<Typography.Paragraph
 							weight="semibold"
 							numberOfLines={1}
 							className="text-foreground"
 						>
 							{item.name}
-						</Text.Paragraph>
-						<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
+						</Typography.Paragraph>
+						<Typography.Paragraph
+							type="body-sm"
+							color="muted"
+							numberOfLines={1}
+						>
 							{secondaryName}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
 
 					{item.bio ? (
-						<Text.Paragraph
+						<Typography.Paragraph
 							type="body-sm"
 							numberOfLines={2}
 							className="text-foreground leading-5"
 						>
 							{item.bio}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					) : null}
 
 					<View className="flex-row flex-wrap items-center gap-x-3 gap-y-1">
@@ -79,9 +83,9 @@ export function UserResultRow({
 						<UserMetric label="粉丝" value={item.followerCount} />
 						<View className="flex-row items-center gap-1">
 							<Ionicons name="heart-outline" size={14} color={mutedColor} />
-							<Text.Paragraph type="body-xs" color="muted">
+							<Typography.Paragraph type="body-xs" color="muted">
 								{formatCount(item.likedCount)}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</View>
 					</View>
 				</View>
@@ -129,19 +133,19 @@ export function TopicResultRow({
 				<Ionicons name="pricetag-outline" size={22} color={mutedColor} />
 			</View>
 			<View className="min-w-0 flex-1 gap-1">
-				<Text.Paragraph
+				<Typography.Paragraph
 					weight="semibold"
 					numberOfLines={1}
 					className="text-foreground"
 				>
 					#{item.name}
-				</Text.Paragraph>
-				<Text.Paragraph type="body-sm" color="muted">
+				</Typography.Paragraph>
+				<Typography.Paragraph type="body-sm" color="muted">
 					{formatCount(item.noteCount)} 篇图文
 					{item.discussionCount > 0
 						? ` · ${formatCount(item.discussionCount)} 条讨论`
 						: ""}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 			<Ionicons name="chevron-forward" size={18} color={mutedColor} />
 		</PressableFeedback>
@@ -150,8 +154,8 @@ export function TopicResultRow({
 
 function UserMetric({ label, value }: { label: string; value: number }) {
 	return (
-		<Text.Paragraph type="body-xs" color="muted">
+		<Typography.Paragraph type="body-xs" color="muted">
 			{formatCount(value)} {label}
-		</Text.Paragraph>
+		</Typography.Paragraph>
 	);
 }

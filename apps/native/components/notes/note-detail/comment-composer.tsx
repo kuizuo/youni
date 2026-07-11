@@ -5,7 +5,7 @@ import {
 	Button,
 	PressableFeedback,
 	Spinner,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useState } from "react";
@@ -284,9 +284,9 @@ function CommentMentionPicker({
 		<View className="gap-2 rounded-2xl bg-content2 px-3 py-3">
 			<View className="flex-row items-center gap-2">
 				<Ionicons name="at-outline" size={16} color={mutedColor} />
-				<Text.Paragraph type="body-xs" color="muted">
+				<Typography.Paragraph type="body-xs" color="muted">
 					选择用户
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 			{keyword ? (
 				users.isLoading ? (
@@ -310,29 +310,29 @@ function CommentMentionPicker({
 									<Avatar.Fallback>{item.name.slice(0, 1)}</Avatar.Fallback>
 								</Avatar>
 								<View className="min-w-0 flex-1">
-									<Text.Paragraph weight="semibold" numberOfLines={1}>
+									<Typography.Paragraph weight="semibold" numberOfLines={1}>
 										{item.name}
-									</Text.Paragraph>
-									<Text.Paragraph
+									</Typography.Paragraph>
+									<Typography.Paragraph
 										type="body-xs"
 										color="muted"
 										numberOfLines={1}
 									>
 										@{item.handle ?? item.name}
-									</Text.Paragraph>
+									</Typography.Paragraph>
 								</View>
 							</PressableFeedback>
 						))}
 					</View>
 				) : (
-					<Text.Paragraph type="body-sm" color="muted" className="py-2">
+					<Typography.Paragraph type="body-sm" color="muted" className="py-2">
 						没有找到用户。
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				)
 			) : (
-				<Text.Paragraph type="body-sm" color="muted" className="py-2">
+				<Typography.Paragraph type="body-sm" color="muted" className="py-2">
 					输入用户名搜索。
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			)}
 		</View>
 	);

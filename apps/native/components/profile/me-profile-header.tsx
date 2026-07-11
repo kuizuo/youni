@@ -5,7 +5,7 @@ import {
 	Button,
 	PressableFeedback,
 	Skeleton,
-	Text,
+	Typography,
 } from "heroui-native";
 import { Platform, type StyleProp, View, type ViewStyle } from "react-native";
 import Animated, {
@@ -148,41 +148,41 @@ export function MeProfileHeader({
 							</>
 						) : (
 							<>
-								<Text.Paragraph
+								<Typography.Paragraph
 									weight="bold"
 									numberOfLines={1}
 									className="text-foreground"
 									style={{ fontSize: 24, lineHeight: 30 }}
 								>
 									{displayName}
-								</Text.Paragraph>
-								<Text.Paragraph
+								</Typography.Paragraph>
+								<Typography.Paragraph
 									type="body-sm"
 									numberOfLines={1}
 									className="text-muted"
 								>
 									{displayHandle}
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</>
 						)}
 					</View>
 
 					{profile?.bio ? (
-						<Text.Paragraph
+						<Typography.Paragraph
 							className="text-foreground leading-5"
 							numberOfLines={2}
 						>
 							{profile.bio}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					) : isProfileLoading ? (
 						<View className="gap-2">
 							<Skeleton className="h-3 w-4/5 rounded-full" />
 							<Skeleton className="h-3 w-2/3 rounded-full" />
 						</View>
 					) : (
-						<Text.Paragraph className="text-muted leading-5">
+						<Typography.Paragraph className="text-muted leading-5">
 							点击编辑，填写简介
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					)}
 
 					<View className="flex-row items-center gap-6">
@@ -261,13 +261,13 @@ export function MeProfileTopChrome({
 						<Avatar.Fallback>{avatarInitial}</Avatar.Fallback>
 					</Avatar>
 				</Button>
-				<Text.Paragraph
+				<Typography.Paragraph
 					weight="bold"
 					numberOfLines={1}
 					style={{ color: "#ffffff", lineHeight: 22 }}
 				>
 					{displayName}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</Animated.View>
 
 			<View className="flex-row items-center gap-2">
@@ -329,17 +329,17 @@ function HeroStat({
 			{isLoading ? (
 				<Skeleton className="h-5 w-8 rounded-full" />
 			) : (
-				<Text.Paragraph
+				<Typography.Paragraph
 					weight="bold"
 					className="text-foreground"
 					style={{ fontVariant: ["tabular-nums"] }}
 				>
 					{value ?? 0}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			)}
-			<Text.Paragraph type="body-sm" className="text-muted">
+			<Typography.Paragraph type="body-sm" className="text-muted">
 				{label}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</View>
 	);
 

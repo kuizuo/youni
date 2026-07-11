@@ -1,4 +1,4 @@
-import { Text } from "heroui-native";
+import { Typography } from "heroui-native";
 import { View } from "react-native";
 
 export function ScanOverlay({
@@ -22,7 +22,7 @@ export function ScanOverlay({
 				className="absolute right-0 left-0 h-40 bg-black/70"
 				style={{ bottom: bottomInset + 220 }}
 			/>
-			<Text.Paragraph
+			<Typography.Paragraph
 				type="body-xs"
 				align="center"
 				color="muted"
@@ -30,7 +30,7 @@ export function ScanOverlay({
 				style={{ color: mutedColor }}
 			>
 				Youni 扫一扫
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</>
 	);
 }

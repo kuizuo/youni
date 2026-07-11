@@ -175,7 +175,6 @@ export default function TopicDetailScreen() {
 						<EmptyState
 							icon="images-outline"
 							title="还没有相关图文"
-							description="这个话题下有新内容后，会出现在这里。"
 							actionLabel="去发布"
 							onAction={socialNavigation.openPublish}
 						/>

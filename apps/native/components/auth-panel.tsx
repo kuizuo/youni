@@ -1,4 +1,4 @@
-import { Text } from "heroui-native";
+import { Typography } from "heroui-native";
 import { View } from "react-native";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import { AppSeparator } from "@/components/shared/app-separator";
@@ -15,9 +15,9 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
 
 			<View className="flex-row items-center gap-3">
 				<AppSeparator className="flex-1" />
-				<Text.Paragraph type="body-sm" color="muted">
+				<Typography.Paragraph type="body-sm" color="muted">
 					或
-				</Text.Paragraph>
+				</Typography.Paragraph>
 				<AppSeparator className="flex-1" />
 			</View>
 

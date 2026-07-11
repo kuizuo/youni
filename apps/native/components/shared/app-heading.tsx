@@ -1,8 +1,8 @@
-import { Text } from "heroui-native";
+import { Typography } from "heroui-native";
 import type { ComponentProps } from "react";
 import type { StyleProp, TextStyle } from "react-native";
 
-type AppHeadingProps = ComponentProps<typeof Text.Heading>;
+type AppHeadingProps = ComponentProps<typeof Typography.Heading>;
 type HeadingType = NonNullable<AppHeadingProps["type"]>;
 
 const headingStyles: Record<HeadingType, TextStyle> = {
@@ -23,7 +23,7 @@ export function AppHeading({
 	const mergedStyle: StyleProp<TextStyle> = [headingStyles[type], style];
 
 	return (
-		<Text.Heading
+		<Typography.Heading
 			type={type}
 			className={["tracking-normal", className].filter(Boolean).join(" ")}
 			style={mergedStyle}

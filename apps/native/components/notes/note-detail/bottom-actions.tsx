@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { PressableFeedback, Text, useThemeColor } from "heroui-native";
+import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 
 export function BottomIconAction({
 	active,
@@ -31,13 +31,13 @@ export function BottomIconAction({
 				size={22}
 				color={active ? activeColor : mutedColor}
 			/>
-			<Text.Paragraph
+			<Typography.Paragraph
 				type="body-sm"
 				weight={active ? "semibold" : undefined}
 				style={{ color: active ? activeColor : mutedColor }}
 			>
 				{count}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</PressableFeedback>
 	);
 }

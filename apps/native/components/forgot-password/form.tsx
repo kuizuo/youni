@@ -6,8 +6,8 @@ import {
 	Label,
 	REGEXP_ONLY_DIGITS,
 	Spinner,
-	Text,
 	TextField,
+	Typography,
 } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
@@ -65,22 +65,22 @@ export function ForgotPasswordForm({
 					<AppHeading type="h1" align="center" className="text-foreground">
 						找回密码
 					</AppHeading>
-					<Text.Paragraph
+					<Typography.Paragraph
 						color="muted"
 						align="center"
 						type="body-sm"
 						className="leading-5"
 					>
 						输入注册邮箱，我们会发送一次性验证码帮你设置新密码。
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</View>
 			</View>
 
 			<View className="gap-3">
 				{errorMessage ? (
-					<Text.Paragraph type="body-sm" className="text-danger">
+					<Typography.Paragraph type="body-sm" className="text-danger">
 						{errorMessage}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				) : null}
 
 				{hasSent ? (
@@ -206,9 +206,9 @@ function SentCodeNotice({
 					size={18}
 					className="text-success"
 				/>
-				<Text.Paragraph type="body-sm" color="muted">
+				<Typography.Paragraph type="body-sm" color="muted">
 					如果 {email.trim()} 已注册，你会收到验证码邮件。
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 			<Button
 				variant="secondary"

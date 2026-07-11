@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { Button, Spinner, Text, useThemeColor } from "heroui-native";
+import { Button, Spinner, Typography, useThemeColor } from "heroui-native";
 import { useMemo, useState } from "react";
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -555,12 +555,12 @@ function AvatarPreviewModal({
 								width: previewSize,
 							}}
 						>
-							<Text.Paragraph
+							<Typography.Paragraph
 								weight="bold"
 								style={{ color: "#ffffff", fontSize: 88, lineHeight: 104 }}
 							>
 								{initial}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</View>
 					)}
 				</View>

@@ -55,11 +55,6 @@ export function HomeEmptyState({
 		<EmptyState
 			icon={activeTab === "following" ? "people-outline" : "sparkles-outline"}
 			title={activeTab === "following" ? "还没有关注动态" : "还没有内容"}
-			description={
-				activeTab === "following"
-					? "关注几个感兴趣的博主后，这里会显示他们的新内容。"
-					: "发布第一篇图文后，这里会出现新的灵感。"
-			}
 			actionLabel={activeTab === "following" ? "去发现" : "去发布"}
 			onAction={() =>
 				activeTab === "following"

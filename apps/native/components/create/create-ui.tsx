@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { ListGroup, PressableFeedback, Text } from "heroui-native";
+import { ListGroup, PressableFeedback, Typography } from "heroui-native";
 import { View } from "react-native";
 
 import { AppSeparator } from "@/components/shared/app-separator";
@@ -16,9 +16,9 @@ export function SuggestionChip({
 }) {
 	const content = (
 		<View className="rounded-full bg-content2 px-3 py-1.5">
-			<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+			<Typography.Paragraph type="body-xs" color="muted" numberOfLines={1}>
 				{label}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</View>
 	);
 
@@ -67,9 +67,9 @@ export function SettingsListItem({
 			</ListGroup.ItemContent>
 			<ListGroup.ItemSuffix className="flex-row items-center gap-2">
 				{value ? (
-					<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+					<Typography.Paragraph type="body-xs" color="muted" numberOfLines={1}>
 						{value}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				) : null}
 				<Ionicons name="chevron-forward" size={19} color={mutedColor} />
 			</ListGroup.ItemSuffix>

@@ -5,7 +5,7 @@ import {
 	Button,
 	PressableFeedback,
 	Spinner,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -995,9 +995,9 @@ export default function NoteDetailScreen() {
 								className="h-10 min-w-0 flex-1 justify-center rounded-full bg-content2 px-4"
 								onPress={() => openCommentComposer(null)}
 							>
-								<Text.Paragraph type="body-sm" color="muted">
+								<Typography.Paragraph type="body-sm" color="muted">
 									说点什么...
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</PressableFeedback>
 						</View>
 					)

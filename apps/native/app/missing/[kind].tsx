@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Text, useThemeColor } from "heroui-native";
+import { Button, Typography, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -73,9 +73,9 @@ export default function MissingTargetScreen() {
 							<AppHeading type="h3" align="center">
 								{title}
 							</AppHeading>
-							<Text.Paragraph type="body-sm" color="muted" align="center">
+							<Typography.Paragraph type="body-sm" color="muted" align="center">
 								{description}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</View>
 					</View>
 

@@ -6,7 +6,7 @@ import {
 	ListGroup,
 	Spinner,
 	Switch,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { Alert, ScrollView, View } from "react-native";
@@ -171,12 +171,12 @@ export default function ChatSettingsScreen() {
 								<Avatar.Fallback>{data.peer.name.slice(0, 1)}</Avatar.Fallback>
 							</Avatar>
 							<View className="items-center gap-1">
-								<Text.Paragraph weight="bold" className="text-center">
+								<Typography.Paragraph weight="bold" className="text-center">
 									{data.peer.name}
-								</Text.Paragraph>
-								<Text.Paragraph type="body-xs" color="muted">
+								</Typography.Paragraph>
+								<Typography.Paragraph type="body-xs" color="muted">
 									{data.peer.handle ? `@${data.peer.handle}` : data.peer.email}
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</View>
 							<FollowButton
 								className="min-w-32 rounded-full"

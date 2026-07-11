@@ -1,4 +1,4 @@
-import { Spinner, Text } from "heroui-native";
+import { Spinner, Typography } from "heroui-native";
 import { FlatList, View } from "react-native";
 
 import { ErrorState } from "@/components/social-states";
@@ -55,9 +55,9 @@ export function ChatMessageList({
 					</View>
 				) : (
 					<View className="items-center py-16">
-						<Text.Paragraph type="body-sm" color="muted">
+						<Typography.Paragraph type="body-sm" color="muted">
 							还没有消息，先打个招呼。
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
 				)
 			}

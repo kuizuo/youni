@@ -6,7 +6,7 @@ import {
 	Button,
 	PressableFeedback,
 	Spinner,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useState } from "react";
@@ -156,11 +156,7 @@ export default function HistoryScreen() {
 						/>
 					))
 				) : (
-					<EmptyState
-						icon="time-outline"
-						title="还没有浏览记录"
-						description="打开过的笔记会显示在这里。"
-					/>
+					<EmptyState icon="time-outline" title="还没有浏览记录" />
 				)}
 			</ScrollView>
 		</View>
@@ -202,15 +198,15 @@ function HistoryRow({
 					)}
 				</View>
 				<View className="min-w-0 flex-1 justify-center gap-1">
-					<Text.Paragraph weight="semibold" numberOfLines={2}>
+					<Typography.Paragraph weight="semibold" numberOfLines={2}>
 						{title}
-					</Text.Paragraph>
-					<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
+					</Typography.Paragraph>
+					<Typography.Paragraph type="body-sm" color="muted" numberOfLines={1}>
 						{item.note.author.name}
-					</Text.Paragraph>
-					<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+					</Typography.Paragraph>
+					<Typography.Paragraph type="body-xs" color="muted" numberOfLines={1}>
 						{formatRelativeTime(item.viewedAt, "刚刚")}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</View>
 			</PressableFeedback>
 			<Button

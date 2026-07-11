@@ -99,7 +99,7 @@ function AdminOverviewRoute() {
 	] as const;
 
 	return (
-		<AdminPage title="后台概览" description="查看内容、用户和待处理事项。">
+		<AdminPage title="后台概览">
 			{overview.isLoading ? (
 				<div className="grid gap-4">
 					<div className="grid gap-4 md:grid-cols-4">
@@ -117,9 +117,6 @@ function AdminOverviewRoute() {
 						<Card>
 							<Card.Header>
 								<Card.Title>最近图文</Card.Title>
-								<Card.Description>
-									按创建时间排序，快速进入审核判断。
-								</Card.Description>
 							</Card.Header>
 							<Card.Content className="p-0">
 								<AdminDataGrid
@@ -138,7 +135,6 @@ function AdminOverviewRoute() {
 						<Card>
 							<Card.Header>
 								<Card.Title>运营提示</Card.Title>
-								<Card.Description>保持内容流动和审核节奏。</Card.Description>
 							</Card.Header>
 							<Card.Content className="grid gap-3">
 								<div className="rounded-2xl border border-border bg-background p-3">

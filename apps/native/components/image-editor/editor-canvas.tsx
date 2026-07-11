@@ -10,7 +10,7 @@ import {
 	Image as SkiaImage,
 	Text as SkiaText,
 } from "@shopify/react-native-skia";
-import { Button, Spinner, Text } from "heroui-native";
+import { Button, Spinner, Typography } from "heroui-native";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import {
@@ -121,12 +121,12 @@ export function EditorCanvas({
 				) : null}
 				{imageLoadStatus === "error" ? (
 					<View className="absolute inset-0 items-center justify-center gap-3 bg-black px-6">
-						<Text.Paragraph
+						<Typography.Paragraph
 							type="body-sm"
 							className="text-center text-white/80"
 						>
 							当前图片格式暂不支持，请换一张图片
-						</Text.Paragraph>
+						</Typography.Paragraph>
 						<Button
 							size="sm"
 							variant="secondary"

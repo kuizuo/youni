@@ -2,7 +2,7 @@ import {
 	Button,
 	PressableFeedback,
 	SearchField,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { View } from "react-native";
@@ -112,12 +112,12 @@ function SearchTabs({
 							onChange(item.key);
 						}}
 					>
-						<Text.Paragraph
+						<Typography.Paragraph
 							weight="semibold"
 							className={active ? "text-foreground" : "text-muted"}
 						>
 							{item.label}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 						<View
 							className={
 								active ? "h-1 w-14 rounded-full bg-accent" : "h-1 w-14"

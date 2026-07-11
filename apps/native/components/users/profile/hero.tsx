@@ -5,7 +5,7 @@ import {
 	PressableFeedback,
 	Skeleton,
 	Spinner,
-	Text,
+	Typography,
 } from "heroui-native";
 import { View } from "react-native";
 
@@ -75,20 +75,20 @@ export function UserProfileHero({
 							</>
 						) : (
 							<>
-								<Text.Paragraph
+								<Typography.Paragraph
 									weight="bold"
 									numberOfLines={1}
 									style={{ color: "#ffffff", fontSize: 26 }}
 								>
 									{displayName}
-								</Text.Paragraph>
-								<Text.Paragraph
+								</Typography.Paragraph>
+								<Typography.Paragraph
 									type="body-sm"
 									numberOfLines={1}
 									style={{ color: "rgba(255, 255, 255, 0.7)" }}
 								>
 									{displayHandle}
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</>
 						)}
 					</View>
@@ -115,12 +115,12 @@ export function UserProfileHero({
 				</View>
 
 				{profile?.bio ? (
-					<Text.Paragraph
+					<Typography.Paragraph
 						className="leading-6"
 						style={{ color: "rgba(255, 255, 255, 0.82)" }}
 					>
 						{profile.bio}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				) : isLoading ? (
 					<View className="gap-2">
 						<Skeleton className="h-3 w-4/5 rounded-full" />
@@ -191,19 +191,19 @@ function HeroStat({
 			{isLoading ? (
 				<Skeleton className="h-5 w-8 rounded-full" />
 			) : (
-				<Text.Paragraph
+				<Typography.Paragraph
 					weight="bold"
 					style={{ color: "#ffffff", fontVariant: ["tabular-nums"] }}
 				>
 					{value ?? 0}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			)}
-			<Text.Paragraph
+			<Typography.Paragraph
 				type="body-sm"
 				style={{ color: "rgba(255, 255, 255, 0.78)" }}
 			>
 				{label}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</View>
 	);
 

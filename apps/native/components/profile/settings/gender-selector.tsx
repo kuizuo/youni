@@ -1,4 +1,4 @@
-import { Button, Text } from "heroui-native";
+import { Button, Typography } from "heroui-native";
 import { View } from "react-native";
 
 export type GenderValue = "female" | "male" | "unknown";
@@ -12,9 +12,9 @@ export function GenderSelector({
 }) {
 	return (
 		<View className="gap-2">
-			<Text.Paragraph type="body-sm" weight="semibold">
+			<Typography.Paragraph type="body-sm" weight="semibold">
 				性别
-			</Text.Paragraph>
+			</Typography.Paragraph>
 			<View className="flex-row rounded-full bg-content2 p-1">
 				<GenderButton
 					isActive={value === "unknown"}

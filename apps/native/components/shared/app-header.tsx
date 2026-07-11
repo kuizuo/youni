@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Text } from "heroui-native";
+import { Button, Typography } from "heroui-native";
 import type { ComponentProps, ReactNode } from "react";
 import { View } from "react-native";
 
@@ -100,7 +100,7 @@ export function AppHeaderTitle({
 
 	return (
 		<>
-			<Text.Paragraph
+			<Typography.Paragraph
 				weight="bold"
 				numberOfLines={1}
 				className="text-foreground"
@@ -108,16 +108,16 @@ export function AppHeaderTitle({
 				style={{ fontSize: APP_HEADER_TITLE_FONT_SIZE }}
 			>
 				{title}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 			{subtitle ? (
-				<Text.Paragraph
+				<Typography.Paragraph
 					type="body-xs"
 					color="muted"
 					numberOfLines={1}
 					align={align}
 				>
 					{subtitle}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			) : null}
 		</>
 	);

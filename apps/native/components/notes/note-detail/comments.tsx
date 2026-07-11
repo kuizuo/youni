@@ -6,7 +6,7 @@ import {
 	cn,
 	PressableFeedback,
 	Spinner,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { type RefObject, useState } from "react";
@@ -43,12 +43,12 @@ export function CommentSectionHeader({
 			<View className="gap-4 px-4 pt-5 pb-4">
 				<View className="flex-row items-center justify-between gap-4">
 					<View className="min-w-0 flex-1 flex-row items-baseline gap-2">
-						<Text.Paragraph weight="semibold" className="text-foreground">
+						<Typography.Paragraph weight="semibold" className="text-foreground">
 							评论
-						</Text.Paragraph>
-						<Text.Paragraph type="body-xs" color="muted">
+						</Typography.Paragraph>
+						<Typography.Paragraph type="body-xs" color="muted">
 							共 {commentCount} 条
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
 					{commentsEnabled ? (
 						<Button
@@ -66,9 +66,9 @@ export function CommentSectionHeader({
 					) : null}
 				</View>
 				{commentsEnabled ? null : (
-					<Text.Paragraph type="body-sm" color="muted">
+					<Typography.Paragraph type="body-sm" color="muted">
 						作者已关闭评论。
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				)}
 			</View>
 		</View>
@@ -97,9 +97,9 @@ export function CommentFooter({
 	if (!hasMore) {
 		return (
 			<View className="items-center py-5">
-				<Text.Paragraph type="body-xs" color="muted">
+				<Typography.Paragraph type="body-xs" color="muted">
 					没有更多了
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 		);
 	}
@@ -194,31 +194,34 @@ export function CommentItem({
 				</Avatar>
 				<View className="min-w-0 flex-1 gap-1 pb-4">
 					<View className="flex-row items-center gap-2">
-						<Text.Paragraph
+						<Typography.Paragraph
 							type="body-sm"
 							weight="semibold"
 							numberOfLines={1}
 							className="min-w-0 flex-1"
 						>
 							{comment.authorName}
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
-					<Text.Paragraph type="body-sm" className="text-foreground leading-5">
+					<Typography.Paragraph
+						type="body-sm"
+						className="text-foreground leading-5"
+					>
 						{comment.content}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 					<View className="flex-row items-center justify-between gap-4 pt-1">
 						<View className="min-w-0 flex-1 flex-row items-center gap-4">
-							<Text.Paragraph type="body-xs" color="muted">
+							<Typography.Paragraph type="body-xs" color="muted">
 								{formatRelativeTime(comment.createdAt)}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 							<PressableFeedback
 								accessibilityRole="button"
 								accessibilityLabel="回复评论"
 								onPress={() => onReply(comment)}
 							>
-								<Text.Paragraph type="body-xs" color="muted">
+								<Typography.Paragraph type="body-xs" color="muted">
 									回复
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							</PressableFeedback>
 							{comment.canDelete ? (
 								<PressableFeedback
@@ -226,9 +229,12 @@ export function CommentItem({
 									accessibilityLabel="删除评论"
 									onPress={deleteComment}
 								>
-									<Text.Paragraph type="body-xs" style={{ color: dangerColor }}>
+									<Typography.Paragraph
+										type="body-xs"
+										style={{ color: dangerColor }}
+									>
 										删除
-									</Text.Paragraph>
+									</Typography.Paragraph>
 								</PressableFeedback>
 							) : null}
 						</View>
@@ -243,12 +249,12 @@ export function CommentItem({
 								size={15}
 								color={comment.liked ? dangerColor : mutedColor}
 							/>
-							<Text.Paragraph
+							<Typography.Paragraph
 								type="body-xs"
 								style={{ color: comment.liked ? dangerColor : mutedColor }}
 							>
 								{comment.likedCount || "赞"}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</PressableFeedback>
 					</View>
 				</View>

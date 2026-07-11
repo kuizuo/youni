@@ -1,4 +1,4 @@
-import { Avatar, PressableFeedback, Text } from "heroui-native";
+import { Avatar, PressableFeedback, Typography } from "heroui-native";
 import { View } from "react-native";
 
 import { FollowButton } from "@/components/users/follow-button";
@@ -41,16 +41,16 @@ export function ConnectionRow({
 				<Avatar.Fallback>{item.name.slice(0, 1)}</Avatar.Fallback>
 			</Avatar>
 			<View className="min-w-0 flex-1 gap-1">
-				<Text.Paragraph
+				<Typography.Paragraph
 					weight="semibold"
 					numberOfLines={1}
 					className="text-foreground"
 				>
 					{item.name}
-				</Text.Paragraph>
-				<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
+				</Typography.Paragraph>
+				<Typography.Paragraph type="body-sm" color="muted" numberOfLines={1}>
 					{getConnectionSummary(item, activeType)}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
 			{isSelf ? null : (
 				<FollowButton

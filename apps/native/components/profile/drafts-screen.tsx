@@ -9,7 +9,7 @@ import {
 	PressableFeedback,
 	Spinner,
 	Surface,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { useCallback, useMemo, useState } from "react";
@@ -169,7 +169,7 @@ export default function DraftsScreen() {
 			>
 				<View className="mx-auto w-full max-w-xl gap-3 pt-3">
 					{showLocalAlert ? (
-						<HeroAlert className="mx-3 py-1 items-center" status="warning">
+						<HeroAlert className="mx-3 items-center py-1" status="warning">
 							<HeroAlert.Content className="min-w-0 flex-1">
 								<HeroAlert.Title numberOfLines={1} className="text-sm">
 									{Platform.OS === "web"
@@ -217,7 +217,6 @@ export default function DraftsScreen() {
 						</View>
 					) : (
 						<EmptyState
-							description="保存在当前设备的草稿会出现在这里。"
 							icon="document-text-outline"
 							onAction={() => router.push("/publish" as Href)}
 							title="还没有草稿"
@@ -275,9 +274,9 @@ function DraftCard({
 								name="document-text-outline"
 								size={28}
 							/>
-							<Text.Paragraph color="muted" type="body-xs">
+							<Typography.Paragraph color="muted" type="body-xs">
 								暂无封面
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</Surface>
 					)}
 				</PressableFeedback>
@@ -294,9 +293,9 @@ function DraftCard({
 					</Card.Title>
 				</PressableFeedback>
 				<Card.Footer className="flex-row items-center justify-between gap-2 p-0">
-					<Text.Paragraph color="muted" numberOfLines={1} type="body-xs">
+					<Typography.Paragraph color="muted" numberOfLines={1} type="body-xs">
 						{formatDate(item.updatedAt)}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 					<Button
 						accessibilityLabel={`删除 ${title}`}
 						className="size-8 rounded-full"

@@ -3,7 +3,7 @@ import {
 	cn,
 	PressableFeedback,
 	Surface,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { Platform, View } from "react-native";
@@ -112,14 +112,14 @@ export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 								}
 							/>
 							{!config.isCreateAction && isFocused && showActiveLabel ? (
-								<Text.Paragraph
+								<Typography.Paragraph
 									type="body-xs"
 									weight="semibold"
 									numberOfLines={1}
 									className="text-accent-foreground"
 								>
 									{config.label}
-								</Text.Paragraph>
+								</Typography.Paragraph>
 							) : null}
 						</PressableFeedback>
 					);

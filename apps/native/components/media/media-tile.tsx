@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { PressableFeedback, Spinner, Text } from "heroui-native";
+import { PressableFeedback, Spinner, Typography } from "heroui-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, View } from "react-native";
 import type { MediaImage } from "@/lib/media/types";
@@ -121,9 +121,9 @@ export function MediaTilePreview({
 					}}
 				>
 					<Ionicons color="#6b7280" name="refresh" size={20} />
-					<Text.Paragraph color="muted" type="body-xs">
+					<Typography.Paragraph color="muted" type="body-xs">
 						重新加载
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</Pressable>
 			) : null}
 		</View>

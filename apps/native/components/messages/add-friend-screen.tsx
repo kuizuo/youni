@@ -7,7 +7,7 @@ import {
 	Button,
 	Spinner,
 	Surface,
-	Text,
+	Typography,
 	useThemeColor,
 } from "heroui-native";
 import { ScrollView, View } from "react-native";
@@ -42,9 +42,9 @@ export default function AddFriendScreen() {
 	if (!session.data?.user) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background px-6">
-				<Text.Paragraph align="center" color="muted">
+				<Typography.Paragraph align="center" color="muted">
 					登录后可以生成你的个人二维码。
-				</Text.Paragraph>
+				</Typography.Paragraph>
 				<Button
 					className="mt-4 rounded-full"
 					onPress={() => router.push(getLoginHref("/add-friend"))}
@@ -60,7 +60,6 @@ export default function AddFriendScreen() {
 			<AppHeader
 				variant="leading"
 				title="添加好友"
-				subtitle="展示二维码，让朋友扫码关注你"
 				topInset={insets.top}
 				showSeparator
 				left={
@@ -93,12 +92,12 @@ export default function AddFriendScreen() {
 							<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
 						</Avatar>
 						<View className="items-center">
-							<Text.Paragraph weight="bold" className="text-foreground">
+							<Typography.Paragraph weight="bold" className="text-foreground">
 								{displayName}
-							</Text.Paragraph>
-							<Text.Paragraph type="body-sm" color="muted">
+							</Typography.Paragraph>
+							<Typography.Paragraph type="body-sm" color="muted">
 								{displayHandle}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</View>
 					</View>
 
@@ -116,10 +115,6 @@ export default function AddFriendScreen() {
 							<PersonalQr image={image} value={qrValue} />
 						</View>
 					)}
-
-					<Text.Paragraph align="center" type="body-sm" color="muted">
-						扫一扫二维码，打开我的 Youni 主页。
-					</Text.Paragraph>
 				</Surface>
 
 				<Button

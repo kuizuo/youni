@@ -54,6 +54,11 @@ type AdminUser = {
 	readonly role?: string | null;
 };
 
+type AdminSearchItem = AdminNavItem & {
+	readonly description?: string;
+	readonly keywords: string;
+};
+
 const NAV_ITEMS: readonly AdminNavItem[] = [
 	{
 		href: "/admin",
@@ -129,17 +134,13 @@ const SEARCH_ITEMS = [
 		permission: { profile: ["view"] },
 	},
 	{
-		description: "查看当前账号对外展示资料和后台身份。",
 		href: "/admin/profile",
 		icon: Persons,
 		keywords: "profile account avatar bio handle personal 个人 主页 资料",
 		label: "个人主页",
 		permission: { profile: ["view"] },
 	},
-] as const satisfies readonly (AdminNavItem & {
-	readonly description: string;
-	readonly keywords: string;
-})[];
+] as const satisfies readonly AdminSearchItem[];
 
 const ROUTE_LABELS = new Map<string, string>([
 	...NAV_ITEMS.map((item) => [item.href, item.label] as const),
@@ -518,10 +519,7 @@ function AdminSearchCommand({
 	onOpenChange,
 }: {
 	isOpen: boolean;
-	items: readonly (AdminNavItem & {
-		readonly description: string;
-		readonly keywords: string;
-	})[];
+	items: readonly AdminSearchItem[];
 	navigateTo: (href: AdminRouteTo) => void;
 	onOpenChange: (isOpen: boolean) => void;
 }) {
@@ -534,7 +532,7 @@ function AdminSearchCommand({
 			normalizedQuery
 				? items.filter((item) =>
 						normalizeSearchText(
-							`${item.label} ${item.description} ${item.keywords}`,
+							`${item.label} ${item.description ?? ""} ${item.keywords}`,
 						).includes(normalizedQuery),
 					)
 				: items,
@@ -679,9 +677,11 @@ function AdminSearchCommand({
 													<span className="block truncate font-medium text-sm">
 														{item.label}
 													</span>
-													<span className="block truncate text-muted text-xs">
-														{item.description}
-													</span>
+													{item.description ? (
+														<span className="block truncate text-muted text-xs">
+															{item.description}
+														</span>
+													) : null}
 												</span>
 											</button>
 										);

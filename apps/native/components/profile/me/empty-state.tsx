@@ -10,33 +10,18 @@ export function MeTabEmptyState({
 	onCreate: () => void;
 }) {
 	if (tab === "collections") {
-		return (
-			<EmptyState
-				icon="bookmark-outline"
-				title="还没有收藏"
-				description="收藏过的图文会出现在这里。"
-			/>
-		);
+		return <EmptyState icon="bookmark-outline" title="还没有收藏" />;
 	}
 	if (tab === "liked") {
-		return (
-			<EmptyState title="还没有赞过" description="赞过的内容会显示在这里。" />
-		);
+		return <EmptyState title="还没有赞过" />;
 	}
 	if (tab === "comments") {
-		return (
-			<EmptyState
-				icon="chatbubble-ellipses-outline"
-				title="还没有评论"
-				description="发表过的评论和回复会出现在这里。"
-			/>
-		);
+		return <EmptyState icon="chatbubble-ellipses-outline" title="还没有评论" />;
 	}
 	return (
 		<EmptyState
 			icon="add-circle-outline"
 			title="还没有作品"
-			description="发布第一篇图文后，会出现在这里。"
 			actionLabel="去发布"
 			onAction={onCreate}
 		/>

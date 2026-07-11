@@ -1,4 +1,4 @@
-import { cn, Text } from "heroui-native";
+import { cn, Typography } from "heroui-native";
 import { View } from "react-native";
 
 import { formatTime } from "@/utils/format";
@@ -20,15 +20,15 @@ export function MessageBubble({
 					isMine ? "bg-accent" : "bg-content2",
 				)}
 			>
-				<Text.Paragraph
+				<Typography.Paragraph
 					className={isMine ? "text-accent-foreground" : "text-foreground"}
 				>
 					{item.content}
-				</Text.Paragraph>
+				</Typography.Paragraph>
 			</View>
-			<Text.Paragraph type="body-xs" color="muted">
+			<Typography.Paragraph type="body-xs" color="muted">
 				{formatTime(item.createdAt)}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</View>
 	);
 }

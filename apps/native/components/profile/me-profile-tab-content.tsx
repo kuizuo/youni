@@ -1,4 +1,4 @@
-import { PressableFeedback, Text, useThemeColor } from "heroui-native";
+import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import { type ReactNode, useState } from "react";
 import { Platform, View } from "react-native";
 import Animated, {
@@ -89,7 +89,7 @@ export function ProfileTabBar({
 							className="h-full flex-1 items-center justify-center"
 							onPress={() => onSelect(tab.key)}
 						>
-							<Text.Paragraph
+							<Typography.Paragraph
 								weight="bold"
 								style={{
 									color: selected ? foregroundColor : mutedColor,
@@ -98,7 +98,7 @@ export function ProfileTabBar({
 								}}
 							>
 								{tab.label}
-							</Text.Paragraph>
+							</Typography.Paragraph>
 						</PressableFeedback>
 					);
 				})}

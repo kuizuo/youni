@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Text, useThemeColor } from "heroui-native";
+import { Typography, useThemeColor } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 
 import { NoteCard } from "@/components/note-card";
@@ -33,14 +33,14 @@ export function UserProfileFeedSection({
 		<>
 			<View className="-mt-5 overflow-hidden rounded-t-3xl bg-background pt-0">
 				<View className="mx-auto h-16 w-full max-w-xl flex-row items-center justify-between px-4">
-					<Text.Paragraph weight="semibold" className="text-foreground">
+					<Typography.Paragraph weight="semibold" className="text-foreground">
 						公开图文
-					</Text.Paragraph>
+					</Typography.Paragraph>
 					<View className="flex-row items-center gap-1">
 						<Ionicons name="images-outline" size={15} color={mutedColor} />
-						<Text.Paragraph type="body-xs" color="muted">
+						<Typography.Paragraph type="body-xs" color="muted">
 							{notes.length} 篇
-						</Text.Paragraph>
+						</Typography.Paragraph>
 					</View>
 				</View>
 			</View>
@@ -62,11 +62,7 @@ export function UserProfileFeedSection({
 						))}
 					</View>
 				) : (
-					<EmptyState
-						icon="images-outline"
-						title="还没有公开图文"
-						description="有新内容发布后，会出现在这里。"
-					/>
+					<EmptyState icon="images-outline" title="还没有公开图文" />
 				)}
 			</View>
 		</>

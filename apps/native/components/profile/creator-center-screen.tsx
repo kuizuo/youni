@@ -2,7 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { Button, Spinner, Surface, Text, useThemeColor } from "heroui-native";
+import {
+	Button,
+	Spinner,
+	Surface,
+	Typography,
+	useThemeColor,
+} from "heroui-native";
 import { useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -55,12 +61,9 @@ export default function CreatorCenterScreen() {
 					<>
 						<Surface className="gap-4 rounded-3xl p-4">
 							<View className="flex-row items-center justify-between">
-								<View>
-									<Text.Paragraph weight="bold">内容表现</Text.Paragraph>
-									<Text.Paragraph type="body-sm" color="muted">
-										来自你已发布和待处理的内容
-									</Text.Paragraph>
-								</View>
+								<Typography.Paragraph weight="bold">
+									内容表现
+								</Typography.Paragraph>
 								<View className="size-11 items-center justify-center rounded-full bg-accent-soft">
 									<Ionicons name="stats-chart" size={22} color={accentColor} />
 								</View>
@@ -74,7 +77,9 @@ export default function CreatorCenterScreen() {
 						</Surface>
 
 						<Surface className="gap-3 rounded-3xl p-4">
-							<Text.Paragraph weight="bold">内容状态</Text.Paragraph>
+							<Typography.Paragraph weight="bold">
+								内容状态
+							</Typography.Paragraph>
 							<View className="flex-row flex-wrap gap-3">
 								<StatusPill label="全部" value={data.total} />
 								<StatusPill label="审核中" value={data.audit} />
@@ -84,7 +89,9 @@ export default function CreatorCenterScreen() {
 						</Surface>
 
 						<Surface className="gap-3 rounded-3xl p-4">
-							<Text.Paragraph weight="bold">快捷操作</Text.Paragraph>
+							<Typography.Paragraph weight="bold">
+								快捷操作
+							</Typography.Paragraph>
 							<Button
 								variant="primary"
 								className="rounded-full"
@@ -118,16 +125,16 @@ export default function CreatorCenterScreen() {
 function StatBlock({ label, value }: { label: string; value: number }) {
 	return (
 		<View className="min-w-0 flex-1 gap-1 rounded-2xl bg-content2 px-3 py-3">
-			<Text.Paragraph
+			<Typography.Paragraph
 				weight="bold"
 				className="text-foreground"
 				style={{ fontVariant: ["tabular-nums"] }}
 			>
 				{formatCount(value)}
-			</Text.Paragraph>
-			<Text.Paragraph type="body-xs" color="muted" numberOfLines={1}>
+			</Typography.Paragraph>
+			<Typography.Paragraph type="body-xs" color="muted" numberOfLines={1}>
 				{label}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</View>
 	);
 }
@@ -135,12 +142,15 @@ function StatBlock({ label, value }: { label: string; value: number }) {
 function StatusPill({ label, value }: { label: string; value: number }) {
 	return (
 		<View className="min-w-[92px] flex-1 rounded-2xl bg-content2 px-3 py-3">
-			<Text.Paragraph type="body-xs" color="muted">
+			<Typography.Paragraph type="body-xs" color="muted">
 				{label}
-			</Text.Paragraph>
-			<Text.Paragraph weight="bold" style={{ fontVariant: ["tabular-nums"] }}>
+			</Typography.Paragraph>
+			<Typography.Paragraph
+				weight="bold"
+				style={{ fontVariant: ["tabular-nums"] }}
+			>
 				{value}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 		</View>
 	);
 }

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
-import { Button, Spinner, Text, useThemeColor } from "heroui-native";
+import { Button, Spinner, Typography, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 
@@ -119,12 +119,12 @@ export function EditProfileSheet({
 					onPress={chooseAvatar}
 				/>
 				<View className="min-w-0 flex-1">
-					<Text.Paragraph weight="bold" numberOfLines={1}>
+					<Typography.Paragraph weight="bold" numberOfLines={1}>
 						{name || displayName}
-					</Text.Paragraph>
-					<Text.Paragraph type="body-sm" color="muted" numberOfLines={1}>
+					</Typography.Paragraph>
+					<Typography.Paragraph type="body-sm" color="muted" numberOfLines={1}>
 						{handle ? `@${handle}` : "设置公开资料"}
-					</Text.Paragraph>
+					</Typography.Paragraph>
 				</View>
 			</View>
 
@@ -165,9 +165,9 @@ export function EditProfileSheet({
 			</WebField>
 
 			<View className="gap-2">
-				<Text.Paragraph type="body-sm" weight="semibold">
+				<Typography.Paragraph type="body-sm" weight="semibold">
 					性别
-				</Text.Paragraph>
+				</Typography.Paragraph>
 				<View className="flex-row rounded-full bg-content2 p-1">
 					{(
 						[
@@ -225,10 +225,10 @@ function WebField({
 }) {
 	return (
 		<View className="gap-2">
-			<Text.Paragraph type="body-sm" weight="semibold">
+			<Typography.Paragraph type="body-sm" weight="semibold">
 				{label}
 				{required ? " *" : ""}
-			</Text.Paragraph>
+			</Typography.Paragraph>
 			{children}
 		</View>
 	);
