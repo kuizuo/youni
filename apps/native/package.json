@@ -50,6 +50,7 @@
 		"expo-image-manipulator": "~55.0.18",
 		"expo-image-picker": "~55.0.21",
 		"expo-linking": "~55.0.14",
+		"expo-media-library": "~55.0.18",
 		"expo-network": "~55.0.13",
 		"expo-notifications": "~55.0.23",
 		"expo-router": "~55.0.16",

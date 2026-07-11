@@ -27,6 +27,7 @@ import type {
 	InlineTrigger,
 } from "@/components/create/create-types";
 import { findInlineTrigger } from "@/components/create/inline-trigger";
+import { CreateMediaPicker } from "@/components/create/media-picker";
 import { MediaStrip } from "@/components/create/media-strip";
 import { PublishingOptions } from "@/components/create/publishing-options";
 import { SubmitBar } from "@/components/create/submit-bar";
@@ -70,6 +71,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [emojiPanelHeight, setEmojiPanelHeight] = useState(300);
 	const [editingImageId, setEditingImageId] = useState<null | string>(null);
+	const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 	const [titleSelection, setTitleSelection] = useState<TextSelection>({
 		end: 0,
 		start: 0,
@@ -291,6 +293,19 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 		contentInputRef.current?.blur();
 		Keyboard.dismiss();
 	};
+	const openMediaPicker = () => {
+		finishInput();
+		if (composer.images.length >= 9) {
+			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
+			return;
+		}
+		if (Platform.OS === "web") {
+			void composer.pickImagesFromSystem();
+			return;
+		}
+		fireHaptic();
+		setIsMediaPickerOpen(true);
+	};
 	const editingImage =
 		composer.images.find((image) => image.id === editingImageId) ?? null;
 
@@ -348,7 +363,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 						images={composer.images}
 						isAddingImages={composer.isAddingImages}
 						mutedColor={mutedColor}
-						onAddImage={composer.addImage}
+						onAddImage={openMediaPicker}
 						onEditImage={openImageEditor}
 						onMoveImage={composer.moveImage}
 						onRemoveImage={composer.removeImage}
@@ -446,6 +461,16 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 						}}
 					/>
 				) : null}
+				<CreateMediaPicker
+					maxSelection={Math.max(0, 9 - composer.images.length)}
+					visible={isMediaPickerOpen}
+					onClose={() => setIsMediaPickerOpen(false)}
+					onComplete={async (assets) => {
+						const added = await composer.addImageAssets(assets);
+						if (added) setIsMediaPickerOpen(false);
+						return added;
+					}}
+				/>
 			</View>
 		</KeyboardAvoidingView>
 	);

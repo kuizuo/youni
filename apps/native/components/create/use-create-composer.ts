@@ -113,7 +113,7 @@ async function createComposerImageFromAsset(
 			fileName: asset.fileName,
 			fileSize: asset.fileSize,
 			height: asset.height,
-			id: `${asset.assetId ?? asset.uri}-${asset.uri}`,
+			id: `${asset.assetId ?? asset.uri}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
 			mimeType: asset.mimeType,
 			originalUri: asset.uri,
 			uri: asset.uri,
@@ -585,25 +585,46 @@ export function useCreateComposer({
 		});
 	};
 
-	const addImage = async () => {
+	const addImageAssets = async (assets: ImagePicker.ImagePickerAsset[]) => {
+		if (isAddingImages) return false;
+
+		const remaining = Math.max(0, 9 - images.length);
+		if (remaining === 0) {
+			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
+			return false;
+		}
+		if (assets.length === 0) return false;
+
+		setIsAddingImages(true);
+		try {
+			const selectedImages = await Promise.all(
+				assets
+					.slice(0, remaining)
+					.map((asset) => createComposerImageFromAsset(asset)),
+			);
+
+			setImages((current) => [...current, ...selectedImages].slice(0, 9));
+			return true;
+		} catch {
+			toast.show({
+				variant: "danger",
+				label: "图片处理失败",
+			});
+			return false;
+		} finally {
+			setIsAddingImages(false);
+		}
+	};
+
+	const pickImagesFromSystem = async () => {
 		if (isAddingImages) return;
 		fireHaptic();
-		const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-		if (!permission.granted) {
-			toast.show({
-				variant: "warning",
-				label: "需要允许访问相册",
-			});
-			return;
-		}
-
 		const remaining = Math.max(0, 9 - images.length);
 		if (remaining === 0) {
 			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
 			return;
 		}
 
-		setIsAddingImages(true);
 		try {
 			const result = await ImagePicker.launchImageLibraryAsync({
 				allowsEditing: false,
@@ -616,23 +637,9 @@ export function useCreateComposer({
 				selectionLimit: remaining,
 				shouldDownloadFromNetwork: true,
 			});
-
-			if (result.canceled) {
-				return;
-			}
-
-			const selectedImages = await Promise.all(
-				result.assets.map((asset) => createComposerImageFromAsset(asset)),
-			);
-
-			setImages((current) => [...current, ...selectedImages].slice(0, 9));
+			if (!result.canceled) await addImageAssets(result.assets);
 		} catch {
-			toast.show({
-				variant: "danger",
-				label: "图片处理失败",
-			});
-		} finally {
-			setIsAddingImages(false);
+			toast.show({ variant: "danger", label: "图片选择失败" });
 		}
 	};
 
@@ -793,7 +800,7 @@ export function useCreateComposer({
 	return {
 		advancedLabel,
 		advancedOptions,
-		addImage,
+		addImageAssets,
 		content,
 		cycleVisibility,
 		editNoteQuery,
@@ -809,6 +816,7 @@ export function useCreateComposer({
 		isSubmitting,
 		isUploadingImages,
 		pendingSubmitMode,
+		pickImagesFromSystem,
 		openDrafts,
 		publish,
 		moveImage,
