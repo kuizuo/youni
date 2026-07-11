@@ -1,6 +1,5 @@
 import { Button, Input, Label, TextField } from "@heroui/react";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import z from "zod";
 
@@ -9,9 +8,6 @@ import { authClient } from "@/lib/auth-client";
 import Loader from "./loader";
 
 export default function SignInForm() {
-	const navigate = useNavigate({
-		from: "/",
-	});
 	const { isPending } = authClient.useSession();
 	const [formMessage, setFormMessage] = useState<string | null>(null);
 
@@ -29,9 +25,7 @@ export default function SignInForm() {
 				},
 				{
 					onSuccess: () => {
-						navigate({
-							to: "/admin",
-						});
+						authClient.$store.notify("$sessionSignal");
 					},
 					onError: (error) => {
 						setFormMessage(error.error.message || error.error.statusText);
@@ -52,68 +46,91 @@ export default function SignInForm() {
 	}
 
 	return (
-		<div>
+		<div className="w-full">
 			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
+				className="flex flex-col gap-5"
+				onSubmit={(event) => {
+					event.preventDefault();
+					event.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="flex flex-col gap-4"
 			>
-				<div>
-					<form.Field name="email">
-						{(field) => (
-							<TextField className="flex flex-col gap-2">
-								<Label htmlFor={field.name}>邮箱</Label>
-								<Input
-									id={field.name}
-									name={field.name}
-									type="email"
-									autoComplete="email"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-									placeholder="admin@youni.local"
-									fullWidth
-								/>
-								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-danger text-sm">
-										{error?.message}
-									</p>
-								))}
-							</TextField>
-						)}
-					</form.Field>
-				</div>
+				<form.Field name="email">
+					{(field) => {
+						const errorMessage = field.state.meta.errors[0]?.message;
 
-				<div>
-					<form.Field name="password">
-						{(field) => (
-							<TextField className="flex flex-col gap-2">
-								<Label htmlFor={field.name}>密码</Label>
+						return (
+							<TextField
+								className="flex flex-col gap-2"
+								isInvalid={Boolean(errorMessage)}
+							>
+								<Label className="font-medium" htmlFor={field.name}>
+									邮箱
+								</Label>
 								<Input
+									autoComplete="email"
+									autoFocus
+									className="h-11"
+									fullWidth
 									id={field.name}
 									name={field.name}
-									type="password"
-									autoComplete="current-password"
+									placeholder="请输入管理员邮箱"
+									type="email"
 									value={field.state.value}
+									variant="secondary"
 									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-									placeholder="Admin123456"
-									fullWidth
+									onChange={(event) => field.handleChange(event.target.value)}
 								/>
-								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-danger text-sm">
-										{error?.message}
+								{errorMessage ? (
+									<p className="text-danger text-sm" role="alert">
+										{errorMessage}
 									</p>
-								))}
+								) : null}
 							</TextField>
-						)}
-					</form.Field>
-				</div>
+						);
+					}}
+				</form.Field>
+
+				<form.Field name="password">
+					{(field) => {
+						const errorMessage = field.state.meta.errors[0]?.message;
+
+						return (
+							<TextField
+								className="flex flex-col gap-2"
+								isInvalid={Boolean(errorMessage)}
+							>
+								<Label className="font-medium" htmlFor={field.name}>
+									密码
+								</Label>
+								<Input
+									autoComplete="current-password"
+									className="h-11"
+									fullWidth
+									id={field.name}
+									name={field.name}
+									placeholder="请输入登录密码"
+									type="password"
+									value={field.state.value}
+									variant="secondary"
+									onBlur={field.handleBlur}
+									onChange={(event) => field.handleChange(event.target.value)}
+								/>
+								{errorMessage ? (
+									<p className="text-danger text-sm" role="alert">
+										{errorMessage}
+									</p>
+								) : null}
+							</TextField>
+						);
+					}}
+				</form.Field>
+
 				{formMessage ? (
-					<p className="rounded-2xl bg-danger-soft px-3 py-2 text-danger-soft-foreground text-sm">
+					<p
+						className="rounded-2xl bg-danger-soft px-4 py-3 text-danger-soft-foreground text-sm"
+						role="alert"
+					>
 						{formMessage}
 					</p>
 				) : null}
@@ -126,12 +143,14 @@ export default function SignInForm() {
 				>
 					{({ canSubmit, isSubmitting }) => (
 						<Button
-							type="submit"
+							className="mt-1 h-11"
 							fullWidth
 							isDisabled={!canSubmit || isSubmitting}
 							isPending={isSubmitting}
+							size="lg"
+							type="submit"
 						>
-							{isSubmitting ? "登录中..." : "登录"}
+							{isSubmitting ? "登录中..." : "登录后台"}
 						</Button>
 					)}
 				</form.Subscribe>

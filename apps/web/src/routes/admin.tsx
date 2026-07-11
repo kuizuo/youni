@@ -1,6 +1,11 @@
 import { Button, Card, Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Navigate,
+	Outlet,
+	useNavigate,
+} from "@tanstack/react-router";
 
 import { AdminShell } from "@/components/admin-shell";
 import { authClient } from "@/lib/auth-client";
@@ -19,23 +24,42 @@ function AdminLayoutRoute() {
 		retry: false,
 	});
 
-	if (session.isPending || admin.isLoading) {
+	if (session.isPending) {
 		return <AdminLoadingScreen />;
 	}
 
-	if (!session.data?.user || admin.isError) {
+	if (!session.data?.user) {
+		return <Navigate replace to="/login" />;
+	}
+
+	if (admin.isLoading) {
+		return <AdminLoadingScreen />;
+	}
+
+	if (admin.isError) {
 		return (
 			<main className="mx-auto flex min-h-svh w-full max-w-md items-center px-4">
 				<Card>
 					<Card.Header>
 						<Card.Title>无法进入后台</Card.Title>
 						<Card.Description>
-							请使用管理员或运营账号登录后再访问后台。
+							当前账号没有后台权限，请切换为管理员或运营账号。
 						</Card.Description>
 					</Card.Header>
 					<Card.Content>
-						<Button fullWidth onPress={() => navigate({ to: "/login" })}>
-							去登录
+						<Button
+							fullWidth
+							onPress={() =>
+								authClient.signOut({
+									fetchOptions: {
+										onSuccess: () => {
+											void navigate({ to: "/login" });
+										},
+									},
+								})
+							}
+						>
+							切换账号
 						</Button>
 					</Card.Content>
 				</Card>
