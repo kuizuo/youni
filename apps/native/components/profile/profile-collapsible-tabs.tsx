@@ -86,6 +86,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	const scrollY = useSharedValue(0);
 	const pagerScrollX = useSharedValue(0);
 	const [isSticky, setIsSticky] = useState(false);
+	const [pageWidth, setPageWidth] = useState(dimensions.width);
 	const [pageHeights, setPageHeights] = useState<Partial<Record<Key, number>>>(
 		{},
 	);
@@ -161,7 +162,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 		onTabChange(tab);
 		pagerRef.current?.scrollTo({
 			animated: true,
-			x: nextIndex * dimensions.width,
+			x: nextIndex * pageWidth,
 		});
 		pendingProgrammaticTimerRef.current = setTimeout(() => {
 			pendingProgrammaticTabRef.current = null;
@@ -172,10 +173,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	const handlePagerEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
 		const nextIndex = Math.min(
 			tabs.length - 1,
-			Math.max(
-				0,
-				Math.round(event.nativeEvent.contentOffset.x / dimensions.width),
-			),
+			Math.max(0, Math.round(event.nativeEvent.contentOffset.x / pageWidth)),
 		);
 		const nextTab = tabs[nextIndex];
 		const pendingTab = pendingProgrammaticTabRef.current;
@@ -195,10 +193,10 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	useEffect(() => {
 		pagerRef.current?.scrollTo({
 			animated: false,
-			x: activeIndex * dimensions.width,
+			x: activeIndex * pageWidth,
 		});
-		pagerScrollX.value = activeIndex * dimensions.width;
-	}, [activeIndex, dimensions.width, pagerScrollX]);
+		pagerScrollX.value = activeIndex * pageWidth;
+	}, [activeIndex, pageWidth, pagerScrollX]);
 
 	useEffect(() => {
 		return () => {
@@ -211,7 +209,16 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	const pages = useMemo(() => Children.toArray(children), [children]);
 
 	return (
-		<View className="flex-1" style={{ backgroundColor }}>
+		<View
+			className="flex-1"
+			style={{ backgroundColor }}
+			onLayout={(event) => {
+				const nextWidth = Math.ceil(event.nativeEvent.layout.width);
+				setPageWidth((current) =>
+					current === nextWidth ? current : nextWidth,
+				);
+			}}
+		>
 			<Animated.ScrollView
 				className="flex-1"
 				onScroll={onScroll}
@@ -236,7 +243,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 					{renderTabBar({
 						elevated: false,
 						onSelect: selectTab,
-						pageWidth: dimensions.width,
+						pageWidth,
 						pagerScrollX,
 					})}
 				</Animated.View>
@@ -266,7 +273,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 								style={{
 									backgroundColor,
 									minHeight: minTabContentHeight,
-									width: dimensions.width,
+									width: pageWidth,
 								}}
 							>
 								<View
@@ -325,7 +332,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 				{renderTabBar({
 					elevated: true,
 					onSelect: selectTab,
-					pageWidth: dimensions.width,
+					pageWidth,
 					pagerScrollX,
 				})}
 			</Animated.View>

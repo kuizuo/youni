@@ -7,7 +7,7 @@ import {
 	Skeleton,
 	Text,
 } from "heroui-native";
-import { type StyleProp, View, type ViewStyle } from "react-native";
+import { Platform, type StyleProp, View, type ViewStyle } from "react-native";
 import Animated, {
 	type SharedValue,
 	useAnimatedStyle,
@@ -123,7 +123,7 @@ export function MeProfileHeader({
 							variant="ghost"
 							className="size-18 rounded-full p-0"
 							accessibilityLabel="查看头像"
-							feedbackVariant="scale-ripple"
+							feedbackVariant={Platform.OS === "web" ? "scale" : "scale-ripple"}
 							isDisabled={isAccountLoading}
 							onPress={onAvatarPress}
 						>
