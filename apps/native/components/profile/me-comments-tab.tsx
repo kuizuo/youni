@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
-import type { MyCommentRow } from "@youni/api/contracts/comments-output";
+import type { MyCommentRow } from "@youni/api/contracts/comments";
 import * as Clipboard from "expo-clipboard";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";

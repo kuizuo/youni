@@ -8,7 +8,7 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
-import type { CommentListRow } from "../contracts/comments-output";
+import type { CommentListRow } from "../contracts/comments";
 import {
 	activeUserProcedure,
 	protectedProcedure,

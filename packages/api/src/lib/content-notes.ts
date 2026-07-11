@@ -18,7 +18,7 @@ import type {
 	ContentNoteRow,
 	ContentNoteStatus,
 	HydratedContentNote,
-} from "../contracts/content-note-types";
+} from "../contracts/shared";
 import { containsInsensitive } from "./search";
 
 export type {
@@ -26,7 +26,7 @@ export type {
 	ContentNoteRow,
 	ContentNoteStatus,
 	HydratedContentNote,
-} from "../contracts/content-note-types";
+} from "../contracts/shared";
 
 export type ContentNoteMutationInput = {
 	title: string;

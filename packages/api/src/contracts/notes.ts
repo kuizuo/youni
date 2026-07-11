@@ -1,8 +1,10 @@
 import z from "zod";
-
-import { idInput, listInput, paginatedListInput } from "./common-inputs";
-import type { NotesOutputs } from "./notes-output";
+import type { CommentListRow } from "./comments";
 import { output, procedure } from "./procedure";
+import type { ContentNoteRow, HydratedContentNote } from "./shared";
+import { idInput, listInput, paginatedListInput } from "./shared";
+
+// ====== Input ======
 
 export const noteCreateInput = z.object({
 	title: z.string().trim().max(100).default(""),
@@ -59,6 +61,62 @@ export const noteVisibilityUpdateInput = z.object({
 	id: z.string().min(1),
 	visibility: z.enum(["public", "followers", "private"]),
 });
+
+// ====== Output ======
+
+export type NotesOutputs = {
+	feed: HydratedContentNote[];
+	followingFeed: HydratedContentNote[];
+	searchNotes: {
+		items: HydratedContentNote[];
+		hasMore: boolean;
+		nextOffset: number | null;
+	};
+	byId: ContentNoteRow & {
+		topics: string[];
+		likedCount: number;
+		collectedCount: number;
+		commentCount: number;
+		liked: boolean;
+		collected: boolean;
+		author: {
+			id: string;
+			name: string;
+			image: string | null;
+			handle: string | null;
+			isFollowing: boolean;
+		};
+	} & { comments: CommentListRow[]; commentsNextOffset: number | null };
+	drafts: HydratedContentNote[];
+	draftById: HydratedContentNote | undefined;
+	editById: HydratedContentNote | undefined;
+	updateDraft: { id: string; status: string };
+	updateNote: { id: string; status: "audit" };
+	updateNoteVisibility: {
+		id: string;
+		visibility: "public" | "followers" | "private";
+	};
+	deleteMyNote: { ok: boolean };
+	creatorStats: {
+		total: number;
+		published: number;
+		draft: number;
+		audit: number;
+		rejected: number;
+		hidden: number;
+		liked: number;
+		collected: number;
+		comments: number;
+	};
+	viewHistory: { note: HydratedContentNote; viewedAt: Date }[];
+	deleteViewHistory: { ok: boolean };
+	clearViewHistory: { ok: boolean };
+	create: { id: string; status: string };
+	toggleLike: { liked: boolean; likedCount: number };
+	toggleCollect: { collected: boolean; collectedCount: number };
+};
+
+// ====== Contract ======
 
 export const notesContract = {
 	feed: procedure.input(listInput).output(output<NotesOutputs["feed"]>()),

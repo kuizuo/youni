@@ -1,8 +1,9 @@
 import z from "zod";
-
-import { listInput, paginatedListInput } from "./common-inputs";
 import { output, procedure } from "./procedure";
-import type { TopicsOutputs } from "./topics-output";
+import type { HydratedContentNote } from "./shared";
+import { listInput, paginatedListInput } from "./shared";
+
+// ====== Input ======
 
 export const topicDetailInput = z.object({
 	id: z.string().min(1),
@@ -14,6 +15,40 @@ export const topicDetailInput = z.object({
 export const topicNameInput = z.object({
 	name: z.string().trim().min(1).max(24),
 });
+
+// ====== Output ======
+
+export type TopicsOutputs = {
+	topics: { noteCount: number; id: string; name: string; createdAt: Date }[];
+	searchTopics: {
+		items: {
+			discussionCount: number;
+			noteCount: number;
+			id: string;
+			name: string;
+			createdAt: Date;
+		}[];
+		hasMore: boolean;
+		nextOffset: number | null;
+	};
+	topicDetail: {
+		topic: {
+			discussionCount: number;
+			noteCount: number;
+			id: string;
+			name: string;
+			createdAt: Date;
+		};
+		notes: {
+			items: HydratedContentNote[];
+			hasMore: boolean;
+			nextOffset: number | null;
+		};
+	};
+	topicByName: { id: string; name: string; createdAt: Date };
+};
+
+// ====== Contract ======
 
 export const topicsContract = {
 	topics: procedure.input(listInput).output(output<TopicsOutputs["topics"]>()),
