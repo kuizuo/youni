@@ -37,6 +37,8 @@ const allowedCorsOrigins = new Set([
 ]);
 const avatarPrefix = "avatar/";
 const avatarMaxSize = 2 * 1024 * 1024;
+const profileCoverPrefix = "profile-covers/";
+const profileCoverMaxSize = 5 * 1024 * 1024;
 const noteImagePrefix = "note-images/";
 const noteImageMaxSize = 8 * 1024 * 1024;
 const noteImageMaxCount = 9;
@@ -155,29 +157,46 @@ async function assertActiveUploadAccess(c: HonoContext) {
 	return account;
 }
 
-async function uploadAvatarFromRequest(c: HonoContext) {
+async function uploadProfileImageFromRequest(
+	c: HonoContext,
+	options: {
+		fieldName: string;
+		label: string;
+		maxSize: number;
+		prefix: string;
+		publicPath: string;
+	},
+) {
 	if (!env.YOUNI_BUCKET) {
-		return c.json({ message: "头像存储尚未配置" }, 503);
+		return c.json({ message: `${options.label}存储尚未配置` }, 503);
 	}
 
 	const body = await c.req.parseBody();
-	const file = body.avatar;
+	const file = body[options.fieldName];
 
 	if (!(file instanceof File)) {
-		return c.json({ message: "请选择头像文件" }, 400);
+		return c.json({ message: `请选择${options.label}文件` }, 400);
 	}
 
 	const extension = avatarContentTypes.get(file.type);
 	if (!extension) {
-		return c.json({ message: "头像仅支持 JPG、PNG、WebP 或 GIF" }, 400);
+		return c.json(
+			{ message: `${options.label}仅支持 JPG、PNG、WebP 或 GIF` },
+			400,
+		);
 	}
 
-	if (file.size > avatarMaxSize) {
-		return c.json({ message: "头像不能超过 2MB" }, 400);
+	if (file.size > options.maxSize) {
+		return c.json(
+			{
+				message: `${options.label}不能超过 ${options.maxSize / 1024 / 1024}MB`,
+			},
+			400,
+		);
 	}
 
 	const fileName = `${crypto.randomUUID()}.${extension}`;
-	const key = `${avatarPrefix}${fileName}`;
+	const key = `${options.prefix}${fileName}`;
 
 	await env.YOUNI_BUCKET.put(key, file.stream(), {
 		httpMetadata: {
@@ -188,7 +207,27 @@ async function uploadAvatarFromRequest(c: HonoContext) {
 
 	return c.json({
 		key,
-		url: new URL(`/uploads/avatar/${fileName}`, c.req.url).toString(),
+		url: new URL(`${options.publicPath}/${fileName}`, c.req.url).toString(),
+	});
+}
+
+function uploadAvatarFromRequest(c: HonoContext) {
+	return uploadProfileImageFromRequest(c, {
+		fieldName: "avatar",
+		label: "头像",
+		maxSize: avatarMaxSize,
+		prefix: avatarPrefix,
+		publicPath: "/uploads/avatar",
+	});
+}
+
+function uploadProfileCoverFromRequest(c: HonoContext) {
+	return uploadProfileImageFromRequest(c, {
+		fieldName: "cover",
+		label: "背景图",
+		maxSize: profileCoverMaxSize,
+		prefix: profileCoverPrefix,
+		publicPath: "/uploads/profile-cover",
 	});
 }
 
@@ -266,6 +305,15 @@ app.post("/uploads/avatar", async (c) => {
 	return uploadAvatarFromRequest(c);
 });
 
+app.post("/uploads/profile-cover", async (c) => {
+	const account = await assertActiveUploadAccess(c);
+	if (!account) {
+		return c.json({ message: "请先登录后再上传背景图" }, 401);
+	}
+
+	return uploadProfileCoverFromRequest(c);
+});
+
 app.post("/uploads/note-images", async (c) => {
 	const account = await assertActiveUploadAccess(c);
 	if (!account) {
@@ -286,6 +334,29 @@ app.get("/uploads/avatar/:fileName", async (c) => {
 	}
 
 	const object = await env.YOUNI_BUCKET.get(`${avatarPrefix}${fileName}`);
+	if (!object) {
+		return c.notFound();
+	}
+
+	const headers = new Headers();
+	object.writeHttpMetadata(headers);
+	headers.set("etag", object.httpEtag);
+	headers.set("cache-control", "public, max-age=31536000, immutable");
+
+	return new Response(object.body, { headers });
+});
+
+app.get("/uploads/profile-cover/:fileName", async (c) => {
+	if (!env.YOUNI_BUCKET) {
+		return c.notFound();
+	}
+
+	const fileName = c.req.param("fileName");
+	if (!/^[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(fileName)) {
+		return c.notFound();
+	}
+
+	const object = await env.YOUNI_BUCKET.get(`${profileCoverPrefix}${fileName}`);
 	if (!object) {
 		return c.notFound();
 	}

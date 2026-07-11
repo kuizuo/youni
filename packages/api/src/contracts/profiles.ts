@@ -34,6 +34,7 @@ export const profileUpdateInput = z.object({
 	bio: z.string().trim().max(160).optional(),
 	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
 	image: z.string().trim().url().optional().or(z.literal("")),
+	coverImage: z.string().trim().url().optional().or(z.literal("")),
 });
 
 // ====== Output ======
@@ -49,6 +50,7 @@ export type ProfilesOutputs = {
 		name: string;
 		email: string;
 		image: string | null;
+		coverImage: string | null;
 		handle: string | null;
 		bio: string | null;
 		gender: string;
@@ -66,6 +68,7 @@ export type ProfilesOutputs = {
 			name: string;
 			email: string;
 			image: string | null;
+			coverImage: string | null;
 			handle: string | null;
 			bio: string | null;
 			gender: string;
@@ -85,6 +88,7 @@ export type ProfilesOutputs = {
 		name: string;
 		email: string;
 		image: string | null;
+		coverImage: string | null;
 		handle: string | null;
 		bio: string | null;
 		gender: string;
@@ -102,6 +106,7 @@ export type ProfilesOutputs = {
 			name: string;
 			email: string;
 			image: string | null;
+			coverImage: string | null;
 			handle: string | null;
 			bio: string | null;
 			gender: string;
@@ -120,6 +125,7 @@ export type ProfilesOutputs = {
 		name: string;
 		email: string;
 		image: string | null;
+		coverImage: string | null;
 		handle: string | null;
 		bio: string | null;
 		gender: string;
@@ -137,6 +143,7 @@ export type ProfilesOutputs = {
 			name: string;
 			email: string;
 			image: string | null;
+			coverImage: string | null;
 			handle: string | null;
 			bio: string | null;
 			gender: string;
@@ -157,6 +164,7 @@ export type ProfilesOutputs = {
 		name: string;
 		email: string;
 		image: string | null;
+		coverImage: string | null;
 		handle: string | null;
 		bio: string | null;
 		gender: string;
@@ -171,6 +179,7 @@ export type ProfilesOutputs = {
 				id: string;
 				emailVerified: boolean;
 				image: string | null;
+				coverImage: string | null;
 				handle: string | null;
 				bio: string | null;
 				gender: string;

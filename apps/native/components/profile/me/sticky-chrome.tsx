@@ -33,15 +33,13 @@ export function MeStickyChrome({
 		<Animated.View
 			className="absolute top-0 right-0 left-0"
 			pointerEvents="box-none"
-			style={[
-				{
-					backgroundColor: PROFILE_HERO_COLOR,
-					height: topChromeHeight,
-					zIndex: 20,
-				},
-				style,
-			]}
+			style={{ height: topChromeHeight, zIndex: 20 }}
 		>
+			<Animated.View
+				className="absolute inset-0"
+				pointerEvents="none"
+				style={[{ backgroundColor: PROFILE_HERO_COLOR }, style]}
+			/>
 			<MeProfileTopChrome
 				avatarInitial={avatarInitial}
 				displayName={displayName}

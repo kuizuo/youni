@@ -7,6 +7,7 @@ import {
 	useState,
 } from "react";
 import {
+	ActivityIndicator,
 	type NativeScrollEvent,
 	type NativeSyntheticEvent,
 	RefreshControl,
@@ -61,7 +62,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	onTabChange: (tab: Key) => void;
 	refreshColor: string;
 	refreshing: boolean;
-	renderHeader: () => ReactNode;
+	renderHeader: (scrollY: SharedValue<number>) => ReactNode;
 	renderStickyHeader: (
 		style: StyleProp<ViewStyle>,
 		miniProfileStyle: StyleProp<ViewStyle>,
@@ -117,7 +118,12 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	const topChromeStyle = useAnimatedStyle(() => {
 		return {
 			backgroundColor: headerColor,
-			opacity: 1,
+			opacity: interpolate(
+				scrollY.value,
+				[stickyTrigger - 72, stickyTrigger - 16],
+				[0, 1],
+				Extrapolation.CLAMP,
+			),
 		};
 	});
 	const miniProfileStyle = useAnimatedStyle(() => ({
@@ -224,7 +230,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 				contentContainerStyle={{ backgroundColor: headerColor }}
 			>
 				<View style={{ backgroundColor: headerColor, height: headerHeight }}>
-					{renderHeader()}
+					{renderHeader(scrollY)}
 				</View>
 				<Animated.View style={[{ backgroundColor }, inlineTabStyle]}>
 					{renderTabBar({
@@ -292,6 +298,17 @@ export function ProfileCollapsibleTabs<Key extends string>({
 				topChromeStyle as StyleProp<ViewStyle>,
 				miniProfileStyle as StyleProp<ViewStyle>,
 			)}
+			{refreshing ? (
+				<View
+					className="absolute right-0 left-0 z-30 items-center"
+					pointerEvents="none"
+					style={{ top: topChromeHeight + 8 }}
+				>
+					<View className="size-9 items-center justify-center rounded-full bg-black/45">
+						<ActivityIndicator color="#ffffff" size="small" />
+					</View>
+				</View>
+			) : null}
 			<Animated.View
 				className="absolute right-0 left-0"
 				pointerEvents={isSticky ? "box-none" : "none"}

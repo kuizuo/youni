@@ -30,7 +30,10 @@ import {
 	type ProfileTabKey,
 } from "@/components/profile/profile-tabs";
 import { authClient } from "@/lib/auth-client";
-import { pickAndUploadAvatar } from "@/lib/avatar-upload";
+import {
+	pickAndUploadAvatar,
+	pickAndUploadProfileCover,
+} from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -54,7 +57,9 @@ export default function MeScreen() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [isEditOpen, setIsEditOpen] = useState(false);
 	const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
+	const [isCoverPreviewOpen, setIsCoverPreviewOpen] = useState(false);
 	const [isChangingAvatar, setIsChangingAvatar] = useState(false);
+	const [isChangingCover, setIsChangingCover] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
@@ -98,6 +103,7 @@ export default function MeScreen() {
 	const displayEmail = currentUser?.email ?? "登录账号";
 	const displayHandle = profile?.handle ? `@${profile.handle}` : displayEmail;
 	const avatarImage = profile?.image ?? currentUser?.image;
+	const coverImage = profile?.coverImage;
 	const avatarInitial = displayName.slice(0, 1);
 	const updateProfile = useMutation(orpc.updateProfile.mutationOptions());
 
@@ -174,6 +180,46 @@ export default function MeScreen() {
 		}
 	};
 
+	const changeCover = async () => {
+		fireHaptic();
+		setIsChangingCover(true);
+		try {
+			const uploaded = await pickAndUploadProfileCover();
+			if (!uploaded) return;
+
+			await updateProfile.mutateAsync({
+				bio: profile?.bio?.trim() ?? "",
+				coverImage: uploaded.url,
+				gender:
+					profile?.gender === "male" || profile?.gender === "female"
+						? profile.gender
+						: "unknown",
+				handle: profile?.handle?.trim() ?? "",
+				image: avatarImage ?? "",
+				name: displayName.trim() || "我",
+			});
+			await profileQuery.refetch();
+		} catch (error) {
+			if (isRequestTimeoutError(error)) return;
+			toast.show({
+				variant: "danger",
+				label: error instanceof Error ? error.message : "背景图更换失败",
+			});
+		} finally {
+			setIsChangingCover(false);
+		}
+	};
+
+	const openCover = () => {
+		if (!coverImage) {
+			void changeCover();
+			return;
+		}
+
+		fireHaptic();
+		setIsCoverPreviewOpen(true);
+	};
+
 	const refreshTab = async (
 		tab: ProfileTabKey,
 		options: { showRefreshControl?: boolean } = {},
@@ -220,18 +266,23 @@ export default function MeScreen() {
 				topChromeHeight={topChromeHeight}
 				onRefresh={() => refreshTab(activeTab)}
 				onTabChange={setActiveTab}
-				renderHeader={() => (
+				renderHeader={(scrollY) => (
 					<MeProfileHeader
 						avatarInitial={avatarInitial}
+						backgroundColor={backgroundColor}
+						coverImage={coverImage}
 						displayHandle={displayHandle}
 						displayName={displayName}
 						headerHeight={headerHeight}
 						image={avatarImage}
 						isAccountLoading={isAccountLoading}
+						isChangingCover={isChangingCover || updateProfile.isPending}
 						isProfileLoading={isProfileLoading}
 						profile={profile}
+						scrollY={scrollY}
 						topChromeHeight={topChromeHeight}
 						onAvatarPress={openAvatarPreview}
+						onCoverPress={openCover}
 						onMeasuredHeight={(height) => {
 							setMeasuredHeaderHeight((current) =>
 								current === height ? current : height,
@@ -327,6 +378,16 @@ export default function MeScreen() {
 				onClose={() => setIsAvatarPreviewOpen(false)}
 			/>
 
+			<CoverPreviewModal
+				image={coverImage}
+				insetsBottom={insets.bottom}
+				insetsTop={insets.top}
+				isChanging={isChangingCover || updateProfile.isPending}
+				isVisible={isCoverPreviewOpen && Boolean(coverImage)}
+				onChangeCover={changeCover}
+				onClose={() => setIsCoverPreviewOpen(false)}
+			/>
+
 			<MeEditProfileSheetHost
 				displayName={displayName}
 				isOpen={isEditOpen}
@@ -341,6 +402,85 @@ export default function MeScreen() {
 				}}
 			/>
 		</View>
+	);
+}
+
+function CoverPreviewModal({
+	image,
+	insetsBottom,
+	insetsTop,
+	isChanging,
+	isVisible,
+	onChangeCover,
+	onClose,
+}: {
+	image?: null | string;
+	insetsBottom: number;
+	insetsTop: number;
+	isChanging: boolean;
+	isVisible: boolean;
+	onChangeCover: () => void;
+	onClose: () => void;
+}) {
+	const accentForegroundColor = useThemeColor("accent-foreground");
+	const dimensions = useWindowDimensions();
+	const previewWidth = dimensions.width;
+	const previewHeight = Math.min(dimensions.height * 0.5, previewWidth * 0.62);
+
+	return (
+		<Modal
+			animationType="fade"
+			onRequestClose={onClose}
+			transparent
+			visible={isVisible}
+		>
+			<View className="flex-1 bg-black">
+				<Pressable className="absolute inset-0" onPress={onClose} />
+				<View
+					className="absolute right-4 left-4 flex-row justify-end"
+					style={{ top: insetsTop + 12 }}
+				>
+					<Button
+						isIconOnly
+						variant="ghost"
+						className="rounded-full bg-white/15"
+						accessibilityLabel="关闭背景图预览"
+						onPress={onClose}
+					>
+						<Ionicons name="close" size={22} color="#ffffff" />
+					</Button>
+				</View>
+
+				<View className="flex-1 items-center justify-center">
+					{image ? (
+						<Image
+							source={{ uri: image }}
+							contentFit="cover"
+							className="bg-white/10"
+							style={{ height: previewHeight, width: previewWidth }}
+						/>
+					) : null}
+				</View>
+
+				<View
+					className="absolute right-4 left-4"
+					style={{ bottom: Math.max(insetsBottom, 16) }}
+				>
+					<Button
+						variant="primary"
+						className="rounded-full"
+						feedbackVariant="scale-ripple"
+						isDisabled={isChanging}
+						onPress={onChangeCover}
+					>
+						{isChanging ? (
+							<Spinner size="sm" color={accentForegroundColor} />
+						) : null}
+						<Button.Label>{isChanging ? "更换中" : "更换背景图"}</Button.Label>
+					</Button>
+				</View>
+			</View>
+		</Modal>
 	);
 }
 

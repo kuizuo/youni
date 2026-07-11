@@ -1,13 +1,11 @@
 import * as ImagePicker from "expo-image-picker";
-import { Platform } from "react-native";
 
 import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
-const AVATAR_UPLOAD_TIMEOUT_MS = 30_000;
-const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
-const AVATAR_MIME_EXTENSIONS = new Map([
+const PROFILE_IMAGE_UPLOAD_TIMEOUT_MS = 30_000;
+const PROFILE_IMAGE_MIME_EXTENSIONS = new Map([
 	["image/jpeg", "jpg"],
 	["image/jpg", "jpg"],
 	["image/png", "png"],
@@ -15,9 +13,18 @@ const AVATAR_MIME_EXTENSIONS = new Map([
 	["image/gif", "gif"],
 ]);
 
-type AvatarUploadResponse = {
+type ProfileImageUploadResponse = {
 	key: string;
 	url: string;
+};
+
+type ProfileImageOptions = {
+	aspect: [number, number];
+	endpoint: string;
+	fieldName: string;
+	label: string;
+	maxSize: number;
+	namePrefix: string;
 };
 
 function extensionFromName(value?: null | string) {
@@ -26,19 +33,19 @@ function extensionFromName(value?: null | string) {
 	return match?.[1]?.toLowerCase();
 }
 
-function mimeTypeFromAsset(asset: ImagePicker.ImagePickerAsset) {
+function mimeTypeFromAsset(asset: ImagePicker.ImagePickerAsset, label: string) {
 	const explicitType = asset.mimeType?.toLowerCase();
 	if (explicitType) {
-		if (AVATAR_MIME_EXTENSIONS.has(explicitType)) {
+		if (PROFILE_IMAGE_MIME_EXTENSIONS.has(explicitType)) {
 			return explicitType;
 		}
-		throw new Error("头像仅支持 JPG、PNG、WebP 或 GIF");
+		throw new Error(`${label}仅支持 JPG、PNG、WebP 或 GIF`);
 	}
 
 	const extension =
 		extensionFromName(asset.fileName) ?? extensionFromName(asset.uri);
 	const detectedType = extension
-		? Array.from(AVATAR_MIME_EXTENSIONS.entries()).find(
+		? Array.from(PROFILE_IMAGE_MIME_EXTENSIONS.entries()).find(
 				([, value]) =>
 					value === extension || (extension === "jpeg" && value === "jpg"),
 			)?.[0]
@@ -50,12 +57,13 @@ function mimeTypeFromAsset(asset: ImagePicker.ImagePickerAsset) {
 function fileNameFromAsset(
 	asset: ImagePicker.ImagePickerAsset,
 	mimeType: string,
+	namePrefix: string,
 ) {
-	const extension = AVATAR_MIME_EXTENSIONS.get(mimeType) ?? "jpg";
+	const extension = PROFILE_IMAGE_MIME_EXTENSIONS.get(mimeType) ?? "jpg";
 	const rawName =
 		asset.fileName?.trim() ||
 		asset.uri.split("/").pop()?.split("?")[0]?.split("#")[0] ||
-		`avatar.${extension}`;
+		`${namePrefix}.${extension}`;
 	const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, "-");
 
 	if (extensionFromName(safeName)) {
@@ -65,7 +73,7 @@ function fileNameFromAsset(
 	return `${safeName}.${extension}`;
 }
 
-async function parseUploadResponse(response: Response) {
+async function parseUploadResponse(response: Response, label: string) {
 	const payload = (await response.json().catch(() => null)) as {
 		key?: unknown;
 		message?: unknown;
@@ -74,26 +82,28 @@ async function parseUploadResponse(response: Response) {
 
 	if (!response.ok) {
 		throw new Error(
-			typeof payload?.message === "string" ? payload.message : "头像上传失败",
+			typeof payload?.message === "string"
+				? payload.message
+				: `${label}上传失败`,
 		);
 	}
 
 	if (typeof payload?.url !== "string" || typeof payload.key !== "string") {
-		throw new Error("头像上传失败");
+		throw new Error(`${label}上传失败`);
 	}
 
-	return payload as AvatarUploadResponse;
+	return payload as ProfileImageUploadResponse;
 }
 
-export async function pickAndUploadAvatar() {
+async function pickAndUploadProfileImage(options: ProfileImageOptions) {
 	const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 	if (!permission.granted) {
-		throw new Error("需要允许访问相册后才能选择头像");
+		throw new Error(`需要允许访问相册后才能选择${options.label}`);
 	}
 
 	const result = await ImagePicker.launchImageLibraryAsync({
 		allowsEditing: true,
-		aspect: [1, 1],
+		aspect: options.aspect,
 		mediaTypes: "images",
 		quality: 0.85,
 	});
@@ -107,18 +117,21 @@ export async function pickAndUploadAvatar() {
 		return null;
 	}
 
-	if (asset.fileSize && asset.fileSize > MAX_AVATAR_SIZE) {
-		throw new Error("头像不能超过 2MB");
+	if (asset.fileSize && asset.fileSize > options.maxSize) {
+		throw new Error(
+			`${options.label}不能超过 ${options.maxSize / 1024 / 1024}MB`,
+		);
 	}
 
-	const mimeType = mimeTypeFromAsset(asset);
-	const fileName = fileNameFromAsset(asset, mimeType);
+	const mimeType = mimeTypeFromAsset(asset, options.label);
+	const fileName = fileNameFromAsset(asset, mimeType, options.namePrefix);
 	const formData = new FormData();
+	const isWeb = process.env.EXPO_OS === "web";
 
-	if (Platform.OS === "web" && asset.file) {
-		formData.append("avatar", asset.file, fileName);
+	if (isWeb && asset.file) {
+		formData.append(options.fieldName, asset.file, fileName);
 	} else {
-		formData.append("avatar", {
+		formData.append(options.fieldName, {
 			name: fileName,
 			type: mimeType,
 			uri: asset.uri,
@@ -126,7 +139,7 @@ export async function pickAndUploadAvatar() {
 	}
 
 	let headers: Headers | undefined;
-	if (Platform.OS !== "web") {
+	if (!isWeb) {
 		const cookies = authClient.getCookie();
 		if (cookies) {
 			headers = new Headers();
@@ -135,15 +148,37 @@ export async function pickAndUploadAvatar() {
 	}
 
 	const response = await fetchWithTimeout(
-		`${apiBaseUrl}/uploads/avatar`,
+		`${apiBaseUrl}${options.endpoint}`,
 		{
 			body: formData,
-			credentials: Platform.OS === "web" ? "include" : "omit",
+			credentials: isWeb ? "include" : "omit",
 			headers,
 			method: "POST",
 		},
-		AVATAR_UPLOAD_TIMEOUT_MS,
+		PROFILE_IMAGE_UPLOAD_TIMEOUT_MS,
 	);
 
-	return parseUploadResponse(response);
+	return parseUploadResponse(response, options.label);
+}
+
+export function pickAndUploadAvatar() {
+	return pickAndUploadProfileImage({
+		aspect: [1, 1],
+		endpoint: "/uploads/avatar",
+		fieldName: "avatar",
+		label: "头像",
+		maxSize: 2 * 1024 * 1024,
+		namePrefix: "avatar",
+	});
+}
+
+export function pickAndUploadProfileCover() {
+	return pickAndUploadProfileImage({
+		aspect: [3, 1],
+		endpoint: "/uploads/profile-cover",
+		fieldName: "cover",
+		label: "背景图",
+		maxSize: 5 * 1024 * 1024,
+		namePrefix: "profile-cover",
+	});
 }

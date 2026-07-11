@@ -14,6 +14,7 @@ export const user = sqliteTable("user", {
 	email: text("email").notNull().unique(),
 	emailVerified: booleanColumn("email_verified").default(false).notNull(),
 	image: text("image"),
+	coverImage: text("cover_image"),
 	handle: text("handle").unique(),
 	bio: text("bio"),
 	gender: text("gender").default("unknown").notNull(),

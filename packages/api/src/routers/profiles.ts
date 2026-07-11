@@ -25,6 +25,7 @@ async function getProfile(userId: string, viewerId?: string) {
 			name: user.name,
 			email: user.email,
 			image: user.image,
+			coverImage: user.coverImage,
 			handle: user.handle,
 			bio: user.bio,
 			gender: user.gender,
@@ -275,6 +276,9 @@ export const profilesRouter = {
 					bio: input.bio || null,
 					gender: input.gender,
 					image: input.image || null,
+					...(input.coverImage !== undefined
+						? { coverImage: input.coverImage || null }
+						: {}),
 				})
 				.where(eq(user.id, context.session.user.id))
 				.returning();
