@@ -6,7 +6,7 @@ import {
 	Text,
 	useThemeColor,
 } from "heroui-native";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SingleColorIcon } from "@/components/icons/single-color";
@@ -20,6 +20,7 @@ export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 	const insets = useSafeAreaInsets();
 	const backgroundColor = useThemeColor("background");
 	const socialNavigation = useSocialNavigation();
+	const showActiveLabel = Platform.OS !== "web";
 
 	return (
 		<View
@@ -88,7 +89,10 @@ export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 									? "w-12 bg-foreground shadow-sm"
 									: undefined,
 								!config.isCreateAction && isFocused
-									? "w-20 gap-1.5 bg-accent px-3 shadow-sm"
+									? cn(
+											"bg-accent shadow-sm",
+											showActiveLabel ? "w-20 gap-1.5 px-3" : "w-12",
+										)
 									: !config.isCreateAction
 										? "w-12 bg-transparent"
 										: undefined,
@@ -107,7 +111,7 @@ export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
 											: "text-muted"
 								}
 							/>
-							{!config.isCreateAction && isFocused ? (
+							{!config.isCreateAction && isFocused && showActiveLabel ? (
 								<Text.Paragraph
 									type="body-xs"
 									weight="semibold"
