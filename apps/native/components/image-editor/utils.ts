@@ -399,7 +399,7 @@ async function ensureEditDirectory() {
 
 export async function writeJpegBase64(base64: string, quality: number) {
 	const directory = await ensureEditDirectory();
-	const fileName = `note-edit-${Date.now()}-${quality}.jpg`;
+	const fileName = `image-edit-${Date.now()}-${quality}.jpg`;
 	const uri = `${directory}${fileName}`;
 
 	await FileSystem.writeAsStringAsync(uri, base64, {

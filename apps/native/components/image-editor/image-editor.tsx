@@ -19,10 +19,9 @@ import {
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import type { MediaImage } from "@/lib/media/types";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
-import type { ComposerImage } from "../create-types";
 import { EditorCanvas } from "./editor-canvas";
 import { EditorBottomControls, EditorTopBar } from "./editor-controls";
 import { renderEditorExport } from "./export-renderer";
@@ -56,9 +55,9 @@ import {
 } from "./utils";
 
 type ImageEditorProps = {
-	image: ComposerImage;
+	image: MediaImage;
 	onCancel: () => void;
-	onSave: (editedImage: ComposerImage) => void;
+	onSave: (editedImage: MediaImage) => void;
 };
 
 function snapshotsEqual(a: EditorSnapshot, b: EditorSnapshot) {

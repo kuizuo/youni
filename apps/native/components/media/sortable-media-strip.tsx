@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { PressableFeedback } from "heroui-native";
+import { PressableFeedback, useThemeColor } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import { Platform, useWindowDimensions, View } from "react-native";
 import {
@@ -14,11 +14,10 @@ import {
 	useHorizontalSortableList,
 } from "react-native-reanimated-dnd";
 import { runOnUIAsync } from "react-native-worklets";
-
+import type { MediaImage } from "@/lib/media/types";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
-import type { ComposerImage } from "./create-types";
-import { MediaTile } from "./create-ui";
 import { synchronizeSortableItems } from "./media-strip-state";
+import { MediaTile } from "./media-tile";
 
 const MEDIA_TILE_SIZE = 88;
 const MEDIA_TILE_GAP = 10;
@@ -27,8 +26,8 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 function SortableMediaItems({
 	images,
-	isAddingImages,
-	mutedColor,
+	isDisabled,
+	maxItems,
 	onAddImage,
 	onEditImage,
 	onMoveImage,
@@ -36,17 +35,18 @@ function SortableMediaItems({
 	loadedImageUris,
 	onImageLoaded,
 }: {
-	images: ComposerImage[];
-	isAddingImages: boolean;
-	mutedColor: string;
+	images: MediaImage[];
+	isDisabled: boolean;
+	maxItems: number;
 	onAddImage: () => void;
-	onEditImage: (image: ComposerImage) => void;
+	onEditImage: (image: MediaImage) => void;
 	onMoveImage: (imageId: string, toIndex: number) => void;
 	onRemoveImage: (id: string) => void;
 	loadedImageUris: Set<string>;
 	onImageLoaded: (uri: string) => void;
 }) {
 	const { width: windowWidth } = useWindowDimensions();
+	const mutedColor = useThemeColor("muted");
 	const [containerWidth, setContainerWidth] = useState(
 		Math.max(1, windowWidth - PAGE_HORIZONTAL_PADDING),
 	);
@@ -99,7 +99,7 @@ function SortableMediaItems({
 		};
 	}, [images, positions]);
 
-	const showAddButton = renderedImages.length < 9;
+	const showAddButton = renderedImages.length < maxItems;
 	const addButtonLeft =
 		contentWidth + (renderedImages.length > 0 ? MEDIA_TILE_GAP : 0);
 	const totalContentWidth =
@@ -148,7 +148,7 @@ function SortableMediaItems({
 							<PressableFeedback
 								accessibilityLabel="添加图片"
 								accessibilityRole="button"
-								isDisabled={isAddingImages}
+								isDisabled={isDisabled}
 								onPress={onAddImage}
 								className="h-full w-full items-center justify-center rounded-xl border border-border bg-content2"
 							>
@@ -188,20 +188,20 @@ function SortableMediaItems({
 	);
 }
 
-export function MediaStrip({
+export function SortableMediaStrip({
 	images,
-	isAddingImages,
-	mutedColor,
+	isDisabled,
+	maxItems,
 	onAddImage,
 	onEditImage,
 	onMoveImage,
 	onRemoveImage,
 }: {
-	images: ComposerImage[];
-	isAddingImages: boolean;
-	mutedColor: string;
+	images: MediaImage[];
+	isDisabled: boolean;
+	maxItems: number;
 	onAddImage: () => void;
-	onEditImage: (image: ComposerImage) => void;
+	onEditImage: (image: MediaImage) => void;
 	onMoveImage: (imageId: string, toIndex: number) => void;
 	onRemoveImage: (id: string) => void;
 }) {
@@ -210,9 +210,9 @@ export function MediaStrip({
 	return (
 		<SortableMediaItems
 			images={images}
-			isAddingImages={isAddingImages}
+			isDisabled={isDisabled}
 			loadedImageUris={loadedImageUrisRef.current}
-			mutedColor={mutedColor}
+			maxItems={maxItems}
 			onAddImage={onAddImage}
 			onEditImage={onEditImage}
 			onMoveImage={onMoveImage}

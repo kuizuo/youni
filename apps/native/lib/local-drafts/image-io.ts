@@ -2,12 +2,11 @@ import { fromByteArray, toByteArray } from "base64-js";
 import * as FileSystem from "expo-file-system/legacy";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { Platform } from "react-native";
-
-import type { ComposerImage } from "@/components/create/create-types";
 import type {
 	LocalDraftImage,
 	LocalDraftImageInput,
 } from "@/lib/local-drafts/types";
+import type { MediaImage } from "@/lib/media/types";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const THUMBNAIL_WIDTH = 480;
@@ -28,7 +27,7 @@ function extensionFromName(value?: null | string) {
 		?.toLowerCase();
 }
 
-function mimeTypeForImage(image: ComposerImage) {
+function mimeTypeForImage(image: MediaImage) {
 	if (image.mimeType && MIME_EXTENSIONS.has(image.mimeType.toLowerCase())) {
 		return image.mimeType.toLowerCase();
 	}
@@ -40,7 +39,7 @@ function mimeTypeForImage(image: ComposerImage) {
 	return "image/jpeg";
 }
 
-function fileNameForImage(image: ComposerImage, mimeType: string) {
+function fileNameForImage(image: MediaImage, mimeType: string) {
 	const extension = MIME_EXTENSIONS.get(mimeType) ?? "jpg";
 	const rawName = image.fileName?.trim() || `draft-image.${extension}`;
 	const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, "-");
@@ -63,14 +62,14 @@ async function bytesFromUri(uri: string) {
 	return toByteArray(base64);
 }
 
-async function imageData(image: ComposerImage) {
+async function imageData(image: MediaImage) {
 	if (Platform.OS === "web" && image.asset?.file) {
 		return new Uint8Array(await image.asset.file.arrayBuffer());
 	}
 	return bytesFromUri(image.uri);
 }
 
-export async function serializeComposerImages(images: ComposerImage[]) {
+export async function serializeComposerImages(images: MediaImage[]) {
 	if (images.length > 9) throw new Error("最多只能选择 9 张图片");
 	const serialized: LocalDraftImageInput[] = [];
 	for (const image of images) {
@@ -92,7 +91,7 @@ export async function serializeComposerImages(images: ComposerImage[]) {
 	return serialized;
 }
 
-export async function createDraftCoverThumbnail(image?: ComposerImage) {
+export async function createDraftCoverThumbnail(image?: MediaImage) {
 	if (!image) return null;
 	try {
 		const result = await manipulateAsync(
@@ -128,7 +127,7 @@ async function ensureMaterializedDirectory() {
 export async function materializeLocalDraftImage(
 	draftId: string,
 	image: LocalDraftImage,
-): Promise<ComposerImage> {
+): Promise<MediaImage> {
 	if (Platform.OS === "web") {
 		const blob = new Blob([image.data as BlobPart], { type: image.mimeType });
 		const file = new File([blob], image.fileName, { type: image.mimeType });

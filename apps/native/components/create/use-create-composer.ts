@@ -1,19 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import * as FileSystem from "expo-file-system/legacy";
-import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
-import * as ImagePicker from "expo-image-picker";
+import type * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Platform } from "react-native";
 
 import type {
 	AdvancedOptions,
-	ComposerImage,
 	NoteVisibility,
 	PublishSubmitMode,
 } from "@/components/create/create-types";
-import { reorderImages } from "@/components/create/image-order";
+import { reorderImages } from "@/components/media/image-order";
 import { authClient } from "@/lib/auth-client";
 import {
 	createDraftCoverThumbnail,
@@ -26,6 +22,9 @@ import {
 	getLocalDraft,
 	saveLocalDraft,
 } from "@/lib/local-drafts/store";
+import { prepareMediaImage } from "@/lib/media/prepare-media-image";
+import { selectImagesFromSystem } from "@/lib/media/system-image-picker";
+import type { MediaImage } from "@/lib/media/types";
 import {
 	deleteUploadedNoteImages,
 	uploadNoteImages,
@@ -44,7 +43,7 @@ const DEFAULT_ADVANCED_OPTIONS: AdvancedOptions = {
 function composerSignature(composer: {
 	advancedOptions: AdvancedOptions;
 	content: string;
-	images: ComposerImage[];
+	images: MediaImage[];
 	title: string;
 	topics: string[];
 	visibility: NoteVisibility;
@@ -89,65 +88,6 @@ function mergeTopics(...topicGroups: string[][]) {
 	return [...topics];
 }
 
-function isGifAsset(asset: ImagePicker.ImagePickerAsset) {
-	const mimeType = asset.mimeType?.toLowerCase();
-	if (mimeType === "image/gif") return true;
-	return asset.uri.split("?")[0]?.toLowerCase().endsWith(".gif") ?? false;
-}
-
-function imageFileName(asset: ImagePicker.ImagePickerAsset, extension: string) {
-	const rawName =
-		asset.fileName?.split(".").slice(0, -1).join(".") ||
-		asset.assetId ||
-		`note-image-${Date.now()}`;
-	const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, "-");
-	return `${safeName}.${extension}`;
-}
-
-async function createComposerImageFromAsset(
-	asset: ImagePicker.ImagePickerAsset,
-): Promise<ComposerImage> {
-	if (Platform.OS === "web" || isGifAsset(asset)) {
-		return {
-			asset,
-			fileName: asset.fileName,
-			fileSize: asset.fileSize,
-			height: asset.height,
-			id: `${asset.assetId ?? asset.uri}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-			mimeType: asset.mimeType,
-			originalUri: asset.uri,
-			uri: asset.uri,
-			width: asset.width,
-		};
-	}
-
-	const converted = await manipulateAsync(asset.uri, [], {
-		compress: 0.92,
-		format: SaveFormat.JPEG,
-	});
-	const info = await FileSystem.getInfoAsync(converted.uri);
-	const fileSize =
-		info.exists && !info.isDirectory ? info.size : asset.fileSize;
-	const fileName = imageFileName(asset, "jpg");
-
-	return {
-		asset: {
-			fileName,
-			fileSize,
-			mimeType: "image/jpeg",
-			uri: converted.uri,
-		},
-		fileName,
-		fileSize,
-		height: converted.height,
-		id: `${asset.assetId ?? asset.uri}-${converted.uri}`,
-		mimeType: "image/jpeg",
-		originalUri: asset.uri,
-		uri: converted.uri,
-		width: converted.width,
-	};
-}
-
 type UseCreateComposerOptions = {
 	onRequestClose?: () => void;
 };
@@ -164,7 +104,7 @@ export function useCreateComposer({
 	const [hasAuthenticated, setHasAuthenticated] = useState(false);
 	const [title, setTitle] = useState("");
 	const [content, setContent] = useState("");
-	const [images, setImages] = useState<ComposerImage[]>([]);
+	const [images, setImages] = useState<MediaImage[]>([]);
 	const [topics, setTopics] = useState<string[]>([]);
 	const [visibility, setVisibility] = useState<NoteVisibility>("public");
 	const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>(
@@ -425,7 +365,7 @@ export function useCreateComposer({
 		setHydratedNoteId(noteId);
 	}, [editNoteQuery.data, hydratedNoteId, noteId]);
 
-	const imageMetasFrom = (items: ComposerImage[]) =>
+	const imageMetasFrom = (items: MediaImage[]) =>
 		items.flatMap((image) => {
 			const url = image.remoteUrl ?? image.uri;
 			return image.width && image.height
@@ -433,7 +373,7 @@ export function useCreateComposer({
 				: [];
 		});
 
-	const uploadLocalImages = async (composerImages: ComposerImage[]) => {
+	const uploadLocalImages = async (composerImages: MediaImage[]) => {
 		const localAssets = composerImages.flatMap((image) =>
 			image.asset ? [image.asset] : [],
 		);
@@ -598,9 +538,7 @@ export function useCreateComposer({
 		setIsAddingImages(true);
 		try {
 			const selectedImages = await Promise.all(
-				assets
-					.slice(0, remaining)
-					.map((asset) => createComposerImageFromAsset(asset)),
+				assets.slice(0, remaining).map((asset) => prepareMediaImage(asset)),
 			);
 
 			setImages((current) => [...current, ...selectedImages].slice(0, 9));
@@ -626,18 +564,8 @@ export function useCreateComposer({
 		}
 
 		try {
-			const result = await ImagePicker.launchImageLibraryAsync({
-				allowsEditing: false,
-				allowsMultipleSelection: true,
-				mediaTypes: "images",
-				orderedSelection: true,
-				preferredAssetRepresentationMode:
-					ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
-				quality: 0.92,
-				selectionLimit: remaining,
-				shouldDownloadFromNetwork: true,
-			});
-			if (!result.canceled) await addImageAssets(result.assets);
+			const assets = await selectImagesFromSystem(remaining);
+			if (assets.length > 0) await addImageAssets(assets);
 		} catch {
 			toast.show({ variant: "danger", label: "图片选择失败" });
 		}
@@ -656,7 +584,7 @@ export function useCreateComposer({
 		});
 	};
 
-	const updateImage = (image: ComposerImage) => {
+	const updateImage = (image: MediaImage) => {
 		setImages((current) =>
 			current.map((item) => (item.id === image.id ? image : item)),
 		);

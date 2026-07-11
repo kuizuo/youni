@@ -22,21 +22,19 @@ import {
 	InlineMentionPicker,
 	InlineTopicPicker,
 } from "@/components/create/create-pickers";
-import type {
-	ComposerImage,
-	InlineTrigger,
-} from "@/components/create/create-types";
+import type { InlineTrigger } from "@/components/create/create-types";
 import { findInlineTrigger } from "@/components/create/inline-trigger";
-import { CreateMediaPicker } from "@/components/create/media-picker";
-import { MediaStrip } from "@/components/create/media-strip";
 import { PublishingOptions } from "@/components/create/publishing-options";
 import { SubmitBar } from "@/components/create/submit-bar";
+import { ImageEditor } from "@/components/image-editor/image-editor";
+import { MediaPicker } from "@/components/media/media-picker";
+import { SortableMediaStrip } from "@/components/media/sortable-media-strip";
 import { ErrorState } from "@/components/social-states";
+import type { MediaImage } from "@/lib/media/types";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { isGifImage } from "@/utils/media";
 import { AdvancedOptionsSheet } from "./create-sheets";
-import { ImageEditor } from "./image-editor";
 import type { TextSelection } from "./linked-composer-input";
 import { useCreateComposer } from "./use-create-composer";
 
@@ -309,7 +307,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const editingImage =
 		composer.images.find((image) => image.id === editingImageId) ?? null;
 
-	const openImageEditor = (image: ComposerImage) => {
+	const openImageEditor = (image: MediaImage) => {
 		fireHaptic();
 		if (isGifImage(image)) {
 			toast.show({
@@ -359,10 +357,10 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					contentContainerClassName="gap-4 px-4 pt-3"
 					contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
 				>
-					<MediaStrip
+					<SortableMediaStrip
 						images={composer.images}
-						isAddingImages={composer.isAddingImages}
-						mutedColor={mutedColor}
+						isDisabled={composer.isAddingImages}
+						maxItems={9}
 						onAddImage={openMediaPicker}
 						onEditImage={openImageEditor}
 						onMoveImage={composer.moveImage}
@@ -461,7 +459,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 						}}
 					/>
 				) : null}
-				<CreateMediaPicker
+				<MediaPicker
 					maxSelection={Math.max(0, 9 - composer.images.length)}
 					visible={isMediaPickerOpen}
 					onClose={() => setIsMediaPickerOpen(false)}
