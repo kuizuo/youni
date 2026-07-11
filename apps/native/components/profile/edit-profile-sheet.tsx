@@ -15,12 +15,15 @@ import {
 } from "heroui-native";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import type {
 	EditableProfile,
 	ProfileSessionUser,
 } from "@/components/profile/profile-tabs";
+import {
+	MULTILINE_INPUT_STYLE,
+	SINGLE_LINE_INPUT_STYLE,
+} from "@/components/shared/input-styles";
 import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -147,6 +150,7 @@ export function EditProfileSheet({
 					<TextField isRequired>
 						<Label>昵称</Label>
 						<Input
+							style={SINGLE_LINE_INPUT_STYLE}
 							value={name}
 							onBlur={onBlur}
 							onChangeText={setName}
@@ -159,6 +163,7 @@ export function EditProfileSheet({
 					<TextField>
 						<Label>用户名</Label>
 						<Input
+							style={SINGLE_LINE_INPUT_STYLE}
 							value={handle}
 							autoCapitalize="none"
 							onBlur={onBlur}
@@ -172,6 +177,7 @@ export function EditProfileSheet({
 					<TextField>
 						<Label>简介</Label>
 						<TextArea
+							style={MULTILINE_INPUT_STYLE}
 							value={bio}
 							className="min-h-24"
 							maxLength={160}

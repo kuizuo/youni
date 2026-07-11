@@ -13,8 +13,11 @@ import {
 } from "heroui-native";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-
 import { EditableAvatar } from "@/components/profile/editable-avatar";
+import {
+	MULTILINE_INPUT_STYLE,
+	SINGLE_LINE_INPUT_STYLE,
+} from "@/components/shared/input-styles";
 import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -130,6 +133,7 @@ export function SettingsProfileForm({
 			<TextField isRequired>
 				<Label>昵称</Label>
 				<Input
+					style={SINGLE_LINE_INPUT_STYLE}
 					value={name}
 					onChangeText={setName}
 					placeholder="你的昵称"
@@ -140,6 +144,7 @@ export function SettingsProfileForm({
 			<TextField>
 				<Label>用户名</Label>
 				<Input
+					style={SINGLE_LINE_INPUT_STYLE}
 					value={handle}
 					onChangeText={setHandle}
 					autoCapitalize="none"
@@ -151,6 +156,7 @@ export function SettingsProfileForm({
 			<TextField>
 				<Label>简介</Label>
 				<TextArea
+					style={MULTILINE_INPUT_STYLE}
 					value={bio}
 					onChangeText={setBio}
 					placeholder="一句话介绍你分享的内容"

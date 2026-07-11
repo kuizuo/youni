@@ -9,6 +9,7 @@ export type TextSelection = {
 
 const CONTENT_INPUT_STYLE: TextStyle = {
 	fontSize: 20,
+	includeFontPadding: false,
 	lineHeight: 28,
 	minHeight: 178,
 	padding: 0,

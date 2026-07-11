@@ -68,7 +68,7 @@ export function ChatInputBar({
 							: bottomInset + 10,
 				}}
 			>
-				<View className="min-h-11 flex-1 flex-row items-center rounded-3xl bg-content2 py-1.5 pr-1 pl-4">
+				<View className="min-h-11 flex-1 flex-row items-center rounded-3xl bg-content2 py-1 pr-1 pl-4">
 					<TextInput
 						ref={inputRef}
 						value={content}
@@ -91,10 +91,9 @@ export function ChatInputBar({
 							lineHeight: 22,
 							maxHeight: 120,
 							minHeight: 36,
-							padding: 0,
-							paddingBottom: 6,
-							paddingTop: 8,
-							textAlignVertical: "center",
+							paddingHorizontal: 0,
+							paddingVertical: 7,
+							textAlignVertical: "top",
 						}}
 					/>
 					<Button

@@ -283,6 +283,7 @@ function TextOverlayFrame({
 						color: "transparent",
 						fontSize: text.size,
 						height: frame.height,
+						includeFontPadding: false,
 						lineHeight: Math.round(text.size * 1.2),
 						paddingHorizontal: 0,
 						paddingVertical: 0,

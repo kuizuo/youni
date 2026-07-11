@@ -11,6 +11,7 @@ import {
 	type SearchTabKey,
 } from "@/components/search/search-utils";
 import { APP_HEADER_HEIGHT } from "@/components/shared/app-header";
+import { SINGLE_LINE_INPUT_STYLE } from "@/components/shared/input-styles";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
 export function SearchHeader({
@@ -53,6 +54,7 @@ export function SearchHeader({
 					<SearchField.Group>
 						<SearchField.SearchIcon iconProps={{ color: mutedColor }} />
 						<SearchField.Input
+							style={SINGLE_LINE_INPUT_STYLE}
 							autoFocus
 							placeholder="搜索图文、用户和话题"
 							placeholderTextColor={mutedColor}

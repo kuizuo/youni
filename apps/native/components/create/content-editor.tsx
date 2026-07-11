@@ -10,8 +10,10 @@ const TITLE_INPUT_STYLE: TextStyle = {
 	fontSize: 24,
 	fontWeight: "500",
 	height: 38,
+	includeFontPadding: false,
 	lineHeight: 32,
 	padding: 0,
+	textAlignVertical: "center",
 };
 
 export function ContentEditor({

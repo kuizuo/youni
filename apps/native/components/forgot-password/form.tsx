@@ -12,9 +12,9 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 import { withUniwind } from "uniwind";
-
 import { YouniMark } from "@/components/brand/youni-logo";
 import { AppHeading } from "@/components/shared/app-heading";
+import { SINGLE_LINE_INPUT_STYLE } from "@/components/shared/input-styles";
 
 const StyledIonicons = withUniwind(Ionicons);
 
@@ -96,6 +96,7 @@ export function ForgotPasswordForm({
 				<TextField>
 					<Label>邮箱</Label>
 					<Input
+						style={SINGLE_LINE_INPUT_STYLE}
 						value={email}
 						onChangeText={onChangeEmail}
 						placeholder="email@example.com"
@@ -291,6 +292,7 @@ function PasswordField({
 			<Label>{label}</Label>
 			<View className="relative">
 				<Input
+					style={SINGLE_LINE_INPUT_STYLE}
 					value={value}
 					onChangeText={onChangeText}
 					placeholder={placeholder}

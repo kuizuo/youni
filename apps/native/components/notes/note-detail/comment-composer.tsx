@@ -26,6 +26,7 @@ import { clampCursor } from "./utils";
 
 const COMMENT_INPUT_STYLE: TextStyle = {
 	fontSize: 16,
+	includeFontPadding: false,
 	lineHeight: 22,
 	padding: 0,
 	textAlignVertical: "top",
