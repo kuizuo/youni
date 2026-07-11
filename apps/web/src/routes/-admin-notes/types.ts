@@ -7,6 +7,7 @@ export const noteStatusOptions = [
 ] as const;
 
 export type NoteStatus = (typeof noteStatusOptions)[number];
+export type MutableNoteStatus = Exclude<NoteStatus, "draft">;
 
 export type AdminNoteListItem = {
 	id: string;

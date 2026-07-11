@@ -148,3 +148,27 @@ export async function uploadNoteImages(assets: NoteImageUploadAsset[]) {
 
 	return parseUploadResponse(response);
 }
+
+export async function deleteUploadedNoteImages(keys: string[]) {
+	if (keys.length === 0) return;
+
+	const headers = new Headers({ "Content-Type": "application/json" });
+	if (Platform.OS !== "web") {
+		const cookies = authClient.getCookie();
+		if (cookies) headers.set("Cookie", cookies);
+	}
+
+	const response = await fetchWithTimeout(
+		`${apiBaseUrl}/uploads/note-images/cleanup`,
+		{
+			body: JSON.stringify({ keys }),
+			credentials: Platform.OS === "web" ? "include" : "omit",
+			headers,
+			method: "POST",
+		},
+		NOTE_IMAGE_UPLOAD_TIMEOUT_MS,
+	);
+	if (!response.ok) {
+		throw new Error("未发布图片清理失败");
+	}
+}

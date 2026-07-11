@@ -46,16 +46,9 @@ export const noteCreateInput = z.object({
 			allowShare: true,
 			isOriginal: true,
 		}),
-	submitMode: z.enum(["draft", "publish"]).default("publish"),
 });
 
-export const draftUpdateInput = noteCreateInput.extend({
-	id: z.string().min(1),
-});
-
-export const noteEditInput = noteCreateInput
-	.extend({ id: z.string().min(1) })
-	.omit({ submitMode: true });
+export const noteEditInput = noteCreateInput.extend({ id: z.string().min(1) });
 
 export const noteVisibilityUpdateInput = z.object({
 	id: z.string().min(1),
@@ -87,10 +80,7 @@ export type NotesOutputs = {
 			isFollowing: boolean;
 		};
 	} & { comments: CommentListRow[]; commentsNextOffset: number | null };
-	drafts: HydratedContentNote[];
-	draftById: HydratedContentNote | undefined;
 	editById: HydratedContentNote | undefined;
-	updateDraft: { id: string; status: string };
 	updateNote: { id: string; status: "audit" };
 	updateNoteVisibility: {
 		id: string;
@@ -100,7 +90,6 @@ export type NotesOutputs = {
 	creatorStats: {
 		total: number;
 		published: number;
-		draft: number;
 		audit: number;
 		rejected: number;
 		hidden: number;
@@ -127,14 +116,7 @@ export const notesContract = {
 		.input(paginatedListInput)
 		.output(output<NotesOutputs["searchNotes"]>()),
 	byId: procedure.input(idInput).output(output<NotesOutputs["byId"]>()),
-	drafts: procedure.output(output<NotesOutputs["drafts"]>()),
-	draftById: procedure
-		.input(idInput)
-		.output(output<NotesOutputs["draftById"]>()),
 	editById: procedure.input(idInput).output(output<NotesOutputs["editById"]>()),
-	updateDraft: procedure
-		.input(draftUpdateInput)
-		.output(output<NotesOutputs["updateDraft"]>()),
 	updateNote: procedure
 		.input(noteEditInput)
 		.output(output<NotesOutputs["updateNote"]>()),

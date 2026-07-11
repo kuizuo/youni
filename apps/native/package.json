@@ -17,6 +17,7 @@
 	"dependencies": {
 		"@ai-sdk/react": "catalog:",
 		"@better-auth/expo": "catalog:",
+		"base64-js": "^1.5.1",
 		"@expo-google-fonts/nunito": "^0.4.2",
 		"@expo/metro-runtime": "~55.0.10",
 		"@expo/vector-icons": "^15.1.1",
@@ -54,6 +55,7 @@
 		"expo-router": "~55.0.16",
 		"expo-secure-store": "~55.0.13",
 		"expo-splash-screen": "~55.0.21",
+		"expo-sqlite": "~55.0.17",
 		"expo-status-bar": "~55.0.5",
 		"expo-web-browser": "~55.0.14",
 		"heroui-native": "^1.0.2",

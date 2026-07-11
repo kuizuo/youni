@@ -29,7 +29,7 @@ export const adminIdInput = z.object({ id: z.string().min(1) });
 
 export const adminNoteStatusInput = z.object({
 	id: z.string().min(1),
-	status: z.enum(["draft", "audit", "published", "rejected", "hidden"]),
+	status: z.enum(["audit", "published", "rejected", "hidden"]),
 	rejectionReason: z.string().trim().max(200).optional(),
 });
 

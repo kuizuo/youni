@@ -48,12 +48,8 @@ export type ContentNoteMutationInput = {
 		contentDisclosure?: string | null;
 		isOriginal: boolean;
 	};
-	submitMode: "draft" | "publish";
 };
-export type ContentNoteEditInput = Omit<
-	ContentNoteMutationInput,
-	"submitMode"
-> & {
+export type ContentNoteEditInput = ContentNoteMutationInput & {
 	id: string;
 };
 
@@ -375,18 +371,6 @@ export async function listMeContentNoteRows(
 		.limit(limit);
 }
 
-export async function listDraftContentNotes(userId: string) {
-	const rows = await createDb()
-		.select(contentNoteRowFields)
-		.from(note)
-		.innerJoin(user, eq(note.userId, user.id))
-		.where(and(eq(note.userId, userId), eq(note.status, "draft")))
-		.orderBy(desc(note.draftSavedAt), desc(note.updatedAt))
-		.limit(60);
-
-	return hydrateContentNotes(rows, userId);
-}
-
 export async function listViewedContentNoteRows(userId: string, limit: number) {
 	return createDb()
 		.select({
@@ -410,25 +394,6 @@ export async function listViewedContentNoteRows(userId: string, limit: number) {
 		.limit(limit);
 }
 
-export async function getDraftContentNoteById({
-	id,
-	userId,
-}: {
-	id: string;
-	userId: string;
-}) {
-	const [row] = await selectContentNoteRows(
-		and(eq(note.id, id), eq(note.userId, userId), eq(note.status, "draft")),
-	);
-
-	if (!row) {
-		throw new ORPCError("NOT_FOUND");
-	}
-
-	const [item] = await hydrateContentNotes([row], userId);
-	return item;
-}
-
 export async function getEditableContentNoteById({
 	id,
 	userId,
@@ -446,68 +411,6 @@ export async function getEditableContentNoteById({
 
 	const [item] = await hydrateContentNotes([row], userId);
 	return item;
-}
-
-export async function updateDraftContentNote({
-	input,
-	userId,
-}: {
-	input: ContentNoteMutationInput & { id: string };
-	userId: string;
-}) {
-	const db = createDb();
-	const [existing] = await db
-		.select({ id: note.id })
-		.from(note)
-		.where(
-			and(
-				eq(note.id, input.id),
-				eq(note.userId, userId),
-				eq(note.status, "draft"),
-			),
-		)
-		.limit(1);
-
-	if (!existing) {
-		throw new ORPCError("NOT_FOUND");
-	}
-
-	const topicNames = uniqueTopics(input.topics);
-	const status = input.submitMode === "draft" ? "draft" : "audit";
-	const cover = input.images[0];
-	const imageMetas = normalizeImageMetas(input);
-	const title = input.title.trim();
-	const content = input.content.trim();
-
-	if (input.submitMode === "publish") {
-		assertPublishReady(input, topicNames);
-	}
-
-	await db
-		.update(note)
-		.set({
-			title: title || "未命名草稿",
-			content,
-			images: input.images,
-			imageMetas,
-			cover: cover ?? null,
-			locationName: input.locationName || null,
-			visibility: input.visibility,
-			components: input.components,
-			advancedOptions: input.advancedOptions,
-			status,
-			draftSavedAt: status === "draft" ? new Date() : null,
-		})
-		.where(eq(note.id, input.id));
-
-	await syncNoteTopics({
-		db,
-		noteId: input.id,
-		topicNames,
-		clearExisting: true,
-	});
-
-	return { id: input.id, status };
 }
 
 export async function updateEditableContentNote({
@@ -535,10 +438,10 @@ export async function updateEditableContentNote({
 	}
 
 	const topicNames = uniqueTopics(input.topics);
-	assertPublishReady({ ...input, submitMode: "publish" }, topicNames);
+	assertPublishReady(input, topicNames);
 
 	const cover = input.images[0];
-	const imageMetas = normalizeImageMetas({ ...input, submitMode: "publish" });
+	const imageMetas = normalizeImageMetas(input);
 
 	await db
 		.update(note)
@@ -588,16 +491,13 @@ export async function createContentNote({
 	const imageMetas = normalizeImageMetas(input);
 	const title = input.title.trim();
 	const content = input.content.trim();
-	const status = input.submitMode === "draft" ? "draft" : "audit";
-
-	if (input.submitMode === "publish") {
-		assertPublishReady(input, topicNames);
-	}
+	const status = "audit" as const;
+	assertPublishReady(input, topicNames);
 
 	const [createdNote] = await db
 		.insert(note)
 		.values({
-			title: title || "未命名草稿",
+			title,
 			content,
 			images: input.images,
 			imageMetas,
@@ -607,7 +507,7 @@ export async function createContentNote({
 			components: input.components,
 			advancedOptions: input.advancedOptions,
 			status,
-			draftSavedAt: status === "draft" ? new Date() : null,
+			draftSavedAt: null,
 			userId,
 		})
 		.returning({ id: note.id });

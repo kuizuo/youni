@@ -22,7 +22,11 @@ import {
 } from "@/components/admin-table-pagination";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
 
-import { type AdminNoteListItem, type NoteStatus, toNoteStatus } from "./types";
+import {
+	type AdminNoteListItem,
+	type MutableNoteStatus,
+	toNoteStatus,
+} from "./types";
 
 const columnHelper = createColumnHelper<AdminNoteListItem>();
 
@@ -77,7 +81,7 @@ export function NoteTable({
 	onPaginationChange?: (pagination: PaginationState) => void;
 	onUpdateStatus?: (
 		item: AdminNoteListItem,
-		status: NoteStatus,
+		status: MutableNoteStatus,
 		rejectionReason?: string,
 	) => Promise<void> | void;
 	pagination?: PaginationState;
@@ -417,7 +421,7 @@ function NoteActionsCell({
 	onDelete: (item: AdminNoteListItem) => Promise<void> | void;
 	onUpdateStatus: (
 		item: AdminNoteListItem,
-		status: NoteStatus,
+		status: MutableNoteStatus,
 		rejectionReason?: string,
 	) => Promise<void> | void;
 }) {

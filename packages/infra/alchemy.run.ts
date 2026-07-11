@@ -58,6 +58,10 @@ export default {
 };
 `;
 const nativeAssetHeaders = `
+/*
+	Cross-Origin-Embedder-Policy: credentialless
+	Cross-Origin-Opener-Policy: same-origin
+
 /_expo/static/*
 	Cache-Control: public, max-age=31536000, immutable
 

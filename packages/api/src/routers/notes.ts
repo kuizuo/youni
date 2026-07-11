@@ -16,15 +16,12 @@ import {
 } from "../index";
 import {
 	createContentNote,
-	getDraftContentNoteById,
 	getEditableContentNoteById,
 	hydrateContentNotes,
-	listDraftContentNotes,
 	listViewedContentNoteRows,
 	selectContentNoteRows,
 	softDeleteContentNote,
 	updateContentNoteVisibility,
-	updateDraftContentNote,
 	updateEditableContentNote,
 } from "../lib/content-notes";
 import { notifyNoteOwner } from "../lib/notifications";
@@ -153,34 +150,12 @@ export const notesRouter = {
 		};
 	}),
 
-	drafts: protectedProcedure.drafts.handler(async ({ context }) => {
-		return listDraftContentNotes(context.session.user.id);
-	}),
-
-	draftById: protectedProcedure.draftById.handler(
-		async ({ input, context }) => {
-			return getDraftContentNoteById({
-				id: input.id,
-				userId: context.session.user.id,
-			});
-		},
-	),
-
 	editById: protectedProcedure.editById.handler(async ({ input, context }) => {
 		return getEditableContentNoteById({
 			id: input.id,
 			userId: context.session.user.id,
 		});
 	}),
-
-	updateDraft: activeUserProcedure.updateDraft.handler(
-		async ({ input, context }) => {
-			return updateDraftContentNote({
-				input,
-				userId: context.session.user.id,
-			});
-		},
-	),
 
 	updateNote: activeUserProcedure.updateNote.handler(
 		async ({ input, context }) => {
@@ -240,15 +215,13 @@ export const notesRouter = {
 			statusRows.map((row) => [row.status, toNumber(row.value)]),
 		);
 		const published = byStatus.get("published") ?? 0;
-		const draft = byStatus.get("draft") ?? 0;
 		const audit = byStatus.get("audit") ?? 0;
 		const rejected = byStatus.get("rejected") ?? 0;
 		const hidden = byStatus.get("hidden") ?? 0;
 
 		return {
-			total: published + draft + audit + rejected + hidden,
+			total: published + audit + rejected + hidden,
 			published,
-			draft,
 			audit,
 			rejected,
 			hidden,

@@ -101,6 +101,18 @@ function createLocalYouniBucket() {
 	});
 
 	return {
+		async delete(key: string) {
+			const response = await client.fetch(
+				objectUrl(r2Env.accountId, r2Env.bucketName, key),
+				{ method: "DELETE" },
+			);
+
+			if (!response.ok && response.status !== 404) {
+				throw new Error(
+					`R2 delete failed: ${response.status} ${response.statusText}`,
+				);
+			}
+		},
 		async put(
 			key: string,
 			value: BodyInit,

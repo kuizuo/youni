@@ -12,7 +12,11 @@ import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { orpc } from "@/utils/orpc";
 import { NoteFilters } from "./-admin-notes/note-filters";
 import { NoteTable } from "./-admin-notes/note-table";
-import type { AdminNoteListItem, NoteStatus } from "./-admin-notes/types";
+import type {
+	AdminNoteListItem,
+	MutableNoteStatus,
+	NoteStatus,
+} from "./-admin-notes/types";
 
 export const Route = createFileRoute("/admin/notes")({
 	component: AdminNotesRoute,
@@ -39,7 +43,7 @@ function AdminNotesRoute() {
 	const updateStatus = useCallback(
 		async (
 			item: AdminNoteListItem,
-			status: NoteStatus,
+			status: MutableNoteStatus,
 			rejectionReason?: string,
 		) => {
 			await statusMutation.mutateAsync({

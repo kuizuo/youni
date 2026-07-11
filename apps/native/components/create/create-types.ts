@@ -28,13 +28,3 @@ export type AdvancedOptions = {
 	allowComment: boolean;
 	allowShare: boolean;
 };
-
-export type ComposerSnapshot = {
-	advancedOptions: AdvancedOptions;
-	content: string;
-	draftId?: string;
-	images: ComposerImage[];
-	title: string;
-	topics: string[];
-	visibility: NoteVisibility;
-};

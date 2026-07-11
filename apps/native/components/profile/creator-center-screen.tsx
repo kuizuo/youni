@@ -77,7 +77,6 @@ export default function CreatorCenterScreen() {
 							<Text.Paragraph weight="bold">内容状态</Text.Paragraph>
 							<View className="flex-row flex-wrap gap-3">
 								<StatusPill label="全部" value={data.total} />
-								<StatusPill label="草稿" value={data.draft} />
 								<StatusPill label="审核中" value={data.audit} />
 								<StatusPill label="未通过" value={data.rejected} />
 								<StatusPill label="已隐藏" value={data.hidden} />

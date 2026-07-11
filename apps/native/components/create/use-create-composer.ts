@@ -5,24 +5,33 @@ import * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Platform } from "react-native";
+import { Platform } from "react-native";
 
 import type {
 	AdvancedOptions,
 	ComposerImage,
-	ComposerSnapshot,
 	NoteVisibility,
 	PublishSubmitMode,
 } from "@/components/create/create-types";
-import {
-	clearDraftRecovery,
-	consumeDraftRecovery,
-	setDraftRecovery,
-} from "@/components/create/draft-recovery";
 import { authClient } from "@/lib/auth-client";
-import { uploadNoteImages } from "@/lib/note-image-upload";
+import {
+	createDraftCoverThumbnail,
+	materializeLocalDraftImage,
+	releaseMaterializedDraftImages,
+	serializeComposerImages,
+} from "@/lib/local-drafts/image-io";
+import {
+	deleteLocalDraft,
+	getLocalDraft,
+	saveLocalDraft,
+} from "@/lib/local-drafts/store";
+import {
+	deleteUploadedNoteImages,
+	uploadNoteImages,
+} from "@/lib/note-image-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
+import { confirmAction } from "@/utils/confirm-action";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
@@ -31,12 +40,14 @@ const DEFAULT_ADVANCED_OPTIONS: AdvancedOptions = {
 	allowShare: true,
 };
 
-function composerSignature(
-	composer: Pick<
-		ComposerSnapshot,
-		"advancedOptions" | "content" | "images" | "title" | "topics" | "visibility"
-	>,
-) {
+function composerSignature(composer: {
+	advancedOptions: AdvancedOptions;
+	content: string;
+	images: ComposerImage[];
+	title: string;
+	topics: string[];
+	visibility: NoteVisibility;
+}) {
 	return JSON.stringify({
 		advancedOptions: composer.advancedOptions,
 		content: composer.content,
@@ -146,7 +157,6 @@ export function useCreateComposer({
 	const params = useLocalSearchParams<{
 		draftId?: string | string[];
 		noteId?: string | string[];
-		recoverDraft?: string | string[];
 	}>();
 	const session = authClient.useSession();
 	const { toast } = useAppToast();
@@ -162,24 +172,25 @@ export function useCreateComposer({
 	const [pendingSubmitMode, setPendingSubmitMode] =
 		useState<PublishSubmitMode | null>(null);
 	const [isAddingImages, setIsAddingImages] = useState(false);
-	const [isOptimisticDraftSaving, setIsOptimisticDraftSaving] = useState(false);
+	const [isLocalDraftSaving, setIsLocalDraftSaving] = useState(false);
 	const [isUploadingImages, setIsUploadingImages] = useState(false);
+	const [isDraftLoading, setIsDraftLoading] = useState(false);
+	const [draftLoadError, setDraftLoadError] = useState<Error | null>(null);
+	const [draftLoadAttempt, setDraftLoadAttempt] = useState(0);
 	const [hydratedDraftId, setHydratedDraftId] = useState<null | string>(null);
 	const [hydratedNoteId, setHydratedNoteId] = useState<null | string>(null);
 	const draftBaselineRef = useRef<null | string>(null);
-	const recoveredDraftRef = useRef(false);
-	const optimisticDraftSaveRef = useRef<ComposerSnapshot | null>(null);
+	const draftSaveInFlightRef = useRef(false);
+	const pendingUploadedKeysRef = useRef<string[]>([]);
+	const materializedDraftUrisRef = useRef<string[]>([]);
 	const rawDraftId = params.draftId;
 	const rawNoteId = params.noteId;
-	const rawRecoverDraft = params.recoverDraft;
 	const draftId = Array.isArray(rawDraftId) ? rawDraftId[0] : rawDraftId;
 	const noteId = Array.isArray(rawNoteId) ? rawNoteId[0] : rawNoteId;
-	const shouldRecoverDraft = Array.isArray(rawRecoverDraft)
-		? rawRecoverDraft[0] === "1"
-		: rawRecoverDraft === "1";
 	const isEditingDraft = Boolean(draftId);
 	const isEditingNote = Boolean(noteId && !draftId);
 	const isAuthenticated = Boolean(session.data?.user) || hasAuthenticated;
+	const userId = session.data?.user.id;
 
 	useEffect(() => {
 		if (session.data?.user) {
@@ -220,9 +231,8 @@ export function useCreateComposer({
 	);
 	const hasDraftChanges =
 		isEditingDraft &&
-		(recoveredDraftRef.current ||
-			(draftBaselineRef.current !== null &&
-				draftBaselineRef.current !== currentComposerSignature));
+		draftBaselineRef.current !== null &&
+		draftBaselineRef.current !== currentComposerSignature;
 	const visibilityLabel =
 		visibility === "public"
 			? "公开可见"
@@ -230,22 +240,18 @@ export function useCreateComposer({
 				? "仅关注者可见"
 				: "仅自己可见";
 	const advancedLabel = advancedOptions.allowComment ? "评论开启" : "评论关闭";
-	const draftQuery = useQuery({
-		...orpc.draftById.queryOptions({
-			input: { id: draftId || "missing" },
-		}),
-		enabled: Boolean(draftId && isAuthenticated),
-	});
 	const editNoteQuery = useQuery({
 		...orpc.editById.queryOptions({
 			input: { id: noteId || "missing" },
 		}),
 		enabled: Boolean(isEditingNote && noteId && isAuthenticated),
 	});
-	const draftsOptions = orpc.drafts.queryOptions();
-	const creatorStatsOptions = orpc.creatorStats.queryOptions();
-
 	const resetForm = () => {
+		const materializedUris = materializedDraftUrisRef.current;
+		materializedDraftUrisRef.current = [];
+		if (materializedUris.length > 0) {
+			void releaseMaterializedDraftImages(materializedUris);
+		}
 		setTitle("");
 		setContent("");
 		setImages([]);
@@ -255,111 +261,31 @@ export function useCreateComposer({
 		setHydratedDraftId(null);
 		setHydratedNoteId(null);
 		draftBaselineRef.current = null;
-		recoveredDraftRef.current = false;
-	};
-
-	const snapshotComposer = (): ComposerSnapshot => ({
-		advancedOptions: { ...advancedOptions },
-		content,
-		draftId,
-		images: images.map((image) => ({
-			...image,
-			asset: image.asset ? { ...image.asset } : undefined,
-		})),
-		title,
-		topics: [...topics],
-		visibility,
-	});
-
-	const invalidateDraftData = async () => {
-		await Promise.all([
-			queryClient.invalidateQueries({ queryKey: draftsOptions.queryKey }),
-			queryClient.invalidateQueries({ queryKey: creatorStatsOptions.queryKey }),
-		]);
-	};
-
-	const finishOptimisticDraftSave = async () => {
-		const completedSnapshot = optimisticDraftSaveRef.current;
-		optimisticDraftSaveRef.current = null;
-		if (completedSnapshot) clearDraftRecovery(completedSnapshot);
-		setIsOptimisticDraftSaving(false);
-		await invalidateDraftData();
-	};
-
-	const failOptimisticDraftSave = (_error: unknown) => {
-		const optimisticSave = optimisticDraftSaveRef.current;
-		if (!optimisticSave) return;
-
-		optimisticDraftSaveRef.current = null;
-		setIsOptimisticDraftSaving(false);
-		setPendingSubmitMode(null);
-
-		toast.show({
-			actionLabel: "重新编辑",
-			id: "draft-save-status",
-			label: "草稿保存失败",
-			onActionPress: ({ hide }) => {
-				hide();
-				setDraftRecovery(optimisticSave);
-				router.push({
-					pathname: "/publish",
-					params: {
-						...(optimisticSave.draftId
-							? { draftId: optimisticSave.draftId }
-							: {}),
-						recoverDraft: "1",
-					},
-				} as unknown as Href);
-			},
-			variant: "danger",
-		});
-		void invalidateDraftData();
 	};
 
 	const createMutation = useMutation(
 		orpc.create.mutationOptions({
-			onSuccess: async (result, variables) => {
-				if (variables.submitMode === "draft") {
-					await finishOptimisticDraftSave();
-					return;
+			onSuccess: async (result) => {
+				pendingUploadedKeysRef.current = [];
+				if (draftId && userId) {
+					try {
+						await deleteLocalDraft(userId, draftId);
+					} catch {
+						toast.show({
+							label: "发布成功，本地草稿未能自动删除",
+							variant: "warning",
+						});
+					}
 				}
 				resetForm();
 				await queryClient.invalidateQueries();
 				router.replace(`/note/${result.id}` as Href);
 			},
-			onError: (error, variables) => {
-				if (variables.submitMode === "draft") {
-					failOptimisticDraftSave(error);
-					return;
-				}
+			onError: async (error) => {
 				if (isRequestTimeoutError(error)) return;
-				toast.show({
-					variant: "danger",
-					label: error.message,
-				});
-			},
-			onSettled: () => {
-				setPendingSubmitMode(null);
-			},
-		}),
-	);
-	const updateDraftMutation = useMutation(
-		orpc.updateDraft.mutationOptions({
-			onSuccess: async (result, variables) => {
-				if (variables.submitMode === "draft") {
-					await finishOptimisticDraftSave();
-					return;
-				}
-				resetForm();
-				await queryClient.invalidateQueries();
-				router.replace(`/note/${result.id}` as Href);
-			},
-			onError: (error, variables) => {
-				if (variables.submitMode === "draft") {
-					failOptimisticDraftSave(error);
-					return;
-				}
-				if (isRequestTimeoutError(error)) return;
+				const keys = pendingUploadedKeysRef.current;
+				pendingUploadedKeysRef.current = [];
+				await deleteUploadedNoteImages(keys).catch(() => undefined);
 				toast.show({
 					variant: "danger",
 					label: error.message,
@@ -373,12 +299,16 @@ export function useCreateComposer({
 	const updateNoteMutation = useMutation(
 		orpc.updateNote.mutationOptions({
 			onSuccess: async (result) => {
+				pendingUploadedKeysRef.current = [];
 				resetForm();
 				await queryClient.invalidateQueries();
 				router.replace(`/note/${result.id}` as Href);
 			},
-			onError: (error) => {
+			onError: async (error) => {
 				if (isRequestTimeoutError(error)) return;
+				const keys = pendingUploadedKeysRef.current;
+				pendingUploadedKeysRef.current = [];
+				await deleteUploadedNoteImages(keys).catch(() => undefined);
 				toast.show({
 					variant: "danger",
 					label: error.message,
@@ -390,67 +320,71 @@ export function useCreateComposer({
 		}),
 	);
 
+	// draftLoadAttempt is an explicit retry token for the same local draft id.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: retry must rerun this effect
 	useEffect(() => {
-		if (!shouldRecoverDraft) return;
-		const snapshot = consumeDraftRecovery();
-		if (!snapshot) return;
+		if (!draftId || !userId) return;
+		let cancelled = false;
+		setIsDraftLoading(true);
+		setDraftLoadError(null);
 
-		setTitle(snapshot.title);
-		setContent(snapshot.content);
-		setImages(snapshot.images);
-		setTopics(snapshot.topics);
-		setVisibility(snapshot.visibility);
-		setAdvancedOptions(snapshot.advancedOptions);
-		setHydratedDraftId(snapshot.draftId ?? null);
-		draftBaselineRef.current = null;
-		recoveredDraftRef.current = Boolean(snapshot.draftId);
-	}, [shouldRecoverDraft]);
+		void getLocalDraft(userId, draftId)
+			.then(async (draft) => {
+				if (!draft) throw new Error("这份草稿已经不存在了");
+				const draftImages = await Promise.all(
+					draft.images.map((image) =>
+						materializeLocalDraftImage(draft.id, image),
+					),
+				);
+				if (cancelled) {
+					await releaseMaterializedDraftImages(
+						draftImages.map((image) => image.uri),
+					);
+					return;
+				}
 
-	useEffect(() => {
-		if (shouldRecoverDraft) return;
-		const draft = draftQuery.data;
-		if (!draftId || !draft || hydratedDraftId === draftId) return;
-		setTitle(draft.title ?? "");
-		const draftContent = draft.content ?? "";
-		setContent(draftContent);
-		const draftImages = (draft.images ?? []).map((url) => {
-			const meta = (draft.imageMetas ?? []).find((item) => item.url === url);
-			return {
-				height: meta?.height,
-				id: url,
-				originalUri: url,
-				remoteUrl: url,
-				uri: url,
-				width: meta?.width,
-			};
-		});
-		const draftTopics = mergeTopics(
-			draft.topics ?? [],
-			extractTopicsFromContent(draftContent),
-		);
-		const draftVisibility = draft.visibility ?? "public";
-		const draftAdvancedOptions = {
-			allowComment:
-				draft.advancedOptions.allowComment ??
-				DEFAULT_ADVANCED_OPTIONS.allowComment,
-			allowShare:
-				draft.advancedOptions.allowShare ?? DEFAULT_ADVANCED_OPTIONS.allowShare,
+				materializedDraftUrisRef.current = draftImages.map(
+					(image) => image.uri,
+				);
+				setTitle(draft.title);
+				setContent(draft.content);
+				setImages(draftImages);
+				setTopics(draft.topics);
+				setVisibility(draft.visibility);
+				setAdvancedOptions(draft.advancedOptions);
+				setHydratedDraftId(draft.id);
+				draftBaselineRef.current = composerSignature({
+					advancedOptions: draft.advancedOptions,
+					content: draft.content,
+					images: draftImages,
+					title: draft.title,
+					topics: draft.topics,
+					visibility: draft.visibility,
+				});
+			})
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				setDraftLoadError(
+					error instanceof Error ? error : new Error("草稿读取失败"),
+				);
+			})
+			.finally(() => {
+				if (!cancelled) setIsDraftLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
 		};
-		setImages(draftImages);
-		setTopics(draftTopics);
-		setVisibility(draftVisibility);
-		setAdvancedOptions(draftAdvancedOptions);
-		setHydratedDraftId(draftId);
-		draftBaselineRef.current = composerSignature({
-			advancedOptions: draftAdvancedOptions,
-			content: draftContent,
-			images: draftImages,
-			title: draft.title ?? "",
-			topics: draftTopics,
-			visibility: draftVisibility,
-		});
-		recoveredDraftRef.current = false;
-	}, [draftId, draftQuery.data, hydratedDraftId, shouldRecoverDraft]);
+	}, [draftId, draftLoadAttempt, userId]);
+
+	useEffect(
+		() => () => {
+			const uris = materializedDraftUrisRef.current;
+			materializedDraftUrisRef.current = [];
+			if (uris.length > 0) void releaseMaterializedDraftImages(uris);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		const editableNote = editNoteQuery.data;
@@ -499,10 +433,7 @@ export function useCreateComposer({
 				: [];
 		});
 
-	const uploadLocalImages = async (
-		composerImages: ComposerImage[],
-		trackComposerState: boolean,
-	) => {
+	const uploadLocalImages = async (composerImages: ComposerImage[]) => {
 		const localAssets = composerImages.flatMap((image) =>
 			image.asset ? [image.asset] : [],
 		);
@@ -510,10 +441,11 @@ export function useCreateComposer({
 			return {
 				imageMetas: imageMetasFrom(composerImages),
 				images: composerImages.map((image) => image.remoteUrl ?? image.uri),
+				uploadedKeys: [] as string[],
 			};
 		}
 
-		if (trackComposerState) setIsUploadingImages(true);
+		setIsUploadingImages(true);
 		try {
 			const uploaded = await uploadNoteImages(localAssets);
 			let uploadedIndex = 0;
@@ -533,21 +465,18 @@ export function useCreateComposer({
 					width: image.width,
 				};
 			});
-			if (trackComposerState) setImages(nextImages);
 			return {
 				imageMetas: imageMetasFrom(nextImages),
 				images: nextImages.map((image) => image.remoteUrl ?? image.uri),
+				uploadedKeys: uploaded.map((item) => item.key),
 			};
 		} finally {
-			if (trackComposerState) setIsUploadingImages(false);
+			setIsUploadingImages(false);
 		}
 	};
 
-	const buildPayload = async (
-		submitMode: PublishSubmitMode,
-		snapshot?: ComposerSnapshot,
-	) => {
-		const source = snapshot ?? {
+	const buildPayload = async () => {
+		const source = {
 			advancedOptions,
 			content,
 			images,
@@ -555,7 +484,7 @@ export function useCreateComposer({
 			topics,
 			visibility,
 		};
-		const uploadedImages = await uploadLocalImages(source.images, !snapshot);
+		const uploadedImages = await uploadLocalImages(source.images);
 		return {
 			title: source.title.trim(),
 			content: source.content.trim(),
@@ -565,23 +494,19 @@ export function useCreateComposer({
 			visibility: source.visibility,
 			components: [],
 			advancedOptions: source.advancedOptions,
-			submitMode,
 		};
 	};
 	const isSubmitting =
 		createMutation.isPending ||
-		updateDraftMutation.isPending ||
 		updateNoteMutation.isPending ||
 		isAddingImages ||
-		isOptimisticDraftSaving ||
+		isLocalDraftSaving ||
 		isUploadingImages;
 
-	const submitNote = async (
-		submitMode: PublishSubmitMode,
-		snapshot?: ComposerSnapshot,
-	) => {
+	const submitNote = async () => {
 		try {
-			const payload = await buildPayload(submitMode, snapshot);
+			const { uploadedKeys, ...payload } = await buildPayload();
+			pendingUploadedKeysRef.current = uploadedKeys;
 			if (isEditingNote && noteId) {
 				updateNoteMutation.mutate({
 					id: noteId,
@@ -597,16 +522,8 @@ export function useCreateComposer({
 				});
 				return;
 			}
-			if (draftId) {
-				updateDraftMutation.mutate({ id: draftId, ...payload });
-				return;
-			}
 			createMutation.mutate(payload);
 		} catch (error) {
-			if (submitMode === "draft" && optimisticDraftSaveRef.current) {
-				failOptimisticDraftSave(error);
-				return;
-			}
 			if (isRequestTimeoutError(error)) return;
 			setPendingSubmitMode(null);
 			toast.show({
@@ -631,14 +548,13 @@ export function useCreateComposer({
 	const goBack = () => {
 		fireHaptic();
 		if (hasDraftChanges) {
-			Alert.alert("放弃草稿修改？", "当前修改还没有保存，返回后将会丢失。", [
-				{ style: "cancel", text: "继续编辑" },
-				{
-					onPress: leaveComposer,
-					style: "destructive",
-					text: "放弃并返回",
-				},
-			]);
+			confirmAction({
+				cancelText: "继续编辑",
+				confirmText: "放弃并返回",
+				message: "当前修改还没有保存，返回后将会丢失。",
+				onConfirm: leaveComposer,
+				title: "放弃草稿修改？",
+			});
 			return;
 		}
 		leaveComposer();
@@ -660,14 +576,13 @@ export function useCreateComposer({
 			return;
 		}
 
-		Alert.alert("打开我的草稿？", "当前未保存的内容会丢失。", [
-			{ style: "cancel", text: "取消" },
-			{
-				onPress: goToDrafts,
-				style: "destructive",
-				text: "放弃并打开",
-			},
-		]);
+		confirmAction({
+			cancelText: "取消",
+			confirmText: "放弃并打开",
+			message: "当前未保存的内容会丢失。",
+			onConfirm: goToDrafts,
+			title: "打开我的草稿？",
+		});
 	};
 
 	const addImage = async () => {
@@ -758,11 +673,11 @@ export function useCreateComposer({
 		});
 	};
 
-	const saveDraft = () => {
+	const saveDraft = async () => {
 		fireHaptic();
-		if (isSubmitting) return;
+		if (isSubmitting || draftSaveInFlightRef.current) return;
 		if (isEditingNote) return;
-		if (!isAuthenticated) {
+		if (!isAuthenticated || !userId) {
 			toast.show({
 				variant: "warning",
 				label: "登录后再保存",
@@ -777,20 +692,45 @@ export function useCreateComposer({
 			return;
 		}
 
-		const snapshot = snapshotComposer();
-		setIsOptimisticDraftSaving(true);
-		clearDraftRecovery();
-		setDraftRecovery(snapshot);
-		optimisticDraftSaveRef.current = snapshot;
-
-		toast.show({
-			id: "draft-save-status",
-			label: "已存入草稿",
-			variant: "success",
-		});
-		void submitNote("draft", snapshot);
-		resetForm();
-		leaveComposer();
+		draftSaveInFlightRef.current = true;
+		setIsLocalDraftSaving(true);
+		setPendingSubmitMode("draft");
+		try {
+			const [serializedImages, cover] = await Promise.all([
+				serializeComposerImages(images),
+				createDraftCoverThumbnail(images[0]),
+			]);
+			await saveLocalDraft({
+				advancedOptions,
+				content,
+				coverAspectRatio: cover?.aspectRatio,
+				coverData: cover?.data,
+				coverMimeType: cover?.mimeType,
+				id: draftId,
+				images: serializedImages,
+				title,
+				topics,
+				userId,
+				visibility,
+			});
+			toast.show({
+				id: "draft-save-status",
+				label: "已存入草稿",
+				variant: "success",
+			});
+			resetForm();
+			leaveComposer();
+		} catch (error) {
+			toast.show({
+				id: "draft-save-status",
+				label: error instanceof Error ? error.message : "草稿保存失败",
+				variant: "danger",
+			});
+		} finally {
+			draftSaveInFlightRef.current = false;
+			setIsLocalDraftSaving(false);
+			setPendingSubmitMode(null);
+		}
 	};
 
 	const publish = () => {
@@ -814,7 +754,7 @@ export function useCreateComposer({
 		}
 
 		setPendingSubmitMode("publish");
-		void submitNote("publish");
+		void submitNote();
 	};
 
 	const cycleVisibility = () => {
@@ -848,7 +788,6 @@ export function useCreateComposer({
 		addImage,
 		content,
 		cycleVisibility,
-		draftQuery,
 		editNoteQuery,
 		goBack,
 		images,
@@ -856,12 +795,9 @@ export function useCreateComposer({
 		isEditingDraft,
 		isEditingNote,
 		isLoadingExistingContent:
-			(isEditingDraft &&
-				!shouldRecoverDraft &&
-				(draftQuery.isLoading || !draftQuery.data)) ||
+			(isEditingDraft && (isDraftLoading || hydratedDraftId === null)) ||
 			(isEditingNote && (editNoteQuery.isLoading || !editNoteQuery.data)),
-		loadExistingContentError:
-			(!shouldRecoverDraft && draftQuery.isError) || editNoteQuery.isError,
+		loadExistingContentError: draftLoadError ?? editNoteQuery.error,
 		isSubmitting,
 		isUploadingImages,
 		pendingSubmitMode,
@@ -875,7 +811,7 @@ export function useCreateComposer({
 		setTitle,
 		retryLoadExistingContent: () => {
 			if (isEditingDraft) {
-				void draftQuery.refetch();
+				setDraftLoadAttempt((current) => current + 1);
 				return;
 			}
 			void editNoteQuery.refetch();

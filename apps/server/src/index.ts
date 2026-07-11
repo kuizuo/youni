@@ -241,7 +241,7 @@ function getBodyFiles(body: Record<string, unknown>) {
 	});
 }
 
-async function uploadNoteImagesFromRequest(c: HonoContext) {
+async function uploadNoteImagesFromRequest(c: HonoContext, userId: string) {
 	if (!env.YOUNI_BUCKET) {
 		return c.json({ message: "图片存储尚未配置" }, 503);
 	}
@@ -257,31 +257,47 @@ async function uploadNoteImagesFromRequest(c: HonoContext) {
 		return c.json({ message: `最多只能上传 ${noteImageMaxCount} 张图片` }, 400);
 	}
 
-	const uploaded = [];
-	for (const file of files) {
+	const preparedFiles = files.map((file) => {
 		const extension = noteImageContentTypes.get(file.type);
 		if (!extension) {
-			return c.json({ message: "图片仅支持 JPG、PNG、WebP 或 GIF" }, 400);
+			return null;
 		}
+		return { extension, file };
+	});
+	if (preparedFiles.some((item) => item === null)) {
+		return c.json({ message: "图片仅支持 JPG、PNG、WebP 或 GIF" }, 400);
+	}
+	if (files.some((file) => file.size > noteImageMaxSize)) {
+		return c.json({ message: "单张图片不能超过 8MB" }, 400);
+	}
 
-		if (file.size > noteImageMaxSize) {
-			return c.json({ message: "单张图片不能超过 8MB" }, 400);
+	const uploaded: Array<{ key: string; url: string }> = [];
+	try {
+		for (const item of preparedFiles) {
+			if (!item) continue;
+			const fileName = `${crypto.randomUUID()}.${item.extension}`;
+			const key = `${noteImagePrefix}${userId}/${fileName}`;
+
+			await env.YOUNI_BUCKET.put(key, item.file.stream(), {
+				httpMetadata: {
+					cacheControl: "public, max-age=31536000, immutable",
+					contentType: item.file.type,
+				},
+			});
+
+			uploaded.push({
+				key,
+				url: new URL(
+					`/uploads/note-images/${userId}/${fileName}`,
+					c.req.url,
+				).toString(),
+			});
 		}
-
-		const fileName = `${crypto.randomUUID()}.${extension}`;
-		const key = `${noteImagePrefix}${fileName}`;
-
-		await env.YOUNI_BUCKET.put(key, file.stream(), {
-			httpMetadata: {
-				cacheControl: "public, max-age=31536000, immutable",
-				contentType: file.type,
-			},
-		});
-
-		uploaded.push({
-			key,
-			url: new URL(`/uploads/note-images/${fileName}`, c.req.url).toString(),
-		});
+	} catch (error) {
+		await Promise.allSettled(
+			uploaded.map((item) => env.YOUNI_BUCKET?.delete(item.key)),
+		);
+		throw error;
 	}
 
 	return c.json({ items: uploaded });
@@ -320,7 +336,38 @@ app.post("/uploads/note-images", async (c) => {
 		return c.json({ message: "请先登录后再上传图片" }, 401);
 	}
 
-	return uploadNoteImagesFromRequest(c);
+	return uploadNoteImagesFromRequest(c, account.id);
+});
+
+app.post("/uploads/note-images/cleanup", async (c) => {
+	const account = await assertActiveUploadAccess(c);
+	if (!account) {
+		return c.json({ message: "请先登录后再清理图片" }, 401);
+	}
+	if (!env.YOUNI_BUCKET) {
+		return c.json({ message: "图片存储尚未配置" }, 503);
+	}
+
+	const body = await c.req.json<{ keys?: unknown }>().catch(() => null);
+	if (
+		!body ||
+		!Array.isArray(body.keys) ||
+		body.keys.length > noteImageMaxCount
+	) {
+		return c.json({ message: "图片清理请求无效" }, 400);
+	}
+	const keyPattern = new RegExp(
+		`^${noteImagePrefix}${account.id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/[a-f0-9-]{36}\\.(?:jpg|png|webp|gif)$`,
+	);
+	const keys = body.keys.filter(
+		(key): key is string => typeof key === "string" && keyPattern.test(key),
+	);
+	if (keys.length !== body.keys.length) {
+		return c.json({ message: "图片清理请求无效" }, 400);
+	}
+
+	await Promise.all(keys.map((key) => env.YOUNI_BUCKET?.delete(key)));
+	return c.json({ deleted: keys.length });
 });
 
 app.get("/uploads/avatar/:fileName", async (c) => {
@@ -380,6 +427,36 @@ app.get("/uploads/note-images/:fileName", async (c) => {
 	}
 
 	const object = await env.YOUNI_BUCKET.get(`${noteImagePrefix}${fileName}`);
+	if (!object) {
+		return c.notFound();
+	}
+
+	const headers = new Headers();
+	object.writeHttpMetadata(headers);
+	headers.set("etag", object.httpEtag);
+	headers.set("cache-control", "public, max-age=31536000, immutable");
+
+	return new Response(object.body, { headers });
+});
+
+app.get("/uploads/note-images/:userId/:fileName", async (c) => {
+	if (!env.YOUNI_BUCKET) {
+		return c.notFound();
+	}
+
+	const userId = c.req.param("userId");
+	const fileName = c.req.param("fileName");
+	if (
+		!userId ||
+		userId.includes("/") ||
+		!/^[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(fileName)
+	) {
+		return c.notFound();
+	}
+
+	const object = await env.YOUNI_BUCKET.get(
+		`${noteImagePrefix}${userId}/${fileName}`,
+	);
 	if (!object) {
 		return c.notFound();
 	}
