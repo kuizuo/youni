@@ -7,12 +7,15 @@ import {
 	Persons,
 } from "@gravity-ui/icons";
 import { Card, Skeleton } from "@heroui/react";
-import type { DataGridColumn } from "@heroui-pro/react";
-import { DataGrid, KPI, KPIGroup } from "@heroui-pro/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment, useMemo } from "react";
+import { useMemo } from "react";
 
+import {
+	AdminDataGrid,
+	type AdminDataGridColumn,
+} from "@/components/admin-data-grid";
+import { AdminMetricGroup } from "@/components/admin-metric-group";
 import { AdminPage } from "@/components/admin-shell";
 import { NoteStatusBadge } from "@/components/admin-status";
 import { orpc } from "@/utils/orpc";
@@ -27,7 +30,7 @@ function AdminOverviewRoute() {
 	const overview = useQuery(orpc.admin.overview.queryOptions());
 	type RecentNote = NonNullable<typeof overview.data>["recentNotes"][number];
 
-	const recentNoteColumns = useMemo<DataGridColumn<RecentNote>[]>(
+	const recentNoteColumns = useMemo<AdminDataGridColumn<RecentNote>[]>(
 		() => [
 			{
 				accessorKey: "title",
@@ -108,31 +111,7 @@ function AdminOverviewRoute() {
 				</div>
 			) : (
 				<>
-					<KPIGroup>
-						{metrics.map((metric, index) => {
-							const Icon = metric.icon;
-
-							return (
-								<Fragment key={metric.label}>
-									{index > 0 ? <KPIGroup.Separator /> : null}
-									<KPI>
-										<KPI.Header>
-											<KPI.Icon status={metric.status}>
-												<Icon className="size-4" />
-											</KPI.Icon>
-											<KPI.Title>{metric.label}</KPI.Title>
-										</KPI.Header>
-										<KPI.Content>
-											<KPI.Value
-												maximumFractionDigits={0}
-												value={metric.value}
-											/>
-										</KPI.Content>
-									</KPI>
-								</Fragment>
-							);
-						})}
-					</KPIGroup>
+					<AdminMetricGroup metrics={metrics} />
 
 					<div className="grid gap-4 xl:grid-cols-[1fr_320px]">
 						<Card>
@@ -143,7 +122,7 @@ function AdminOverviewRoute() {
 								</Card.Description>
 							</Card.Header>
 							<Card.Content className="p-0">
-								<DataGrid
+								<AdminDataGrid
 									aria-label="最近图文"
 									columns={recentNoteColumns}
 									contentClassName="min-w-[720px]"

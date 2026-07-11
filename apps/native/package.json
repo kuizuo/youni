@@ -22,8 +22,6 @@
 		"@expo/vector-icons": "^15.1.1",
 		"@gorhom/bottom-sheet": "^5.2.10",
 		"@gravity-ui/icons": "2.18.0",
-		"@internationalized/date": "^3.12.0",
-		"@internationalized/number": "^3.6.6",
 		"@orpc/client": "catalog:",
 		"@orpc/tanstack-query": "catalog:",
 		"@react-native-google-signin/google-signin": "^16.1.2",
@@ -58,7 +56,6 @@
 		"expo-status-bar": "~55.0.5",
 		"expo-web-browser": "~55.0.14",
 		"heroui-native": "^1.0.2",
-		"heroui-native-pro": "1.0.0-beta.5",
 		"react": "19.2.0",
 		"react-dom": "19.2.0",
 		"react-native": "0.83.6",
@@ -76,7 +73,6 @@
 		"tailwind-variants": "^3.2.2",
 		"tailwindcss": "^4.2.4",
 		"uniwind": "^1.6.3",
-		"victory-native": "^41.20.2",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
@@ -84,10 +80,5 @@
 		"@types/react": "~19.2.10",
 		"@youni/config": "workspace:*",
 		"typescript": "~5.9.2"
-	},
-	"trustedDependencies": [
-		"heroui-native-pro",
-		"@zowe/secrets-for-zowe-sdk",
-		"@heroui-pro/react"
-	]
+	}
 }

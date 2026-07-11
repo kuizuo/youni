@@ -2,10 +2,10 @@ import type * as GoogleSignInNative from "@react-native-google-signin/google-sig
 import { env } from "@youni/env/native";
 import Constants from "expo-constants";
 import { Text, useThemeColor } from "heroui-native";
-import { SocialAuthButton } from "heroui-native-pro/social-auth-button";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
+import { GoogleAuthButton } from "@/components/google-auth-button";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
 import { queryClient } from "@/utils/orpc";
@@ -181,14 +181,9 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 
 	return (
 		<View className="gap-2">
-			<SocialAuthButton
-				provider="google"
+			<GoogleAuthButton
 				label={isSubmitting ? "正在使用 Google 登录" : "使用 Google 登录"}
-				size="md"
-				className="rounded-full"
-				feedbackVariant="scale-ripple"
 				isDisabled={isSubmitting}
-				accessibilityLabel="使用 Google 登录"
 				onPress={submit}
 			/>
 			{errorMessage ? (

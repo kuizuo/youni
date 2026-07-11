@@ -3,10 +3,8 @@
 @import "tailwindcss";
 @import "uniwind";
 @import "heroui-native/styles";
-@import "heroui-native-pro/styles";
 
 @source "./node_modules/heroui-native/lib";
-@source "./node_modules/heroui-native-pro/lib";
 
 @theme {
 	--font-light: "Nunito_300Light";

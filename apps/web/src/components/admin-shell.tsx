@@ -1,4 +1,5 @@
 import {
+	Bars,
 	Bell,
 	ChartColumn,
 	Check,
@@ -8,17 +9,20 @@ import {
 	Hashtag,
 	Magnifier,
 	Persons,
+	SquareBars,
+	Xmark,
 } from "@gravity-ui/icons";
 import {
 	Button,
 	Chip,
+	Drawer,
+	Modal,
 	Skeleton,
 	Tooltip,
 	useOverlayState,
 } from "@heroui/react";
-import { AppLayout, Command, Navbar, Sidebar } from "@heroui-pro/react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import type { AdminPermissionRequest } from "@youni/auth/permissions";
 import type { ComponentPropsWithRef, ComponentType, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -157,10 +161,11 @@ type AdminShellProps = {
 };
 
 export function AdminShell({ user, children }: AdminShellProps) {
-	const navigate = useNavigate();
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
+	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 	const visibleNavItems = useMemo(
 		() =>
 			NAV_ITEMS.filter((item) =>
@@ -168,24 +173,77 @@ export function AdminShell({ user, children }: AdminShellProps) {
 			),
 		[user.role],
 	);
-	const navigateTo = useCallback(
-		(href: string) => {
-			void navigate({ to: href as AdminRouteTo });
-		},
-		[navigate],
-	);
 	const title = useMemo(() => getAdminRouteLabel(pathname), [pathname]);
 
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b") {
+				event.preventDefault();
+				if (window.matchMedia("(max-width: 767px)").matches) {
+					setIsMobileSidebarOpen((value) => !value);
+				} else {
+					setIsSidebarOpen((value) => !value);
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, []);
+
+	useEffect(() => {
+		if (pathname.length > 0) {
+			setIsMobileSidebarOpen(false);
+		}
+	}, [pathname]);
+
 	return (
-		<AppLayout
-			navigate={navigateTo}
-			navbar={<DashboardNavbar title={title} user={user} />}
-			scrollMode="content"
-			sidebar={<DashboardSidebar items={visibleNavItems} pathname={pathname} />}
-			sidebarCollapsible="offcanvas"
-		>
-			<div className="min-h-full bg-background">{children}</div>
-		</AppLayout>
+		<div className="flex h-dvh min-h-0 overflow-hidden bg-background">
+			<div
+				aria-hidden={!isSidebarOpen}
+				className={`hidden h-dvh shrink-0 overflow-hidden transition-[width] duration-200 motion-reduce:transition-none md:block ${isSidebarOpen ? "visible w-60" : "invisible w-0"}`}
+			>
+				<DashboardSidebar items={visibleNavItems} pathname={pathname} />
+			</div>
+
+			<Drawer>
+				<Drawer.Backdrop
+					isDismissable
+					isOpen={isMobileSidebarOpen}
+					variant="blur"
+					onOpenChange={setIsMobileSidebarOpen}
+				>
+					<Drawer.Content placement="left">
+						<Drawer.Dialog
+							aria-label="后台导航"
+							className="h-dvh w-[min(240px,85vw)] p-0"
+						>
+							<DashboardSidebar
+								items={visibleNavItems}
+								pathname={pathname}
+								onNavigate={() => setIsMobileSidebarOpen(false)}
+							/>
+						</Drawer.Dialog>
+					</Drawer.Content>
+				</Drawer.Backdrop>
+			</Drawer>
+
+			<section className="flex min-w-0 flex-1 flex-col">
+				<DashboardNavbar
+					isSidebarOpen={isSidebarOpen}
+					title={title}
+					user={user}
+					onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+					onToggleSidebar={() => setIsSidebarOpen((value) => !value)}
+				/>
+				<main
+					aria-label="后台内容"
+					className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
+				>
+					<div className="min-h-full bg-background">{children}</div>
+				</main>
+			</section>
+		</div>
 	);
 }
 
@@ -218,7 +276,19 @@ export function AdminPage({
 	);
 }
 
-function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
+function DashboardNavbar({
+	isSidebarOpen,
+	onOpenMobileSidebar,
+	onToggleSidebar,
+	title,
+	user,
+}: {
+	isSidebarOpen: boolean;
+	onOpenMobileSidebar: () => void;
+	onToggleSidebar: () => void;
+	title: string;
+	user: AdminUser;
+}) {
 	const navigate = useNavigate();
 	const searchState = useOverlayState();
 	const overview = useQuery(orpc.admin.overview.queryOptions());
@@ -253,14 +323,34 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 
 	return (
 		<>
-			<Navbar maxWidth="full">
-				<Navbar.Header>
-					<AppLayout.MenuToggle />
-					<Sidebar.Trigger />
+			<header className="h-16 shrink-0 border-separator border-b bg-background">
+				<nav
+					aria-label="后台工具栏"
+					className="flex h-full w-full items-center gap-4 px-4 md:px-6"
+				>
+					<IconButton
+						className="-ml-2 md:hidden"
+						label="打开导航"
+						size="sm"
+						variant="ghost"
+						onPress={onOpenMobileSidebar}
+					>
+						<Bars className="size-4" />
+					</IconButton>
+					<IconButton
+						aria-expanded={isSidebarOpen}
+						className="-ml-2 hidden md:inline-flex"
+						label={isSidebarOpen ? "收起导航" : "展开导航"}
+						size="sm"
+						variant="ghost"
+						onPress={onToggleSidebar}
+					>
+						<SquareBars className="size-4" />
+					</IconButton>
 					<h2 className="truncate font-semibold text-foreground text-xl">
 						{title}
 					</h2>
-					<Navbar.Spacer />
+					<div aria-hidden className="flex-1" />
 					<div className="flex items-center gap-2">
 						{visibleSearchItems.length > 0 ? (
 							<IconButton
@@ -283,8 +373,8 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 							<UserMenu user={user} />
 						</div>
 					</div>
-				</Navbar.Header>
-			</Navbar>
+				</nav>
+			</header>
 			<AdminSearchCommand
 				isOpen={searchState.isOpen}
 				items={visibleSearchItems}
@@ -297,42 +387,43 @@ function DashboardNavbar({ title, user }: { title: string; user: AdminUser }) {
 
 function DashboardSidebar({
 	items,
+	onNavigate,
 	pathname,
 }: {
 	items: readonly AdminNavItem[];
+	onNavigate?: () => void;
 	pathname: string;
 }) {
 	return (
-		<>
-			<Sidebar>
-				<SidebarContents items={items} pathname={pathname} />
-			</Sidebar>
-			<Sidebar.Mobile>
-				<SidebarContents idPrefix="mobile-" items={items} pathname={pathname} />
-			</Sidebar.Mobile>
-		</>
+		<aside className="flex h-full w-60 shrink-0 flex-col border-separator border-r bg-background">
+			<SidebarContents
+				items={items}
+				pathname={pathname}
+				onNavigate={onNavigate}
+			/>
+		</aside>
 	);
 }
 
 function SidebarContents({
-	idPrefix = "",
 	items,
+	onNavigate,
 	pathname,
 }: {
-	idPrefix?: string;
 	items: readonly AdminNavItem[];
+	onNavigate?: () => void;
 	pathname: string;
 }) {
 	return (
 		<>
-			<Sidebar.Header>
+			<div className="px-3 py-4">
 				<div className="flex items-center gap-3 px-1 py-1">
 					<img
 						alt="Youni"
 						className="size-9 shrink-0 rounded-2xl"
 						src="/favicon.svg"
 					/>
-					<div className="flex min-w-0 flex-col" data-sidebar="label">
+					<div className="flex min-w-0 flex-col">
 						<span className="truncate font-medium text-foreground text-sm leading-tight">
 							Youni 工作台
 						</span>
@@ -341,32 +432,30 @@ function SidebarContents({
 						</span>
 					</div>
 				</div>
-			</Sidebar.Header>
-			<Sidebar.Content>
-				<Sidebar.Group>
-					<Sidebar.Menu aria-label="后台导航">
-						{items.map((item) => (
-							<SidebarNavItem
-								key={item.href}
-								idPrefix={idPrefix}
-								item={item}
-								pathname={pathname}
-							/>
-						))}
-					</Sidebar.Menu>
-				</Sidebar.Group>
-			</Sidebar.Content>
+			</div>
+			<div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+				<nav aria-label="后台导航" className="grid gap-1">
+					{items.map((item) => (
+						<SidebarNavItem
+							key={item.href}
+							item={item}
+							pathname={pathname}
+							onNavigate={onNavigate}
+						/>
+					))}
+				</nav>
+			</div>
 		</>
 	);
 }
 
 function SidebarNavItem({
-	idPrefix,
 	item,
+	onNavigate,
 	pathname,
 }: {
-	idPrefix: string;
 	item: AdminNavItem;
+	onNavigate?: () => void;
 	pathname: string;
 }) {
 	const Icon = item.icon;
@@ -376,24 +465,24 @@ function SidebarNavItem({
 			: pathname === item.href || pathname.startsWith(`${item.href}/`);
 
 	return (
-		<Sidebar.MenuItem
-			href={item.href}
-			id={`${idPrefix}${item.href}`}
-			isCurrent={isCurrent}
-			textValue={item.label}
+		<Link
+			aria-current={isCurrent ? "page" : undefined}
+			className={`flex h-9 w-full items-center gap-3 rounded-2xl px-2.5 font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${isCurrent ? "bg-default text-foreground" : "text-muted hover:bg-surface-secondary hover:text-foreground"}`}
+			to={item.href}
+			onClick={onNavigate}
 		>
-			<Sidebar.MenuIcon>
+			<span className="flex size-4 shrink-0 items-center justify-center">
 				<Icon className="size-4" />
-			</Sidebar.MenuIcon>
-			<Sidebar.MenuLabel>{item.label}</Sidebar.MenuLabel>
+			</span>
+			<span className="min-w-0 flex-1 truncate">{item.label}</span>
 			{item.badge ? (
-				<Sidebar.MenuChip>
+				<span className="shrink-0">
 					<Chip color="success" size="sm" variant="soft">
 						{item.badge}
 					</Chip>
-				</Sidebar.MenuChip>
+				</span>
 			) : null}
-		</Sidebar.MenuItem>
+		</Link>
 	);
 }
 
@@ -436,48 +525,153 @@ function AdminSearchCommand({
 	navigateTo: (href: AdminRouteTo) => void;
 	onOpenChange: (isOpen: boolean) => void;
 }) {
+	const inputRef = useRef<HTMLInputElement>(null);
+	const [query, setQuery] = useState("");
+	const [activeIndex, setActiveIndex] = useState(0);
+	const normalizedQuery = normalizeSearchText(query.trim());
+	const filteredItems = useMemo(
+		() =>
+			normalizedQuery
+				? items.filter((item) =>
+						normalizeSearchText(
+							`${item.label} ${item.description} ${item.keywords}`,
+						).includes(normalizedQuery),
+					)
+				: items,
+		[items, normalizedQuery],
+	);
+	const resolvedActiveIndex =
+		filteredItems.length === 0
+			? -1
+			: Math.min(activeIndex, filteredItems.length - 1);
+	const activeItem = filteredItems[resolvedActiveIndex];
+
+	useEffect(() => {
+		if (isOpen) {
+			setQuery("");
+			setActiveIndex(0);
+		}
+	}, [isOpen]);
+
+	const selectItem = (href: AdminRouteTo) => {
+		onOpenChange(false);
+		navigateTo(href);
+	};
+
 	return (
-		<Command>
-			<Command.Backdrop
+		<Modal>
+			<Modal.Backdrop
 				isDismissable
 				isOpen={isOpen}
 				variant="blur"
 				onOpenChange={onOpenChange}
 			>
-				<Command.Container size="md">
-					<Command.Dialog aria-label="搜索后台页面">
-						<Command.Header>
-							<Command.InputGroup aria-label="搜索后台页面">
-								<Command.InputGroup.Prefix>
-									<Magnifier className="size-4" />
-								</Command.InputGroup.Prefix>
-								<Command.InputGroup.Input placeholder="搜索后台页面或功能" />
-								<Command.InputGroup.ClearButton />
-							</Command.InputGroup>
-						</Command.Header>
-						<Command.List
-							aria-label="后台页面"
-							renderEmptyState={() => "没有匹配的页面"}
-							onAction={(key) => {
-								const href = String(key);
-
-								if (isAdminRouteTo(href)) {
-									onOpenChange(false);
-									navigateTo(href);
+				<Modal.Container className="pt-24" placement="top" size="lg">
+					<Modal.Dialog
+						aria-label="搜索后台页面"
+						className="max-h-[min(32rem,calc(100dvh-3rem))] overflow-hidden p-0"
+					>
+						<div className="flex h-13 items-center gap-2 border-separator border-b px-4">
+							<Magnifier className="size-4 shrink-0 text-muted" />
+							<input
+								aria-activedescendant={
+									activeItem ? getSearchItemId(activeItem.href) : undefined
 								}
-							}}
-						>
-							<Command.Group heading="后台页面">
-								{items.map((item) => {
-									const Icon = item.icon;
+								aria-controls="admin-search-results"
+								aria-expanded={isOpen}
+								aria-label="搜索后台页面"
+								autoComplete="off"
+								autoFocus
+								className="min-w-0 flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted"
+								placeholder="搜索后台页面或功能"
+								ref={inputRef}
+								role="combobox"
+								value={query}
+								onChange={(event) => {
+									setQuery(event.target.value);
+									setActiveIndex(0);
+								}}
+								onKeyDown={(event) => {
+									switch (event.key) {
+										case "ArrowDown":
+											event.preventDefault();
+											if (filteredItems.length > 0) {
+												setActiveIndex((value) =>
+													value >= filteredItems.length - 1 ? 0 : value + 1,
+												);
+											}
+											break;
+										case "ArrowUp":
+											event.preventDefault();
+											if (filteredItems.length > 0) {
+												setActiveIndex((value) =>
+													value <= 0 ? filteredItems.length - 1 : value - 1,
+												);
+											}
+											break;
+										case "Enter":
+											if (activeItem) {
+												event.preventDefault();
+												selectItem(activeItem.href);
+											}
+											break;
+										case "Escape":
+											event.preventDefault();
+											onOpenChange(false);
+											break;
+									}
+								}}
+							/>
+							{query ? (
+								<Button
+									isIconOnly
+									aria-label="清空搜索"
+									size="sm"
+									variant="ghost"
+									onPress={() => {
+										setQuery("");
+										setActiveIndex(0);
+										inputRef.current?.focus();
+									}}
+								>
+									<Xmark className="size-4" />
+								</Button>
+							) : (
+								<span aria-hidden className="size-8 shrink-0" />
+							)}
+						</div>
 
-									return (
-										<Command.Item
-											id={item.href}
-											key={item.href}
-											textValue={`${item.label} ${item.description} ${item.keywords}`}
-										>
-											<div className="flex min-w-0 items-center gap-3">
+						<div
+							aria-label="后台页面"
+							className="max-h-[min(24rem,60dvh)] overflow-y-auto p-2"
+							id="admin-search-results"
+							role="listbox"
+						>
+							<div className="px-2 pt-1 pb-2 font-medium text-muted text-xs">
+								后台页面
+							</div>
+							{filteredItems.length === 0 ? (
+								<div className="px-3 py-10 text-center text-muted text-sm">
+									没有匹配的页面
+								</div>
+							) : (
+								<div className="grid gap-1">
+									{filteredItems.map((item, index) => {
+										const Icon = item.icon;
+										const isActive = index === resolvedActiveIndex;
+
+										return (
+											<button
+												aria-selected={isActive}
+												className={`flex w-full min-w-0 items-center gap-3 rounded-2xl px-2 py-2 text-left outline-none transition-colors ${isActive ? "bg-default" : "hover:bg-surface-secondary"}`}
+												id={getSearchItemId(item.href)}
+												key={item.href}
+												role="option"
+												type="button"
+												onClick={() => selectItem(item.href)}
+												onFocus={() => setActiveIndex(index)}
+												onMouseEnter={() => setActiveIndex(index)}
+											>
 												<span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
 													<Icon className="size-4" />
 												</span>
@@ -489,17 +683,25 @@ function AdminSearchCommand({
 														{item.description}
 													</span>
 												</span>
-											</div>
-										</Command.Item>
-									);
-								})}
-							</Command.Group>
-						</Command.List>
-					</Command.Dialog>
-				</Command.Container>
-			</Command.Backdrop>
-		</Command>
+											</button>
+										);
+									})}
+								</div>
+							)}
+						</div>
+					</Modal.Dialog>
+				</Modal.Container>
+			</Modal.Backdrop>
+		</Modal>
 	);
+}
+
+function normalizeSearchText(value: string) {
+	return value.normalize("NFKD").toLocaleLowerCase();
+}
+
+function getSearchItemId(href: AdminRouteTo) {
+	return `admin-search-${href.replaceAll("/", "-")}`;
 }
 
 type NotificationOverview = {
@@ -706,8 +908,4 @@ function getNotifications(overview?: NotificationOverview): NotificationItem[] {
 			tone: "accent",
 		},
 	];
-}
-
-function isAdminRouteTo(value: string): value is AdminRouteTo {
-	return SEARCH_ITEMS.some((item) => item.href === value);
 }
