@@ -19,6 +19,7 @@ import type {
 	ContentNoteStatus,
 	HydratedContentNote,
 } from "../contracts/shared";
+import { getMissingPublishItems } from "./note-publish-validation";
 import { containsInsensitive } from "./search";
 
 export type {
@@ -139,23 +140,8 @@ function normalizeImageMetas(input: ContentNoteMutationInput) {
 	});
 }
 
-function getMissingPublishItems(
-	input: ContentNoteMutationInput,
-	topicNames: string[],
-) {
-	return [
-		input.images[0] ? null : "图片",
-		input.title.trim() ? null : "标题",
-		input.content.trim() ? null : "正文",
-		topicNames.length > 0 ? null : "话题",
-	].filter((item): item is string => Boolean(item));
-}
-
-function assertPublishReady(
-	input: ContentNoteMutationInput,
-	topicNames: string[],
-) {
-	const missingItems = getMissingPublishItems(input, topicNames);
+function assertPublishReady(input: ContentNoteMutationInput) {
+	const missingItems = getMissingPublishItems(input);
 	if (missingItems.length > 0) {
 		throw new ORPCError("BAD_REQUEST", {
 			message: `还差：${missingItems.join("、")}`,
@@ -438,7 +424,7 @@ export async function updateEditableContentNote({
 	}
 
 	const topicNames = uniqueTopics(input.topics);
-	assertPublishReady(input, topicNames);
+	assertPublishReady(input);
 
 	const cover = input.images[0];
 	const imageMetas = normalizeImageMetas(input);
@@ -492,7 +478,7 @@ export async function createContentNote({
 	const title = input.title.trim();
 	const content = input.content.trim();
 	const status = "audit" as const;
-	assertPublishReady(input, topicNames);
+	assertPublishReady(input);
 
 	const [createdNote] = await db
 		.insert(note)

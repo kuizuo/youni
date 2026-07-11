@@ -1,4 +1,5 @@
 import { useThemeColor } from "heroui-native";
+import type { RefObject } from "react";
 import { Text, TextInput, type TextStyle, View } from "react-native";
 
 export type TextSelection = {
@@ -14,20 +15,28 @@ const CONTENT_INPUT_STYLE: TextStyle = {
 };
 
 type LinkedComposerInputProps = {
+	inputRef?: RefObject<TextInput | null>;
 	maxLength?: number;
 	onChangeText: (value: string) => void;
+	onFocus?: () => void;
 	onSelectionChange?: (selection: TextSelection) => void;
 	placeholder: string;
 	placeholderTextColor: string;
+	selection?: TextSelection;
+	showSoftInputOnFocus?: boolean;
 	value: string;
 };
 
 export function LinkedComposerInput({
+	inputRef,
 	maxLength,
 	onChangeText,
+	onFocus,
 	onSelectionChange,
 	placeholder,
 	placeholderTextColor,
+	selection,
+	showSoftInputOnFocus,
 	value,
 }: LinkedComposerInputProps) {
 	const foregroundColor = useThemeColor("foreground");
@@ -55,8 +64,10 @@ export function LinkedComposerInput({
 				{renderLinkedContent(value, linkColor)}
 			</Text>
 			<TextInput
+				ref={inputRef}
 				value={value}
 				onChangeText={onChangeText}
+				onFocus={onFocus}
 				onSelectionChange={(event) =>
 					onSelectionChange?.(event.nativeEvent.selection)
 				}
@@ -64,6 +75,8 @@ export function LinkedComposerInput({
 				placeholderTextColor={placeholderTextColor}
 				multiline
 				maxLength={maxLength}
+				selection={selection}
+				showSoftInputOnFocus={showSoftInputOnFocus}
 				textAlignVertical="top"
 				selectionColor={foregroundColor}
 				cursorColor={foregroundColor}

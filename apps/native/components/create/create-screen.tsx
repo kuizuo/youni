@@ -1,10 +1,27 @@
 import { Spinner, useThemeColor } from "heroui-native";
-import { useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+	Keyboard,
+	KeyboardAvoidingView,
+	type KeyboardEvent,
+	Platform,
+	ScrollView,
+	type TextInput,
+	View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { EmojiType } from "rn-emoji-keyboard";
 
 import { ContentEditor } from "@/components/create/content-editor";
 import { CreateHeader } from "@/components/create/create-header";
+import {
+	type CreateInputField,
+	CreateKeyboardPanel,
+} from "@/components/create/create-keyboard-panel";
+import {
+	InlineMentionPicker,
+	InlineTopicPicker,
+} from "@/components/create/create-pickers";
 import type {
 	ComposerImage,
 	InlineTrigger,
@@ -33,10 +50,30 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const insets = useSafeAreaInsets();
 	const { toast } = useAppToast();
 	const composer = useCreateComposer({ onRequestClose });
+	const titleInputRef = useRef<TextInput>(null);
+	const contentInputRef = useRef<TextInput>(null);
+	const activeInputFieldRef = useRef<CreateInputField | null>(null);
+	const isEmojiPickerOpenRef = useRef(false);
+	const isEmojiInputLockedRef = useRef(false);
+	const isSwitchingToSystemKeyboardRef = useRef(false);
+	const isSystemKeyboardVisibleRef = useRef(false);
+	const keyboardHeightRef = useRef(300);
+	const titleRef = useRef(composer.title);
 	const contentRef = useRef(composer.content);
+	titleRef.current = composer.title;
 	contentRef.current = composer.content;
 	const [isAdvancedSheetOpen, setIsAdvancedSheetOpen] = useState(false);
+	const [activeInputField, setActiveInputField] =
+		useState<CreateInputField | null>(null);
+	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+	const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
+	const [emojiPanelHeight, setEmojiPanelHeight] = useState(300);
 	const [editingImageId, setEditingImageId] = useState<null | string>(null);
+	const [titleSelection, setTitleSelection] = useState<TextSelection>({
+		end: 0,
+		start: 0,
+	});
 	const [contentSelection, setContentSelection] = useState<TextSelection>({
 		end: 0,
 		start: 0,
@@ -44,10 +81,69 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const [inlineTrigger, setInlineTrigger] = useState<InlineTrigger | null>(
 		null,
 	);
+	activeInputFieldRef.current = activeInputField;
+
+	useEffect(() => {
+		const updateKeyboardHeight = (event: KeyboardEvent) => {
+			const height = Math.round(event.endCoordinates.height);
+			if (height > 0) {
+				const nextHeight = Math.max(260, height);
+				keyboardHeightRef.current = nextHeight;
+				setEmojiPanelHeight(nextHeight);
+			}
+		};
+		const showSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+			(event: KeyboardEvent) => {
+				if (Platform.OS === "ios") Keyboard.scheduleLayoutAnimation(event);
+				isSystemKeyboardVisibleRef.current = true;
+				setIsKeyboardVisible(true);
+				updateKeyboardHeight(event);
+				if (isSwitchingToSystemKeyboardRef.current) {
+					isSwitchingToSystemKeyboardRef.current = false;
+					isEmojiPickerOpenRef.current = false;
+					setIsEmojiPickerOpen(false);
+				}
+			},
+		);
+		const hideSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+			(event: KeyboardEvent) => {
+				if (Platform.OS === "ios") Keyboard.scheduleLayoutAnimation(event);
+				isSystemKeyboardVisibleRef.current = false;
+				setIsKeyboardVisible(false);
+				isSwitchingToSystemKeyboardRef.current = false;
+				if (isEmojiPickerOpenRef.current) return;
+				if (!activeInputFieldRef.current) return;
+				setActiveInputField(null);
+				setInlineTrigger(null);
+			},
+		);
+
+		return () => {
+			showSubscription.remove();
+			hideSubscription.remove();
+		};
+	}, []);
 
 	const updateInlineTrigger = (value: string, cursor: number) => {
 		const trigger = findInlineTrigger(value, cursor);
 		setInlineTrigger(trigger);
+	};
+
+	const handleTitleChange = (value: string) => {
+		const previousTitle = titleRef.current;
+		const cursor = Math.max(
+			0,
+			Math.min(
+				value.length,
+				titleSelection.start + value.length - previousTitle.length,
+			),
+		);
+		titleRef.current = value;
+		composer.setTitle(value);
+		setTitleSelection({ start: cursor, end: cursor });
+		updateInlineTrigger(value, cursor);
 	};
 
 	const handleContentChange = (value: string) => {
@@ -79,19 +175,121 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 		if (!cleanValue) return;
 
 		const trigger = inlineTrigger?.type === type ? inlineTrigger : null;
-		const start = trigger?.start ?? contentSelection.start;
-		const end = trigger?.end ?? contentSelection.end;
+		const selection =
+			activeInputField === "title" ? titleSelection : contentSelection;
+		const start = trigger?.start ?? selection.start;
+		const end = trigger?.end ?? selection.end;
 		const token = `${type === "topic" ? "#" : "@"}${cleanValue} `;
-		const currentContent = contentRef.current;
-		const nextContent = `${currentContent.slice(0, start)}${token}${currentContent
+		const currentValue =
+			activeInputField === "title" ? titleRef.current : contentRef.current;
+		const nextValue = `${currentValue.slice(0, start)}${token}${currentValue
 			.slice(end)
 			.replace(/^\s+/, "")}`;
 		const cursor = start + token.length;
 
-		contentRef.current = nextContent;
-		composer.setContent(nextContent);
-		setContentSelection({ start: cursor, end: cursor });
+		if (activeInputField === "title") {
+			const limitedValue = nextValue.slice(0, 80);
+			const limitedCursor = Math.min(cursor, limitedValue.length);
+			titleRef.current = limitedValue;
+			composer.setTitle(limitedValue);
+			setTitleSelection({ start: limitedCursor, end: limitedCursor });
+		} else {
+			contentRef.current = nextValue;
+			composer.setContent(nextValue);
+			setContentSelection({ start: cursor, end: cursor });
+		}
 		setInlineTrigger(null);
+		requestAnimationFrame(() => {
+			if (activeInputField === "title") titleInputRef.current?.focus();
+			else contentInputRef.current?.focus();
+		});
+	};
+
+	const handleInputFocus = (field: CreateInputField) => {
+		if (isEmojiInputLockedRef.current) return;
+		isSystemKeyboardVisibleRef.current = true;
+		setIsKeyboardVisible(true);
+		setActiveInputField(field);
+		if (isSwitchingToSystemKeyboardRef.current) return;
+		isEmojiPickerOpenRef.current = false;
+		setIsEmojiPickerOpen(false);
+		const selection = field === "title" ? titleSelection : contentSelection;
+		const value = field === "title" ? titleRef.current : contentRef.current;
+		if (selection.start === selection.end) {
+			updateInlineTrigger(value, selection.start);
+		}
+	};
+
+	const insertActiveText = (text: string) => {
+		if (!activeInputField) return;
+		const isTitle = activeInputField === "title";
+		const currentValue = isTitle ? titleRef.current : contentRef.current;
+		const selection = isTitle ? titleSelection : contentSelection;
+		const nextValue =
+			`${currentValue.slice(0, selection.start)}${text}${currentValue.slice(selection.end)}`.slice(
+				0,
+				isTitle ? 80 : 2000,
+			);
+		const cursor = Math.min(selection.start + text.length, nextValue.length);
+		if (isTitle) {
+			titleRef.current = nextValue;
+			composer.setTitle(nextValue);
+			setTitleSelection({ start: cursor, end: cursor });
+		} else {
+			contentRef.current = nextValue;
+			composer.setContent(nextValue);
+			setContentSelection({ start: cursor, end: cursor });
+		}
+		updateInlineTrigger(nextValue, cursor);
+	};
+
+	const insertInlineMarker = (type: InlineTrigger["type"]) => {
+		const isTitle = activeInputField === "title";
+		const currentValue = isTitle ? titleRef.current : contentRef.current;
+		const selection = isTitle ? titleSelection : contentSelection;
+		const previousChar =
+			selection.start > 0 ? currentValue[selection.start - 1] : "";
+		const spacer = previousChar && !/\s/.test(previousChar) ? " " : "";
+		insertActiveText(`${spacer}${type === "topic" ? "#" : "@"}`);
+	};
+
+	const toggleEmojiPicker = () => {
+		const nextValue = !isEmojiPickerOpenRef.current;
+		if (!nextValue) {
+			isSwitchingToSystemKeyboardRef.current = true;
+			isEmojiInputLockedRef.current = false;
+			setIsEmojiInputLocked(false);
+			requestAnimationFrame(() => {
+				if (activeInputField === "title") titleInputRef.current?.focus();
+				else contentInputRef.current?.focus();
+			});
+			return;
+		}
+		isSwitchingToSystemKeyboardRef.current = false;
+		isEmojiInputLockedRef.current = true;
+		isEmojiPickerOpenRef.current = true;
+		setEmojiPanelHeight(keyboardHeightRef.current);
+		setIsEmojiInputLocked(true);
+		setIsEmojiPickerOpen(true);
+		setInlineTrigger(null);
+		titleInputRef.current?.blur();
+		contentInputRef.current?.blur();
+		Keyboard.dismiss();
+	};
+
+	const finishInput = () => {
+		isEmojiPickerOpenRef.current = false;
+		isEmojiInputLockedRef.current = false;
+		isSwitchingToSystemKeyboardRef.current = false;
+		isSystemKeyboardVisibleRef.current = false;
+		setIsEmojiPickerOpen(false);
+		setIsEmojiInputLocked(false);
+		setIsKeyboardVisible(false);
+		setActiveInputField(null);
+		setInlineTrigger(null);
+		titleInputRef.current?.blur();
+		contentInputRef.current?.blur();
+		Keyboard.dismiss();
 	};
 	const editingImage =
 		composer.images.find((image) => image.id === editingImageId) ?? null;
@@ -125,7 +323,9 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 
 	return (
 		<KeyboardAvoidingView
-			behavior={Platform.OS === "ios" ? "padding" : undefined}
+			behavior={
+				Platform.OS === "ios" && !isEmojiPickerOpen ? "padding" : undefined
+			}
 			className="flex-1 bg-background"
 		>
 			<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
@@ -150,21 +350,33 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 						mutedColor={mutedColor}
 						onAddImage={composer.addImage}
 						onEditImage={openImageEditor}
+						onMoveImage={composer.moveImage}
 						onRemoveImage={composer.removeImage}
 					/>
 
 					<ContentEditor
 						content={composer.content}
+						contentInputRef={contentInputRef}
+						contentSelection={contentSelection}
 						foregroundColor={foregroundColor}
-						inlineTrigger={inlineTrigger}
+						isEmojiInputLocked={isEmojiInputLocked}
 						mutedColor={mutedColor}
-						selectedTopics={composer.topics}
 						title={composer.title}
+						titleInputRef={titleInputRef}
+						titleSelection={titleSelection}
 						onContentChange={handleContentChange}
-						onMentionSelect={(value) => replaceInlineTrigger("mention", value)}
-						onSelectionChange={handleContentSelectionChange}
-						onTitleChange={composer.setTitle}
-						onTopicSelect={(value) => replaceInlineTrigger("topic", value)}
+						onContentFocus={() => handleInputFocus("content")}
+						onContentSelectionChange={handleContentSelectionChange}
+						onTitleChange={handleTitleChange}
+						onTitleFocus={() => handleInputFocus("title")}
+						onTitleSelectionChange={(selection) => {
+							setTitleSelection(selection);
+							if (selection.start !== selection.end) {
+								setInlineTrigger(null);
+								return;
+							}
+							updateInlineTrigger(titleRef.current, selection.start);
+						}}
 					/>
 
 					<PublishingOptions
@@ -180,16 +392,42 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					/>
 				</ScrollView>
 
-				<SubmitBar
-					bottomInset={insets.bottom}
-					isSubmitting={composer.isSubmitting}
-					isUploadingImages={composer.isUploadingImages}
-					pendingSubmitMode={composer.pendingSubmitMode}
-					publishLabel={composer.isEditingNote ? "提交审核" : "发布笔记"}
-					showSaveDraft={!composer.isEditingNote}
-					onPublish={composer.publish}
-					onSaveDraft={composer.saveDraft}
-				/>
+				{activeInputField && (isKeyboardVisible || isEmojiPickerOpen) ? (
+					<CreateKeyboardPanel
+						emojiPanelHeight={emojiPanelHeight}
+						isEmojiPickerOpen={isEmojiPickerOpen}
+						mutedColor={mutedColor}
+						onDone={finishInput}
+						onEmojiPress={toggleEmojiPicker}
+						onEmojiSelect={(emoji: EmojiType) => insertActiveText(emoji.emoji)}
+						onMentionPress={() => insertInlineMarker("mention")}
+						onTopicPress={() => insertInlineMarker("topic")}
+					>
+						{!isEmojiPickerOpen && inlineTrigger?.type === "topic" ? (
+							<InlineTopicPicker
+								query={inlineTrigger.query}
+								selectedTopics={composer.topics}
+								onSelect={(value) => replaceInlineTrigger("topic", value)}
+							/>
+						) : !isEmojiPickerOpen && inlineTrigger?.type === "mention" ? (
+							<InlineMentionPicker
+								query={inlineTrigger.query}
+								onSelect={(value) => replaceInlineTrigger("mention", value)}
+							/>
+						) : null}
+					</CreateKeyboardPanel>
+				) : isKeyboardVisible || activeInputField ? null : (
+					<SubmitBar
+						bottomInset={insets.bottom}
+						isSubmitting={composer.isSubmitting}
+						isUploadingImages={composer.isUploadingImages}
+						pendingSubmitMode={composer.pendingSubmitMode}
+						publishLabel={composer.isEditingNote ? "提交审核" : "发布笔记"}
+						showSaveDraft={!composer.isEditingNote}
+						onPublish={composer.publish}
+						onSaveDraft={composer.saveDraft}
+					/>
+				)}
 				<AdvancedOptionsSheet
 					isOpen={isAdvancedSheetOpen}
 					onOpenChange={setIsAdvancedSheetOpen}

@@ -9,16 +9,12 @@ import type { ComposerImage } from "./create-types";
 
 export type IoniconName = keyof typeof Ionicons.glyphMap;
 
-export function MediaTile({
+export function MediaTilePreview({
 	image,
 	label,
-	onEdit,
-	onRemove,
 }: {
 	image: ComposerImage;
 	label: string;
-	onEdit: () => void;
-	onRemove: () => void;
 }) {
 	const [isLoading, setIsLoading] = useState(true);
 	const [hasError, setHasError] = useState(false);
@@ -34,49 +30,80 @@ export function MediaTile({
 	}, [image.uri]);
 
 	return (
+		<View className="h-full w-full overflow-hidden rounded-xl border border-border bg-content2">
+			<Image
+				accessibilityLabel={label}
+				source={{ uri: image.uri }}
+				resizeMode="cover"
+				onError={() => {
+					setHasError(true);
+					setIsLoading(false);
+				}}
+				onLoad={() => {
+					setHasError(false);
+					setIsLoading(false);
+				}}
+				onLoadEnd={() => setIsLoading(false)}
+				onLoadStart={() => setIsLoading(true)}
+				className="h-full w-full"
+			/>
+			{isLoading ? (
+				<View className="absolute inset-0 items-center justify-center bg-content2">
+					<Spinner size="sm" />
+				</View>
+			) : null}
+			{hasError ? (
+				<View className="absolute inset-0 items-center justify-center bg-content2">
+					<Ionicons name="image-outline" size={24} color="#9ca3af" />
+				</View>
+			) : null}
+		</View>
+	);
+}
+
+export function MediaRemoveButton({
+	label,
+	onRemove,
+}: {
+	label: string;
+	onRemove: () => void;
+}) {
+	return (
+		<PressableFeedback
+			accessibilityLabel={`移除${label}`}
+			accessibilityRole="button"
+			hitSlop={8}
+			onPress={onRemove}
+			className="absolute top-1 right-1 z-10 size-6 items-center justify-center rounded-full bg-overlay-backdrop"
+		>
+			<Ionicons name="close" size={14} color="white" />
+		</PressableFeedback>
+	);
+}
+
+export function MediaTile({
+	image,
+	label,
+	onEdit,
+	onRemove,
+}: {
+	image: ComposerImage;
+	label: string;
+	onEdit: () => void;
+	onRemove: () => void;
+}) {
+	return (
 		<View className="h-22 w-22">
 			<PressableFeedback
 				accessibilityLabel={`编辑${label}`}
+				accessibilityHint="长按并拖动可调整顺序"
 				accessibilityRole="button"
 				onPress={onEdit}
-				className="h-full w-full overflow-hidden rounded-xl border border-border bg-content2"
+				className="h-full w-full"
 			>
-				<Image
-					accessibilityLabel={label}
-					source={{ uri: image.uri }}
-					resizeMode="cover"
-					onError={() => {
-						setHasError(true);
-						setIsLoading(false);
-					}}
-					onLoad={() => {
-						setHasError(false);
-						setIsLoading(false);
-					}}
-					onLoadEnd={() => setIsLoading(false)}
-					onLoadStart={() => setIsLoading(true)}
-					className="h-full w-full"
-				/>
-				{isLoading ? (
-					<View className="absolute inset-0 items-center justify-center bg-content2">
-						<Spinner size="sm" />
-					</View>
-				) : null}
-				{hasError ? (
-					<View className="absolute inset-0 items-center justify-center bg-content2">
-						<Ionicons name="image-outline" size={24} color="#9ca3af" />
-					</View>
-				) : null}
+				<MediaTilePreview image={image} label={label} />
 			</PressableFeedback>
-			<PressableFeedback
-				accessibilityLabel={`移除${label}`}
-				accessibilityRole="button"
-				hitSlop={8}
-				onPress={onRemove}
-				className="absolute top-1 right-1 z-10 size-6 items-center justify-center rounded-full bg-overlay-backdrop"
-			>
-				<Ionicons name="close" size={14} color="white" />
-			</PressableFeedback>
+			<MediaRemoveButton label={label} onRemove={onRemove} />
 		</View>
 	);
 }

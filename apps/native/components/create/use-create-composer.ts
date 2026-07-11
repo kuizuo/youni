@@ -13,6 +13,7 @@ import type {
 	NoteVisibility,
 	PublishSubmitMode,
 } from "@/components/create/create-types";
+import { reorderImages } from "@/components/create/image-order";
 import { authClient } from "@/lib/auth-client";
 import {
 	createDraftCoverThumbnail,
@@ -204,9 +205,8 @@ export function useCreateComposer({
 				images.length === 0 ? "图片" : null,
 				title.trim().length === 0 ? "标题" : null,
 				content.trim().length === 0 ? "正文" : null,
-				topics.length === 0 ? "话题" : null,
 			].filter((item): item is string => Boolean(item)),
-		[content, images.length, title, topics.length],
+		[content, images.length, title],
 	);
 	const canPublish = missingItems.length === 0;
 	const hasSavableContent =
@@ -641,6 +641,14 @@ export function useCreateComposer({
 		setImages((current) => current.filter((item) => item.id !== id));
 	};
 
+	const moveImage = (imageId: string, toIndex: number) => {
+		setImages((current) => {
+			const fromIndex = current.findIndex((image) => image.id === imageId);
+			if (fromIndex < 0) return current;
+			return reorderImages(current, fromIndex, toIndex);
+		});
+	};
+
 	const updateImage = (image: ComposerImage) => {
 		setImages((current) =>
 			current.map((item) => (item.id === image.id ? image : item)),
@@ -803,6 +811,7 @@ export function useCreateComposer({
 		pendingSubmitMode,
 		openDrafts,
 		publish,
+		moveImage,
 		removeImage,
 		saveDraft,
 		setAllowComment,

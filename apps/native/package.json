@@ -17,7 +17,6 @@
 	"dependencies": {
 		"@ai-sdk/react": "catalog:",
 		"@better-auth/expo": "catalog:",
-		"base64-js": "^1.5.1",
 		"@expo-google-fonts/nunito": "^0.4.2",
 		"@expo/metro-runtime": "~55.0.10",
 		"@expo/vector-icons": "^15.1.1",
@@ -37,6 +36,7 @@
 		"@youni/api": "workspace:*",
 		"@youni/env": "workspace:*",
 		"ai": "catalog:",
+		"base64-js": "^1.5.1",
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
 		"expo": "~55.0.26",
@@ -66,6 +66,7 @@
 		"react-native-keyboard-controller": "1.20.7",
 		"react-native-qrcode-svg": "^6.3.21",
 		"react-native-reanimated": "4.2.1",
+		"react-native-reanimated-dnd": "2.0.0",
 		"react-native-safe-area-context": "~5.6.2",
 		"react-native-screens": "~4.23.0",
 		"react-native-svg": "15.15.3",
