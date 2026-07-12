@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
 		width: 256,
 	},
 	scanGuide: {
-		...StyleSheet.absoluteFillObject,
+		...StyleSheet.absoluteFill,
 		borderColor: "rgba(255, 255, 255, 0.2)",
 		borderRadius: 28,
 		borderWidth: StyleSheet.hairlineWidth,

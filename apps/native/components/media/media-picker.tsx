@@ -12,13 +12,15 @@ import {
 	AppState,
 	FlatList,
 	Modal,
-	Platform,
 	Text,
 	useWindowDimensions,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AlbumPicker } from "@/components/media/album-picker";
+import {
+	AlbumPicker,
+	type LibraryAlbum,
+} from "@/components/media/album-picker";
 import { CameraPage } from "@/components/media/camera-page";
 import {
 	AddMoreTile,
@@ -69,8 +71,21 @@ function libraryItem(asset: MediaLibrary.Asset): LibraryItem {
 		asset,
 		id: `library:${asset.id}`,
 		kind: "library",
-		previewUri: asset.uri,
+		previewUri: asset.id,
 	};
+}
+
+function createPhotoQuery(album?: MediaLibrary.Album, offset = 0) {
+	let query = new MediaLibrary.Query()
+		.eq(MediaLibrary.AssetField.MEDIA_TYPE, MediaLibrary.MediaType.IMAGE)
+		.orderBy({
+			ascending: false,
+			key: MediaLibrary.AssetField.CREATION_TIME,
+		})
+		.offset(offset)
+		.limit(PAGE_SIZE);
+	if (album) query = query.album(album);
+	return query;
 }
 
 export function MediaPicker({
@@ -86,14 +101,11 @@ export function MediaPicker({
 	const loadTokenRef = useRef(0);
 	const [permission, setPermission] =
 		useState<MediaLibrary.PermissionResponse | null>(null);
-	const [albums, setAlbums] = useState<MediaLibrary.Album[]>([]);
-	const [selectedAlbum, setSelectedAlbum] = useState<MediaLibrary.Album | null>(
-		null,
-	);
+	const [albums, setAlbums] = useState<LibraryAlbum[]>([]);
+	const [selectedAlbum, setSelectedAlbum] = useState<LibraryAlbum | null>(null);
 	const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 	const [cameraItems, setCameraItems] = useState<CameraItem[]>([]);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
-	const [endCursor, setEndCursor] = useState<string | undefined>();
 	const [hasNextPage, setHasNextPage] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -113,12 +125,19 @@ export function MediaPicker({
 
 	const loadAlbums = useCallback(async () => {
 		try {
-			const result = await MediaLibrary.getAlbumsAsync({
-				includeSmartAlbums: true,
-			});
+			const result = await MediaLibrary.Album.getAll();
+			const rows = await Promise.all(
+				result.map(async (album) => {
+					const [title, assets] = await Promise.all([
+						album.getTitle(),
+						createPhotoQuery(album).exe(),
+					]);
+					return { album, assetCount: assets.length, id: album.id, title };
+				}),
+			);
 			const seen = new Set<string>();
 			setAlbums(
-				result
+				rows
 					.filter((album) => album.assetCount > 0 && !seen.has(album.id))
 					.filter((album) => {
 						seen.add(album.id);
@@ -133,7 +152,7 @@ export function MediaPicker({
 
 	const loadFirstPage = useCallback(
 		async (
-			album: MediaLibrary.Album | null = selectedAlbum,
+			album: LibraryAlbum | null = selectedAlbum,
 			forceAuthorized = false,
 		) => {
 			if (
@@ -142,23 +161,15 @@ export function MediaPicker({
 			) {
 				setLibraryItems([]);
 				setHasNextPage(false);
-				setEndCursor(undefined);
 				return;
 			}
 			const token = ++loadTokenRef.current;
 			setIsLoading(true);
 			try {
-				const result = await MediaLibrary.getAssetsAsync({
-					album: album ?? undefined,
-					first: PAGE_SIZE,
-					mediaType: MediaLibrary.MediaType.photo,
-					resolveWithFullInfo: Platform.OS === "android",
-					sortBy: [[MediaLibrary.SortBy.creationTime, false]],
-				});
+				const assets = await createPhotoQuery(album?.album).exe();
 				if (loadTokenRef.current !== token) return;
-				setLibraryItems(result.assets.map(libraryItem));
-				setEndCursor(result.endCursor);
-				setHasNextPage(result.hasNextPage);
+				setLibraryItems(assets.map(libraryItem));
+				setHasNextPage(assets.length === PAGE_SIZE);
 			} catch {
 				if (loadTokenRef.current !== token) return;
 				setLibraryItems([]);
@@ -288,7 +299,7 @@ export function MediaPicker({
 				]);
 				setPermission(nextPermission);
 			} else {
-				await MediaLibrary.presentPermissionsPickerAsync(["photo"]);
+				await MediaLibrary.presentPermissionsPicker(["photo"]);
 				nextPermission = await refreshPermission();
 			}
 			if (nextPermission?.granted) {
@@ -302,28 +313,21 @@ export function MediaPicker({
 	};
 
 	const loadMore = async () => {
-		if (!hasNextPage || !endCursor || isLoading || isLoadingMore) return;
+		if (!hasNextPage || isLoading || isLoadingMore) return;
 		setIsLoadingMore(true);
 		try {
-			const result = await MediaLibrary.getAssetsAsync({
-				after: endCursor,
-				album: selectedAlbum ?? undefined,
-				first: PAGE_SIZE,
-				mediaType: MediaLibrary.MediaType.photo,
-				resolveWithFullInfo: Platform.OS === "android",
-				sortBy: [[MediaLibrary.SortBy.creationTime, false]],
-			});
+			const assets = await createPhotoQuery(
+				selectedAlbum?.album,
+				libraryItems.length,
+			).exe();
 			setLibraryItems((current) => {
 				const known = new Set(current.map((item) => item.id));
 				return [
 					...current,
-					...result.assets
-						.map(libraryItem)
-						.filter((item) => !known.has(item.id)),
+					...assets.map(libraryItem).filter((item) => !known.has(item.id)),
 				];
 			});
-			setEndCursor(result.endCursor);
-			setHasNextPage(result.hasNextPage);
+			setHasNextPage(assets.length === PAGE_SIZE);
 		} catch {
 			toast.show({ variant: "warning", label: "更多照片加载失败" });
 		} finally {
@@ -366,16 +370,14 @@ export function MediaPicker({
 					const item = allItemsById.get(id);
 					if (!item) throw new Error("照片已不可用");
 					if (item.kind === "camera") return item.asset;
-					const info = await MediaLibrary.getAssetInfoAsync(item.asset, {
-						shouldDownloadFromNetwork: true,
-					});
+					const info = await item.asset.getInfo();
 					return {
 						assetId: info.id,
 						fileName: info.filename,
 						height: info.height,
 						mimeType: imageMimeType(info.filename),
 						type: "image" as const,
-						uri: info.localUri ?? info.uri,
+						uri: info.uri,
 						width: info.width,
 					};
 				}),
@@ -445,7 +447,7 @@ export function MediaPicker({
 		setActiveTab("album");
 	};
 
-	const selectAlbum = (album: MediaLibrary.Album | null) => {
+	const selectAlbum = (album: LibraryAlbum | null) => {
 		fireHaptic();
 		setSelectedAlbum(album);
 		setIsAlbumPickerOpen(false);

@@ -1,4 +1,4 @@
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import type { Tabs } from "expo-router";
 import {
 	cn,
 	PressableFeedback,
@@ -6,6 +6,7 @@ import {
 	Typography,
 	useThemeColor,
 } from "heroui-native";
+import type { ComponentProps } from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -16,7 +17,10 @@ import { fireHaptic } from "@/lib/utils/fire-haptic";
 
 export const TAB_BAR_SAFE_OFFSET_ADDON_PX = 12;
 
-export function FloatingTabBar({ navigation, state }: BottomTabBarProps) {
+type TabsTabBar = NonNullable<ComponentProps<typeof Tabs>["tabBar"]>;
+type TabsTabBarProps = Parameters<TabsTabBar>[0];
+
+export function FloatingTabBar({ navigation, state }: TabsTabBarProps) {
 	const insets = useSafeAreaInsets();
 	const backgroundColor = useThemeColor("background");
 	const socialNavigation = useSocialNavigation();

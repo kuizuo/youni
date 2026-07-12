@@ -33,6 +33,9 @@
 		"slug": "youni",
 		"plugins": [
 			"expo-router",
+			"expo-image",
+			"expo-sqlite",
+			"expo-status-bar",
 			[
 				"expo-build-properties",
 				{

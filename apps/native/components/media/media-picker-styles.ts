@@ -51,7 +51,7 @@ export const mediaPickerStyles = StyleSheet.create({
 	},
 	addMoreText: { color: "#919191", fontSize: 12, lineHeight: 16 },
 	selectedOverlay: {
-		...StyleSheet.absoluteFillObject,
+		...StyleSheet.absoluteFill,
 		backgroundColor: "rgba(0,0,0,0.25)",
 	},
 	selectionBadge: {
@@ -90,7 +90,7 @@ export const mediaPickerStyles = StyleSheet.create({
 	tabTextActive: { color: "#fff", fontWeight: "800" },
 	tabIndicator: { borderRadius: 3, height: 4, marginTop: 7, width: 24 },
 	albumPickerRoot: {
-		...StyleSheet.absoluteFillObject,
+		...StyleSheet.absoluteFill,
 		backgroundColor: "rgba(0,0,0,0.48)",
 		justifyContent: "flex-end",
 	},

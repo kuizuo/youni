@@ -5,7 +5,14 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { mediaPickerStyles as styles } from "./media-picker-styles";
 
-function albumKey(album: MediaLibrary.Album | null) {
+export type LibraryAlbum = {
+	album: MediaLibrary.Album;
+	assetCount: number;
+	id: string;
+	title: string;
+};
+
+function albumKey(album: LibraryAlbum | null) {
 	return album?.id ?? "recent";
 }
 
@@ -16,13 +23,13 @@ export function AlbumPicker({
 	onSelect,
 	selectedAlbum,
 }: {
-	albums: MediaLibrary.Album[];
+	albums: LibraryAlbum[];
 	bottomInset: number;
 	onClose: () => void;
-	onSelect: (album: MediaLibrary.Album | null) => void;
-	selectedAlbum: MediaLibrary.Album | null;
+	onSelect: (album: LibraryAlbum | null) => void;
+	selectedAlbum: LibraryAlbum | null;
 }) {
-	const rows: Array<MediaLibrary.Album | null> = [null, ...albums];
+	const rows: Array<LibraryAlbum | null> = [null, ...albums];
 	const themeColor = useThemeColor("accent");
 	return (
 		<View style={styles.albumPickerRoot}>

@@ -227,7 +227,7 @@ export function useSocialActions() {
 				}
 			},
 			onSuccess: (result, _variables, context) => {
-				if (!context?.optimisticComment) return;
+				if (!result || !context?.optimisticComment) return;
 				applyCreatedComment({
 					commentId: result.id,
 					createdAt: result.createdAt,
@@ -423,6 +423,7 @@ export function useSocialActions() {
 				options.onSettled?.();
 			},
 			onSuccess: async (result) => {
+				if (!result) return;
 				await options.onSuccess?.(result);
 			},
 		});

@@ -116,7 +116,7 @@ export function NoteVisibilitySheet({
 											accessibilityLabel={item.label}
 											accessibilityRole="button"
 											accessibilityState={{ selected }}
-											isDisabled={isSaving}
+											disabled={isSaving}
 											onPress={() => onSelect(item.value)}
 											className="gap-2.5 px-3.5 py-3"
 										>
