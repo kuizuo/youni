@@ -65,14 +65,6 @@ export function ForgotPasswordForm({
 					<AppHeading type="h1" align="center" className="text-foreground">
 						找回密码
 					</AppHeading>
-					<Typography.Paragraph
-						color="muted"
-						align="center"
-						type="body-sm"
-						className="leading-5"
-					>
-						输入注册邮箱，我们会发送一次性验证码帮你设置新密码。
-					</Typography.Paragraph>
 				</View>
 			</View>
 
