@@ -40,6 +40,7 @@ export default function TopicDetailScreen() {
 	const insets = useSafeAreaInsets();
 	const foregroundColor = useThemeColor("foreground");
 	const accentColor = useThemeColor("accent");
+	const accentForegroundColor = useThemeColor("accent-foreground");
 	const [sort, setSort] = useState<TopicSort>("hot");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [topicSummary, setTopicSummary] = useState<TopicSummary>();
@@ -189,8 +190,8 @@ export default function TopicDetailScreen() {
 				feedbackVariant="scale-ripple"
 				onPress={socialNavigation.openPublish}
 			>
-				<Ionicons name="add" size={24} color="#ffffff" />
-				<Button.Label className="text-white">去发布</Button.Label>
+				<Ionicons name="add" size={24} color={accentForegroundColor} />
+				<Button.Label className="text-accent-foreground">去发布</Button.Label>
 			</Button>
 		</View>
 	);

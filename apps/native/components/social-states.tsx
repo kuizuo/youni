@@ -88,12 +88,18 @@ export function ErrorState({
 	description?: string;
 	onRetry?: () => void;
 }) {
+	const dangerForegroundColor = useThemeColor("danger-foreground");
+	const foregroundColor = useThemeColor("foreground");
+	const mutedColor = useThemeColor("muted");
+
 	return (
 		<Alert status="danger" className="mx-4 my-8 rounded-2xl">
 			<Alert.Indicator />
 			<Alert.Content>
-				<Alert.Title>{title}</Alert.Title>
-				<Alert.Description>{description}</Alert.Description>
+				<Alert.Title style={{ color: foregroundColor }}>{title}</Alert.Title>
+				<Alert.Description style={{ color: mutedColor }}>
+					{description}
+				</Alert.Description>
 			</Alert.Content>
 			{onRetry ? (
 				<Button
@@ -102,8 +108,12 @@ export function ErrorState({
 					feedbackVariant="scale-ripple"
 					onPress={onRetry}
 				>
-					<Ionicons name="refresh-outline" size={14} color="#ffffff" />
-					<Button.Label>重试</Button.Label>
+					<Ionicons
+						name="refresh-outline"
+						size={14}
+						color={dangerForegroundColor}
+					/>
+					<Button.Label className="text-danger-foreground">重试</Button.Label>
 				</Button>
 			) : null}
 		</Alert>

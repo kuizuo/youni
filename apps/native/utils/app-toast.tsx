@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import {
+	Button,
 	cn,
 	Toast,
 	type ToastComponentProps,
@@ -41,6 +42,14 @@ const TOAST_ACCENT_CLASS_BY_VARIANT: Record<ToastVariant, string> = {
 	default: "bg-muted",
 	success: "bg-success",
 	warning: "bg-warning",
+};
+
+const TOAST_ACTION_LABEL_CLASS_BY_VARIANT: Record<ToastVariant, string> = {
+	accent: "text-accent-foreground",
+	danger: "text-danger-foreground",
+	default: "text-foreground",
+	success: "text-success-foreground",
+	warning: "text-warning-foreground",
 };
 
 function AppToastContent({
@@ -108,7 +117,11 @@ function AppToastContent({
 			</View>
 			{options.actionLabel ? (
 				<Toast.Action className="self-center" onPress={handleActionPress}>
-					{options.actionLabel}
+					<Button.Label
+						className={TOAST_ACTION_LABEL_CLASS_BY_VARIANT[variant]}
+					>
+						{options.actionLabel}
+					</Button.Label>
 				</Toast.Action>
 			) : (
 				<Toast.Close className={cn("-mr-2", hasDescription && "-mt-1")} />

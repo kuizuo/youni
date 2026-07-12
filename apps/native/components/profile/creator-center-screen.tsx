@@ -22,6 +22,7 @@ export default function CreatorCenterScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const accentColor = useThemeColor("accent");
+	const accentForegroundColor = useThemeColor("accent-foreground");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const stats = useQuery(orpc.creatorStats.queryOptions());
 	const data = stats.data;
@@ -98,7 +99,11 @@ export default function CreatorCenterScreen() {
 								feedbackVariant="scale-ripple"
 								onPress={() => router.push("/publish" as Href)}
 							>
-								<Ionicons name="add-circle-outline" size={18} color="#ffffff" />
+								<Ionicons
+									name="add-circle-outline"
+									size={18}
+									color={accentForegroundColor}
+								/>
 								<Button.Label>发布新图文</Button.Label>
 							</Button>
 							<Button
