@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import {
 	getNotificationIntent,
@@ -82,7 +83,9 @@ async function getExpoPushToken(Notifications: NotificationsModule) {
 export function PushNotificationBridge() {
 	const session = authClient.useSession();
 	const registeredTokenRef = useRef<null | string>(null);
-	const userId = session.data?.user?.id;
+	const userId = isRegisteredUser(session.data?.user)
+		? session.data?.user.id
+		: undefined;
 
 	useEffect(() => {
 		if (!canUseRemoteNotifications()) return;

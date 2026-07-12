@@ -8,6 +8,7 @@ import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { SettingsAccountCard } from "@/components/profile/settings/account-card";
 import { SettingsProfileForm } from "@/components/profile/settings/profile-form";
 import { SignOutButton } from "@/components/profile/settings/sign-out-button";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -16,12 +17,14 @@ export default function SettingsScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const session = authClient.useSession();
+	const user = isRegisteredUser(session.data?.user)
+		? session.data?.user
+		: undefined;
 	const me = useQuery({
 		...orpc.me.queryOptions(),
-		enabled: Boolean(session.data?.user),
+		enabled: Boolean(user),
 	});
 	const profile = me.data?.profile;
-	const user = session.data?.user;
 	const displayName = profile?.name ?? user?.name ?? "我";
 	const displayHandle = profile?.handle ? `@${profile.handle}` : user?.email;
 	const image = profile?.image ?? user?.image;

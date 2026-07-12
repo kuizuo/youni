@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
 import { ErrorState } from "@/components/social-states";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { getLoginHref } from "@/lib/auth-navigation";
 import { orpc } from "@/utils/orpc";
@@ -27,9 +28,10 @@ export default function AddFriendScreen() {
 	const mutedColor = useThemeColor("muted");
 	const foregroundColor = useThemeColor("foreground");
 	const accentForegroundColor = useThemeColor("accent-foreground");
+	const isAuthenticated = isRegisteredUser(session.data?.user);
 	const me = useQuery({
 		...orpc.me.queryOptions(),
-		enabled: Boolean(session.data?.user),
+		enabled: isAuthenticated,
 	});
 	const profile = me.data?.profile;
 	const displayName = profile?.name ?? session.data?.user?.name ?? "我";
@@ -39,7 +41,7 @@ export default function AddFriendScreen() {
 	const image = profile?.image ?? session.data?.user?.image;
 	const qrValue = `youni:user:${profile?.id ?? session.data?.user?.id ?? ""}`;
 
-	if (!session.data?.user) {
+	if (!isAuthenticated) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background px-6">
 				<Typography.Paragraph align="center" color="muted">

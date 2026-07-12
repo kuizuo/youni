@@ -17,6 +17,7 @@ const requireAuth = publicProcedure.middleware(async ({ context, next }) => {
 			banned: user.banned,
 			id: user.id,
 			email: user.email,
+			isAnonymous: user.isAnonymous,
 			role: user.role,
 			status: user.status,
 		})
@@ -24,7 +25,12 @@ const requireAuth = publicProcedure.middleware(async ({ context, next }) => {
 		.where(eq(user.id, context.session.user.id))
 		.limit(1);
 
-	if (!account || account.status !== "active" || account.banned) {
+	if (
+		!account ||
+		account.isAnonymous ||
+		account.status !== "active" ||
+		account.banned
+	) {
 		throw new ORPCError("UNAUTHORIZED");
 	}
 

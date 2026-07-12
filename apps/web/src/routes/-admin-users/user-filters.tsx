@@ -2,18 +2,28 @@ import { Funnel, Plus, Xmark } from "@gravity-ui/icons";
 import { Button, Dropdown, Label, SearchField } from "@heroui/react";
 
 import { userStatusLabel } from "@/components/admin-status";
-import { statusOptions, type UserStatus } from "./types";
+import {
+	accountTypeLabel,
+	accountTypeOptions,
+	statusOptions,
+	type UserAccountType,
+	type UserStatus,
+} from "./types";
 
 export function UserFilters({
+	accountTypeFilter,
 	canCreateUser = true,
 	keyword,
+	onAccountTypeChange,
 	onCreateUser,
 	onKeywordChange,
 	onStatusChange,
 	statusFilter,
 }: {
+	accountTypeFilter: UserAccountType | "";
 	canCreateUser?: boolean;
 	keyword: string;
+	onAccountTypeChange: (value: UserAccountType | "") => void;
 	onCreateUser: () => void;
 	onKeywordChange: (value: string) => void;
 	onStatusChange: (value: UserStatus | "") => void;
@@ -22,6 +32,9 @@ export function UserFilters({
 	const selectedStatusLabel = statusFilter
 		? userStatusLabel[statusFilter]
 		: "状态";
+	const selectedAccountTypeLabel = accountTypeFilter
+		? accountTypeLabel[accountTypeFilter]
+		: "用户类型";
 
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-2">
@@ -40,6 +53,41 @@ export function UserFilters({
 						<SearchField.ClearButton />
 					</SearchField.Group>
 				</SearchField>
+
+				<Dropdown>
+					<Button size="sm" variant="secondary">
+						<Funnel className="size-4" />
+						{selectedAccountTypeLabel}
+					</Button>
+					<Dropdown.Popover>
+						<Dropdown.Menu
+							selectionMode="single"
+							selectedKeys={accountTypeFilter ? [accountTypeFilter] : []}
+							onAction={(key) => onAccountTypeChange(key as UserAccountType)}
+						>
+							{accountTypeOptions.map((value) => (
+								<Dropdown.Item
+									key={value}
+									id={value}
+									textValue={accountTypeLabel[value]}
+								>
+									<Label>{accountTypeLabel[value]}</Label>
+								</Dropdown.Item>
+							))}
+						</Dropdown.Menu>
+					</Dropdown.Popover>
+				</Dropdown>
+				{accountTypeFilter ? (
+					<Button
+						size="sm"
+						variant="tertiary"
+						isIconOnly
+						aria-label="清除用户类型筛选"
+						onPress={() => onAccountTypeChange("")}
+					>
+						<Xmark className="size-4" />
+					</Button>
+				) : null}
 
 				<Dropdown>
 					<Button size="sm" variant="secondary">

@@ -33,7 +33,7 @@ async function getProfile(userId: string, viewerId?: string) {
 			createdAt: user.createdAt,
 		})
 		.from(user)
-		.where(eq(user.id, userId))
+		.where(and(eq(user.id, userId), eq(user.isAnonymous, false)))
 		.limit(1);
 
 	if (!profile) {
@@ -97,6 +97,7 @@ export const profilesRouter = {
 				.where(
 					and(
 						eq(user.status, "active"),
+						eq(user.isAnonymous, false),
 						or(
 							containsInsensitive(user.name, keyword),
 							containsInsensitive(user.handle, keyword),
@@ -124,6 +125,7 @@ export const profilesRouter = {
 				.where(
 					and(
 						eq(user.status, "active"),
+						eq(user.isAnonymous, false),
 						or(
 							containsInsensitive(user.name, keyword),
 							containsInsensitive(user.handle, keyword),
@@ -203,7 +205,13 @@ export const profilesRouter = {
 			const [row] = await createDb()
 				.select({ id: user.id })
 				.from(user)
-				.where(and(eq(user.handle, input.handle), eq(user.status, "active")))
+				.where(
+					and(
+						eq(user.handle, input.handle),
+						eq(user.status, "active"),
+						eq(user.isAnonymous, false),
+					),
+				)
 				.limit(1);
 
 			if (!row) {
@@ -294,6 +302,21 @@ export const profilesRouter = {
 			}
 
 			const db = createDb();
+			const [target] = await db
+				.select({ id: user.id })
+				.from(user)
+				.where(
+					and(
+						eq(user.id, input.userId),
+						eq(user.status, "active"),
+						eq(user.isAnonymous, false),
+					),
+				)
+				.limit(1);
+			if (!target) {
+				throw new ORPCError("NOT_FOUND");
+			}
+
 			const whereClause = and(
 				eq(follow.followingId, input.userId),
 				eq(follow.followerId, viewerId),

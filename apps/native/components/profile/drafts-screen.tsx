@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { EmptyState, ErrorState } from "@/components/social-states";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { localDraftCoverUri } from "@/lib/local-drafts/image-io";
 import {
@@ -58,7 +59,9 @@ export default function DraftsScreen() {
 	const insets = useSafeAreaInsets();
 	const dimensions = useWindowDimensions();
 	const session = authClient.useSession();
-	const userId = session.data?.user.id;
+	const userId = isRegisteredUser(session.data?.user)
+		? session.data?.user.id
+		: undefined;
 	const { toast } = useAppToast();
 	const [items, setItems] = useState<LocalDraftSummary[]>([]);
 	const [isLoading, setIsLoading] = useState(true);

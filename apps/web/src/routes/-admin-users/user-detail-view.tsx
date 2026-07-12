@@ -1,5 +1,9 @@
 import { Button, Card } from "@heroui/react";
-import { UserRoleBadge, UserStatusBadge } from "@/components/admin-status";
+import {
+	AnonymousUserBadge,
+	UserRoleBadge,
+	UserStatusBadge,
+} from "@/components/admin-status";
 import { AppAvatar } from "@/components/app-avatar";
 
 import { NoteTable } from "../-admin-notes/note-table";
@@ -50,13 +54,24 @@ export function UserDetailView({
 						<div className="min-w-0">
 							<div className="flex flex-wrap items-center gap-2">
 								<h2 className="font-semibold text-2xl">{user.name}</h2>
+								{user.isAnonymous ? <AnonymousUserBadge /> : null}
 								<UserRoleBadge role={toUserRole(user.role)} />
 								<UserStatusBadge status={toUserStatus(user.status)} />
 							</div>
-							<p className="mt-1 text-muted text-sm">{user.email}</p>
+							<p className="mt-1 text-muted text-sm">
+								{user.isAnonymous ? "未绑定邮箱" : user.email}
+							</p>
+							{user.isAnonymous ? (
+								<p className="mt-1 break-all text-muted text-sm">
+									匿名编号 {user.id}
+								</p>
+							) : null}
 							{user.handle ? (
 								<p className="mt-1 text-muted text-sm">@{user.handle}</p>
 							) : null}
+							<p className="mt-1 text-muted text-sm">
+								创建时间 {new Date(user.createdAt).toLocaleString()}
+							</p>
 							<p className="mt-3 text-sm">{user.bio || "暂无简介"}</p>
 						</div>
 					</div>

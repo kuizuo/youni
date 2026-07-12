@@ -5,7 +5,7 @@ import * as schema from "@youni/db/schema/auth";
 import { env } from "@youni/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin as adminPlugin, emailOTP } from "better-auth/plugins";
+import { admin as adminPlugin, anonymous, emailOTP } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { passwordResetOtpRateLimitPlugin } from "./password-reset-otp-rate-limit";
 import {
@@ -61,7 +61,14 @@ const zhAuthErrorTranslations = {
 	USER_NOT_FOUND: "用户不存在",
 } satisfies Record<string, string>;
 
-export function createAuth() {
+export type CreateAuthOptions = {
+	onLinkAnonymousAccount?: (input: {
+		anonymousUserId: string;
+		newUserId: string;
+	}) => Promise<void>;
+};
+
+export function createAuth(options: CreateAuthOptions = {}) {
 	const db = createDb();
 
 	return betterAuth({
@@ -166,6 +173,15 @@ export function createAuth() {
 			},
 		},
 		plugins: [
+			anonymous({
+				generateName: () => "匿名用户",
+				async onLinkAccount({ anonymousUser, newUser }) {
+					await options.onLinkAnonymousAccount?.({
+						anonymousUserId: anonymousUser.user.id,
+						newUserId: newUser.user.id,
+					});
+				},
+			}),
 			i18n({
 				defaultLocale: "zh",
 				translations: {

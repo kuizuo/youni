@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { env } from "@youni/env/web";
 import type { FormEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AdminPage } from "@/components/admin-shell";
 import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { getUserManagementPermissions } from "@/lib/admin-permissions";
@@ -21,6 +21,7 @@ import {
 	toGender,
 	toUserRole,
 	toUserStatus,
+	type UserAccountType,
 	type UserFormMode,
 	type UserFormState,
 	type UserRole,
@@ -40,13 +41,23 @@ function AdminUsersRoute() {
 		select: (state) => state.location.pathname,
 	});
 	const list = useAdminListWorkflow<UserStatus>();
+	const [accountTypeFilter, setAccountTypeFilter] = useState<
+		UserAccountType | ""
+	>("");
 	const [formMode, setFormMode] = useState<UserFormMode>("create");
 	const [form, setForm] = useState<UserFormState>(emptyForm);
 	const [formMessage, setFormMessage] = useState<string | null>(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+	const usersQueryInput = useMemo(
+		() => ({
+			...list.queryInput,
+			accountType: accountTypeFilter || undefined,
+		}),
+		[accountTypeFilter, list.queryInput],
+	);
 	const users = useQuery({
-		...orpc.admin.users.queryOptions({ input: list.queryInput }),
+		...orpc.admin.users.queryOptions({ input: usersQueryInput }),
 		placeholderData: keepPreviousData,
 	});
 	const admin = useQuery(orpc.admin.me.queryOptions());
@@ -87,6 +98,7 @@ function AdminUsersRoute() {
 
 	const startEdit = useCallback(
 		(item: AdminUserListItem) => {
+			if (item.isAnonymous) return;
 			if (!userPermissions.canUpdate) return;
 			if (!canManageItem(currentRole, item.role)) return;
 			setFormMode("edit");
@@ -111,6 +123,13 @@ function AdminUsersRoute() {
 	const refetchUsers = useCallback(async () => {
 		await list.refetchList(users);
 	}, [list, users]);
+	const updateAccountTypeFilter = useCallback(
+		(value: UserAccountType | "") => {
+			setAccountTypeFilter(value);
+			list.resetPage();
+		},
+		[list],
+	);
 
 	const submitForm = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -219,9 +238,11 @@ function AdminUsersRoute() {
 	return (
 		<AdminPage title="用户管理">
 			<UserFilters
+				accountTypeFilter={accountTypeFilter}
 				canCreateUser={userPermissions.canCreate}
 				keyword={list.keyword}
 				statusFilter={list.statusFilter}
+				onAccountTypeChange={updateAccountTypeFilter}
 				onKeywordChange={list.updateKeyword}
 				onCreateUser={openCreateDrawer}
 				onStatusChange={list.updateStatusFilter}

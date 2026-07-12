@@ -2,6 +2,7 @@ import { useMutation, useMutationState } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import {
 	applyCommentLikeResult,
@@ -84,7 +85,9 @@ function getError(error: unknown): SocialActionError {
 export function useSocialNavigation() {
 	const router = useRouter();
 	const session = authClient.useSession();
-	const currentUserId = session.data?.user?.id;
+	const currentUserId = isRegisteredUser(session.data?.user)
+		? session.data?.user.id
+		: undefined;
 
 	const goTo = (intent: SocialNavigationIntent) => {
 		router.push(toSocialHref(intent));
@@ -95,7 +98,7 @@ export function useSocialNavigation() {
 	};
 
 	const requireLogin = (redirectTo = "/") => {
-		if (session.data?.user) return true;
+		if (isRegisteredUser(session.data?.user)) return true;
 		goTo({ type: "login", redirectTo });
 		return false;
 	};
@@ -118,7 +121,9 @@ export function useSocialNavigation() {
 export function useSocialActions() {
 	const navigation = useSocialNavigation();
 	const { toast } = useAppToast();
-	const currentUser = navigation.session.data?.user;
+	const currentUser = isRegisteredUser(navigation.session.data?.user)
+		? navigation.session.data?.user
+		: undefined;
 
 	const showErrorToast = (error: SocialActionError) => {
 		if (isRequestTimeoutError(error)) return;

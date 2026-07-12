@@ -20,6 +20,7 @@ export const user = sqliteTable("user", {
 	gender: text("gender").default("unknown").notNull(),
 	role: text("role").default("user").notNull(),
 	status: text("status").default("active").notNull(),
+	isAnonymous: booleanColumn("is_anonymous").default(false).notNull(),
 	banned: booleanColumn("banned").default(false).notNull(),
 	banReason: text("ban_reason"),
 	banExpires: timestampColumn("ban_expires"),

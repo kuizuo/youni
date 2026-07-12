@@ -10,6 +10,7 @@ import type {
 	PublishSubmitMode,
 } from "@/components/create/create-types";
 import { reorderImages } from "@/components/media/image-order";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import {
 	createDraftCoverThumbnail,
@@ -130,14 +131,17 @@ export function useCreateComposer({
 	const noteId = Array.isArray(rawNoteId) ? rawNoteId[0] : rawNoteId;
 	const isEditingDraft = Boolean(draftId);
 	const isEditingNote = Boolean(noteId && !draftId);
-	const isAuthenticated = Boolean(session.data?.user) || hasAuthenticated;
-	const userId = session.data?.user.id;
+	const registeredUser = isRegisteredUser(session.data?.user)
+		? session.data?.user
+		: undefined;
+	const isAuthenticated = Boolean(registeredUser) || hasAuthenticated;
+	const userId = registeredUser?.id;
 
 	useEffect(() => {
-		if (session.data?.user) {
+		if (registeredUser) {
 			setHasAuthenticated(true);
 		}
-	}, [session.data?.user]);
+	}, [registeredUser]);
 
 	const missingItems = useMemo(
 		() =>

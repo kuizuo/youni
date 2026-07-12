@@ -13,10 +13,12 @@ import {
 export const roleOptions = adminUserRoleOptions;
 export const statusOptions = adminUserStatusOptions;
 export const genderOptions = ["unknown", "male", "female"] as const;
+export const accountTypeOptions = ["registered", "anonymous"] as const;
 
 export type UserRole = AdminUserRole;
 export type UserStatus = AdminUserStatus;
 export type Gender = (typeof genderOptions)[number];
+export type UserAccountType = (typeof accountTypeOptions)[number];
 export type UserFormMode = "create" | "edit";
 
 export type UserFormState = {
@@ -42,6 +44,7 @@ export type AdminUserListItem = {
 	status: string;
 	bio?: string | null;
 	gender?: string | null;
+	isAnonymous: boolean;
 	noteCount: number;
 	followerCount: number;
 	followingCount: number;
@@ -74,6 +77,11 @@ export const genderLabel: Record<Gender, string> = {
 	unknown: "未知",
 	male: "男",
 	female: "女",
+};
+
+export const accountTypeLabel: Record<UserAccountType, string> = {
+	registered: "正式用户",
+	anonymous: "匿名用户",
 };
 
 export const userFormId = "admin-user-form";

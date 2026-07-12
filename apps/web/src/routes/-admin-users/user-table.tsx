@@ -13,7 +13,11 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from "react";
-import { UserRoleBadge, UserStatusBadge } from "@/components/admin-status";
+import {
+	AnonymousUserBadge,
+	UserRoleBadge,
+	UserStatusBadge,
+} from "@/components/admin-status";
 import {
 	AdminTablePagination,
 	defaultTablePagination,
@@ -318,18 +322,26 @@ function UserIdentityCell({
 				src={user.image}
 			/>
 			<div className="min-w-0">
-				{onOpenUser ? (
-					<button
-						type="button"
-						className="truncate font-medium text-accent hover:underline"
-						onClick={() => onOpenUser(user)}
-					>
-						{user.name}
-					</button>
-				) : (
-					<div className="truncate font-medium">{user.name}</div>
-				)}
-				<div className="truncate text-muted text-xs">{user.email}</div>
+				<div className="flex min-w-0 items-center gap-2">
+					{onOpenUser ? (
+						<button
+							type="button"
+							className="truncate font-medium text-accent hover:underline"
+							onClick={() => onOpenUser(user)}
+						>
+							{user.name}
+						</button>
+					) : (
+						<div className="truncate font-medium">{user.name}</div>
+					)}
+					{user.isAnonymous ? <AnonymousUserBadge /> : null}
+				</div>
+				<div className="truncate text-muted text-xs">
+					{user.isAnonymous ? "未绑定邮箱" : user.email}
+				</div>
+				{user.isAnonymous ? (
+					<div className="truncate text-muted text-xs">匿名编号 {user.id}</div>
+				) : null}
 				{user.handle ? (
 					<div className="truncate text-muted text-xs">@{user.handle}</div>
 				) : null}
@@ -388,7 +400,7 @@ function UserActionsCell({
 
 	return (
 		<div className="flex justify-end gap-2">
-			{canUpdate ? (
+			{canUpdate && !item.isAnonymous ? (
 				<Button
 					size="sm"
 					variant="tertiary"

@@ -3,6 +3,7 @@ import { Spinner } from "heroui-native";
 import { type ReactNode, useCallback } from "react";
 import { View } from "react-native";
 
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { getLoginHref } from "@/lib/auth-navigation";
 
@@ -17,7 +18,7 @@ export function AuthRequired({ children, redirectTo }: AuthRequiredProps) {
 
 	useFocusEffect(
 		useCallback(() => {
-			if (session.isPending || session.data?.user) {
+			if (session.isPending || isRegisteredUser(session.data?.user)) {
 				return;
 			}
 
@@ -25,7 +26,7 @@ export function AuthRequired({ children, redirectTo }: AuthRequiredProps) {
 		}, [redirectTo, router, session.data?.user, session.isPending]),
 	);
 
-	if (session.isPending || !session.data?.user) {
+	if (session.isPending || !isRegisteredUser(session.data?.user)) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background">
 				<Spinner />

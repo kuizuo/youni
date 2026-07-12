@@ -15,6 +15,7 @@ import { ChatHeader } from "@/components/messages/chat/header";
 import { ChatInputBar } from "@/components/messages/chat/input-bar";
 import { ChatMessageList } from "@/components/messages/chat/message-list";
 import type { ChatMessage } from "@/components/messages/chat/types";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import {
 	applySentMessageResult,
@@ -51,6 +52,7 @@ export default function ChatDetailScreen() {
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
 	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
 	const [selection, setSelection] = useState({ end: 0, start: 0 });
+	const isAuthenticated = isRegisteredUser(session.data?.user);
 	contentRef.current = content;
 	isEmojiInputLockedRef.current = isEmojiInputLocked;
 	isEmojiKeyboardOpenRef.current = isEmojiKeyboardOpen;
@@ -58,7 +60,7 @@ export default function ChatDetailScreen() {
 		...orpc.messages.byId.queryOptions({
 			input: { conversationId: conversationId || "missing", limit: 80 },
 		}),
-		enabled: Boolean(conversationId && session.data?.user),
+		enabled: Boolean(conversationId && isAuthenticated),
 		refetchInterval: 2500,
 	});
 	const sendMutation = useMutation(
@@ -74,7 +76,7 @@ export default function ChatDetailScreen() {
 				toast.show({ variant: "danger", label: error.message });
 			},
 			onMutate: async (variables) => {
-				const userId = session.data?.user?.id;
+				const userId = isAuthenticated ? session.data?.user?.id : undefined;
 				if (!userId) return {};
 				return optimisticSendMessage({
 					content: variables.content,
@@ -243,7 +245,7 @@ export default function ChatDetailScreen() {
 			/>
 
 			<ChatMessageList
-				currentUserId={session.data?.user?.id}
+				currentUserId={isAuthenticated ? session.data?.user?.id : undefined}
 				isError={chat.isError}
 				isLoading={chat.isLoading}
 				messages={messages}

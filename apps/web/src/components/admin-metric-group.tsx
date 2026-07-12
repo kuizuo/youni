@@ -23,7 +23,7 @@ export function AdminMetricGroup({
 	readonly metrics: readonly AdminMetric[];
 }) {
 	return (
-		<dl className="grid min-h-28 grid-cols-4 overflow-hidden rounded-2xl bg-surface shadow-surface">
+		<dl className="grid min-h-28 grid-cols-2 overflow-hidden rounded-2xl bg-surface shadow-surface md:grid-cols-3 xl:grid-cols-6">
 			{metrics.map((metric) => {
 				const Icon = metric.icon;
 

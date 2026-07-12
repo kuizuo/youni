@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 import z from "zod";
+import { prepareForAccountAuthentication } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
 import { queryClient } from "@/utils/orpc";
@@ -52,6 +53,7 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 		setErrorMessage(null);
 		setIsSubmitting(true);
 		try {
+			await prepareForAccountAuthentication();
 			await authClient.signUp.email(
 				{
 					name: parsed.data.name.trim(),

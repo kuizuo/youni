@@ -6,6 +6,7 @@ import { ORPCError, onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@youni/api/context";
+import { linkAnonymousUserActivity } from "@youni/api/lib/anonymous-linking";
 import { appRouter } from "@youni/api/routers/index";
 import { createAuth } from "@youni/auth";
 import { hasAdminPermission } from "@youni/auth/permissions";
@@ -103,7 +104,11 @@ app.use("/api/auth/admin/*", async (c, next) => {
 	return c.json({ message: "请使用后台业务接口管理用户" }, 403);
 });
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => createAuth().handler(c.req.raw));
+app.on(["POST", "GET"], "/api/auth/*", (c) =>
+	createAuth({ onLinkAnonymousAccount: linkAnonymousUserActivity }).handler(
+		c.req.raw,
+	),
+);
 
 async function assertBackofficeAccess(c: HonoContext) {
 	const context = await createContext({ context: c });
@@ -144,13 +149,19 @@ async function assertActiveUploadAccess(c: HonoContext) {
 		.select({
 			banned: user.banned,
 			id: user.id,
+			isAnonymous: user.isAnonymous,
 			status: user.status,
 		})
 		.from(user)
 		.where(eq(user.id, context.session.user.id))
 		.limit(1);
 
-	if (!account || account.status !== "active" || account.banned) {
+	if (
+		!account ||
+		account.isAnonymous ||
+		account.status !== "active" ||
+		account.banned
+	) {
 		return null;
 	}
 

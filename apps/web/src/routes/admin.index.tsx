@@ -2,9 +2,11 @@ import {
 	ChartColumn,
 	Check,
 	Comment,
+	Eye,
 	FileText,
 	Heart,
 	Persons,
+	ShieldCheck,
 } from "@gravity-ui/icons";
 import { Card, Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
@@ -20,7 +22,14 @@ import { AdminPage } from "@/components/admin-shell";
 import { NoteStatusBadge } from "@/components/admin-status";
 import { orpc } from "@/utils/orpc";
 
-const overviewSkeletonKeys = ["notes", "audit", "users", "interactions"];
+const overviewSkeletonKeys = [
+	"notes",
+	"audit",
+	"users",
+	"registered-users",
+	"anonymous-users",
+	"interactions",
+];
 
 export const Route = createFileRoute("/admin/")({
 	component: AdminOverviewRoute,
@@ -86,9 +95,21 @@ function AdminOverviewRoute() {
 		},
 		{
 			icon: Persons,
-			label: "用户",
+			label: "总用户",
 			status: "success",
 			value: overview.data?.userCount ?? 0,
+		},
+		{
+			icon: ShieldCheck,
+			label: "正式用户",
+			status: "success",
+			value: overview.data?.registeredUserCount ?? 0,
+		},
+		{
+			icon: Eye,
+			label: "匿名访客",
+			status: "warning",
+			value: overview.data?.anonymousUserCount ?? 0,
 		},
 		{
 			icon: Heart,
@@ -102,7 +123,7 @@ function AdminOverviewRoute() {
 		<AdminPage title="后台概览">
 			{overview.isLoading ? (
 				<div className="grid gap-4">
-					<div className="grid gap-4 md:grid-cols-4">
+					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 						{overviewSkeletonKeys.map((key) => (
 							<Skeleton key={key} className="h-28 rounded-2xl" />
 						))}

@@ -184,6 +184,7 @@ async function getUserForAdmin(id: string) {
 	const [target] = await createDb()
 		.select({
 			id: user.id,
+			isAnonymous: user.isAnonymous,
 			role: user.role,
 			status: user.status,
 		})
@@ -275,6 +276,8 @@ export const adminRouter = {
 				[noteCount],
 				[auditCount],
 				[userCount],
+				[registeredUserCount],
+				[anonymousUserCount],
 				[topicCount],
 				[likeCount],
 				[commentCount],
@@ -289,6 +292,14 @@ export const adminRouter = {
 					.select({ value: count() })
 					.from(user)
 					.where(ne(user.status, "deleted")),
+				db
+					.select({ value: count() })
+					.from(user)
+					.where(and(ne(user.status, "deleted"), eq(user.isAnonymous, false))),
+				db
+					.select({ value: count() })
+					.from(user)
+					.where(and(ne(user.status, "deleted"), eq(user.isAnonymous, true))),
 				db.select({ value: count() }).from(topic),
 				db.select({ value: count() }).from(noteLike),
 				db.select({ value: count() }).from(comment),
@@ -310,6 +321,8 @@ export const adminRouter = {
 				noteCount: toNumber(noteCount?.value),
 				auditCount: toNumber(auditCount?.value),
 				userCount: toNumber(userCount?.value),
+				registeredUserCount: toNumber(registeredUserCount?.value),
+				anonymousUserCount: toNumber(anonymousUserCount?.value),
 				topicCount: toNumber(topicCount?.value),
 				interactionCount:
 					toNumber(likeCount?.value) + toNumber(commentCount?.value),
@@ -474,8 +487,14 @@ export const adminRouter = {
 				input.status
 					? eq(user.status, input.status)
 					: ne(user.status, "deleted"),
+				input.accountType === "anonymous"
+					? eq(user.isAnonymous, true)
+					: input.accountType === "registered"
+						? eq(user.isAnonymous, false)
+						: undefined,
 				input.keyword
 					? or(
+							containsInsensitive(user.id, input.keyword),
 							containsInsensitive(user.name, input.keyword),
 							containsInsensitive(user.email, input.keyword),
 							containsInsensitive(user.handle, input.keyword),
@@ -496,6 +515,7 @@ export const adminRouter = {
 							handle: user.handle,
 							bio: user.bio,
 							gender: user.gender,
+							isAnonymous: user.isAnonymous,
 							role: user.role,
 							status: user.status,
 							createdAt: user.createdAt,
@@ -515,6 +535,7 @@ export const adminRouter = {
 							handle: user.handle,
 							bio: user.bio,
 							gender: user.gender,
+							isAnonymous: user.isAnonymous,
 							role: user.role,
 							status: user.status,
 							createdAt: user.createdAt,
@@ -581,6 +602,7 @@ export const adminRouter = {
 					handle: user.handle,
 					bio: user.bio,
 					gender: user.gender,
+					isAnonymous: user.isAnonymous,
 					role: user.role,
 					status: user.status,
 					createdAt: user.createdAt,
@@ -708,6 +730,11 @@ export const adminRouter = {
 	updateUser: adminPermissionProcedure({ user: ["update"] }).updateUser.handler(
 		async ({ input, context }) => {
 			const target = await getUserForAdmin(input.id);
+			if (target.isAnonymous) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "匿名用户不能编辑",
+				});
+			}
 			if (input.role !== target.role) {
 				assertAdminPermission(context.adminUser.role, { user: ["set-role"] });
 			}
@@ -891,6 +918,14 @@ export const adminRouter = {
 		);
 
 		const db = createDb();
+		if (target.isAnonymous) {
+			const [deleted] = await db
+				.delete(user)
+				.where(eq(user.id, input.id))
+				.returning();
+			return deleted;
+		}
+
 		const [deletedUsers] = await db.batch([
 			db
 				.update(user)

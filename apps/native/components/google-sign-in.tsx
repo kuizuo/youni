@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Platform, View } from "react-native";
 
 import { GoogleAuthButton } from "@/components/google-auth-button";
+import { prepareForAccountAuthentication } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
 import { queryClient } from "@/utils/orpc";
@@ -120,6 +121,7 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 		setErrorMessage(null);
 		setIsSubmitting(true);
 		try {
+			await prepareForAccountAuthentication();
 			if (Platform.OS === "android") {
 				await googleSignIn.GoogleSignin.hasPlayServices({
 					showPlayServicesUpdateDialog: true,

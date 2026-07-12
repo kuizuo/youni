@@ -16,6 +16,7 @@ import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { AppSeparator } from "@/components/shared/app-separator";
 import { ErrorState } from "@/components/social-states";
 import { FollowButton } from "@/components/users/follow-button";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import {
 	applyConversationBlockedResult,
 	invalidateConversation,
@@ -64,7 +65,9 @@ export default function ChatSettingsScreen() {
 		...orpc.messages.settings.queryOptions({
 			input: { conversationId: conversationId || "missing" },
 		}),
-		enabled: Boolean(conversationId && socialActions.session.data?.user),
+		enabled: Boolean(
+			conversationId && isRegisteredUser(socialActions.session.data?.user),
+		),
 	});
 	const data = settings.data as ChatSettingsData | undefined;
 	const isFollowing = data?.isFollowing ?? false;

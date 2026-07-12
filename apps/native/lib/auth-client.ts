@@ -1,5 +1,5 @@
 import { expoClient } from "@better-auth/expo/client";
-import { emailOTPClient } from "better-auth/client/plugins";
+import { anonymousClient, emailOTPClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
@@ -13,6 +13,7 @@ export const authClient = createAuthClient({
 		customFetchImpl: fetchWithTimeout,
 	},
 	plugins: [
+		anonymousClient(),
 		emailOTPClient(),
 		expoClient({
 			scheme: Constants.expoConfig?.scheme as string,

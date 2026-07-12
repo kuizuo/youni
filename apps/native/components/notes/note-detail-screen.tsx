@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import * as Network from "expo-network";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -11,6 +12,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Alert,
+	AppState,
 	FlatList,
 	Keyboard,
 	KeyboardAvoidingView,
@@ -104,6 +106,8 @@ export default function NoteDetailScreen() {
 	const imageHeight = Math.min(620, Math.max(380, pageWidth * 1.08));
 	const topBarHeight = insets.top + 64;
 	const commentListRef = useRef<FlatList<NoteComment>>(null);
+	const recordedViewerIdRef = useRef<string | null>(null);
+	const recordingViewerIdRef = useRef<string | null>(null);
 	const commentScrollOffsetRef = useRef(0);
 	const pendingTargetScrollKeyRef = useRef<null | string>(null);
 	const targetCommentRef = useRef<View | null>(null);
@@ -154,6 +158,52 @@ export default function NoteDetailScreen() {
 		...orpc.byId.queryOptions({ input: { id: id || "missing" } }),
 		enabled: Boolean(id),
 	});
+	const viewerId = socialActions.session.data?.user?.id;
+	const recordCurrentView = useCallback(async () => {
+		if (
+			!viewerId ||
+			!note.data ||
+			recordedViewerIdRef.current === viewerId ||
+			recordingViewerIdRef.current === viewerId
+		) {
+			return;
+		}
+
+		recordingViewerIdRef.current = viewerId;
+		try {
+			const result = await note.refetch();
+			if (!result.isError) {
+				recordedViewerIdRef.current = viewerId;
+			}
+		} finally {
+			if (recordingViewerIdRef.current === viewerId) {
+				recordingViewerIdRef.current = null;
+			}
+		}
+	}, [note.data, note.refetch, viewerId]);
+	useEffect(() => {
+		void recordCurrentView();
+	}, [recordCurrentView]);
+	useEffect(() => {
+		const appStateSubscription = AppState.addEventListener(
+			"change",
+			(state) => {
+				if (state === "active") {
+					void recordCurrentView();
+				}
+			},
+		);
+		const networkSubscription = Network.addNetworkStateListener((state) => {
+			if (state.isConnected && state.isInternetReachable !== false) {
+				void recordCurrentView();
+			}
+		});
+
+		return () => {
+			appStateSubscription.remove();
+			networkSubscription.remove();
+		};
+	}, [recordCurrentView]);
 	const authorId = note.data?.author.id ?? "";
 	const authorProfile = useQuery({
 		...orpc.profile.queryOptions({ input: { userId: authorId } }),
@@ -475,7 +525,7 @@ export default function NoteDetailScreen() {
 	const openCommentComposer = (
 		target?: null | { authorName: string; id: string },
 	) => {
-		if (!socialActions.session.data?.user) {
+		if (!socialActions.currentUserId) {
 			socialActions.goTo({ type: "login", redirectTo: `/note/${id}` });
 			return;
 		}
@@ -948,7 +998,7 @@ export default function NoteDetailScreen() {
 						: insets.bottom + 10,
 				}}
 			>
-				{socialActions.session.data?.user && commentsEnabled ? (
+				{socialActions.currentUserId && commentsEnabled ? (
 					isCommentComposerOpen ? (
 						<CommentComposerPanel
 							canSend={canSendComment}

@@ -98,7 +98,13 @@ async function ensureConversation(viewerId: string, peerId: string) {
 	const [peer] = await db
 		.select({ id: user.id })
 		.from(user)
-		.where(and(eq(user.id, peerId), eq(user.status, "active")))
+		.where(
+			and(
+				eq(user.id, peerId),
+				eq(user.status, "active"),
+				eq(user.isAnonymous, false),
+			),
+		)
 		.limit(1);
 
 	if (!peer) {

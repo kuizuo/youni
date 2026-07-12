@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthPanel } from "@/components/auth-panel";
 import { YouniMark } from "@/components/brand/youni-logo";
 import { AppHeading } from "@/components/shared/app-heading";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginScreen() {
@@ -18,7 +19,7 @@ export default function LoginScreen() {
 	const mutedColor = useThemeColor("muted");
 
 	useEffect(() => {
-		if (session.data?.user) {
+		if (isRegisteredUser(session.data?.user)) {
 			router.replace("/" as Href);
 		}
 	}, [router, session.data?.user]);

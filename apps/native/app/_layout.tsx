@@ -24,6 +24,7 @@ import {
 } from "react-native-safe-area-context";
 
 import { AppLayout } from "@/components/shared/app-layout";
+import { AnonymousSessionBridge } from "@/lib/anonymous-session-bridge";
 import { AppThemeProvider } from "@/lib/contexts/app-theme-context";
 import { PushNotificationBridge } from "@/lib/notifications/push-notification-bridge";
 import { ReactNativeQueryProvider } from "@/lib/query/react-native-query";
@@ -111,6 +112,7 @@ function AppContent() {
 					}}
 				>
 					<RequestToastBridge />
+					<AnonymousSessionBridge />
 					<PushNotificationBridge />
 					<AppLayout>
 						<StackLayout />

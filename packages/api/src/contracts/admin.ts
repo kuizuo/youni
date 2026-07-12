@@ -39,6 +39,7 @@ export const adminTopicInput = z.object({
 });
 
 export const adminUserListInput = z.object({
+	accountType: z.enum(["registered", "anonymous"]).optional(),
 	keyword: z.string().trim().optional(),
 	status: adminUserStatusInput.optional(),
 	limit: z.number().int().min(1).max(200).default(10),
@@ -140,6 +141,8 @@ export type AdminOutputs = {
 		noteCount: number;
 		auditCount: number;
 		userCount: number;
+		registeredUserCount: number;
+		anonymousUserCount: number;
 		topicCount: number;
 		interactionCount: number;
 		recentNotes: {
@@ -275,6 +278,7 @@ export type AdminOutputs = {
 			handle: string | null;
 			bio: string | null;
 			gender: string;
+			isAnonymous: boolean;
 			role: string;
 			status: string;
 			createdAt: Date;
@@ -294,6 +298,7 @@ export type AdminOutputs = {
 			handle: string | null;
 			bio: string | null;
 			gender: string;
+			isAnonymous: boolean;
 			role: string;
 			status: string;
 			createdAt: Date;

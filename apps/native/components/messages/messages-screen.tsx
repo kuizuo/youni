@@ -16,6 +16,7 @@ import type {
 	MessageGroupSummary,
 } from "@/components/messages/inbox/types";
 import { EmptyState, ErrorState } from "@/components/social-states";
+import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
@@ -28,7 +29,7 @@ export default function MessagesScreen() {
 	const socialNavigation = useSocialNavigation();
 	const [menuVisible, setMenuVisible] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
-	const isAuthenticated = Boolean(session.data?.user);
+	const isAuthenticated = isRegisteredUser(session.data?.user);
 	const conversations = useQuery({
 		...orpc.messages.conversations.queryOptions(),
 		enabled: isAuthenticated,

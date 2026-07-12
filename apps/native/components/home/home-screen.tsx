@@ -27,7 +27,7 @@ export default function HomeScreen() {
 		notes: HomeFeedNote[];
 		userId: string;
 	} | null>(null);
-	const sessionUserId = socialNavigation.session.data?.user?.id;
+	const sessionUserId = socialNavigation.currentUserId;
 	const input = useMemo(() => ({ limit: 30 }), []);
 	const discoverQueryKey = useMemo(() => nativeQueryKeys.home.discover(), []);
 	const discoverFeed = useInfiniteQuery({
@@ -70,8 +70,7 @@ export default function HomeScreen() {
 			: discoverFeed.isLoading;
 	const isActiveError =
 		activeTab === "following" ? followingFeed.isError : discoverFeed.isError;
-	const isFollowingGuest =
-		activeTab === "following" && !socialNavigation.session.data?.user;
+	const isFollowingGuest = activeTab === "following" && !sessionUserId;
 	const refreshActiveFeed = async () => {
 		setIsManuallyRefreshing(true);
 		try {

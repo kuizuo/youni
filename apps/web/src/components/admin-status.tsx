@@ -66,4 +66,12 @@ export function UserRoleBadge({ role }: { role: keyof typeof userRoleLabel }) {
 	);
 }
 
+export function AnonymousUserBadge() {
+	return (
+		<Chip color="default" size="sm" variant="soft">
+			匿名用户
+		</Chip>
+	);
+}
+
 export { noteStatusLabel, userRoleLabel, userStatusLabel };
