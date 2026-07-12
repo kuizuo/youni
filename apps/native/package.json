@@ -14,6 +14,7 @@
 		"build:ios": "EXPO_PUBLIC_SERVER_URL=https://youni-api.kuizuo.me expo run:ios --configuration Release",
 		"build:android": "EXPO_PUBLIC_SERVER_URL=https://youni-api.kuizuo.me expo run:android --variant release",
 		"build:eas:android": "EAS_BUILD_NO_EXPO_GO_WARNING=true bunx eas-cli@latest build --platform android --profile production",
+		"build:eas:android-internal": "EAS_BUILD_NO_EXPO_GO_WARNING=true bunx eas-cli@latest build --platform android --profile preview",
 		"build:eas:ios": "EAS_BUILD_NO_EXPO_GO_WARNING=true bunx eas-cli@latest build --platform ios --profile production",
 		"build:eas:ios-simulator": "EAS_BUILD_NO_EXPO_GO_WARNING=true bunx eas-cli@latest build --platform ios --profile ios-simulator",
 		"update:preview": "bunx eas-cli@latest update --channel preview --environment production"

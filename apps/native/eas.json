@@ -11,6 +11,14 @@
 				"EXPO_PUBLIC_SERVER_URL": "https://youni-api.kuizuo.me"
 			}
 		},
+		"preview": {
+			"extends": "production",
+			"distribution": "internal",
+			"environment": "production",
+			"android": {
+				"buildType": "apk"
+			}
+		},
 		"ios-simulator": {
 			"extends": "production",
 			"autoIncrement": false,
