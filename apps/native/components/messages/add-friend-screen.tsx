@@ -106,10 +106,7 @@ export default function AddFriendScreen() {
 							<Spinner />
 						</View>
 					) : me.isError ? (
-						<ErrorState
-							description="二维码暂时没有加载出来。"
-							onRetry={() => me.refetch()}
-						/>
+						<ErrorState onRetry={() => me.refetch()} />
 					) : (
 						<View className="overflow-hidden rounded-3xl bg-white p-4">
 							<PersonalQr image={image} value={qrValue} />

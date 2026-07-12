@@ -16,7 +16,7 @@ import type { ConversationItem } from "./types";
 export function ConversationRow({ item }: { item: ConversationItem }) {
 	const socialNavigation = useSocialNavigation();
 	const mutedColor = useThemeColor("muted");
-	const lastMessage = item.lastMessage?.content ?? "还没有消息";
+	const lastMessage = item.lastMessage?.content ?? "尚未开始聊天";
 
 	const openChat = () => {
 		fireHaptic();

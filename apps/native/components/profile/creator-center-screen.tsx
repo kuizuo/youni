@@ -54,10 +54,7 @@ export default function CreatorCenterScreen() {
 						<Spinner />
 					</View>
 				) : stats.isError || !data ? (
-					<ErrorState
-						description="创作者数据暂时没有加载出来，请稍后重试。"
-						onRetry={() => stats.refetch()}
-					/>
+					<ErrorState onRetry={() => stats.refetch()} />
 				) : (
 					<>
 						<Surface className="gap-4 rounded-3xl p-4">

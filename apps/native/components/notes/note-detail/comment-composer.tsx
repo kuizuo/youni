@@ -326,7 +326,7 @@ function CommentMentionPicker({
 					</View>
 				) : (
 					<Typography.Paragraph type="body-sm" color="muted" className="py-2">
-						没有找到用户。
+						没有匹配的用户，换个关键词试试。
 					</Typography.Paragraph>
 				)
 			) : (

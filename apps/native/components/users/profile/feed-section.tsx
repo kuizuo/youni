@@ -62,7 +62,7 @@ export function UserProfileFeedSection({
 						))}
 					</View>
 				) : (
-					<EmptyState icon="images-outline" title="还没有公开图文" />
+					<EmptyState icon="images-outline" title="这位用户还没分享公开图文" />
 				)}
 			</View>
 		</>

@@ -81,8 +81,8 @@ export default function UserProfileScreen() {
 			<View className="flex-1 bg-background pt-6">
 				<ProfileTopBar onBack={() => router.back()} />
 				<ErrorState
-					title="主页没有打开"
-					description="用户可能不存在，或者网络暂时不可用。"
+					title="主页未能成功打开"
+					description="用户可能已不存在，请重试。"
 					onRetry={() => profile.refetch()}
 				/>
 			</View>

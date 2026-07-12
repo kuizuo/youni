@@ -101,8 +101,8 @@ export default function TopicDetailScreen() {
 			<View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
 				<TopicTopBar foregroundColor={foregroundColor} onBack={goBack} />
 				<ErrorState
-					title="话题没有打开"
-					description="话题可能不存在，或者网络暂时不可用。"
+					title="话题未能成功打开"
+					description="话题可能已不存在，请重试。"
 					onRetry={() => topic.refetch()}
 				/>
 			</View>
@@ -168,14 +168,14 @@ export default function TopicDetailScreen() {
 						<FeedSkeleton />
 					) : topic.isError ? (
 						<ErrorState
-							title="图文没有加载出来"
-							description="请检查网络后重试。"
+							title="图文未能成功加载"
+							description="请重试。"
 							onRetry={() => topic.refetch()}
 						/>
 					) : (
 						<EmptyState
 							icon="images-outline"
-							title="还没有相关图文"
+							title="成为第一个分享相关图文的人吧"
 							actionLabel="去发布"
 							onAction={socialNavigation.openPublish}
 						/>

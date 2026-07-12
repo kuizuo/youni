@@ -794,8 +794,8 @@ export default function NoteDetailScreen() {
 			<View className="flex-1 bg-background">
 				<SimpleTopBar onBack={goBack} />
 				<ErrorState
-					title="图文没有打开"
-					description="内容可能已下架，或者网络暂时不可用。"
+					title="图文未能成功打开"
+					description="图文可能已下架，请重试。"
 					onRetry={() => note.refetch()}
 				/>
 			</View>
@@ -915,15 +915,15 @@ export default function NoteDetailScreen() {
 							</View>
 						) : comments.isError ? (
 							<ErrorState
-								title="评论没有加载出来"
-								description="稍后重试，或下拉刷新页面。"
+								title="评论未能成功加载"
+								description="请重试或下拉刷新。"
 								onRetry={() => comments.refetch()}
 							/>
 						) : (
 							<EmptyState
 								icon="chatbubble-ellipses-outline"
-								title="还没有评论"
-								description="来写第一条评论。"
+								title="来写第一条评论吧"
+								description="说说你对这篇图文的想法。"
 							/>
 						)
 					) : null

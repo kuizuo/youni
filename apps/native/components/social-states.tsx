@@ -80,8 +80,8 @@ export function EmptyState({
 }
 
 export function ErrorState({
-	title = "暂时加载失败",
-	description = "网络或服务暂时不可用，请稍后再试。",
+	title = "未能成功加载",
+	description = "请重试。",
 	onRetry,
 }: {
 	title?: string;

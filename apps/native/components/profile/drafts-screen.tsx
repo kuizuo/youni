@@ -191,7 +191,6 @@ export default function DraftsScreen() {
 						</View>
 					) : loadError ? (
 						<ErrorState
-							description="本地草稿暂时没有加载出来，请稍后重试。"
 							onRetry={() => {
 								setIsLoading(true);
 								void loadDrafts();
@@ -219,7 +218,7 @@ export default function DraftsScreen() {
 						<EmptyState
 							icon="document-text-outline"
 							onAction={() => router.push("/publish" as Href)}
-							title="还没有草稿"
+							title="未完成的图文会保存在这里"
 						/>
 					)}
 				</View>

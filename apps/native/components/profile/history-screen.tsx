@@ -142,10 +142,7 @@ export default function HistoryScreen() {
 						<Spinner />
 					</View>
 				) : history.isError ? (
-					<ErrorState
-						description="浏览记录暂时没有加载出来，请稍后重试。"
-						onRetry={() => history.refetch()}
-					/>
+					<ErrorState onRetry={() => history.refetch()} />
 				) : items.length > 0 ? (
 					items.map((item) => (
 						<HistoryRow
@@ -156,7 +153,10 @@ export default function HistoryScreen() {
 						/>
 					))
 				) : (
-					<EmptyState icon="time-outline" title="还没有浏览记录" />
+					<EmptyState
+						icon="time-outline"
+						title="浏览过的图文会出现在这里，去逛逛吧"
+					/>
 				)}
 			</ScrollView>
 		</View>

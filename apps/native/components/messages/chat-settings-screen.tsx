@@ -157,10 +157,7 @@ export default function ChatSettingsScreen() {
 						<Spinner />
 					</View>
 				) : settings.isError || !data ? (
-					<ErrorState
-						description="聊天设置暂时没有加载出来，请稍后重试。"
-						onRetry={() => settings.refetch()}
-					/>
+					<ErrorState onRetry={() => settings.refetch()} />
 				) : (
 					<View className="gap-7">
 						<View className="items-center gap-3">

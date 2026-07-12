@@ -24,17 +24,16 @@ export function ConnectionsEmptyState({
 		);
 	}
 	if (isError) {
-		return (
-			<ErrorState
-				description="列表暂时没有加载出来，请稍后重试。"
-				onRetry={onRetry}
-			/>
-		);
+		return <ErrorState onRetry={onRetry} />;
 	}
 	return (
 		<EmptyState
 			icon="people-outline"
-			title={activeType === "following" ? "还没有关注" : "还没有粉丝"}
+			title={
+				activeType === "following"
+					? "关注的人会出现在这里，去发现吧"
+					: "有新朋友关注你时，会显示在这里"
+			}
 		/>
 	);
 }

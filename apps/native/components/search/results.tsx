@@ -164,15 +164,12 @@ export function SearchResults({
 					notes.isLoading ? (
 						<FeedSkeleton />
 					) : notes.isError ? (
-						<ErrorState
-							description="图文暂时没有加载出来，请检查网络后重试。"
-							onRetry={() => notes.refetch()}
-						/>
+						<ErrorState onRetry={() => notes.refetch()} />
 					) : (
 						<EmptyState
 							icon="images-outline"
-							title="没有找到图文"
-							description="换个标题、正文或话题关键词再试。"
+							title="没有匹配的图文"
+							description="试试其他标题、正文或话题关键词。"
 						/>
 					)
 				}
@@ -227,15 +224,12 @@ export function SearchResults({
 							<Spinner />
 						</View>
 					) : users.isError ? (
-						<ErrorState
-							description="用户暂时没有加载出来，请检查网络后重试。"
-							onRetry={() => users.refetch()}
-						/>
+						<ErrorState onRetry={() => users.refetch()} />
 					) : (
 						<EmptyState
 							icon="person-outline"
-							title="没有找到用户"
-							description="换个名字、用户名或简介关键词再试。"
+							title="没有匹配的用户"
+							description="试试其他名字、用户名或简介关键词。"
 						/>
 					)
 				}
@@ -285,15 +279,12 @@ export function SearchResults({
 						<Spinner />
 					</View>
 				) : topics.isError ? (
-					<ErrorState
-						description="话题暂时没有加载出来，请检查网络后重试。"
-						onRetry={() => topics.refetch()}
-					/>
+					<ErrorState onRetry={() => topics.refetch()} />
 				) : (
 					<EmptyState
 						icon="pricetag-outline"
-						title="没有找到话题"
-						description="换个话题名再试。"
+						title="没有匹配的话题"
+						description="试试其他话题名称。"
 					/>
 				)
 			}

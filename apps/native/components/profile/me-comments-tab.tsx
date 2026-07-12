@@ -158,10 +158,7 @@ export function MeCommentsTab({
 				{isLoading ? (
 					<CommentsSkeleton />
 				) : isError ? (
-					<ErrorState
-						description="评论记录暂时没有加载出来，请稍后重试。"
-						onRetry={onRetry}
-					/>
+					<ErrorState onRetry={onRetry} />
 				) : comments.length > 0 ? (
 					comments.map((comment) => (
 						<View key={comment.id}>
@@ -248,7 +245,10 @@ export function MeCommentsTab({
 						</View>
 					))
 				) : (
-					<EmptyState icon="chatbubble-ellipses-outline" title="还没有评论" />
+					<EmptyState
+						icon="chatbubble-ellipses-outline"
+						title="评论过的图文会出现在这里，去看看吧"
+					/>
 				)}
 			</View>
 

@@ -29,12 +29,7 @@ export function HomeEmptyState({
 	if (isLoading) return <FeedSkeleton />;
 
 	if (isError) {
-		return (
-			<ErrorState
-				description="内容暂时没有加载出来，请检查网络后重试。"
-				onRetry={onRetry}
-			/>
-		);
+		return <ErrorState onRetry={onRetry} />;
 	}
 
 	if (isFollowingGuest) {
@@ -42,7 +37,7 @@ export function HomeEmptyState({
 			<EmptyState
 				icon="person-add-outline"
 				title="登录后查看关注"
-				description="关注博主后，这里会显示他们的新内容。"
+				description="关注喜欢的博主，及时看到他们的新图文。"
 				actionLabel="去登录"
 				onAction={() =>
 					socialNavigation.goTo({ type: "login", redirectTo: "/" })
@@ -54,7 +49,9 @@ export function HomeEmptyState({
 	return (
 		<EmptyState
 			icon={activeTab === "following" ? "people-outline" : "sparkles-outline"}
-			title={activeTab === "following" ? "还没有关注动态" : "还没有内容"}
+			title={
+				activeTab === "following" ? "关注的人还没更新" : "分享第一篇图文吧"
+			}
 			actionLabel={activeTab === "following" ? "去发现" : "去发布"}
 			onAction={() =>
 				activeTab === "following"

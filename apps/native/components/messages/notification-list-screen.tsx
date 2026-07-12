@@ -203,10 +203,7 @@ export default function NotificationListScreen() {
 							<Spinner />
 						</View>
 					) : notifications.isError ? (
-						<ErrorState
-							description="消息暂时没有加载出来，请稍后重试。"
-							onRetry={() => notifications.refetch()}
-						/>
+						<ErrorState onRetry={() => notifications.refetch()} />
 					) : (
 						<EmptyState
 							icon={config.emptyIcon}

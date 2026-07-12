@@ -541,7 +541,7 @@ export function MediaPicker({
 									}
 									ListEmptyComponent={
 										permissionMode === "all" ? (
-											<Text style={styles.emptyText}>这个相册里还没有照片</Text>
+											<Text style={styles.emptyText}>这个相册是空的</Text>
 										) : null
 									}
 									ListFooterComponent={

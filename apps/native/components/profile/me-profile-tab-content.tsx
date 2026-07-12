@@ -159,10 +159,7 @@ export function ProfileTabPage({
 				{isLoading ? (
 					<FeedSkeleton />
 				) : isError ? (
-					<ErrorState
-						description="个人页暂时没有加载出来，请稍后重试。"
-						onRetry={onRetry}
-					/>
+					<ErrorState onRetry={onRetry} />
 				) : feedItems.length > 0 ? (
 					<View className="flex-row items-start gap-3 px-3">
 						{masonryColumns.map((column, index) => (

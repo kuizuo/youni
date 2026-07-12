@@ -27,10 +27,7 @@ export function ChatMessageList({
 				className="flex-1 justify-center"
 				onTouchStart={onDismissInputPanel}
 			>
-				<ErrorState
-					description="聊天暂时没有加载出来，请稍后重试。"
-					onRetry={onRetry}
-				/>
+				<ErrorState onRetry={onRetry} />
 			</View>
 		);
 	}
@@ -56,7 +53,7 @@ export function ChatMessageList({
 				) : (
 					<View className="items-center py-16">
 						<Typography.Paragraph type="body-sm" color="muted">
-							还没有消息，先打个招呼。
+							从一句问候开始吧
 						</Typography.Paragraph>
 					</View>
 				)

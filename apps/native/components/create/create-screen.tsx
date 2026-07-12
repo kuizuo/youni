@@ -323,10 +323,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background">
 				{composer.loadExistingContentError ? (
-					<ErrorState
-						description="图文暂时没有加载出来，请稍后重试。"
-						onRetry={composer.retryLoadExistingContent}
-					/>
+					<ErrorState onRetry={composer.retryLoadExistingContent} />
 				) : (
 					<Spinner />
 				)}

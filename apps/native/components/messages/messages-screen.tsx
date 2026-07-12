@@ -117,14 +117,13 @@ export default function MessagesScreen() {
 							<Spinner />
 						</View>
 					) : conversations.isError ? (
-						<ErrorState
-							description="消息暂时没有加载出来，请检查网络后重试。"
-							onRetry={() => conversations.refetch()}
-						/>
+						<ErrorState onRetry={() => conversations.refetch()} />
 					) : (
 						<EmptyState
 							icon="chatbubble-ellipses-outline"
-							title={isAuthenticated ? "还没有私信" : "登录后查看私信"}
+							title={
+								isAuthenticated ? "去发现感兴趣的人，聊聊吧" : "登录后查看私信"
+							}
 							description={
 								isAuthenticated
 									? undefined
