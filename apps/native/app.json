@@ -19,6 +19,7 @@
 		"icon": "./assets/images/icon.png",
 		"android": {
 			"package": "com.kuizuo.youni",
+			"runtimeVersion": "57.0.0",
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/android-icon-foreground.png",
 				"backgroundImage": "./assets/images/android-icon-background.png",
