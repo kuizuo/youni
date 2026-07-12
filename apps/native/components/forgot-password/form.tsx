@@ -14,7 +14,10 @@ import { View } from "react-native";
 import { withUniwind } from "uniwind";
 import { YouniMark } from "@/components/brand/youni-logo";
 import { AppHeading } from "@/components/shared/app-heading";
-import { SINGLE_LINE_INPUT_STYLE } from "@/components/shared/input-styles";
+import {
+	NATIVE_FORM_CONTROL_VARIANT,
+	SINGLE_LINE_INPUT_STYLE,
+} from "@/components/shared/input-styles";
 
 const StyledIonicons = withUniwind(Ionicons);
 
@@ -88,7 +91,9 @@ export function ForgotPasswordForm({
 				<TextField>
 					<Label>邮箱</Label>
 					<Input
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
 						style={SINGLE_LINE_INPUT_STYLE}
+						variant={NATIVE_FORM_CONTROL_VARIANT}
 						value={email}
 						onChangeText={onChangeEmail}
 						placeholder="email@example.com"
@@ -234,6 +239,7 @@ function CodeInput({
 		<View className="gap-2">
 			<Label>验证码</Label>
 			<InputOTP
+				variant={NATIVE_FORM_CONTROL_VARIANT}
 				value={value}
 				onChange={onChange}
 				maxLength={6}
@@ -245,15 +251,33 @@ function CodeInput({
 				}}
 			>
 				<InputOTP.Group>
-					<InputOTP.Slot index={0} />
-					<InputOTP.Slot index={1} />
-					<InputOTP.Slot index={2} />
+					<InputOTP.Slot
+						index={0}
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+					/>
+					<InputOTP.Slot
+						index={1}
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+					/>
+					<InputOTP.Slot
+						index={2}
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+					/>
 				</InputOTP.Group>
 				<InputOTP.Separator />
 				<InputOTP.Group>
-					<InputOTP.Slot index={3} />
-					<InputOTP.Slot index={4} />
-					<InputOTP.Slot index={5} />
+					<InputOTP.Slot
+						index={3}
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+					/>
+					<InputOTP.Slot
+						index={4}
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+					/>
+					<InputOTP.Slot
+						index={5}
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+					/>
 				</InputOTP.Group>
 			</InputOTP>
 		</View>
@@ -285,6 +309,7 @@ function PasswordField({
 			<View className="relative">
 				<Input
 					style={SINGLE_LINE_INPUT_STYLE}
+					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={value}
 					onChangeText={onChangeText}
 					placeholder={placeholder}
@@ -293,7 +318,7 @@ function PasswordField({
 					textContentType="newPassword"
 					returnKeyType={returnKeyType}
 					onSubmitEditing={onSubmitEditing}
-					className="pr-12"
+					className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default pr-12"
 				/>
 				<Button
 					isIconOnly

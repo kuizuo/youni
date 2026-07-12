@@ -5,13 +5,16 @@ import {
 	Typography,
 	useThemeColor,
 } from "heroui-native";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import {
 	SEARCH_TABS,
 	type SearchTabKey,
 } from "@/components/search/search-utils";
 import { APP_HEADER_HEIGHT } from "@/components/shared/app-header";
-import { SINGLE_LINE_INPUT_STYLE } from "@/components/shared/input-styles";
+import {
+	NATIVE_FORM_CONTROL_VARIANT,
+	SINGLE_LINE_INPUT_STYLE,
+} from "@/components/shared/input-styles";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
 export function SearchHeader({
@@ -36,6 +39,7 @@ export function SearchHeader({
 	topInset: number;
 }) {
 	const mutedColor = useThemeColor("muted");
+	const isNative = Platform.OS !== "web";
 
 	return (
 		<View
@@ -51,15 +55,33 @@ export function SearchHeader({
 					onChange={onChangeKeyword}
 					className="min-w-0 flex-1"
 				>
-					<SearchField.Group>
-						<SearchField.SearchIcon iconProps={{ color: mutedColor }} />
+					<SearchField.Group
+						className={
+							isNative
+								? "h-11 overflow-hidden rounded-full android:bg-default bg-content2"
+								: undefined
+						}
+					>
+						<SearchField.SearchIcon
+							className={
+								isNative
+									? "relative left-0 w-10 shrink-0 items-center"
+									: undefined
+							}
+							iconProps={{ color: mutedColor }}
+						/>
 						<SearchField.Input
 							style={SINGLE_LINE_INPUT_STYLE}
+							variant={NATIVE_FORM_CONTROL_VARIANT}
 							autoFocus
 							placeholder="搜索图文、用户和话题"
 							placeholderTextColor={mutedColor}
 							returnKeyType="search"
-							className="h-11 rounded-full bg-content2"
+							className={
+								isNative
+									? "h-11 rounded-full bg-transparent pl-0 shadow-none"
+									: "h-11 rounded-full bg-content2"
+							}
 							onSubmitEditing={onSubmitSearch}
 						/>
 						<SearchField.ClearButton

@@ -13,7 +13,10 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 import z from "zod";
-import { SINGLE_LINE_INPUT_STYLE } from "@/components/shared/input-styles";
+import {
+	NATIVE_FORM_CONTROL_VARIANT,
+	SINGLE_LINE_INPUT_STYLE,
+} from "@/components/shared/input-styles";
 
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
@@ -105,7 +108,9 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 			<TextField>
 				<Label>邮箱</Label>
 				<Input
+					className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
 					style={SINGLE_LINE_INPUT_STYLE}
+					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={email}
 					onChangeText={setEmail}
 					placeholder="email@example.com"
@@ -123,6 +128,7 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 				<View className="relative">
 					<Input
 						style={SINGLE_LINE_INPUT_STYLE}
+						variant={NATIVE_FORM_CONTROL_VARIANT}
 						value={password}
 						onChangeText={setPassword}
 						placeholder="至少 8 位"
@@ -132,7 +138,7 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 						textContentType="password"
 						returnKeyType="go"
 						onSubmitEditing={submit}
-						className="pr-12"
+						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default pr-12"
 					/>
 					<Button
 						isIconOnly
