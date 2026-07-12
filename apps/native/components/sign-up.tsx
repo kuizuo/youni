@@ -11,11 +11,6 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 import z from "zod";
-import {
-	NATIVE_FORM_CONTROL_VARIANT,
-	SINGLE_LINE_INPUT_STYLE,
-} from "@/components/shared/input-styles";
-
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
 import { queryClient } from "@/utils/orpc";
@@ -109,9 +104,6 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 			<TextField>
 				<Label>昵称</Label>
 				<Input
-					className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					style={SINGLE_LINE_INPUT_STYLE}
-					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={name}
 					onChangeText={setName}
 					placeholder="你的昵称"
@@ -125,9 +117,6 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 			<TextField>
 				<Label>邮箱</Label>
 				<Input
-					className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					style={SINGLE_LINE_INPUT_STYLE}
-					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={email}
 					onChangeText={setEmail}
 					placeholder="email@example.com"
@@ -144,8 +133,6 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 				<Label>密码</Label>
 				<View className="relative">
 					<Input
-						style={SINGLE_LINE_INPUT_STYLE}
-						variant={NATIVE_FORM_CONTROL_VARIANT}
 						value={password}
 						onChangeText={setPassword}
 						placeholder="至少 8 位"
@@ -155,7 +142,7 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 						textContentType="newPassword"
 						returnKeyType="go"
 						onSubmitEditing={submit}
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default pr-12"
+						className="pr-12"
 					/>
 					<Button
 						isIconOnly
@@ -178,7 +165,6 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 			<Button
 				variant="primary"
 				size="md"
-				className="rounded-full"
 				feedbackVariant="scale-ripple"
 				isDisabled={isSubmitting}
 				onPress={submit}

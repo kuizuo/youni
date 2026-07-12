@@ -14,10 +14,6 @@ import { View } from "react-native";
 import { withUniwind } from "uniwind";
 import { YouniMark } from "@/components/brand/youni-logo";
 import { AppHeading } from "@/components/shared/app-heading";
-import {
-	NATIVE_FORM_CONTROL_VARIANT,
-	SINGLE_LINE_INPUT_STYLE,
-} from "@/components/shared/input-styles";
 
 const StyledIonicons = withUniwind(Ionicons);
 
@@ -59,7 +55,6 @@ export function ForgotPasswordForm({
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 	const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
 		useState(false);
-
 	return (
 		<View className="mx-auto w-full max-w-sm flex-1 justify-center gap-4">
 			<View className="items-center gap-2">
@@ -91,9 +86,6 @@ export function ForgotPasswordForm({
 				<TextField>
 					<Label>邮箱</Label>
 					<Input
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-						style={SINGLE_LINE_INPUT_STYLE}
-						variant={NATIVE_FORM_CONTROL_VARIANT}
 						value={email}
 						onChangeText={onChangeEmail}
 						placeholder="email@example.com"
@@ -136,7 +128,6 @@ export function ForgotPasswordForm({
 						<Button
 							variant="primary"
 							size="md"
-							className="rounded-full"
 							feedbackVariant="scale-ripple"
 							isDisabled={isSendingOtp || isResetting}
 							onPress={onResetPassword}
@@ -151,7 +142,6 @@ export function ForgotPasswordForm({
 					<Button
 						variant="primary"
 						size="md"
-						className="rounded-full"
 						feedbackVariant="scale-ripple"
 						isDisabled={isSendingOtp || isResetting}
 						onPress={onSendOtp}
@@ -166,7 +156,6 @@ export function ForgotPasswordForm({
 				<Button
 					variant="tertiary"
 					size="md"
-					className="rounded-full"
 					feedbackVariant="scale-ripple"
 					onPress={onGoLogin}
 				>
@@ -210,7 +199,6 @@ function SentCodeNotice({
 			<Button
 				variant="secondary"
 				size="sm"
-				className="rounded-full"
 				feedbackVariant="scale-ripple"
 				isDisabled={isSendingOtp || isResetting || resendCooldown > 0}
 				onPress={onSendOtp}
@@ -239,7 +227,6 @@ function CodeInput({
 		<View className="gap-2">
 			<Label>验证码</Label>
 			<InputOTP
-				variant={NATIVE_FORM_CONTROL_VARIANT}
 				value={value}
 				onChange={onChange}
 				maxLength={6}
@@ -251,33 +238,15 @@ function CodeInput({
 				}}
 			>
 				<InputOTP.Group>
-					<InputOTP.Slot
-						index={0}
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					/>
-					<InputOTP.Slot
-						index={1}
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					/>
-					<InputOTP.Slot
-						index={2}
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					/>
+					<InputOTP.Slot index={0} />
+					<InputOTP.Slot index={1} />
+					<InputOTP.Slot index={2} />
 				</InputOTP.Group>
 				<InputOTP.Separator />
 				<InputOTP.Group>
-					<InputOTP.Slot
-						index={3}
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					/>
-					<InputOTP.Slot
-						index={4}
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					/>
-					<InputOTP.Slot
-						index={5}
-						className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					/>
+					<InputOTP.Slot index={3} />
+					<InputOTP.Slot index={4} />
+					<InputOTP.Slot index={5} />
 				</InputOTP.Group>
 			</InputOTP>
 		</View>
@@ -308,8 +277,6 @@ function PasswordField({
 			<Label>{label}</Label>
 			<View className="relative">
 				<Input
-					style={SINGLE_LINE_INPUT_STYLE}
-					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={value}
 					onChangeText={onChangeText}
 					placeholder={placeholder}
@@ -318,7 +285,7 @@ function PasswordField({
 					textContentType="newPassword"
 					returnKeyType={returnKeyType}
 					onSubmitEditing={onSubmitEditing}
-					className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default pr-12"
+					className="pr-12"
 				/>
 				<Button
 					isIconOnly

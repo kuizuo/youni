@@ -14,11 +14,6 @@ import {
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
-import {
-	MULTILINE_INPUT_STYLE,
-	NATIVE_FORM_CONTROL_VARIANT,
-	SINGLE_LINE_INPUT_STYLE,
-} from "@/components/shared/input-styles";
 import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -134,9 +129,6 @@ export function SettingsProfileForm({
 			<TextField isRequired>
 				<Label>昵称</Label>
 				<Input
-					className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					style={SINGLE_LINE_INPUT_STYLE}
-					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={name}
 					onChangeText={setName}
 					placeholder="你的昵称"
@@ -147,9 +139,6 @@ export function SettingsProfileForm({
 			<TextField>
 				<Label>用户名</Label>
 				<Input
-					className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-					style={SINGLE_LINE_INPUT_STYLE}
-					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={handle}
 					onChangeText={setHandle}
 					autoCapitalize="none"
@@ -161,13 +150,11 @@ export function SettingsProfileForm({
 			<TextField>
 				<Label>简介</Label>
 				<TextArea
-					style={MULTILINE_INPUT_STYLE}
-					variant={NATIVE_FORM_CONTROL_VARIANT}
 					value={bio}
 					onChangeText={setBio}
 					placeholder="一句话介绍你分享的内容"
 					placeholderTextColor={mutedColor}
-					className="min-h-24 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+					className="min-h-24"
 					maxLength={160}
 				/>
 			</TextField>

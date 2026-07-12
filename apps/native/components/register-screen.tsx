@@ -51,7 +51,6 @@ export default function RegisterScreen() {
 					<Button
 						variant="tertiary"
 						size="md"
-						className="rounded-full"
 						feedbackVariant="scale-ripple"
 						onPress={goLogin}
 					>

@@ -20,11 +20,6 @@ import type {
 	EditableProfile,
 	ProfileSessionUser,
 } from "@/components/profile/profile-tabs";
-import {
-	MULTILINE_INPUT_STYLE,
-	NATIVE_FORM_CONTROL_VARIANT,
-	SINGLE_LINE_INPUT_STYLE,
-} from "@/components/shared/input-styles";
 import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -155,9 +150,6 @@ export function EditProfileSheet({
 					<TextField isRequired>
 						<Label>昵称</Label>
 						<Input
-							className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-							style={SINGLE_LINE_INPUT_STYLE}
-							variant={NATIVE_FORM_CONTROL_VARIANT}
 							value={name}
 							onBlur={onBlur}
 							onChangeText={setName}
@@ -170,9 +162,6 @@ export function EditProfileSheet({
 					<TextField>
 						<Label>用户名</Label>
 						<Input
-							className="ios:h-12 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
-							style={SINGLE_LINE_INPUT_STYLE}
-							variant={NATIVE_FORM_CONTROL_VARIANT}
 							value={handle}
 							autoCapitalize="none"
 							onBlur={onBlur}
@@ -186,10 +175,8 @@ export function EditProfileSheet({
 					<TextField>
 						<Label>简介</Label>
 						<TextArea
-							style={MULTILINE_INPUT_STYLE}
-							variant={NATIVE_FORM_CONTROL_VARIANT}
 							value={bio}
-							className="min-h-24 android:rounded-xl ios:rounded-xl android:bg-default ios:bg-default"
+							className="min-h-24"
 							maxLength={160}
 							onBlur={onBlur}
 							onChangeText={setBio}

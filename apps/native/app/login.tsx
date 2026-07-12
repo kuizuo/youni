@@ -63,7 +63,6 @@ export default function LoginScreen() {
 						<Button
 							variant="tertiary"
 							size="md"
-							className="rounded-full"
 							feedbackVariant="scale-ripple"
 							onPress={goRegister}
 						>
@@ -78,7 +77,6 @@ export default function LoginScreen() {
 						<Button
 							variant="tertiary"
 							size="md"
-							className="rounded-full"
 							feedbackVariant="scale-ripple"
 							onPress={goHome}
 						>
