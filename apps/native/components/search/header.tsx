@@ -67,13 +67,27 @@ export function SearchHeader({
 							iconProps={{ color: mutedColor }}
 						/>
 						<SearchField.Input
+							style={
+								isNative
+									? {
+											backgroundColor: "transparent",
+											borderColor: "transparent",
+											borderWidth: 0,
+											boxShadow: "none",
+											elevation: 0,
+											outlineColor: "transparent",
+											outlineWidth: 0,
+											shadowOpacity: 0,
+										}
+									: undefined
+							}
 							autoFocus
 							placeholder="搜索图文、用户和话题"
 							placeholderTextColor={mutedColor}
 							returnKeyType="search"
 							className={
 								isNative
-									? "h-11 rounded-full bg-transparent pl-0 shadow-none"
+									? "h-11 rounded-full bg-transparent pl-0 shadow-none android:focus:border-transparent ios:focus:outline-none"
 									: "h-11 rounded-full bg-content2"
 							}
 							onSubmitEditing={onSubmitSearch}
