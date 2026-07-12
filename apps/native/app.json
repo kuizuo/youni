@@ -54,7 +54,13 @@
 				}
 			],
 			"expo-font",
-			"expo-notifications",
+			[
+				"expo-notifications",
+				{
+					"color": "#FF4D6D",
+					"defaultChannel": "default"
+				}
+			],
 			"expo-secure-store",
 			"expo-web-browser",
 			[

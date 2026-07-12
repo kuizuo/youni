@@ -1,5 +1,5 @@
+import { isRunningInExpoGo } from "expo";
 import Constants from "expo-constants";
-import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
@@ -11,14 +11,18 @@ import {
 } from "@/lib/social/navigation-intents";
 import { client } from "@/utils/orpc";
 
-Notifications.setNotificationHandler({
-	handleNotification: async () => ({
-		shouldPlaySound: true,
-		shouldSetBadge: true,
-		shouldShowBanner: true,
-		shouldShowList: true,
-	}),
-});
+type NotificationsModule = typeof import("expo-notifications");
+
+let notificationsModulePromise: null | Promise<NotificationsModule> = null;
+
+function canUseRemoteNotifications() {
+	return Platform.OS !== "web" && !isRunningInExpoGo();
+}
+
+function loadNotifications() {
+	notificationsModulePromise ??= import("expo-notifications");
+	return notificationsModulePromise;
+}
 
 type NotificationData = {
 	noteId?: unknown;
@@ -44,15 +48,14 @@ function openNotificationTarget(data: NotificationData) {
 	router.push(toSocialHref(getNotificationIntent(data)));
 }
 
-async function getExpoPushToken() {
-	if (Platform.OS === "web") {
-		return null;
-	}
-
+async function getExpoPushToken(Notifications: NotificationsModule) {
 	if (Platform.OS === "android") {
 		await Notifications.setNotificationChannelAsync("default", {
-			name: "默认通知",
-			importance: Notifications.AndroidImportance.DEFAULT,
+			name: "Youni 通知",
+			importance: Notifications.AndroidImportance.HIGH,
+			lightColor: "#FF4D6D",
+			sound: "default",
+			vibrationPattern: [0, 250, 250, 250],
 		});
 	}
 
@@ -68,10 +71,11 @@ async function getExpoPushToken() {
 	const projectId =
 		Constants.easConfig?.projectId ??
 		Constants.expoConfig?.extra?.eas?.projectId;
-	const token = await Notifications.getExpoPushTokenAsync(
-		projectId ? { projectId } : undefined,
-	);
+	if (!projectId) {
+		throw new Error("Expo project ID is missing");
+	}
 
+	const token = await Notifications.getExpoPushTokenAsync({ projectId });
 	return token.data;
 }
 
@@ -81,27 +85,62 @@ export function PushNotificationBridge() {
 	const userId = session.data?.user?.id;
 
 	useEffect(() => {
-		const subscription = Notifications.addNotificationResponseReceivedListener(
-			(response) => {
-				openNotificationTarget(
-					response.notification.request.content.data as NotificationData,
+		if (!canUseRemoteNotifications()) return;
+
+		let isCanceled = false;
+		let subscription: undefined | { remove: () => void };
+
+		async function observeNotifications() {
+			try {
+				const Notifications = await loadNotifications();
+				if (isCanceled) return;
+
+				Notifications.setNotificationHandler({
+					handleNotification: async () => ({
+						shouldPlaySound: true,
+						shouldSetBadge: true,
+						shouldShowBanner: true,
+						shouldShowList: true,
+					}),
+				});
+
+				const lastResponse = Notifications.getLastNotificationResponse();
+				if (lastResponse?.notification) {
+					openNotificationTarget(
+						lastResponse.notification.request.content.data as NotificationData,
+					);
+					Notifications.clearLastNotificationResponse();
+				}
+
+				subscription = Notifications.addNotificationResponseReceivedListener(
+					(response) => {
+						openNotificationTarget(
+							response.notification.request.content.data as NotificationData,
+						);
+					},
 				);
-			},
-		);
+			} catch (error) {
+				console.warn("Notification listener setup failed", error);
+			}
+		}
+
+		void observeNotifications();
 
 		return () => {
-			subscription.remove();
+			isCanceled = true;
+			subscription?.remove();
 		};
 	}, []);
 
 	useEffect(() => {
-		if (!userId) return;
+		if (!userId || !canUseRemoteNotifications()) return;
 
 		let isCanceled = false;
+		let tokenSubscription: undefined | { remove: () => void };
 
-		async function registerToken() {
+		async function registerToken(Notifications: NotificationsModule) {
 			try {
-				const token = await getExpoPushToken();
+				const token = await getExpoPushToken(Notifications);
 				if (!token || isCanceled || registeredTokenRef.current === token) {
 					return;
 				}
@@ -112,14 +151,29 @@ export function PushNotificationBridge() {
 				});
 				registeredTokenRef.current = token;
 			} catch (error) {
-				console.log("Push notification registration failed", error);
+				console.warn("Push notification registration failed", error);
 			}
 		}
 
-		registerToken();
+		async function startTokenRegistration() {
+			try {
+				const Notifications = await loadNotifications();
+				if (isCanceled) return;
+
+				await registerToken(Notifications);
+				tokenSubscription = Notifications.addPushTokenListener(() => {
+					void registerToken(Notifications);
+				});
+			} catch (error) {
+				console.warn("Push notification setup failed", error);
+			}
+		}
+
+		void startTokenRegistration();
 
 		return () => {
 			isCanceled = true;
+			tokenSubscription?.remove();
 		};
 	}, [userId]);
 
