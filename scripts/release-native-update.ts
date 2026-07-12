@@ -24,7 +24,7 @@ const updateResult = Bun.spawnSync(
 		"bunx",
 		"eas-cli@latest",
 		"update",
-		"--branch",
+		"--channel",
 		"preview",
 		"--message",
 		`Release ${tag}`,

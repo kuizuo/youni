@@ -1,8 +1,23 @@
 {
+	"cli": {
+		"appVersionSource": "remote"
+	},
 	"build": {
 		"production": {
+			"autoIncrement": true,
+			"channel": "preview",
 			"env": {
+				"EAS_BUILD_NO_EXPO_GO_WARNING": "true",
 				"EXPO_PUBLIC_SERVER_URL": "https://youni-api.kuizuo.me"
+			}
+		},
+		"ios-simulator": {
+			"extends": "production",
+			"autoIncrement": false,
+			"distribution": "internal",
+			"environment": "production",
+			"ios": {
+				"simulator": true
 			}
 		}
 	}

@@ -1,5 +1,3 @@
-const baseConfig = require("./app.json");
-
 const GOOGLE_SIGN_IN_PLUGIN = "@react-native-google-signin/google-signin";
 
 function getGoogleIosUrlScheme() {
@@ -18,16 +16,16 @@ function getGoogleIosUrlScheme() {
 	return "com.googleusercontent.apps.REPLACE_WITH_IOS_CLIENT_ID";
 }
 
-const plugins = baseConfig.expo.plugins ?? [];
-const hasGoogleSignInPlugin = plugins.some((plugin) =>
-	Array.isArray(plugin)
-		? plugin[0] === GOOGLE_SIGN_IN_PLUGIN
-		: plugin === GOOGLE_SIGN_IN_PLUGIN,
-);
+module.exports = ({ config }) => {
+	const plugins = config.plugins ?? [];
+	const hasGoogleSignInPlugin = plugins.some((plugin) =>
+		Array.isArray(plugin)
+			? plugin[0] === GOOGLE_SIGN_IN_PLUGIN
+			: plugin === GOOGLE_SIGN_IN_PLUGIN,
+	);
 
-module.exports = {
-	expo: {
-		...baseConfig.expo,
+	return {
+		...config,
 		plugins: hasGoogleSignInPlugin
 			? plugins
 			: [
@@ -39,5 +37,5 @@ module.exports = {
 						},
 					],
 				],
-	},
+	};
 };
