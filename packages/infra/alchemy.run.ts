@@ -1,7 +1,9 @@
 import alchemy from "alchemy";
 import {
+	Ai,
 	type Binding,
 	D1Database,
+	Queue,
 	R2Bucket,
 	RateLimit,
 	Vite,
@@ -16,6 +18,33 @@ config({ path: "../../apps/web/.env" });
 config({ path: "../../apps/server/.env" });
 
 const app = await alchemy("youni");
+
+type NoteModerationJob = {
+	images: string[];
+	noteId: string;
+	userId: string;
+};
+
+type MoondreamInput = {
+	image: string;
+	max_tokens?: number;
+	question: string;
+	reasoning?: boolean;
+	stream?: boolean;
+	task: "query";
+	temperature?: number;
+};
+
+type MoondreamOutput = {
+	answer?: string | null;
+};
+
+type YouniAiModels = {
+	"@cf/moondream/moondream3.1-9B-A2B": {
+		inputs: MoondreamInput;
+		postProcessedOutputs: MoondreamOutput;
+	};
+};
 
 function requiredEnv<T>(value: T | undefined, name: string) {
 	if (!value) {
@@ -169,12 +198,16 @@ const localD1HttpBindings: Record<string, Binding> = app.local
 			YOUNI_D1_HTTP_DIRECT: "true",
 		}
 	: {};
+export const noteModerationQueue =
+	await Queue<NoteModerationJob>("note-moderation");
+const workersAi = Ai<YouniAiModels>();
 
 export const server = await Worker("server", {
 	cwd: "../../apps/server",
 	entrypoint: "src/index.ts",
 	compatibility: "node",
 	bindings: {
+		AI: workersAi,
 		DB: youniDatabase,
 		CORS_ORIGIN: publicCorsOrigins,
 		BETTER_AUTH_SECRET: requiredEnv(
@@ -192,10 +225,23 @@ export const server = await Worker("server", {
 		RESEND_API_KEY: optionalSecretEnv("RESEND_API_KEY"),
 		RESEND_FROM_EMAIL: optionalEnv("RESEND_FROM_EMAIL"),
 		SEARCH_RATE_LIMIT: searchRateLimit,
+		NOTE_MODERATION_QUEUE: noteModerationQueue,
 		YOUNI_BUCKET: youniBucket,
 		...localD1HttpBindings,
 	},
 	crons: ["0 17 * * *"],
+	eventSources: [
+		{
+			queue: noteModerationQueue,
+			settings: {
+				batchSize: 1,
+				maxConcurrency: 2,
+				maxRetries: 3,
+				maxWaitTimeMs: 1_000,
+				retryDelay: 30,
+			},
+		},
+	],
 	dev: {
 		port: 3000,
 	},

@@ -51,6 +51,7 @@ import {
 	AuthorTopBar,
 	ImageCarousel,
 	NoteBody,
+	NoteModerationNotice,
 	SimpleTopBar,
 } from "./note-detail/content";
 import { NoteDetailSkeleton } from "./note-detail/skeleton";
@@ -156,6 +157,8 @@ export default function NoteDetailScreen() {
 	const note = useQuery({
 		...orpc.notes.byId.queryOptions({ input: { id: id || "missing" } }),
 		enabled: Boolean(id),
+		refetchInterval: (query) =>
+			query.state.data?.status === "audit" ? 4_000 : false,
 	});
 	const viewerId = socialActions.session.data?.user?.id;
 	const recordCurrentView = useCallback(async () => {
@@ -955,6 +958,12 @@ export default function NoteDetailScreen() {
 				onEndReachedThreshold={0.4}
 				ListHeaderComponent={
 					<View>
+						{isSelf ? (
+							<NoteModerationNotice
+								rejectionReason={note.data.rejectionReason}
+								status={note.data.status}
+							/>
+						) : null}
 						<ImageCarousel
 							activeIndex={activeImageIndex}
 							images={images}

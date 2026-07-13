@@ -202,6 +202,42 @@ export function ImageCarousel({
 	);
 }
 
+export function NoteModerationNotice({
+	rejectionReason,
+	status,
+}: {
+	rejectionReason: null | string;
+	status: "audit" | "draft" | "hidden" | "published" | "rejected";
+}) {
+	const accentColor = useThemeColor("accent");
+	const dangerColor = useThemeColor("danger");
+
+	if (status !== "audit" && status !== "rejected") {
+		return null;
+	}
+
+	const isRejected = status === "rejected";
+	return (
+		<View className="mx-4 my-3 flex-row gap-3 rounded-xl bg-content2 px-4 py-3">
+			<Ionicons
+				name={isRejected ? "alert-circle-outline" : "time-outline"}
+				size={21}
+				color={isRejected ? dangerColor : accentColor}
+			/>
+			<View className="min-w-0 flex-1 gap-1">
+				<Typography.Paragraph weight="semibold">
+					{isRejected ? "内容未通过审核" : "内容正在审核"}
+				</Typography.Paragraph>
+				<Typography.Paragraph type="body-sm" color="muted">
+					{isRejected
+						? rejectionReason || "请修改内容后重新提交"
+						: "通过后会自动发布，暂时只有你能看到"}
+				</Typography.Paragraph>
+			</View>
+		</View>
+	);
+}
+
 export function NoteBody({
 	content,
 	createdAt,

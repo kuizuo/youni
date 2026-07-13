@@ -3,6 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
 import type { ImageUploadResponse } from "@/lib/media/types";
+import { appendUploadFile } from "@/lib/media/upload-form-data";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
 const PROFILE_IMAGE_UPLOAD_TIMEOUT_MS = 30_000;
@@ -124,15 +125,14 @@ async function pickAndUploadProfileImage(options: ProfileImageOptions) {
 	const formData = new FormData();
 	const isWeb = process.env.EXPO_OS === "web";
 
-	if (isWeb && asset.file) {
-		formData.append(options.fieldName, asset.file, fileName);
-	} else {
-		formData.append(options.fieldName, {
-			name: fileName,
-			type: mimeType,
-			uri: asset.uri,
-		} as unknown as Blob);
-	}
+	appendUploadFile({
+		fieldName: options.fieldName,
+		fileName,
+		formData,
+		isWeb,
+		uri: asset.uri,
+		webFile: asset.file,
+	});
 
 	let headers: Headers | undefined;
 	if (!isWeb) {

@@ -220,6 +220,10 @@ export function useCreateComposer({
 				}
 				resetForm();
 				await queryClient.invalidateQueries();
+				toast.show({
+					label: "已提交审核，通过后会自动发布",
+					variant: "success",
+				});
 				router.replace(`/note/${result.id}` as Href);
 			},
 			onError: async (error) => {
@@ -243,6 +247,10 @@ export function useCreateComposer({
 				pendingUploadedKeysRef.current = [];
 				resetForm();
 				await queryClient.invalidateQueries();
+				toast.show({
+					label: "修改已提交审核，通过后会自动发布",
+					variant: "success",
+				});
 				router.replace(`/note/${result.id}` as Href);
 			},
 			onError: async (error) => {

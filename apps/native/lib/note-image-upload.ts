@@ -4,6 +4,7 @@ import { Platform } from "react-native";
 import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
 import type { ImageUploadResponse } from "@/lib/media/types";
+import { appendUploadFile } from "@/lib/media/upload-form-data";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
 const NOTE_IMAGE_UPLOAD_TIMEOUT_MS = 60_000;
@@ -112,15 +113,14 @@ export async function uploadNoteImages(assets: NoteImageUploadAsset[]) {
 		const mimeType = mimeTypeFromAsset(asset);
 		const fileName = fileNameFromAsset(asset, mimeType);
 
-		if (Platform.OS === "web" && asset.file) {
-			formData.append(`image${index}`, asset.file, fileName);
-		} else {
-			formData.append(`image${index}`, {
-				name: fileName,
-				type: mimeType,
-				uri: asset.uri,
-			} as unknown as Blob);
-		}
+		appendUploadFile({
+			fieldName: `image${index}`,
+			fileName,
+			formData,
+			isWeb: Platform.OS === "web",
+			uri: asset.uri,
+			webFile: asset.file,
+		});
 	}
 
 	let headers: Headers | undefined;

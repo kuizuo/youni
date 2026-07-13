@@ -20,6 +20,11 @@ import type {
 	HydratedContentNote,
 	NoteVisibility,
 } from "../contracts/shared";
+import { hasBlockedNoteText } from "./content-moderation";
+import {
+	enqueueNoteModeration,
+	isOwnedNoteImageUrl,
+} from "./note-image-moderation";
 import { getMissingPublishItems } from "./note-publish-validation";
 import { containsInsensitive } from "./search";
 
@@ -147,6 +152,34 @@ function assertPublishReady(input: ContentNoteMutationInput) {
 	if (missingItems.length > 0) {
 		throw new ORPCError("BAD_REQUEST", {
 			message: `还差：${missingItems.join("、")}`,
+		});
+	}
+
+	if (hasBlockedNoteText(input)) {
+		throw new ORPCError("BAD_REQUEST", {
+			message: "内容包含不适合发布的信息，请修改后重试",
+		});
+	}
+}
+
+function assertNoteImageOwnership({
+	allowedExistingImages = [],
+	images,
+	userId,
+}: {
+	allowedExistingImages?: string[];
+	images: string[];
+	userId: string;
+}) {
+	const allowedExisting = new Set(allowedExistingImages);
+	if (
+		images.some(
+			(image) =>
+				!allowedExisting.has(image) && !isOwnedNoteImageUrl(image, userId),
+		)
+	) {
+		throw new ORPCError("BAD_REQUEST", {
+			message: "图片来源无效，请重新上传后再发布",
 		});
 	}
 }
@@ -410,7 +443,7 @@ export async function updateEditableContentNote({
 }) {
 	const db = createDb();
 	const [existing] = await db
-		.select({ id: note.id })
+		.select({ id: note.id, images: note.images })
 		.from(note)
 		.where(
 			and(
@@ -427,6 +460,11 @@ export async function updateEditableContentNote({
 
 	const topicNames = uniqueTopics(input.topics);
 	assertPublishReady(input);
+	assertNoteImageOwnership({
+		allowedExistingImages: existing.images,
+		images: input.images,
+		userId,
+	});
 
 	const cover = input.images[0];
 	const imageMetas = normalizeImageMetas(input);
@@ -462,6 +500,11 @@ export async function updateEditableContentNote({
 		topicNames,
 		clearExisting: true,
 	});
+	await enqueueNoteModeration({
+		images: input.images,
+		noteId: input.id,
+		userId,
+	});
 
 	return { id: input.id, status: "audit" as const };
 }
@@ -481,6 +524,7 @@ export async function createContentNote({
 	const content = input.content.trim();
 	const status = "audit" as const;
 	assertPublishReady(input);
+	assertNoteImageOwnership({ images: input.images, userId });
 
 	const [createdNote] = await db
 		.insert(note)
@@ -504,6 +548,11 @@ export async function createContentNote({
 	}
 
 	await syncNoteTopics({ db, noteId: createdNote.id, topicNames });
+	await enqueueNoteModeration({
+		images: input.images,
+		noteId: createdNote.id,
+		userId,
+	});
 
 	return { id: createdNote.id, status };
 }

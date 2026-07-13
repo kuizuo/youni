@@ -18,6 +18,7 @@
 		"@youni/env": "workspace:*",
 		"better-auth": "catalog:",
 		"drizzle-orm": "catalog:",
+		"sensitive-word-tool": "^1.1.10",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

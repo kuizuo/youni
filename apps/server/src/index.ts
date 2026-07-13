@@ -8,6 +8,10 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@youni/api/context";
 import { cleanupExpiredAnalytics } from "@youni/api/lib/analytics-retention";
 import { linkAnonymousUserActivity } from "@youni/api/lib/anonymous-linking";
+import {
+	type NoteModerationJob,
+	processNoteModerationJob,
+} from "@youni/api/lib/note-image-moderation";
 import { appRouter } from "@youni/api/routers/index";
 import { createAuth } from "@youni/auth";
 import { hasAdminPermission } from "@youni/auth/permissions";
@@ -548,12 +552,29 @@ app.get("/", (c) => {
 	return c.text("OK");
 });
 
-const worker: ExportedHandler<Env> = {
+const worker: ExportedHandler<Env, NoteModerationJob> = {
 	fetch(request, workerEnv, executionContext) {
 		return app.fetch(request, workerEnv, executionContext);
 	},
 	scheduled(_controller, _workerEnv, executionContext) {
 		executionContext.waitUntil(cleanupExpiredAnalytics());
+	},
+	async queue(batch) {
+		await Promise.all(
+			batch.messages.map(async (message) => {
+				try {
+					await processNoteModerationJob(message.body);
+					message.ack();
+				} catch (error) {
+					console.error("note moderation queue failed", {
+						attempts: message.attempts,
+						error,
+						messageId: message.id,
+					});
+					message.retry();
+				}
+			}),
+		);
 	},
 };
 

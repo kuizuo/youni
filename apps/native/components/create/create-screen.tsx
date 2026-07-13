@@ -186,10 +186,12 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 			.slice(end)
 			.replace(/^\s+/, "")}`;
 		const cursor = start + token.length;
+		let appliedCursor = cursor;
 
 		if (activeInputField === "title") {
 			const limitedValue = nextValue.slice(0, 80);
 			const limitedCursor = Math.min(cursor, limitedValue.length);
+			appliedCursor = limitedCursor;
 			titleRef.current = limitedValue;
 			composer.setTitle(limitedValue);
 			setTitleSelection({ start: limitedCursor, end: limitedCursor });
@@ -200,8 +202,12 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 		}
 		setInlineTrigger(null);
 		requestAnimationFrame(() => {
-			if (activeInputField === "title") titleInputRef.current?.focus();
-			else contentInputRef.current?.focus();
+			const input =
+				activeInputField === "title"
+					? titleInputRef.current
+					: contentInputRef.current;
+			input?.focus();
+			input?.setSelection(appliedCursor, appliedCursor);
 		});
 	};
 
@@ -241,6 +247,10 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 			setContentSelection({ start: cursor, end: cursor });
 		}
 		updateInlineTrigger(nextValue, cursor);
+		requestAnimationFrame(() => {
+			const input = isTitle ? titleInputRef.current : contentInputRef.current;
+			input?.setSelection(cursor, cursor);
+		});
 	};
 
 	const insertInlineMarker = (type: InlineTrigger["type"]) => {
@@ -260,8 +270,14 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 			isEmojiInputLockedRef.current = false;
 			setIsEmojiInputLocked(false);
 			requestAnimationFrame(() => {
-				if (activeInputField === "title") titleInputRef.current?.focus();
-				else contentInputRef.current?.focus();
+				const selection =
+					activeInputField === "title" ? titleSelection : contentSelection;
+				const input =
+					activeInputField === "title"
+						? titleInputRef.current
+						: contentInputRef.current;
+				input?.focus();
+				input?.setSelection(selection.start, selection.end);
 			});
 			return;
 		}
@@ -367,13 +383,11 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					<ContentEditor
 						content={composer.content}
 						contentInputRef={contentInputRef}
-						contentSelection={contentSelection}
 						foregroundColor={foregroundColor}
 						isEmojiInputLocked={isEmojiInputLocked}
 						mutedColor={mutedColor}
 						title={composer.title}
 						titleInputRef={titleInputRef}
-						titleSelection={titleSelection}
 						onContentChange={handleContentChange}
 						onContentFocus={() => handleInputFocus("content")}
 						onContentSelectionChange={handleContentSelectionChange}

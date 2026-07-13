@@ -153,7 +153,7 @@ export type NotesOutputs = {
 	viewHistory: { note: HydratedContentNote; viewedAt: Date }[];
 	deleteViewHistory: { ok: boolean };
 	clearViewHistory: { ok: boolean };
-	create: { id: string; status: string };
+	create: { id: string; status: "audit" };
 	toggleLike: { liked: boolean; likedCount: number };
 	toggleCollect: { collected: boolean; collectedCount: number };
 };
