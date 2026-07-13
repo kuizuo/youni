@@ -35,6 +35,20 @@ export function DiscoverNoteActionsSheet({
 	const accentColor = useThemeColor("accent");
 	const dangerColor = useThemeColor("danger");
 	const isSelf = note?.author.id === socialActions.currentUserId;
+	const likeState = socialActions.optimistic.like(
+		note?.id ?? "",
+		Boolean(note?.liked),
+		note?.likedCount,
+	);
+	const collectState = socialActions.optimistic.collect(
+		note?.id ?? "",
+		Boolean(note?.collected),
+		note?.collectedCount,
+	);
+	const followState = socialActions.optimistic.follow(
+		note?.author.id ?? "",
+		Boolean(note?.author.isFollowing),
+	);
 
 	const close = () => onOpenChange(false);
 
@@ -45,10 +59,10 @@ export function DiscoverNoteActionsSheet({
 	};
 
 	const toggleFollow = () => {
-		if (!note || isSelf || socialActions.pending.follow(note.author.id)) return;
+		if (!note || isSelf) return;
 		if (
 			socialActions.toggleFollow(
-				{ userId: note.author.id },
+				{ active: followState.active, userId: note.author.id },
 				{ redirectTo: "/" },
 			)
 		) {
@@ -57,10 +71,10 @@ export function DiscoverNoteActionsSheet({
 	};
 
 	const toggleLike = () => {
-		if (!note || socialActions.pending.like(note.id)) return;
+		if (!note) return;
 		if (
 			socialActions.toggleLike(
-				{ id: note.id },
+				{ active: likeState.active, count: likeState.count, id: note.id },
 				{
 					redirectTo: "/",
 					onSuccess: (result) => {
@@ -74,10 +88,14 @@ export function DiscoverNoteActionsSheet({
 	};
 
 	const toggleCollect = () => {
-		if (!note || socialActions.pending.collect(note.id)) return;
+		if (!note) return;
 		if (
 			socialActions.toggleCollect(
-				{ id: note.id },
+				{
+					active: collectState.active,
+					count: collectState.count,
+					id: note.id,
+				},
 				{
 					redirectTo: "/",
 					onSuccess: (result) => {
@@ -104,17 +122,17 @@ export function DiscoverNoteActionsSheet({
 						>
 							<ActionItem
 								disabled={!note}
-								icon={note?.liked ? "heart" : "heart-outline"}
-								iconColor={note?.liked ? dangerColor : mutedColor}
-								label={note?.liked ? "取消点赞" : "点赞"}
+								icon={likeState.active ? "heart" : "heart-outline"}
+								iconColor={likeState.active ? dangerColor : mutedColor}
+								label={likeState.active ? "取消点赞" : "点赞"}
 								onPress={toggleLike}
 							/>
 							<ListDivider />
 							<ActionItem
 								disabled={!note}
-								icon={note?.collected ? "bookmark" : "bookmark-outline"}
-								iconColor={note?.collected ? accentColor : mutedColor}
-								label={note?.collected ? "取消收藏" : "收藏图文"}
+								icon={collectState.active ? "bookmark" : "bookmark-outline"}
+								iconColor={collectState.active ? accentColor : mutedColor}
+								label={collectState.active ? "取消收藏" : "收藏图文"}
 								onPress={toggleCollect}
 							/>
 							<ListDivider />
@@ -131,14 +149,12 @@ export function DiscoverNoteActionsSheet({
 									<ActionItem
 										disabled={!note}
 										icon={
-											note?.author.isFollowing
+											followState.active
 												? "checkmark-circle"
 												: "person-add-outline"
 										}
-										iconColor={
-											note?.author.isFollowing ? accentColor : mutedColor
-										}
-										label={note?.author.isFollowing ? "取消关注" : "关注作者"}
+										iconColor={followState.active ? accentColor : mutedColor}
+										label={followState.active ? "取消关注" : "关注作者"}
 										onPress={toggleFollow}
 									/>
 								</>

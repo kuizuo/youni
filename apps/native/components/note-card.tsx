@@ -35,8 +35,13 @@ export function NoteCard({
 	const socialActions = useSocialActions();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
-	const liked = Boolean(note.liked);
-	const likedCount = note.likedCount;
+	const likeState = socialActions.optimistic.like(
+		note.id,
+		note.liked,
+		note.likedCount,
+	);
+	const liked = likeState.active;
+	const likedCount = likeState.count ?? note.likedCount;
 	const coverImageMeta = note.imageMetas?.find(
 		(item) => item.url === note.cover,
 	);
@@ -63,10 +68,9 @@ export function NoteCard({
 	};
 
 	const toggleLike = () => {
-		if (socialActions.pending.like(note.id)) return;
 		if (!socialActions.requireLogin("/")) return;
 		socialActions.toggleLike(
-			{ id: note.id },
+			{ active: liked, count: likedCount, id: note.id },
 			{
 				redirectTo: "/",
 				onSuccess: (result) => {

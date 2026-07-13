@@ -16,11 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { EmptyState, ErrorState } from "@/components/social-states";
-import {
-	invalidateViewHistory,
-	optimisticClearHistory,
-	optimisticDeleteHistoryItem,
-} from "@/lib/query/optimistic-cache";
+import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { formatRelativeTime } from "@/utils/format";
@@ -39,29 +35,21 @@ export default function HistoryScreen() {
 	});
 	const items = history.data ?? [];
 	const deleteMutation = useMutation(
-		orpc.notes.deleteViewHistory.mutationOptions<{ rollback?: () => void }>({
-			onError: (error, _variables, context) => {
-				context?.rollback?.();
+		orpc.notes.deleteViewHistory.mutationOptions({
+			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
-			onMutate: (variables) => optimisticDeleteHistoryItem(variables.id),
-			onSettled: () => {
-				void invalidateViewHistory();
-			},
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 	const clearMutation = useMutation(
-		orpc.notes.clearViewHistory.mutationOptions<{ rollback?: () => void }>({
-			onError: (error, _variables, context) => {
-				context?.rollback?.();
+		orpc.notes.clearViewHistory.mutationOptions({
+			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
-			onMutate: () => optimisticClearHistory(),
-			onSettled: () => {
-				void invalidateViewHistory();
-			},
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 

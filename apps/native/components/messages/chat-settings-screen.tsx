@@ -17,12 +17,7 @@ import { AppSeparator } from "@/components/shared/app-separator";
 import { ErrorState } from "@/components/social-states";
 import { FollowButton } from "@/components/users/follow-button";
 import { isRegisteredUser } from "@/lib/anonymous-session";
-import {
-	applyConversationBlockedResult,
-	invalidateConversation,
-	optimisticClearConversation,
-	optimisticSetConversationBlocked,
-} from "@/lib/query/optimistic-cache";
+import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -55,54 +50,36 @@ export default function ChatSettingsScreen() {
 		),
 	});
 	const data = settings.data;
-	const isFollowing = data?.isFollowing ?? false;
+	const isFollowing = socialActions.optimistic.follow(
+		data?.peer.id ?? "",
+		data?.isFollowing ?? false,
+	).active;
 	const isBlocked = data?.hasBlockedPeer ?? false;
 
 	const blockMutation = useMutation(
-		orpc.messages.setBlocked.mutationOptions<{ rollback?: () => void }>({
-			onError: (error, _variables, context) => {
-				context?.rollback?.();
+		orpc.messages.setBlocked.mutationOptions({
+			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
-			onMutate: (variables) =>
-				optimisticSetConversationBlocked({
-					blocked: variables.blocked,
-					conversationId: variables.conversationId,
-				}),
-			onSettled: (_data, _error, variables) => {
-				void invalidateConversation(variables.conversationId);
-			},
-			onSuccess: (result, variables) => {
-				applyConversationBlockedResult({
-					blocked: result.blocked,
-					conversationId: variables.conversationId,
-					isBlockedByPeer: result.isBlockedByPeer,
-				});
-			},
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 	const clearMutation = useMutation(
-		orpc.messages.clear.mutationOptions<{ rollback?: () => void }>({
-			onError: (error, _variables, context) => {
-				context?.rollback?.();
+		orpc.messages.clear.mutationOptions({
+			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
-			onMutate: (variables) =>
-				optimisticClearConversation(variables.conversationId),
-			onSettled: (_data, _error, variables) => {
-				void invalidateConversation(variables.conversationId);
-			},
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 
 	const toggleFollow = () => {
 		if (!data?.peer.id) return;
-		if (socialActions.pending.follow(data.peer.id)) return;
 		fireHaptic();
 		socialActions.toggleFollow(
-			{ userId: data.peer.id },
+			{ active: isFollowing, userId: data.peer.id },
 			{
 				redirectTo: `/chat-settings/${conversationId}`,
 			},

@@ -18,15 +18,11 @@ import { Alert, Platform, Pressable, View } from "react-native";
 import { ListDivider } from "@/components/create/create-ui";
 import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
 import { EmptyState, ErrorState } from "@/components/social-states";
-import { removeMyComment } from "@/lib/query/my-comments-cache";
-import {
-	invalidateComment,
-	invalidateNote,
-} from "@/lib/query/optimistic-cache";
+import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { formatRelativeTime } from "@/utils/format";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export function MeCommentsTab({
@@ -54,51 +50,17 @@ export function MeCommentsTab({
 		null,
 	);
 	const suppressPressRef = useRef(false);
-	const myCommentsOptions = orpc.comments.myComments.queryOptions({
-		input: { limit: 30 },
-	});
 	const deleteComment = useMutation(
-		orpc.comments.deleteComment.mutationOptions<{
-			noteId?: string;
-			previous?: MyCommentRow[];
-		}>({
-			onError: (error, _variables, context) => {
-				if (context?.previous) {
-					queryClient.setQueryData(
-						myCommentsOptions.queryKey,
-						context.previous,
-					);
-				}
+		orpc.comments.deleteComment.mutationOptions({
+			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
 				toast.show({
 					variant: "danger",
 					label: error instanceof Error ? error.message : "评论删除失败",
 				});
 			},
-			onMutate: async (input) => {
-				await queryClient.cancelQueries({
-					queryKey: myCommentsOptions.queryKey,
-				});
-				const previous = queryClient.getQueryData<MyCommentRow[]>(
-					myCommentsOptions.queryKey,
-				);
-				const deletedComment = previous?.find((item) => item.id === input.id);
-				queryClient.setQueryData<MyCommentRow[]>(
-					myCommentsOptions.queryKey,
-					(current) => removeMyComment(current, input.id),
-				);
-				return { noteId: deletedComment?.noteId, previous };
-			},
-			onSettled: async (_data, _error, variables, context) => {
-				await Promise.all([
-					queryClient.invalidateQueries({
-						queryKey: myCommentsOptions.queryKey,
-					}),
-					invalidateComment(variables.id),
-					context?.noteId ? invalidateNote(context.noteId) : Promise.resolve(),
-				]);
-			},
-			onSuccess: () => {
+			onSuccess: async () => {
+				await refreshActiveQueries();
 				toast.show({ variant: "success", label: "评论已删除" });
 			},
 		}),

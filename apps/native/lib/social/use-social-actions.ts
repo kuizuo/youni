@@ -4,24 +4,13 @@ import type { MessagesOutputs } from "@youni/api/contracts/messages";
 import type { NotesOutputs } from "@youni/api/contracts/notes";
 import type { ProfilesOutputs } from "@youni/api/contracts/profiles";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
 
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import {
-	applyCommentLikeResult,
-	applyCreatedComment,
-	applyFollowResult,
-	applyNoteReactionResult,
-	invalidateComment,
-	invalidateConversation,
-	invalidateNote,
-	invalidateUser,
-	optimisticAddComment,
-	optimisticDeleteComment,
-	optimisticToggleCommentLike,
-	optimisticToggleFollow,
-	optimisticToggleNoteReaction,
+	type OptimisticToggleKind,
+	refreshActiveQueries,
+	useOptimisticToggleQueue,
 } from "@/lib/query/optimistic-cache";
 import {
 	type SocialNavigationIntent,
@@ -38,15 +27,6 @@ export type SocialActionOptions<TResult = unknown> = {
 	onSettled?: () => void;
 	onSuccess?: (result: TResult) => Promise<void> | void;
 	redirectTo?: string;
-};
-
-type OptimisticMutationContext = {
-	noteId?: string;
-	optimisticComment?: {
-		id: string;
-		value: Parameters<typeof applyCreatedComment>[0]["tempComment"];
-	};
-	rollback?: () => void;
 };
 
 function getError(error: unknown): SocialActionError {
@@ -92,203 +72,39 @@ export function useSocialNavigation() {
 export function useSocialActions() {
 	const navigation = useSocialNavigation();
 	const { toast } = useAppToast();
-	const currentUser = isRegisteredUser(navigation.session.data?.user)
-		? navigation.session.data?.user
-		: undefined;
+	const optimisticToggles = useOptimisticToggleQueue();
 
 	const showErrorToast = (error: SocialActionError) => {
 		if (isRequestTimeoutError(error)) return;
 		toast.show({ variant: "danger", label: error.message });
 	};
 
-	const likeMutation = useMutation(
-		orpc.notes.toggleLike.mutationOptions<OptimisticMutationContext>({
-			onError: (_error, _variables, context) => {
-				context?.rollback?.();
-			},
-			onMutate: async (input) => {
-				return optimisticToggleNoteReaction({
-					countField: "likedCount",
-					noteId: input.id,
-					stateField: "liked",
-				});
-			},
-			onSettled: (_data, _error, variables) => {
-				void invalidateNote(variables.id);
-			},
-			onSuccess: (result, variables) => {
-				applyNoteReactionResult({
-					count: result.likedCount,
-					countField: "likedCount",
-					noteId: variables.id,
-					state: result.liked,
-					stateField: "liked",
-				});
-			},
-		}),
-	);
+	const likeMutation = useMutation(orpc.notes.toggleLike.mutationOptions());
 	const collectMutation = useMutation(
-		orpc.notes.toggleCollect.mutationOptions<OptimisticMutationContext>({
-			onError: (_error, _variables, context) => {
-				context?.rollback?.();
-			},
-			onMutate: async (input) => {
-				return optimisticToggleNoteReaction({
-					countField: "collectedCount",
-					noteId: input.id,
-					stateField: "collected",
-				});
-			},
-			onSettled: (_data, _error, variables) => {
-				void invalidateNote(variables.id);
-			},
-			onSuccess: (result, variables) => {
-				applyNoteReactionResult({
-					count: result.collectedCount,
-					countField: "collectedCount",
-					noteId: variables.id,
-					state: result.collected,
-					stateField: "collected",
-				});
-			},
-		}),
+		orpc.notes.toggleCollect.mutationOptions(),
 	);
 	const followMutation = useMutation(
-		orpc.profiles.toggleFollow.mutationOptions<OptimisticMutationContext>({
-			onError: (_error, _variables, context) => {
-				context?.rollback?.();
-			},
-			onMutate: async (input) => {
-				return optimisticToggleFollow(input.userId);
-			},
-			onSettled: (_data, _error, variables) => {
-				void invalidateUser(variables.userId);
-			},
-			onSuccess: (result, variables) => {
-				applyFollowResult({
-					followerCount: result.followerCount,
-					following: result.following,
-					userId: variables.userId,
-				});
-			},
-		}),
+		orpc.profiles.toggleFollow.mutationOptions(),
 	);
 	const commentMutation = useMutation(
-		orpc.comments.addComment.mutationOptions<OptimisticMutationContext>({
-			onError: (_error, _variables, context) => {
-				context?.rollback?.();
-			},
-			onMutate: async (input) => {
-				if (!currentUser?.id) return {};
-				const context = await optimisticAddComment({
-					authorImage: currentUser.image ?? null,
-					authorName: currentUser.name ?? "我",
-					content: input.content,
-					noteId: input.noteId,
-					parentId: input.parentId,
-					userId: currentUser.id,
-				});
-				return {
-					rollback: context.rollback,
-					optimisticComment: {
-						id: context.tempId,
-						value: context.optimisticComment,
-					},
-				};
-			},
-			onSettled: (_data, _error, variables) => {
-				void invalidateNote(variables.noteId);
-				if (variables.parentId) {
-					void invalidateComment(variables.parentId);
-				}
-			},
-			onSuccess: (result, _variables, context) => {
-				if (!result || !context?.optimisticComment) return;
-				applyCreatedComment({
-					commentId: result.id,
-					createdAt: result.createdAt,
-					tempComment: context.optimisticComment.value,
-					tempId: context.optimisticComment.id,
-				});
-			},
+		orpc.comments.addComment.mutationOptions({
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 	const commentLikeMutation = useMutation(
-		orpc.comments.toggleCommentLike.mutationOptions<OptimisticMutationContext>({
-			onError: (_error, _variables, context) => {
-				context?.rollback?.();
-			},
-			onMutate: async (input) => {
-				return optimisticToggleCommentLike(input.id);
-			},
-			onSettled: (_data, _error, variables) => {
-				void invalidateComment(variables.id);
-			},
-			onSuccess: (result, variables) => {
-				applyCommentLikeResult({
-					commentId: variables.id,
-					liked: result.liked,
-					likedCount: result.likedCount,
-				});
-			},
-		}),
+		orpc.comments.toggleCommentLike.mutationOptions(),
 	);
 	const deleteCommentMutation = useMutation(
-		orpc.comments.deleteComment.mutationOptions<OptimisticMutationContext>({
-			onError: (_error, _variables, context) => {
-				context?.rollback?.();
-			},
-			onMutate: async (input) => {
-				return optimisticDeleteComment(input.id);
-			},
-			onSettled: (_data, _error, variables, context) => {
-				if (context?.noteId) {
-					void invalidateNote(context.noteId);
-				}
-				void invalidateComment(variables.id);
-			},
+		orpc.comments.deleteComment.mutationOptions({
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 	const startChatMutation = useMutation(
 		orpc.messages.start.mutationOptions({
-			onSuccess: (result) => {
-				void invalidateConversation(result.id);
-			},
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 
-	const pendingLikeIds = useMutationState({
-		filters: {
-			mutationKey: orpc.notes.toggleLike.mutationKey(),
-			status: "pending",
-		},
-		select: (mutation) =>
-			(mutation.state.variables as { id: string } | undefined)?.id,
-	});
-	const pendingCollectIds = useMutationState({
-		filters: {
-			mutationKey: orpc.notes.toggleCollect.mutationKey(),
-			status: "pending",
-		},
-		select: (mutation) =>
-			(mutation.state.variables as { id: string } | undefined)?.id,
-	});
-	const pendingFollowIds = useMutationState({
-		filters: {
-			mutationKey: orpc.profiles.toggleFollow.mutationKey(),
-			status: "pending",
-		},
-		select: (mutation) =>
-			(mutation.state.variables as { userId: string } | undefined)?.userId,
-	});
-	const pendingCommentLikeIds = useMutationState({
-		filters: {
-			mutationKey: orpc.comments.toggleCommentLike.mutationKey(),
-			status: "pending",
-		},
-		select: (mutation) =>
-			(mutation.state.variables as { id: string } | undefined)?.id,
-	});
 	const pendingDeleteCommentIds = useMutationState({
 		filters: {
 			mutationKey: orpc.comments.deleteComment.mutationKey(),
@@ -297,88 +113,112 @@ export function useSocialActions() {
 		select: (mutation) =>
 			(mutation.state.variables as { id: string } | undefined)?.id,
 	});
-	const pending = useMemo(
-		() => ({
-			collect: new Set(pendingCollectIds.filter(Boolean)),
-			commentLike: new Set(pendingCommentLikeIds.filter(Boolean)),
-			deleteComment: new Set(pendingDeleteCommentIds.filter(Boolean)),
-			follow: new Set(pendingFollowIds.filter(Boolean)),
-			like: new Set(pendingLikeIds.filter(Boolean)),
-		}),
-		[
-			pendingCollectIds,
-			pendingCommentLikeIds,
-			pendingDeleteCommentIds,
-			pendingFollowIds,
-			pendingLikeIds,
-		],
+	const pendingDeleteComments = new Set(
+		pendingDeleteCommentIds.filter((id): id is string => Boolean(id)),
 	);
-
-	const toggleLike = (
-		input: { id: string },
-		options: SocialActionOptions<NotesOutputs["toggleLike"]> = {},
-	) => {
-		if (!navigation.requireLogin(options.redirectTo)) return false;
-		if (pending.like.has(input.id)) return false;
-
-		likeMutation.mutate(input, {
+	const optimistic = {
+		collect: (id: string, current: boolean, count?: number) =>
+			optimisticToggles.getState("collect", id, current, count),
+		commentLike: (id: string, current: boolean, count?: number) =>
+			optimisticToggles.getState("commentLike", id, current, count),
+		follow: (id: string, current: boolean, count?: number) =>
+			optimisticToggles.getState("follow", id, current, count),
+		like: (id: string, current: boolean, count?: number) =>
+			optimisticToggles.getState("like", id, current, count),
+	};
+	const runToggle = <TResult>({
+		count,
+		current,
+		execute,
+		id,
+		kind,
+		options,
+		select,
+	}: {
+		count?: number;
+		current: boolean;
+		execute: () => Promise<TResult>;
+		id: string;
+		kind: OptimisticToggleKind;
+		options: SocialActionOptions<TResult>;
+		select: (result: TResult) => { active: boolean; count?: number };
+	}) => {
+		void optimisticToggles.toggle({
+			count,
+			current,
+			execute,
+			id,
+			kind,
 			onError: (error) => {
 				const actionError = getError(error);
 				options.onError?.(actionError);
 				showErrorToast(actionError);
 			},
-			onSettled: () => {
-				options.onSettled?.();
-			},
-			onSuccess: async (result) => {
-				await options.onSuccess?.(result);
-			},
+			onSettled: options.onSettled,
+			onSuccess: options.onSuccess,
+			select,
+		});
+	};
+
+	const toggleLike = (
+		input: { active: boolean; count?: number; id: string },
+		options: SocialActionOptions<NotesOutputs["toggleLike"]> = {},
+	) => {
+		if (!navigation.requireLogin(options.redirectTo)) return false;
+
+		runToggle({
+			count: input.count,
+			current: input.active,
+			execute: () => likeMutation.mutateAsync({ id: input.id }),
+			id: input.id,
+			kind: "like",
+			options,
+			select: (result) => ({
+				active: result.liked,
+				count: result.likedCount,
+			}),
 		});
 		return true;
 	};
 
 	const toggleCollect = (
-		input: { id: string },
+		input: { active: boolean; count?: number; id: string },
 		options: SocialActionOptions<NotesOutputs["toggleCollect"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
-		if (pending.collect.has(input.id)) return false;
 
-		collectMutation.mutate(input, {
-			onError: (error) => {
-				const actionError = getError(error);
-				options.onError?.(actionError);
-				showErrorToast(actionError);
-			},
-			onSettled: () => {
-				options.onSettled?.();
-			},
-			onSuccess: async (result) => {
-				await options.onSuccess?.(result);
-			},
+		runToggle({
+			count: input.count,
+			current: input.active,
+			execute: () => collectMutation.mutateAsync({ id: input.id }),
+			id: input.id,
+			kind: "collect",
+			options,
+			select: (result) => ({
+				active: result.collected,
+				count: result.collectedCount,
+			}),
 		});
 		return true;
 	};
 
 	const toggleFollow = (
-		input: { userId: string },
+		input: { active: boolean; count?: number; userId: string },
 		options: SocialActionOptions<ProfilesOutputs["toggleFollow"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
-		if (pending.follow.has(input.userId)) return false;
 
-		followMutation.mutate(input, {
-			onError: (error) => {
-				const actionError = getError(error);
-				options.onError?.(actionError);
-				showErrorToast(actionError);
-			},
-			onSettled: () => {
-				options.onSettled?.();
-			},
-			onSuccess: async (result) => {
-				await options.onSuccess?.(result);
-			},
+		runToggle({
+			count: input.count,
+			current: input.active,
+			execute: () => followMutation.mutateAsync({ userId: input.userId }),
+			id: input.userId,
+			kind: "follow",
+			options,
+			select: (result) => ({
+				active: result.following,
+				count: result.followerCount,
+			}),
 		});
 		return true;
 	};
@@ -409,24 +249,22 @@ export function useSocialActions() {
 	};
 
 	const toggleCommentLike = (
-		input: { id: string },
+		input: { active: boolean; count?: number; id: string },
 		options: SocialActionOptions<CommentsOutputs["toggleCommentLike"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
-		if (pending.commentLike.has(input.id)) return false;
 
-		commentLikeMutation.mutate(input, {
-			onError: (error) => {
-				const actionError = getError(error);
-				options.onError?.(actionError);
-				showErrorToast(actionError);
-			},
-			onSettled: () => {
-				options.onSettled?.();
-			},
-			onSuccess: async (result) => {
-				await options.onSuccess?.(result);
-			},
+		runToggle({
+			count: input.count,
+			current: input.active,
+			execute: () => commentLikeMutation.mutateAsync({ id: input.id }),
+			id: input.id,
+			kind: "commentLike",
+			options,
+			select: (result) => ({
+				active: result.liked,
+				count: result.likedCount,
+			}),
 		});
 		return true;
 	};
@@ -436,7 +274,7 @@ export function useSocialActions() {
 		options: SocialActionOptions<CommentsOutputs["deleteComment"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
-		if (pending.deleteComment.has(input.id)) return false;
+		if (pendingDeleteComments.has(input.id)) return false;
 
 		deleteCommentMutation.mutate(input, {
 			onError: (error) => {
@@ -491,12 +329,14 @@ export function useSocialActions() {
 			startChat: startChatMutation,
 		},
 		openPublish: navigation.openPublish,
+		optimistic,
 		pending: {
-			collect: (id: string) => pending.collect.has(id),
-			commentLike: (id: string) => pending.commentLike.has(id),
-			deleteComment: (id: string) => pending.deleteComment.has(id),
-			follow: (id: string) => pending.follow.has(id),
-			like: (id: string) => pending.like.has(id),
+			collect: (id: string) => optimisticToggles.isPending("collect", id),
+			commentLike: (id: string) =>
+				optimisticToggles.isPending("commentLike", id),
+			deleteComment: (id: string) => pendingDeleteComments.has(id),
+			follow: (id: string) => optimisticToggles.isPending("follow", id),
+			like: (id: string) => optimisticToggles.isPending("like", id),
 		},
 		requireLogin: navigation.requireLogin,
 		replaceWith: navigation.replaceWith,

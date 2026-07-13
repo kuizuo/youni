@@ -14,12 +14,7 @@ import { NotificationRow } from "@/components/messages/notifications/notificatio
 import { getNotificationKind } from "@/components/messages/notifications/utils";
 import { ListSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
-import {
-	invalidateNotifications,
-	optimisticDeleteNotification,
-	optimisticMarkNotificationKindRead,
-	optimisticMarkNotificationRead,
-} from "@/lib/query/optimistic-cache";
+import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -49,54 +44,38 @@ export default function NotificationListScreen() {
 	});
 	const items: NotificationItem[] =
 		notifications.data?.pages.flatMap((page) => page.items) ?? [];
-	const deleteOne = useMutation<
-		Awaited<ReturnType<typeof client.notifications.delete>>,
-		Error,
-		string,
-		{ rollback?: () => void }
-	>({
+	const deleteOne = useMutation({
 		mutationFn: (id: string) => client.notifications.delete({ id }),
-		onError: (error, _variables, context) => {
-			context?.rollback?.();
+		onError: (error) => {
 			toast.show({
 				variant: "danger",
 				label: error instanceof Error ? error.message : "删除失败",
 			});
 		},
-		onMutate: (id) => optimisticDeleteNotification(id),
-		onSettled: () => {
-			void invalidateNotifications(kind);
-		},
+		onSuccess: refreshActiveQueries,
 	});
 
 	useEffect(() => {
-		void optimisticMarkNotificationKindRead(kind)
-			.then((context) =>
-				client.notifications
-					.markAllRead({
-						category: config.category,
-						types: [...config.types],
-					})
-					.then(() => invalidateNotifications(kind))
-					.catch((error) => {
-						context.rollback();
-						toast.show({
-							variant: "danger",
-							label: error instanceof Error ? error.message : "标记已读失败",
-						});
-					}),
-			)
-			.catch(() => undefined);
-	}, [config.category, config.types, kind, toast.show]);
+		void client.notifications
+			.markAllRead({
+				category: config.category,
+				types: [...config.types],
+			})
+			.then(refreshActiveQueries)
+			.catch((error) => {
+				toast.show({
+					variant: "danger",
+					label: error instanceof Error ? error.message : "标记已读失败",
+				});
+			});
+	}, [config.category, config.types, toast.show]);
 
-	const markRead = async (item: NotificationItem) => {
+	const markRead = (item: NotificationItem) => {
 		if (item.isRead) return;
-		const context = await optimisticMarkNotificationRead(item.id);
 		void client.notifications
 			.markRead({ id: item.id, isRead: true })
-			.then(() => invalidateNotifications(kind))
+			.then(refreshActiveQueries)
 			.catch((error) => {
-				context.rollback();
 				toast.show({
 					variant: "danger",
 					label: error instanceof Error ? error.message : "标记已读失败",
@@ -113,9 +92,9 @@ export default function NotificationListScreen() {
 		}
 	};
 
-	const openItem = async (item: NotificationItem) => {
+	const openItem = (item: NotificationItem) => {
 		fireHaptic();
-		await markRead(item);
+		markRead(item);
 		if (item.targetType === "user" && item.targetId) {
 			router.push({
 				pathname: "/user/[id]",

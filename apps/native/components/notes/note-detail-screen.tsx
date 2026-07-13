@@ -285,7 +285,20 @@ export default function NoteDetailScreen() {
 		return findCommentRootIndex(rootComments, targetCommentId);
 	}, [rootComments, targetCommentId, targetRootCommentId]);
 	const isSelf = socialActions.currentUserId === authorId;
-	const isFollowing = Boolean(authorProfile.data?.profile.isFollowing);
+	const isFollowing = socialActions.optimistic.follow(
+		authorId,
+		Boolean(authorProfile.data?.profile.isFollowing),
+	).active;
+	const likeState = socialActions.optimistic.like(
+		id,
+		Boolean(note.data?.liked),
+		note.data?.likedCount ?? 0,
+	);
+	const collectState = socialActions.optimistic.collect(
+		id,
+		Boolean(note.data?.collected),
+		note.data?.collectedCount ?? 0,
+	);
 	const canSendComment = commentsEnabled && commentText.trim().length > 0;
 	const hasScrolledToTargetComment =
 		targetCommentScrollKey !== null &&
@@ -703,9 +716,12 @@ export default function NoteDetailScreen() {
 
 	const toggleLike = () => {
 		if (!note.data) return;
-		if (socialActions.pending.like(note.data.id)) return;
 		socialActions.toggleLike(
-			{ id: note.data.id },
+			{
+				active: likeState.active,
+				count: likeState.count,
+				id: note.data.id,
+			},
 			{
 				redirectTo: `/note/${id}`,
 				onSuccess: (result) => {
@@ -728,9 +744,12 @@ export default function NoteDetailScreen() {
 
 	const toggleCollect = () => {
 		if (!note.data) return;
-		if (socialActions.pending.collect(note.data.id)) return;
 		socialActions.toggleCollect(
-			{ id: note.data.id },
+			{
+				active: collectState.active,
+				count: collectState.count,
+				id: note.data.id,
+			},
 			{
 				redirectTo: `/note/${id}`,
 				onSuccess: (result) => {
@@ -753,9 +772,8 @@ export default function NoteDetailScreen() {
 
 	const toggleFollow = () => {
 		if (!authorId || isSelf) return;
-		if (socialActions.pending.follow(authorId)) return;
 		socialActions.toggleFollow(
-			{ userId: authorId },
+			{ active: isFollowing, userId: authorId },
 			{
 				redirectTo: `/note/${id}`,
 			},
@@ -1047,19 +1065,19 @@ export default function NoteDetailScreen() {
 					) : (
 						<View className="mx-auto w-full max-w-xl flex-row items-center gap-2">
 							<BottomIconAction
-								active={note.data.liked}
+								active={likeState.active}
 								activeColor={dangerColor}
-								count={note.data.likedCount}
-								icon={note.data.liked ? "heart" : "heart-outline"}
-								label={note.data.liked ? "取消点赞" : "点赞"}
+								count={likeState.count ?? note.data.likedCount}
+								icon={likeState.active ? "heart" : "heart-outline"}
+								label={likeState.active ? "取消点赞" : "点赞"}
 								onPress={toggleLike}
 							/>
 							<BottomIconAction
-								active={note.data.collected}
+								active={collectState.active}
 								activeColor={accentColor}
-								count={note.data.collectedCount}
-								icon={note.data.collected ? "star" : "star-outline"}
-								label={note.data.collected ? "取消收藏" : "收藏"}
+								count={collectState.count ?? note.data.collectedCount}
+								icon={collectState.active ? "star" : "star-outline"}
+								label={collectState.active ? "取消收藏" : "收藏"}
 								onPress={toggleCollect}
 							/>
 							<PressableFeedback
@@ -1077,19 +1095,19 @@ export default function NoteDetailScreen() {
 				) : (
 					<View className="mx-auto w-full max-w-xl flex-row items-center gap-2">
 						<BottomIconAction
-							active={note.data.liked}
+							active={likeState.active}
 							activeColor={dangerColor}
-							count={note.data.likedCount}
-							icon={note.data.liked ? "heart" : "heart-outline"}
-							label={note.data.liked ? "取消点赞" : "点赞"}
+							count={likeState.count ?? note.data.likedCount}
+							icon={likeState.active ? "heart" : "heart-outline"}
+							label={likeState.active ? "取消点赞" : "点赞"}
 							onPress={toggleLike}
 						/>
 						<BottomIconAction
-							active={note.data.collected}
+							active={collectState.active}
 							activeColor={accentColor}
-							count={note.data.collectedCount}
-							icon={note.data.collected ? "star" : "star-outline"}
-							label={note.data.collected ? "取消收藏" : "收藏"}
+							count={collectState.count ?? note.data.collectedCount}
+							icon={collectState.active ? "star" : "star-outline"}
+							label={collectState.active ? "取消收藏" : "收藏"}
 							onPress={toggleCollect}
 						/>
 						<Button

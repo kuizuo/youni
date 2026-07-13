@@ -95,11 +95,17 @@ export function SearchResults({
 		}
 	};
 
-	const toggleFollow = (userId: string) => {
-		if (currentUserId === userId) return;
-		if (socialActions.pending.follow(userId)) return;
+	const toggleFollow = (item: ProfileUser) => {
+		if (currentUserId === item.id) return;
 		fireHaptic();
-		socialActions.toggleFollow({ userId }, { redirectTo: "/search" });
+		socialActions.toggleFollow(
+			{
+				active: item.isFollowing,
+				count: item.followerCount,
+				userId: item.id,
+			},
+			{ redirectTo: "/search" },
+		);
 	};
 
 	const openTopic = (topicId: string) => {
@@ -201,13 +207,24 @@ export function SearchResults({
 					paddingBottom: contentBottomPadding,
 				}}
 				ItemSeparatorComponent={ListSeparator}
-				renderItem={({ item }) => (
-					<UserResultRow
-						currentUserId={currentUserId}
-						item={item}
-						onToggleFollow={toggleFollow}
-					/>
-				)}
+				renderItem={({ item }) => {
+					const followState = socialActions.optimistic.follow(
+						item.id,
+						item.isFollowing,
+						item.followerCount,
+					);
+					return (
+						<UserResultRow
+							currentUserId={currentUserId}
+							item={{
+								...item,
+								followerCount: followState.count ?? item.followerCount,
+								isFollowing: followState.active,
+							}}
+							onToggleFollow={toggleFollow}
+						/>
+					);
+				}}
 				ListFooterComponent={
 					<PagingFooter
 						hasItems={userResults.length > 0}

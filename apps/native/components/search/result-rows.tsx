@@ -23,7 +23,7 @@ export function UserResultRow({
 }: {
 	currentUserId?: string;
 	item: ProfileUser;
-	onToggleFollow: (userId: string) => void;
+	onToggleFollow: (item: ProfileUser) => void;
 }) {
 	const router = useRouter();
 	const socialNavigation = useSocialNavigation();
@@ -104,7 +104,7 @@ export function UserResultRow({
 					size="sm"
 					className="rounded-full px-4"
 					isFollowing={item.isFollowing}
-					onPress={() => onToggleFollow(item.id)}
+					onPress={() => onToggleFollow(item)}
 				/>
 			)}
 		</View>

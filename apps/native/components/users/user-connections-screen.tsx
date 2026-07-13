@@ -49,9 +49,12 @@ export default function UserConnectionsScreen() {
 
 	const runToggleFollow = (item: ProfileUser) => {
 		if (socialActions.currentUserId === item.id) return;
-		if (socialActions.pending.follow(item.id)) return;
 		socialActions.toggleFollow(
-			{ userId: item.id },
+			{
+				active: item.isFollowing,
+				count: item.followerCount,
+				userId: item.id,
+			},
 			{
 				redirectTo: `/user/${item.id}`,
 			},
@@ -90,15 +93,26 @@ export default function UserConnectionsScreen() {
 				contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
 				data={items}
 				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => (
-					<ConnectionRow
-						activeType={activeType}
-						currentUserId={socialActions.currentUserId}
-						item={item}
-						onOpenUser={openUser}
-						onToggleFollow={toggleFollow}
-					/>
-				)}
+				renderItem={({ item }) => {
+					const followState = socialActions.optimistic.follow(
+						item.id,
+						item.isFollowing,
+						item.followerCount,
+					);
+					return (
+						<ConnectionRow
+							activeType={activeType}
+							currentUserId={socialActions.currentUserId}
+							item={{
+								...item,
+								followerCount: followState.count ?? item.followerCount,
+								isFollowing: followState.active,
+							}}
+							onOpenUser={openUser}
+							onToggleFollow={toggleFollow}
+						/>
+					);
+				}}
 				ItemSeparatorComponent={ListSeparator}
 				ListEmptyComponent={
 					<ConnectionsEmptyState

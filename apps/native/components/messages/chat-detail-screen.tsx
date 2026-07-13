@@ -17,11 +17,7 @@ import { ChatInputBar } from "@/components/messages/chat/input-bar";
 import { ChatMessageList } from "@/components/messages/chat/message-list";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
-import {
-	applySentMessageResult,
-	invalidateConversation,
-	optimisticSendMessage,
-} from "@/lib/query/optimistic-cache";
+import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc } from "@/utils/orpc";
@@ -64,37 +60,14 @@ export default function ChatDetailScreen() {
 		refetchInterval: 2500,
 	});
 	const sendMutation = useMutation(
-		orpc.messages.send.mutationOptions<{
-			rollback?: () => void;
-			tempId?: string;
-		}>({
-			onError: (error, variables, context) => {
-				context?.rollback?.();
+		orpc.messages.send.mutationOptions({
+			onError: (error, variables) => {
 				contentRef.current = variables.content;
 				setContent(variables.content);
 				if (isRequestTimeoutError(error)) return;
 				toast.show({ variant: "danger", label: error.message });
 			},
-			onMutate: async (variables) => {
-				const userId = isAuthenticated ? session.data?.user?.id : undefined;
-				if (!userId) return {};
-				return optimisticSendMessage({
-					content: variables.content,
-					conversationId: variables.conversationId,
-					senderId: userId,
-				});
-			},
-			onSettled: (_data, _error, variables) => {
-				void invalidateConversation(variables.conversationId);
-			},
-			onSuccess: (message, variables, context) => {
-				if (!context?.tempId) return;
-				applySentMessageResult({
-					conversationId: variables.conversationId,
-					message,
-					tempId: context.tempId,
-				});
-			},
+			onSuccess: refreshActiveQueries,
 		}),
 	);
 	const messages: ChatMessage[] = chat.data?.messages ?? [];

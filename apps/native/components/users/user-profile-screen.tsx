@@ -48,14 +48,27 @@ export default function UserProfileScreen() {
 	const displayHandle = profileData?.handle
 		? `@${profileData.handle}`
 		: (profileData?.email ?? "Youni 用户");
-	const isFollowing = Boolean(profileData?.isFollowing);
+	const followState = socialActions.optimistic.follow(
+		id,
+		Boolean(profileData?.isFollowing),
+		profileData?.followerCount,
+	);
+	const displayedProfile = profileData
+		? {
+				...profileData,
+				followerCount: followState.count ?? profileData.followerCount,
+			}
+		: undefined;
 	const topChromeHeight = insets.top + 72;
 
 	const toggleFollow = () => {
 		if (!id || isSelf) return;
-		if (socialActions.pending.follow(id)) return;
 		socialActions.toggleFollow(
-			{ userId: id },
+			{
+				active: followState.active,
+				count: followState.count,
+				userId: id,
+			},
 			{
 				redirectTo: `/user/${id}`,
 			},
@@ -134,11 +147,11 @@ export default function UserProfileScreen() {
 				<UserProfileHero
 					displayHandle={displayHandle}
 					displayName={displayName}
-					isFollowing={isFollowing}
+					isFollowing={followState.active}
 					isLoading={profile.isLoading}
 					isSelf={isSelf}
 					isStartChatPending={socialActions.mutations.startChat.isPending}
-					profile={profileData}
+					profile={displayedProfile}
 					topChromeHeight={topChromeHeight}
 					topInset={insets.top}
 					onOpenChat={openChat}

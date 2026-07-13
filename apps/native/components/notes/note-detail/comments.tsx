@@ -158,11 +158,19 @@ export function CommentItem({
 		comment.replyCount - comment.replies.length,
 	);
 	const canExpand = comment.replyCount > comment.replies.length && !isExpanded;
+	const likeState = socialActions.optimistic.commentLike(
+		comment.id,
+		comment.liked,
+		comment.likedCount,
+	);
 
 	const toggleLike = () => {
-		if (socialActions.pending.commentLike(comment.id)) return;
 		socialActions.toggleCommentLike(
-			{ id: comment.id },
+			{
+				active: likeState.active,
+				count: likeState.count,
+				id: comment.id,
+			},
 			{
 				redirectTo,
 			},
@@ -242,20 +250,22 @@ export function CommentItem({
 						</View>
 						<PressableFeedback
 							accessibilityRole="button"
-							accessibilityLabel={comment.liked ? "取消评论点赞" : "评论点赞"}
+							accessibilityLabel={
+								likeState.active ? "取消评论点赞" : "评论点赞"
+							}
 							className="flex-row items-center gap-1"
 							onPress={toggleLike}
 						>
 							<Ionicons
-								name={comment.liked ? "heart" : "heart-outline"}
+								name={likeState.active ? "heart" : "heart-outline"}
 								size={15}
-								color={comment.liked ? dangerColor : mutedColor}
+								color={likeState.active ? dangerColor : mutedColor}
 							/>
 							<Typography.Paragraph
 								type="body-xs"
-								style={{ color: comment.liked ? dangerColor : mutedColor }}
+								style={{ color: likeState.active ? dangerColor : mutedColor }}
 							>
-								{comment.likedCount || "赞"}
+								{likeState.count || "赞"}
 							</Typography.Paragraph>
 						</PressableFeedback>
 					</View>
