@@ -1,8 +1,8 @@
 import { Button, Card } from "@heroui/react";
+import type { AdminTopicListItem } from "@youni/api/contracts/admin";
+import type { AdminHydratedContentNote as AdminNoteListItem } from "@youni/api/contracts/shared";
 
 import { NoteTable } from "../-admin-notes/note-table";
-import type { AdminNoteListItem } from "../-admin-notes/types";
-import type { AdminTopicListItem } from "./types";
 
 export function TopicDetailView({
 	isFetching,

@@ -1,6 +1,6 @@
+import type { CommentSort } from "@youni/api/contracts/comments";
+import type { TopicSort } from "@youni/api/contracts/topics";
 import type { NotificationKind } from "@/components/messages/notifications/types";
-import type { CommentSort } from "@/components/notes/note-detail/types";
-import type { TopicSort } from "@/components/topics/detail/types";
 
 export const nativeQueryKeys = {
 	create: {

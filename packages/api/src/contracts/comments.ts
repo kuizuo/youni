@@ -10,11 +10,14 @@ export const commentInput = z.object({
 	parentId: z.string().min(1).optional(),
 });
 
+export const commentSortInput = z.enum(["hot", "latest"]);
+export type CommentSort = z.infer<typeof commentSortInput>;
+
 export const noteCommentsInput = z.object({
 	noteId: z.string().min(1),
 	limit: z.number().int().min(1).max(60).default(20),
 	offset: z.number().int().min(0).default(0),
-	sort: z.enum(["hot", "latest"]).default("hot"),
+	sort: commentSortInput.default("hot"),
 });
 
 export const commentRepliesInput = z.object({

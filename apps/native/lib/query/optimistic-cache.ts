@@ -1,12 +1,18 @@
 import type { Query, QueryKey } from "@tanstack/react-query";
-
-import type { ChatMessage } from "@/components/messages/chat/types";
-import type { ConversationItem } from "@/components/messages/inbox/types";
+import type { CommentListRow as NoteComment } from "@youni/api/contracts/comments";
+import type {
+	ChatMessage,
+	ConversationItem,
+	MessagesOutputs,
+} from "@youni/api/contracts/messages";
 import type {
 	NotificationItem,
-	NotificationKind,
-} from "@/components/messages/notifications/types";
-import type { NoteComment } from "@/components/notes/note-detail/types";
+	NotificationSummaryGroup,
+} from "@youni/api/contracts/notifications";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
+import type { HydratedContentNote } from "@youni/api/contracts/shared";
+
+import type { NotificationKind } from "@/components/messages/notifications/types";
 import { queryClient } from "@/lib/query/query-client";
 
 type CacheSnapshot = Array<{
@@ -16,58 +22,35 @@ type CacheSnapshot = Array<{
 
 type CachePredicate = (data: unknown, queryKey: QueryKey) => boolean;
 
-type OptimisticNote = {
-	advancedOptions?: {
-		allowComment?: boolean;
+type OptimisticNote = Pick<HydratedContentNote, "id"> &
+	Partial<
+		Pick<
+			HydratedContentNote,
+			| "collected"
+			| "collectedCount"
+			| "commentCount"
+			| "liked"
+			| "likedCount"
+			| "title"
+		>
+	> & {
+		advancedOptions?: Partial<HydratedContentNote["advancedOptions"]>;
+		author: Pick<HydratedContentNote["author"], "id" | "name"> &
+			Partial<Omit<HydratedContentNote["author"], "id" | "name">>;
 	};
-	author: {
-		handle?: null | string;
-		id: string;
-		image?: null | string;
-		isFollowing?: boolean;
-		name: string;
-	};
-	collected?: boolean;
-	collectedCount?: number;
-	commentCount?: number;
-	id: string;
-	liked?: boolean;
-	likedCount?: number;
-	title?: string;
-};
 
-type OptimisticUser = {
-	bio?: null | string;
-	email?: string;
-	followerCount?: number;
-	followingCount?: number;
-	handle?: null | string;
-	id: string;
-	image?: null | string;
-	isFollowing?: boolean;
-	name: string;
-	noteCount?: number;
-};
+type OptimisticUser = Pick<ProfileUser, "id" | "name"> &
+	Partial<Omit<ProfileUser, "id" | "name">>;
 
-type ChatData = {
-	hasBlockedPeer?: boolean;
-	id: string;
-	isBlockedByPeer?: boolean;
-	messages: ChatMessage[];
-	peer?: ConversationItem["peer"];
-};
+type ChatData = Pick<MessagesOutputs["byId"], "id" | "messages"> &
+	Partial<Omit<MessagesOutputs["byId"], "id" | "messages">>;
 
-type ChatSettingsData = {
-	hasBlockedPeer: boolean;
-	id: string;
-	isBlockedByPeer: boolean;
-	isFollowing?: boolean;
-	peer: ConversationItem["peer"];
-};
+type ChatSettingsData = Omit<MessagesOutputs["settings"], "isFollowing"> &
+	Partial<Pick<MessagesOutputs["settings"], "isFollowing">>;
 
 type NotificationSummary = {
-	categories?: Array<{ id: string; unreadCount: number }>;
-	messageGroups?: Array<{ id: string; unreadCount: number }>;
+	categories?: NotificationSummaryGroup[];
+	messageGroups?: NotificationSummaryGroup[];
 	totalUnread?: number;
 };
 
@@ -889,7 +872,7 @@ export function applyCreatedComment({
 	tempComment,
 	tempId,
 }: {
-	createdAt?: Date | string;
+	createdAt?: Date;
 	commentId: string;
 	tempComment: NoteComment;
 	tempId: string;

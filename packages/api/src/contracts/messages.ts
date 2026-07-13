@@ -1,3 +1,5 @@
+import type { UserRow } from "@youni/db/schema/auth";
+import type { DirectMessageRow } from "@youni/db/schema/chat";
 import z from "zod";
 import { output, procedure } from "./procedure";
 
@@ -27,65 +29,39 @@ export const sendMessageInput = z.object({
 
 // ====== Output ======
 
+export type ChatPeer = Pick<
+	UserRow,
+	"id" | "name" | "email" | "image" | "handle" | "bio"
+>;
+
+export type ChatMessage = Pick<
+	DirectMessageRow,
+	"id" | "content" | "senderId" | "createdAt"
+>;
+
+export type ConversationItem = {
+	id: string;
+	peer: ChatPeer;
+	lastMessage: ChatMessage | null;
+	unreadCount: number;
+	updatedAt: Date;
+};
+
 export type MessagesOutputs = {
 	start: {
 		id: string;
-		peer: {
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			handle: string | null;
-			bio: string | null;
-		};
+		peer: ChatPeer;
 	};
-	conversations: {
-		id: string;
-		peer: {
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			handle: string | null;
-			bio: string | null;
-		};
-		lastMessage: {
-			id: string;
-			content: string;
-			senderId: string;
-			createdAt: Date;
-		} | null;
-		unreadCount: number;
-		updatedAt: Date;
-	}[];
+	conversations: ConversationItem[];
 	byId: {
 		id: string;
-		peer: {
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			handle: string | null;
-			bio: string | null;
-		};
+		peer: ChatPeer;
 		hasBlockedPeer: boolean;
 		isBlockedByPeer: boolean;
-		messages: {
-			id: string;
-			content: string;
-			senderId: string;
-			createdAt: Date;
-		}[];
+		messages: ChatMessage[];
 	};
 	settings: {
-		peer: {
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			handle: string | null;
-			bio: string | null;
-		};
+		peer: ChatPeer;
 		hasBlockedPeer: boolean;
 		isBlockedByPeer: boolean;
 		isFollowing: boolean;
@@ -93,7 +69,7 @@ export type MessagesOutputs = {
 	};
 	setBlocked: { blocked: boolean; isBlockedByPeer: boolean };
 	clear: { clearedAt: Date; ok: boolean };
-	send: { id: string; content: string; senderId: string; createdAt: Date };
+	send: ChatMessage;
 };
 
 // ====== Contract ======

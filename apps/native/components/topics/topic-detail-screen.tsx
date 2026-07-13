@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { TopicSearchItem, TopicSort } from "@youni/api/contracts/topics";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
@@ -17,20 +18,12 @@ import {
 import { TopicFooter } from "@/components/topics/detail/footer";
 import { TopicHeader } from "@/components/topics/detail/header";
 import { TopicTopBar } from "@/components/topics/detail/top-bar";
-import type { TopicNote, TopicSort } from "@/components/topics/detail/types";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { client, queryClient } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
 
 const PAGE_SIZE = 20;
-
-type TopicSummary = {
-	discussionCount: number;
-	id: string;
-	name: string;
-	noteCount: number;
-};
 
 export default function TopicDetailScreen() {
 	const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -43,7 +36,7 @@ export default function TopicDetailScreen() {
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const [sort, setSort] = useState<TopicSort>("hot");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
-	const [topicSummary, setTopicSummary] = useState<TopicSummary>();
+	const [topicSummary, setTopicSummary] = useState<TopicSearchItem>();
 	const queryKey = useMemo(
 		() => nativeQueryKeys.topic.detail(id, sort),
 		[id, sort],
@@ -65,19 +58,14 @@ export default function TopicDetailScreen() {
 	useEffect(() => {
 		if (!topicInfo) return;
 
-		setTopicSummary({
-			discussionCount: topicInfo.discussionCount,
-			id: topicInfo.id,
-			name: topicInfo.name,
-			noteCount: topicInfo.noteCount,
-		});
+		setTopicSummary(topicInfo);
 	}, [topicInfo]);
 	const displayedTopicInfo =
 		topicInfo ?? (topicSummary?.id === id ? topicSummary : undefined);
 	const notes = useMemo(
 		() => topic.data?.pages.flatMap((page) => page.notes.items) ?? [],
 		[topic.data?.pages],
-	) as TopicNote[];
+	);
 
 	const goBack = () => {
 		if (router.canGoBack()) {

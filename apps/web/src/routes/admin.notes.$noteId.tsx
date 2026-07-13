@@ -6,7 +6,6 @@ import { AdminPage } from "@/components/admin-shell";
 import { orpc } from "@/utils/orpc";
 
 import { NoteDetailView } from "./-admin-notes/note-detail-view";
-import type { AdminNoteDetail } from "./-admin-notes/types";
 
 export const Route = createFileRoute("/admin/notes/$noteId")({
 	component: AdminNoteDetailRoute,
@@ -25,7 +24,7 @@ function AdminNoteDetailRoute() {
 				<DetailLoading />
 			) : note.data ? (
 				<NoteDetailView
-					note={note.data as AdminNoteDetail}
+					note={note.data}
 					onBack={() => navigate({ to: "/admin/notes" })}
 					onOpenTopic={(topicId) =>
 						navigate({

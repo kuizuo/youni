@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ProfileConnectionType } from "@youni/api/contracts/profiles";
 import { Image } from "expo-image";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
@@ -13,7 +14,6 @@ import { MeStickyChrome } from "@/components/profile/me/sticky-chrome";
 import { MeCommentsTab } from "@/components/profile/me-comments-tab";
 import { MeProfileHeader } from "@/components/profile/me-profile-header";
 import {
-	createProfileFeedItems,
 	ProfileTabBar,
 	ProfileTabPage,
 	ProfileTabPane,
@@ -111,9 +111,9 @@ export default function MeScreen() {
 
 	const feedItemsByTab = useMemo(
 		() => ({
-			collections: createProfileFeedItems(collectionsFeed.data ?? []),
-			liked: createProfileFeedItems(likedFeed.data ?? []),
-			notes: createProfileFeedItems(notesFeed.data ?? []),
+			collections: collectionsFeed.data ?? [],
+			liked: likedFeed.data ?? [],
+			notes: notesFeed.data ?? [],
 		}),
 		[collectionsFeed.data, likedFeed.data, notesFeed.data],
 	);
@@ -240,7 +240,7 @@ export default function MeScreen() {
 		}
 	};
 
-	const openConnections = (type: "followers" | "following") => {
+	const openConnections = (type: ProfileConnectionType) => {
 		if (!currentUser?.id) return;
 		router.push({
 			pathname: "/user-connections",

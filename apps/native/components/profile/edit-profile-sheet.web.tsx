@@ -1,20 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
+import type { UserGender } from "@youni/api/contracts/shared";
 import { Button, Spinner, Typography, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 
 import { EditableAvatar } from "@/components/profile/editable-avatar";
-import type {
-	EditableProfile,
-	ProfileSessionUser,
-} from "@/components/profile/profile-tabs";
+import type { AuthUser } from "@/lib/auth-client";
 import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
-
-type Gender = "female" | "male" | "unknown";
 
 export function EditProfileSheet({
 	displayName,
@@ -24,8 +21,8 @@ export function EditProfileSheet({
 }: {
 	displayName: string;
 	onSaved: () => Promise<void>;
-	profile?: EditableProfile;
-	user?: ProfileSessionUser;
+	profile?: ProfileUser;
+	user?: AuthUser;
 }) {
 	const { toast } = useAppToast();
 	const accentForegroundColor = useThemeColor("accent-foreground");
@@ -37,7 +34,7 @@ export function EditProfileSheet({
 	const [handle, setHandle] = useState("");
 	const [bio, setBio] = useState("");
 	const [avatarUrl, setAvatarUrl] = useState("");
-	const [gender, setGender] = useState<Gender>("unknown");
+	const [gender, setGender] = useState<UserGender>("unknown");
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const updateProfile = useMutation(
 		orpc.profiles.updateProfile.mutationOptions({

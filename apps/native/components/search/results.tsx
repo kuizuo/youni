@@ -1,5 +1,8 @@
 import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
+import type { HydratedContentNote } from "@youni/api/contracts/shared";
+import type { TopicSearchItem } from "@youni/api/contracts/topics";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { Spinner, Typography } from "heroui-native";
@@ -8,13 +11,7 @@ import { FlatList, View } from "react-native";
 
 import { NoteCard } from "@/components/note-card";
 import { TopicResultRow, UserResultRow } from "@/components/search/result-rows";
-import {
-	type NoteSearchItem,
-	PAGE_SIZE,
-	type SearchTabKey,
-	type TopicSearchItem,
-	type UserSearchItem,
-} from "@/components/search/search-utils";
+import { PAGE_SIZE, type SearchTabKey } from "@/components/search/search-utils";
 import { ListSeparator } from "@/components/shared/app-separator";
 import {
 	EmptyState,
@@ -79,8 +76,8 @@ export function SearchResults({
 		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
 		enabled: activeKeyword.length > 0 && activeTab === "topics",
 	});
-	const noteResults = flattenPages<NoteSearchItem>(notes.data?.pages);
-	const userResults = flattenPages<UserSearchItem>(users.data?.pages);
+	const noteResults = flattenPages<HydratedContentNote>(notes.data?.pages);
+	const userResults = flattenPages<ProfileUser>(users.data?.pages);
 	const topicResults = flattenPages<TopicSearchItem>(topics.data?.pages);
 
 	const refreshActiveTab = async () => {

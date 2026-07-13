@@ -1,9 +1,8 @@
+import type { ProfileConnectionType } from "@youni/api/contracts/profiles";
 import { Button, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 
 import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
-
-import type { ConnectionType } from "./types";
 
 export function ConnectionsHeader({
 	activeType,
@@ -12,11 +11,11 @@ export function ConnectionsHeader({
 	onBack,
 	onTypeChange,
 }: {
-	activeType: ConnectionType;
+	activeType: ProfileConnectionType;
 	title: string;
 	topInset: number;
 	onBack: () => void;
-	onTypeChange: (type: ConnectionType) => void;
+	onTypeChange: (type: ProfileConnectionType) => void;
 }) {
 	const mutedColor = useThemeColor("muted");
 

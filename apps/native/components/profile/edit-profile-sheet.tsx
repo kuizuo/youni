@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useMutation } from "@tanstack/react-query";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
+import type { UserGender } from "@youni/api/contracts/shared";
 import {
 	BottomSheet,
 	Button,
@@ -16,10 +18,7 @@ import {
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
-import type {
-	EditableProfile,
-	ProfileSessionUser,
-} from "@/components/profile/profile-tabs";
+import type { AuthUser } from "@/lib/auth-client";
 import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -34,8 +33,8 @@ export function EditProfileSheet({
 }: {
 	displayName: string;
 	onSaved: () => Promise<void>;
-	profile?: EditableProfile;
-	user?: ProfileSessionUser;
+	profile?: ProfileUser;
+	user?: AuthUser;
 }) {
 	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
@@ -45,9 +44,7 @@ export function EditProfileSheet({
 	const [handle, setHandle] = useState("");
 	const [bio, setBio] = useState("");
 	const [avatarUrl, setAvatarUrl] = useState("");
-	const [gender, setGender] = useState<"female" | "male" | "unknown">(
-		"unknown",
-	);
+	const [gender, setGender] = useState<UserGender>("unknown");
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const updateProfile = useMutation(
 		orpc.profiles.updateProfile.mutationOptions({

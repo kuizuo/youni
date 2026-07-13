@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
 import {
 	Avatar,
 	PressableFeedback,
@@ -28,13 +29,6 @@ function formatMentionHandle(value: string) {
 	const handle = value.trim().replace(/^@/, "");
 	return `@${handle}`;
 }
-
-type MentionUser = {
-	handle: null | string;
-	id: string;
-	image: null | string;
-	name: string;
-};
 
 export function InlineTopicPicker({
 	onSelect,
@@ -105,7 +99,7 @@ export function InlineMentionPicker({
 				limit: 8,
 			}),
 	});
-	const items = (users.data ?? []) as MentionUser[];
+	const items: ProfileUser[] = users.data ?? [];
 
 	return (
 		<View className="gap-2 rounded-xl bg-content2 px-3 py-3">

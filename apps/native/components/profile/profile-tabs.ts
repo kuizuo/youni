@@ -15,18 +15,3 @@ export const PROFILE_TABS = [
 ] as const;
 
 export type ProfileTabKey = (typeof PROFILE_TABS)[number]["key"];
-
-export type EditableProfile = {
-	bio?: null | string;
-	gender?: null | string;
-	handle?: null | string;
-	image?: null | string;
-	name?: null | string;
-};
-
-export type ProfileSessionUser = {
-	email?: null | string;
-	id?: null | string;
-	image?: null | string;
-	name?: null | string;
-};

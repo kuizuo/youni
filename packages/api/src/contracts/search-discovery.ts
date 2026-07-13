@@ -8,6 +8,7 @@ export const searchSourceInput = z.enum([
 	"recommended",
 	"external",
 ]);
+export type SearchSource = z.infer<typeof searchSourceInput>;
 
 export const recordSearchInput = z.object({
 	keyword: z.string().trim().min(1).max(80),

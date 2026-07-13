@@ -5,6 +5,11 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
+import type {
+	AdminUserRole,
+	AdminUserStatus,
+} from "@youni/api/admin-user-governance";
+import type { AdminUserListItem } from "@youni/api/contracts/admin";
 import { env } from "@youni/env/web";
 import type { FormEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -14,7 +19,6 @@ import { getUserManagementPermissions } from "@/lib/admin-permissions";
 import { orpc } from "@/utils/orpc";
 
 import {
-	type AdminUserListItem,
 	canManageItem,
 	emptyForm,
 	getErrorMessage,
@@ -24,8 +28,6 @@ import {
 	type UserAccountType,
 	type UserFormMode,
 	type UserFormState,
-	type UserRole,
-	type UserStatus,
 } from "./-admin-users/types";
 import { UserFilters } from "./-admin-users/user-filters";
 import { UserFormDrawer } from "./-admin-users/user-form-drawer";
@@ -40,7 +42,7 @@ function AdminUsersRoute() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const list = useAdminListWorkflow<UserStatus>();
+	const list = useAdminListWorkflow<AdminUserStatus>();
 	const [accountTypeFilter, setAccountTypeFilter] = useState<
 		UserAccountType | ""
 	>("");
@@ -71,7 +73,7 @@ function AdminUsersRoute() {
 	);
 	const restoreMutation = useMutation(orpc.admin.restoreUser.mutationOptions());
 
-	const currentRole = admin.data?.role as UserRole | undefined;
+	const currentRole: AdminUserRole | undefined = admin.data?.role;
 	const currentUserId = admin.data?.user.id;
 	const userPermissions = getUserManagementPermissions(currentRole);
 	const isSubmitting = createMutation.isPending || updateMutation.isPending;
@@ -214,7 +216,7 @@ function AdminUsersRoute() {
 	}, []);
 
 	const updateStatus = useCallback(
-		async (item: AdminUserListItem, status: UserStatus) => {
+		async (item: AdminUserListItem, status: AdminUserStatus) => {
 			try {
 				if (status === "deleted") {
 					await deleteMutation.mutateAsync({ id: item.id });
@@ -275,7 +277,7 @@ function AdminUsersRoute() {
 				isStatusBusy={isStatusBusy}
 				pagination={list.pagination}
 				total={users.data?.total ?? 0}
-				users={(users.data?.items ?? []) as AdminUserListItem[]}
+				users={users.data?.items ?? []}
 				onEdit={startEdit}
 				onOpenUser={(item) =>
 					navigate({ to: "/admin/users/$userId", params: { userId: item.id } })

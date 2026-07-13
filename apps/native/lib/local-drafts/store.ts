@@ -1,3 +1,4 @@
+import type { NoteVisibility } from "@youni/api/contracts/shared";
 import * as SQLite from "expo-sqlite";
 
 import type {
@@ -5,7 +6,6 @@ import type {
 	LocalDraftAdvancedOptions,
 	LocalDraftImage,
 	LocalDraftSummary,
-	LocalDraftVisibility,
 	SaveLocalDraftInput,
 } from "@/lib/local-drafts/types";
 import { validateLocalDraft } from "@/lib/local-drafts/validation";
@@ -22,7 +22,7 @@ type DraftRow = {
 	topics: string;
 	updated_at: number;
 	user_id: string;
-	visibility: LocalDraftVisibility;
+	visibility: NoteVisibility;
 };
 
 type DraftSummaryRow = DraftRow & {

@@ -1,14 +1,9 @@
 import { createDb } from "@youni/db";
-import { noteViewHistory } from "@youni/db/schema/index";
+import {
+	type NoteViewHistoryRow,
+	noteViewHistory,
+} from "@youni/db/schema/index";
 import { inArray } from "drizzle-orm";
-
-type ViewHistoryRow = {
-	createdAt: Date;
-	noteId: string;
-	updatedAt: Date;
-	userId: string;
-	viewedAt: Date;
-};
 
 function earlierDate(left: Date, right: Date) {
 	return left.getTime() <= right.getTime() ? left : right;
@@ -19,10 +14,10 @@ function laterDate(left: Date, right: Date) {
 }
 
 export function mergeAnonymousViewHistory(
-	rows: ViewHistoryRow[],
+	rows: NoteViewHistoryRow[],
 	newUserId: string,
 ) {
-	const mergedByNoteId = new Map<string, ViewHistoryRow>();
+	const mergedByNoteId = new Map<string, NoteViewHistoryRow>();
 
 	for (const row of rows) {
 		const existing = mergedByNoteId.get(row.noteId);

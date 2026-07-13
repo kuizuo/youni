@@ -1,5 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import type {
+	CommentSort,
+	CommentListRow as NoteComment,
+} from "@youni/api/contracts/comments";
 import {
 	Avatar,
 	Button,
@@ -16,8 +20,6 @@ import { AppSeparator } from "@/components/shared/app-separator";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { formatRelativeTime } from "@/utils/format";
 import { orpc } from "@/utils/orpc";
-
-import type { CommentSort, NoteComment } from "./types";
 
 function commentTreeContains(comment: NoteComment, commentId: string): boolean {
 	if (comment.id === commentId) return true;
@@ -140,7 +142,7 @@ export function CommentItem({
 		enabled: shouldFetchReplies,
 	});
 	const replies = isExpanded
-		? ((repliesQuery.data?.items ?? comment.replies) as NoteComment[])
+		? (repliesQuery.data?.items ?? comment.replies)
 		: comment.replies;
 	const shouldRenderAnchoredTarget =
 		depth === 0 &&

@@ -1,11 +1,3 @@
-export type AdminTopicListItem = {
-	id: string;
-	name: string;
-	noteCount: number;
-	createdAt: Date | string;
-	updatedAt?: Date | string;
-};
-
 export type TopicFormMode = "create" | "edit";
 
 export type TopicFormState = {

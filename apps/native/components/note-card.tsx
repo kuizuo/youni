@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { NotesOutputs } from "@youni/api/contracts/notes";
+import type { HydratedContentNote } from "@youni/api/contracts/shared";
 import {
 	Card,
 	Avatar as HeroAvatar,
@@ -13,26 +15,8 @@ import { useSocialActions } from "@/lib/social/use-social-actions";
 
 const DEFAULT_IMAGE_ASPECT_RATIO = 1;
 
-export type NoteCardNote = {
-	author: {
-		handle?: null | string;
-		id: string;
-		image: null | string;
-		isFollowing?: boolean;
-		name: string;
-	};
-	commentCount?: number;
-	collected?: boolean;
-	collectedCount?: number;
-	cover: null | string;
-	id: string;
-	imageMetas?: Array<{ height: number; url: string; width: number }>;
-	liked?: boolean;
-	likedCount: number;
-	feedContext?: { impressionId: string; position: number };
-	status?: "audit" | "draft" | "hidden" | "published" | "rejected";
-	title: string;
-	topics?: string[];
+export type NoteCardNote = HydratedContentNote & {
+	feedContext?: NotesOutputs["feed"]["items"][number]["feedContext"];
 };
 
 type NoteCardProps = {

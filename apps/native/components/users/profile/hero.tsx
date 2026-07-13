@@ -1,4 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import type {
+	ProfileConnectionType,
+	ProfileUser,
+} from "@youni/api/contracts/profiles";
 import {
 	Avatar,
 	Button,
@@ -12,7 +16,6 @@ import { View } from "react-native";
 import { FollowButton } from "@/components/users/follow-button";
 
 import { PROFILE_HEADER_HEIGHT, PROFILE_HERO_COLOR } from "./constants";
-import type { UserProfileData } from "./types";
 
 export function UserProfileHero({
 	displayHandle,
@@ -36,10 +39,10 @@ export function UserProfileHero({
 	isSelf: boolean;
 	isStartChatPending: boolean;
 	onOpenChat: () => void;
-	onOpenConnections: (type: "followers" | "following") => void;
+	onOpenConnections: (type: ProfileConnectionType) => void;
 	onOpenMe: () => void;
 	onToggleFollow: () => void;
-	profile?: UserProfileData;
+	profile?: ProfileUser;
 	topChromeHeight: number;
 	topInset: number;
 }) {

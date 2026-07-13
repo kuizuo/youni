@@ -727,7 +727,7 @@ type NotificationOverview = {
 
 type NotificationTone = "accent" | "success" | "warning";
 
-type NotificationItem = {
+type AdminNotificationItem = {
 	readonly description: string;
 	readonly href: AdminRouteTo;
 	readonly icon: ComponentType<{ className?: string }>;
@@ -870,7 +870,9 @@ function NotificationButton({
 	);
 }
 
-function getNotifications(overview?: NotificationOverview): NotificationItem[] {
+function getNotifications(
+	overview?: NotificationOverview,
+): AdminNotificationItem[] {
 	const auditCount = overview?.auditCount ?? 0;
 	const noteCount = overview?.noteCount ?? 0;
 	const userCount = overview?.userCount ?? 0;

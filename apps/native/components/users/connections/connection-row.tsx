@@ -1,9 +1,11 @@
+import type {
+	ProfileConnectionType,
+	ProfileUser,
+} from "@youni/api/contracts/profiles";
 import { Avatar, PressableFeedback, Typography } from "heroui-native";
 import { View } from "react-native";
 
 import { FollowButton } from "@/components/users/follow-button";
-
-import type { ConnectionType, ConnectionUser } from "./types";
 
 export function ConnectionRow({
 	activeType,
@@ -12,11 +14,11 @@ export function ConnectionRow({
 	onOpenUser,
 	onToggleFollow,
 }: {
-	activeType: ConnectionType;
+	activeType: ProfileConnectionType;
 	currentUserId?: string;
-	item: ConnectionUser;
+	item: ProfileUser;
 	onOpenUser: (id: string) => void;
-	onToggleFollow: (item: ConnectionUser) => void;
+	onToggleFollow: (item: ProfileUser) => void;
 }) {
 	const isSelf = currentUserId === item.id;
 
@@ -65,8 +67,8 @@ export function ConnectionRow({
 }
 
 function getConnectionSummary(
-	item: ConnectionUser,
-	activeType: ConnectionType,
+	item: ProfileUser,
+	activeType: ProfileConnectionType,
 ) {
 	if (activeType === "following") {
 		return item.bio?.trim() || "暂无简介";

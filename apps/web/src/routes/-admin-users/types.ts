@@ -9,15 +9,13 @@ import {
 	parseAdminUserRole,
 	parseAdminUserStatus,
 } from "@youni/api/admin-user-governance";
+import { type UserGender, userGenders } from "@youni/api/contracts/shared";
 
 export const roleOptions = adminUserRoleOptions;
 export const statusOptions = adminUserStatusOptions;
-export const genderOptions = ["unknown", "male", "female"] as const;
+export const genderOptions = userGenders;
 export const accountTypeOptions = ["registered", "anonymous"] as const;
 
-export type UserRole = AdminUserRole;
-export type UserStatus = AdminUserStatus;
-export type Gender = (typeof genderOptions)[number];
 export type UserAccountType = (typeof accountTypeOptions)[number];
 export type UserFormMode = "create" | "edit";
 
@@ -26,38 +24,12 @@ export type UserFormState = {
 	name: string;
 	email: string;
 	password: string;
-	role: UserRole;
-	status: UserStatus;
+	role: AdminUserRole;
+	status: AdminUserStatus;
 	image: string;
 	handle: string;
 	bio: string;
-	gender: Gender;
-};
-
-export type AdminUserListItem = {
-	id: string;
-	name: string;
-	email: string;
-	image?: string | null;
-	handle?: string | null;
-	role: string;
-	status: string;
-	bio?: string | null;
-	gender?: string | null;
-	isAnonymous: boolean;
-	noteCount: number;
-	followerCount: number;
-	followingCount: number;
-	createdAt: Date | string;
-	updatedAt?: Date | string;
-};
-
-export type AdminUserRelationItem = {
-	userId: string;
-	name: string;
-	email: string;
-	image?: string | null;
-	createdAt: Date | string;
+	gender: UserGender;
 };
 
 export const emptyForm: UserFormState = {
@@ -73,7 +45,7 @@ export const emptyForm: UserFormState = {
 	gender: "unknown",
 };
 
-export const genderLabel: Record<Gender, string> = {
+export const genderLabel: Record<UserGender, string> = {
 	unknown: "未知",
 	male: "男",
 	female: "女",
@@ -87,13 +59,15 @@ export const accountTypeLabel: Record<UserAccountType, string> = {
 export const userFormId = "admin-user-form";
 
 export function canManageItem(
-	currentRole: UserRole | undefined,
+	currentRole: AdminUserRole | undefined,
 	itemRole: string,
 ) {
 	return canManageUserRole(currentRole, itemRole);
 }
 
-export function getAvailableRoleOptions(currentRole: UserRole | undefined) {
+export function getAvailableRoleOptions(
+	currentRole: AdminUserRole | undefined,
+) {
 	return getAssignableUserRoles(currentRole);
 }
 
@@ -101,17 +75,17 @@ export function getAvailableStatusOptions(isEdit: boolean) {
 	return isEdit ? statusOptions : getCreatableUserStatuses();
 }
 
-export function toUserRole(value: string): UserRole {
+export function toUserRole(value: string): AdminUserRole {
 	return parseAdminUserRole(value) ?? "user";
 }
 
-export function toUserStatus(value: string): UserStatus {
+export function toUserStatus(value: string): AdminUserStatus {
 	return parseAdminUserStatus(value) ?? "active";
 }
 
-export function toGender(value: string | null | undefined): Gender {
-	return genderOptions.includes(value as Gender)
-		? (value as Gender)
+export function toGender(value: string | null | undefined): UserGender {
+	return genderOptions.includes(value as UserGender)
+		? (value as UserGender)
 		: "unknown";
 }
 

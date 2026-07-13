@@ -1,11 +1,7 @@
 import { useThemeColor } from "heroui-native";
 import type { RefObject } from "react";
 import { Text, TextInput, type TextStyle, View } from "react-native";
-
-export type TextSelection = {
-	end: number;
-	start: number;
-};
+import type { TextSelection } from "@/lib/types/text-input";
 
 const CONTENT_INPUT_STYLE: TextStyle = {
 	fontSize: 20,

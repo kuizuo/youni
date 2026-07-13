@@ -1,5 +1,3 @@
-import type { NoteCard } from "@/components/note-card";
-
 export const HOME_TABS = [
 	{ id: "following", label: "关注" },
 	{ id: "discover", label: "发现" },
@@ -8,4 +6,3 @@ export const HOME_TABS = [
 export const DISCOVER_PAGE_SIZE = 20;
 
 export type HomeTab = (typeof HOME_TABS)[number]["id"];
-export type HomeFeedNote = Parameters<typeof NoteCard>[0]["note"];

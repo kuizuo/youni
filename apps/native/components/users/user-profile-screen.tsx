@@ -1,7 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type {
+	ProfileConnectionType,
+	ProfileUser,
+} from "@youni/api/contracts/profiles";
+import type { HydratedContentNote } from "@youni/api/contracts/shared";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { RefreshControl, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,10 +14,6 @@ import { EmptyState, ErrorState } from "@/components/social-states";
 import { UserProfileFeedSection } from "@/components/users/profile/feed-section";
 import { UserProfileHero } from "@/components/users/profile/hero";
 import { ProfileTopBar } from "@/components/users/profile/top-bar";
-import type {
-	UserFeedNote,
-	UserProfileData,
-} from "@/components/users/profile/types";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { orpc } from "@/utils/orpc";
@@ -40,11 +41,8 @@ export default function UserProfileScreen() {
 		}),
 	);
 
-	const profileData = profile.data?.profile as UserProfileData | undefined;
-	const notes = useMemo(
-		() => (profile.data?.notes ?? []) as UserFeedNote[],
-		[profile.data?.notes],
-	);
+	const profileData: ProfileUser | undefined = profile.data?.profile;
+	const notes: HydratedContentNote[] = profile.data?.notes ?? [];
 	const isSelf = socialActions.currentUserId === id;
 	const displayName = profileData?.name ?? "用户";
 	const displayHandle = profileData?.handle
@@ -69,7 +67,7 @@ export default function UserProfileScreen() {
 		socialActions.startChat({ userId: id }, { redirectTo: `/user/${id}` });
 	};
 
-	const openConnections = (type: "followers" | "following") => {
+	const openConnections = (type: ProfileConnectionType) => {
 		socialActions.goTo({
 			type: "userConnections",
 			userId: id,

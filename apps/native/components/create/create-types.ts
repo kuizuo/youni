@@ -5,10 +5,4 @@ export type InlineTrigger = {
 	type: "mention" | "topic";
 };
 
-export type NoteVisibility = "followers" | "private" | "public";
 export type PublishSubmitMode = "draft" | "publish";
-
-export type AdvancedOptions = {
-	allowComment: boolean;
-	allowShare: boolean;
-};

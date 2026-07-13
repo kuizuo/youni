@@ -1,4 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import type {
+	ContentNoteRow,
+	HydratedContentNote,
+} from "@youni/api/contracts/shared";
 import {
 	Avatar,
 	Button,
@@ -57,12 +61,7 @@ export function AuthorTopBar({
 	onOpenMenu,
 	onOpenAuthor,
 }: {
-	author: {
-		handle: null | string;
-		id: string;
-		image: null | string;
-		name: string;
-	};
+	author: HydratedContentNote["author"];
 	isFollowing: boolean;
 	isMenuVisible: boolean;
 	isSelf: boolean;
@@ -212,7 +211,7 @@ export function NoteBody({
 	topics,
 }: {
 	content: string;
-	createdAt: Date | string;
+	createdAt: ContentNoteRow["createdAt"];
 	onMentionPress: (handle: string) => void;
 	onTopicPress: (topic: string) => void;
 	title: string;

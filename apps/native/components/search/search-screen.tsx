@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import type { SearchSource } from "@youni/api/contracts/search-discovery";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
@@ -18,8 +19,6 @@ import {
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { client, orpc } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
-
-type SearchSource = "external" | "history" | "recommended" | "typed";
 
 export default function SearchScreen() {
 	const params = useLocalSearchParams<{

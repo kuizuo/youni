@@ -1,9 +1,8 @@
+import type { ChatMessage } from "@youni/api/contracts/messages";
 import { cn, Typography } from "heroui-native";
 import { View } from "react-native";
 
 import { formatTime } from "@/utils/format";
-
-import type { ChatMessage } from "./types";
 
 export function MessageBubble({
 	isMine,

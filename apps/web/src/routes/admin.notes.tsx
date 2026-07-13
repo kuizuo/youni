@@ -5,18 +5,17 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
+import type {
+	AdminHydratedContentNote as AdminNoteListItem,
+	ContentNoteStatus,
+} from "@youni/api/contracts/shared";
 import { useCallback } from "react";
-
 import { AdminPage } from "@/components/admin-shell";
 import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { orpc } from "@/utils/orpc";
 import { NoteFilters } from "./-admin-notes/note-filters";
 import { NoteTable } from "./-admin-notes/note-table";
-import type {
-	AdminNoteListItem,
-	MutableNoteStatus,
-	NoteStatus,
-} from "./-admin-notes/types";
+import type { MutableNoteStatus } from "./-admin-notes/types";
 
 export const Route = createFileRoute("/admin/notes")({
 	component: AdminNotesRoute,
@@ -27,7 +26,7 @@ function AdminNotesRoute() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const list = useAdminListWorkflow<NoteStatus>();
+	const list = useAdminListWorkflow<ContentNoteStatus>();
 	const notes = useQuery({
 		...orpc.admin.notes.queryOptions({ input: list.queryInput }),
 		placeholderData: keepPreviousData,
@@ -81,7 +80,7 @@ function AdminNotesRoute() {
 				isDeletePending={deleteMutation.isPending}
 				isFetching={notes.isFetching}
 				isStatusBusy={statusMutation.isPending}
-				notes={(notes.data?.items ?? []) as AdminNoteListItem[]}
+				notes={notes.data?.items ?? []}
 				onDelete={deleteNote}
 				onOpenNote={(item) =>
 					navigate({ to: "/admin/notes/$noteId", params: { noteId: item.id } })

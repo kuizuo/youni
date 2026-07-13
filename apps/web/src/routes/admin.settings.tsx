@@ -9,6 +9,7 @@ import {
 } from "@heroui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import type { UserGender } from "@youni/api/contracts/shared";
 import { env } from "@youni/env/web";
 import type { FormEvent, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -17,7 +18,6 @@ import { AdminPage } from "@/components/admin-shell";
 import { UserRoleBadge, UserStatusBadge } from "@/components/admin-status";
 import { orpc } from "@/utils/orpc";
 import {
-	type Gender,
 	genderLabel,
 	genderOptions,
 	getErrorMessage,
@@ -35,7 +35,7 @@ type SettingsFormState = {
 	image: string;
 	handle: string;
 	bio: string;
-	gender: Gender;
+	gender: UserGender;
 };
 
 const emptyForm: SettingsFormState = {

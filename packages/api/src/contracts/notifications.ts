@@ -1,3 +1,9 @@
+import {
+	type NotificationCategory,
+	type NotificationType,
+	notificationCategories,
+	notificationTypes,
+} from "@youni/db/schema/notification-values";
 import z from "zod";
 import { output, procedure } from "./procedure";
 
@@ -5,22 +11,12 @@ import { output, procedure } from "./procedure";
 
 export const notificationCategoryInput = z.enum([
 	"all",
-	"activity",
-	"followers",
-	"system",
+	...notificationCategories,
 ]);
 
-export const notificationTypeInput = z.enum([
-	"announcement",
-	"collect",
-	"comment",
-	"event",
-	"follow",
-	"like",
-	"message",
-	"mention",
-	"system",
-]);
+export const notificationTypeInput = z.enum(notificationTypes);
+
+export type { NotificationCategory, NotificationType };
 
 export const notificationListInput = z.object({
 	category: notificationCategoryInput.default("all"),
@@ -49,44 +45,43 @@ export const unregisterPushTokenInput = z.object({ token: z.string().min(1) });
 
 // ====== Output ======
 
+export type NotificationItem = {
+	id: string;
+	kind: NotificationType;
+	categoryId: NotificationCategory;
+	title: string;
+	body: string;
+	targetType: string | null;
+	targetId: string | null;
+	noteId: string | null;
+	isRead: boolean;
+	createdAt: Date;
+	previewUrl: string | null;
+	actor: { id: string; name: string; image: string | null } | null;
+};
+
+export type NotificationSummaryGroup = {
+	id: string;
+	unreadCount: number;
+	updatedAt: Date | null;
+};
+
 export type NotificationsOutputs = {
 	list: {
-		items: {
-			id: string;
-			kind:
-				| "comment"
-				| "follow"
-				| "system"
-				| "like"
-				| "collect"
-				| "mention"
-				| "message"
-				| "announcement"
-				| "event";
-			categoryId: "followers" | "activity" | "system";
-			title: string;
-			body: string;
-			targetType: string | null;
-			targetId: string | null;
-			noteId: string | null;
-			isRead: boolean;
-			createdAt: Date;
-			previewUrl: string | null;
-			actor: { id: string; name: string; image: string | null } | null;
-		}[];
+		items: NotificationItem[];
 		nextOffset: number | null;
 	};
 	summary: {
 		totalUnread: number;
 		categories: [
-			{ id: string; unreadCount: number; updatedAt: Date | null },
-			{ id: string; unreadCount: number; updatedAt: Date | null },
-			{ id: string; unreadCount: number; updatedAt: Date | null },
+			NotificationSummaryGroup,
+			NotificationSummaryGroup,
+			NotificationSummaryGroup,
 		];
 		messageGroups: [
-			{ id: string; unreadCount: number; updatedAt: Date | null },
-			{ id: string; unreadCount: number; updatedAt: Date | null },
-			{ id: string; unreadCount: number; updatedAt: Date | null },
+			NotificationSummaryGroup,
+			NotificationSummaryGroup,
+			NotificationSummaryGroup,
 		];
 	};
 	markRead: { ok: boolean };

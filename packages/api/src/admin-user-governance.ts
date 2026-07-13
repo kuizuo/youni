@@ -5,18 +5,15 @@ import {
 	hasAdminPermission,
 	parseAdminUserRole,
 } from "@youni/auth/permissions";
+import { type UserStatus, userStatuses } from "@youni/db/schema/auth-values";
 
 export type { AdminUserRole };
 export { adminUserRoleOptions, backofficeUserRoleOptions, parseAdminUserRole };
 
-export const adminUserStatusOptions = [
-	"active",
-	"disabled",
-	"deleted",
-] as const;
+export const adminUserStatusOptions = userStatuses;
 export const manageableUserStatusOptions = ["active", "disabled"] as const;
 
-export type AdminUserStatus = (typeof adminUserStatusOptions)[number];
+export type AdminUserStatus = UserStatus;
 
 export type AdminUserRuleResult =
 	| { allowed: true }

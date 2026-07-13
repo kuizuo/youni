@@ -5,7 +5,7 @@ import { View } from "react-native";
 import { AppHeading } from "@/components/shared/app-heading";
 import { Container } from "@/components/shared/container";
 
-type IoniconName = keyof typeof Ionicons.glyphMap;
+type RecoveryIconName = keyof typeof Ionicons.glyphMap;
 
 const recoveryActions = [
 	{
@@ -28,7 +28,7 @@ const recoveryActions = [
 	},
 ] as const satisfies Array<{
 	label: string;
-	icon: IoniconName;
+	icon: RecoveryIconName;
 	href: Href;
 	variant: "primary" | "secondary";
 }>;

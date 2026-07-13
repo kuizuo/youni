@@ -1,12 +1,16 @@
 import { relations } from "drizzle-orm";
 import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { booleanColumn, timestampColumn } from "./_columns";
+import { userGenders, userRoles, userStatuses } from "./auth-values";
 
-export const userRoles = ["admin", "operator", "user"] as const;
-export const userStatuses = ["active", "disabled", "deleted"] as const;
-
-export type UserRole = (typeof userRoles)[number];
-export type UserStatus = (typeof userStatuses)[number];
+export {
+	type UserGender,
+	type UserRole,
+	type UserStatus,
+	userGenders,
+	userRoles,
+	userStatuses,
+} from "./auth-values";
 
 export const user = sqliteTable("user", {
 	id: text("id").primaryKey(),
@@ -17,9 +21,9 @@ export const user = sqliteTable("user", {
 	coverImage: text("cover_image"),
 	handle: text("handle").unique(),
 	bio: text("bio"),
-	gender: text("gender").default("unknown").notNull(),
-	role: text("role").default("user").notNull(),
-	status: text("status").default("active").notNull(),
+	gender: text("gender", { enum: userGenders }).default("unknown").notNull(),
+	role: text("role", { enum: userRoles }).default("user").notNull(),
+	status: text("status", { enum: userStatuses }).default("active").notNull(),
 	isAnonymous: booleanColumn("is_anonymous").default(false).notNull(),
 	banned: booleanColumn("banned").default(false).notNull(),
 	banReason: text("ban_reason"),
@@ -30,6 +34,8 @@ export const user = sqliteTable("user", {
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
 });
+
+export type UserRow = typeof user.$inferSelect;
 
 export const session = sqliteTable(
 	"session",

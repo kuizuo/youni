@@ -12,6 +12,7 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
+import type { AdminHydratedContentNote as AdminNoteListItem } from "@youni/api/contracts/shared";
 import { useCallback, useMemo, useState } from "react";
 
 import { NoteStatusBadge } from "@/components/admin-status";
@@ -22,11 +23,7 @@ import {
 } from "@/components/admin-table-pagination";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
 
-import {
-	type AdminNoteListItem,
-	type MutableNoteStatus,
-	toNoteStatus,
-} from "./types";
+import { type MutableNoteStatus, toNoteStatus } from "./types";
 
 const columnHelper = createColumnHelper<AdminNoteListItem>();
 

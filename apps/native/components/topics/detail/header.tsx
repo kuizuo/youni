@@ -1,3 +1,4 @@
+import type { TopicSort } from "@youni/api/contracts/topics";
 import { PressableFeedback, Skeleton, Typography } from "heroui-native";
 import { View } from "react-native";
 
@@ -6,7 +7,7 @@ import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { formatCount } from "@/utils/format";
 
 import { TopicTopBar } from "./top-bar";
-import { TOPIC_SORTS, type TopicSort } from "./types";
+import { TOPIC_SORTS } from "./types";
 
 export function TopicHeader({
 	accentColor,

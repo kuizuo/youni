@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { NotesOutputs } from "@youni/api/contracts/notes";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
@@ -26,19 +27,6 @@ import { formatRelativeTime } from "@/utils/format";
 import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
-type HistoryItem = {
-	note: {
-		author: {
-			name: string;
-		};
-		cover: null | string;
-		id: string;
-		images: string[];
-		title: string;
-	};
-	viewedAt: Date | string;
-};
-
 export default function HistoryScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
@@ -49,7 +37,7 @@ export default function HistoryScreen() {
 			input: { limit: 60 },
 		}),
 	});
-	const items = (history.data ?? []) as HistoryItem[];
+	const items = history.data ?? [];
 	const deleteMutation = useMutation(
 		orpc.notes.deleteViewHistory.mutationOptions<{ rollback?: () => void }>({
 			onError: (error, _variables, context) => {
@@ -168,7 +156,7 @@ function HistoryRow({
 	onDelete,
 	onOpen,
 }: {
-	item: HistoryItem;
+	item: NotesOutputs["viewHistory"][number];
 	onDelete: (id: string) => void;
 	onOpen: (id: string) => void;
 }) {

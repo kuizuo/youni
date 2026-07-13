@@ -1,9 +1,8 @@
+import type { ProfileConnectionType } from "@youni/api/contracts/profiles";
 import { Spinner } from "heroui-native";
 import { View } from "react-native";
 
 import { EmptyState, ErrorState } from "@/components/social-states";
-
-import type { ConnectionType } from "./types";
 
 export function ConnectionsEmptyState({
 	activeType,
@@ -11,7 +10,7 @@ export function ConnectionsEmptyState({
 	isLoading,
 	onRetry,
 }: {
-	activeType: ConnectionType;
+	activeType: ProfileConnectionType;
 	isError: boolean;
 	isLoading: boolean;
 	onRetry: () => void;

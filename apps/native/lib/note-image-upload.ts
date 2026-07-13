@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 
 import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
+import type { ImageUploadResponse } from "@/lib/media/types";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
 const NOTE_IMAGE_UPLOAD_TIMEOUT_MS = 60_000;
@@ -15,10 +16,6 @@ const NOTE_IMAGE_MIME_EXTENSIONS = new Map([
 	["image/gif", "gif"],
 ]);
 
-export type NoteImageUploadResponse = {
-	key: string;
-	url: string;
-};
 export type NoteImageUploadAsset = {
 	file?: ImagePicker.ImagePickerAsset["file"];
 	fileName?: null | string;
@@ -86,11 +83,11 @@ async function parseUploadResponse(response: Response) {
 	}
 
 	const items = payload.items.filter(
-		(item): item is NoteImageUploadResponse =>
+		(item): item is ImageUploadResponse =>
 			typeof item === "object" &&
 			item !== null &&
-			typeof (item as NoteImageUploadResponse).key === "string" &&
-			typeof (item as NoteImageUploadResponse).url === "string",
+			typeof (item as ImageUploadResponse).key === "string" &&
+			typeof (item as ImageUploadResponse).url === "string",
 	);
 
 	if (items.length !== payload.items.length) {

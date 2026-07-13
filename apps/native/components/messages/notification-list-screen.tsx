@@ -1,8 +1,9 @@
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import type { NotificationItem } from "@youni/api/contracts/notifications";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Spinner, useThemeColor } from "heroui-native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -10,7 +11,6 @@ import { NOTIFICATION_KIND_CONFIG } from "@/components/messages/notifications/co
 import { NotificationListFooter } from "@/components/messages/notifications/footer";
 import { NotificationListHeader } from "@/components/messages/notifications/header";
 import { NotificationRow } from "@/components/messages/notifications/notification-row";
-import type { NotificationItem } from "@/components/messages/notifications/types";
 import { getNotificationKind } from "@/components/messages/notifications/utils";
 import { ListSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
@@ -47,12 +47,8 @@ export default function NotificationListScreen() {
 		initialPageParam: 0,
 		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
 	});
-	const items = useMemo(
-		() =>
-			notifications.data?.pages.flatMap((page) => page.items) ??
-			([] as NotificationItem[]),
-		[notifications.data?.pages],
-	);
+	const items: NotificationItem[] =
+		notifications.data?.pages.flatMap((page) => page.items) ?? [];
 	const deleteOne = useMutation<
 		Awaited<ReturnType<typeof client.notifications.delete>>,
 		Error,

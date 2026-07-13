@@ -1,4 +1,8 @@
 import { useMutation, useMutationState } from "@tanstack/react-query";
+import type { CommentsOutputs } from "@youni/api/contracts/comments";
+import type { MessagesOutputs } from "@youni/api/contracts/messages";
+import type { NotesOutputs } from "@youni/api/contracts/notes";
+import type { ProfilesOutputs } from "@youni/api/contracts/profiles";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 
@@ -34,39 +38,6 @@ export type SocialActionOptions<TResult = unknown> = {
 	onSettled?: () => void;
 	onSuccess?: (result: TResult) => Promise<void> | void;
 	redirectTo?: string;
-};
-
-type ToggleLikeResult = {
-	liked: boolean;
-	likedCount: number;
-};
-
-type ToggleCollectResult = {
-	collected: boolean;
-	collectedCount: number;
-};
-
-type ToggleFollowResult = {
-	followerCount: number;
-	following: boolean;
-};
-
-type AddCommentResult = {
-	content?: string;
-	createdAt?: Date | string;
-	id: string;
-	noteId?: string;
-	parentId?: null | string;
-	userId?: string;
-};
-
-type ToggleCommentLikeResult = {
-	liked: boolean;
-	likedCount: number;
-};
-
-type StartChatResult = {
-	id: string;
 };
 
 type OptimisticMutationContext = {
@@ -345,7 +316,7 @@ export function useSocialActions() {
 
 	const toggleLike = (
 		input: { id: string },
-		options: SocialActionOptions<ToggleLikeResult> = {},
+		options: SocialActionOptions<NotesOutputs["toggleLike"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 		if (pending.like.has(input.id)) return false;
@@ -368,7 +339,7 @@ export function useSocialActions() {
 
 	const toggleCollect = (
 		input: { id: string },
-		options: SocialActionOptions<ToggleCollectResult> = {},
+		options: SocialActionOptions<NotesOutputs["toggleCollect"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 		if (pending.collect.has(input.id)) return false;
@@ -391,7 +362,7 @@ export function useSocialActions() {
 
 	const toggleFollow = (
 		input: { userId: string },
-		options: SocialActionOptions<ToggleFollowResult> = {},
+		options: SocialActionOptions<ProfilesOutputs["toggleFollow"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 		if (pending.follow.has(input.userId)) return false;
@@ -414,7 +385,9 @@ export function useSocialActions() {
 
 	const addComment = (
 		input: { content: string; noteId: string; parentId?: string },
-		options: SocialActionOptions<AddCommentResult> = {},
+		options: SocialActionOptions<
+			NonNullable<CommentsOutputs["addComment"]>
+		> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 
@@ -437,7 +410,7 @@ export function useSocialActions() {
 
 	const toggleCommentLike = (
 		input: { id: string },
-		options: SocialActionOptions<ToggleCommentLikeResult> = {},
+		options: SocialActionOptions<CommentsOutputs["toggleCommentLike"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 		if (pending.commentLike.has(input.id)) return false;
@@ -460,7 +433,7 @@ export function useSocialActions() {
 
 	const deleteComment = (
 		input: { id: string },
-		options: SocialActionOptions<{ ok: boolean }> = {},
+		options: SocialActionOptions<CommentsOutputs["deleteComment"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 		if (pending.deleteComment.has(input.id)) return false;
@@ -483,7 +456,7 @@ export function useSocialActions() {
 
 	const startChat = (
 		input: { userId: string },
-		options: SocialActionOptions<StartChatResult> = {},
+		options: SocialActionOptions<MessagesOutputs["start"]> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 

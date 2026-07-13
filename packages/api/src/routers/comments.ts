@@ -8,7 +8,7 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import { and, count, desc, eq, inArray, isNull } from "drizzle-orm";
-import type { CommentListRow } from "../contracts/comments";
+import type { CommentListRow, CommentSort } from "../contracts/comments";
 import {
 	activeUserProcedure,
 	protectedProcedure,
@@ -123,7 +123,7 @@ export async function listRootComments({
 	limit: number;
 	noteId: string;
 	offset: number;
-	sort?: "hot" | "latest";
+	sort?: CommentSort;
 	viewerId?: string;
 }) {
 	const db = createDb();

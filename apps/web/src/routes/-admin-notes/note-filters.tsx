@@ -1,9 +1,10 @@
 import { Funnel, Magnifier, Xmark } from "@gravity-ui/icons";
 import { Button, Dropdown, Label, SearchField } from "@heroui/react";
+import type { ContentNoteStatus } from "@youni/api/contracts/shared";
 
 import { noteStatusLabel } from "@/components/admin-status";
 
-import { type NoteStatus, noteStatusOptions } from "./types";
+import { noteStatusOptions } from "./types";
 
 export function NoteFilters({
 	keyword,
@@ -13,8 +14,8 @@ export function NoteFilters({
 }: {
 	keyword: string;
 	onKeywordChange: (value: string) => void;
-	onStatusChange: (value: NoteStatus | "") => void;
-	statusFilter: NoteStatus | "";
+	onStatusChange: (value: ContentNoteStatus | "") => void;
+	statusFilter: ContentNoteStatus | "";
 }) {
 	const selectedStatusLabel = statusFilter
 		? noteStatusLabel[statusFilter]
@@ -48,7 +49,7 @@ export function NoteFilters({
 					<Dropdown.Menu
 						selectionMode="single"
 						selectedKeys={statusFilter ? [statusFilter] : []}
-						onAction={(key) => onStatusChange(key as NoteStatus)}
+						onAction={(key) => onStatusChange(key as ContentNoteStatus)}
 					>
 						{noteStatusOptions.map((value) => (
 							<Dropdown.Item

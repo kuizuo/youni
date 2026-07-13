@@ -31,11 +31,11 @@ import { MediaPicker } from "@/components/media/media-picker";
 import { SortableMediaStrip } from "@/components/media/sortable-media-strip";
 import { ErrorState } from "@/components/social-states";
 import type { MediaImage } from "@/lib/media/types";
+import type { TextSelection } from "@/lib/types/text-input";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { isGifImage } from "@/utils/media";
 import { AdvancedOptionsSheet } from "./create-sheets";
-import type { TextSelection } from "./linked-composer-input";
 import { useCreateComposer } from "./use-create-composer";
 
 type CreateScreenProps = {

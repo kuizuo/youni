@@ -4,24 +4,17 @@ import { ulid } from "ulid";
 import { booleanColumn, timestampColumn } from "./_columns";
 import { user } from "./auth";
 import { note } from "./content";
+import {
+	notificationCategories,
+	notificationTypes,
+} from "./notification-values";
 
-export const notificationCategories = [
-	"activity",
-	"followers",
-	"system",
-] as const;
-
-export const notificationTypes = [
-	"like",
-	"collect",
-	"comment",
-	"mention",
-	"follow",
-	"message",
-	"announcement",
-	"event",
-	"system",
-] as const;
+export {
+	type NotificationCategory,
+	type NotificationType,
+	notificationCategories,
+	notificationTypes,
+} from "./notification-values";
 
 export const notification = sqliteTable(
 	"notification",

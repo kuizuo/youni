@@ -1,4 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import type {
+	ProfileConnectionType,
+	ProfileUser,
+} from "@youni/api/contracts/profiles";
 import { Image } from "expo-image";
 import {
 	Avatar,
@@ -52,13 +56,8 @@ export function MeProfileHeader({
 	onMeasuredHeight: (height: number) => void;
 	onAvatarPress: () => void;
 	onCoverPress: () => void;
-	onOpenConnections: (type: "followers" | "following") => void;
-	profile?: {
-		bio?: null | string;
-		followerCount?: number;
-		followingCount?: number;
-		image?: null | string;
-	};
+	onOpenConnections: (type: ProfileConnectionType) => void;
+	profile?: ProfileUser;
 	scrollY: SharedValue<number>;
 	topChromeHeight: number;
 }) {

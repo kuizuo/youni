@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ConversationItem } from "@youni/api/contracts/messages";
+import type { NotificationSummaryGroup } from "@youni/api/contracts/notifications";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { Spinner } from "heroui-native";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,10 +13,6 @@ import { HEADER_HEIGHT } from "@/components/messages/inbox/constants";
 import { ConversationRow } from "@/components/messages/inbox/conversation-row";
 import { MessagesHeader } from "@/components/messages/inbox/header";
 import { NotificationShortcutsSection } from "@/components/messages/inbox/notification-shortcuts";
-import type {
-	ConversationItem,
-	MessageGroupSummary,
-} from "@/components/messages/inbox/types";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
@@ -44,15 +42,9 @@ export default function MessagesScreen() {
 		refetchOnWindowFocus: false,
 		staleTime: 30_000,
 	});
-	const items = useMemo(
-		() => (conversations.data ?? []) as ConversationItem[],
-		[conversations.data],
-	);
-	const messageGroups = useMemo(
-		() =>
-			(notificationSummary.data?.messageGroups ?? []) as MessageGroupSummary[],
-		[notificationSummary.data?.messageGroups],
-	);
+	const items: ConversationItem[] = conversations.data ?? [];
+	const messageGroups: NotificationSummaryGroup[] =
+		notificationSummary.data?.messageGroups ?? [];
 
 	const openAction = (href: Href) => {
 		fireHaptic();

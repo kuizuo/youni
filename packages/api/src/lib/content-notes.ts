@@ -18,6 +18,7 @@ import type {
 	ContentNoteRow,
 	ContentNoteStatus,
 	HydratedContentNote,
+	NoteVisibility,
 } from "../contracts/shared";
 import { getMissingPublishItems } from "./note-publish-validation";
 import { containsInsensitive } from "./search";
@@ -27,6 +28,7 @@ export type {
 	ContentNoteRow,
 	ContentNoteStatus,
 	HydratedContentNote,
+	NoteVisibility,
 } from "../contracts/shared";
 
 export type ContentNoteMutationInput = {
@@ -36,7 +38,7 @@ export type ContentNoteMutationInput = {
 	imageMetas: Array<{ height: number; url: string; width: number }>;
 	topics: string[];
 	locationName?: string;
-	visibility: "public" | "followers" | "private";
+	visibility: NoteVisibility;
 	components: Array<{
 		options?: string[];
 		title: string;
@@ -513,7 +515,7 @@ export async function updateContentNoteVisibility({
 }: {
 	id: string;
 	userId: string;
-	visibility: "followers" | "private" | "public";
+	visibility: NoteVisibility;
 }) {
 	const [updated] = await createDb()
 		.update(note)

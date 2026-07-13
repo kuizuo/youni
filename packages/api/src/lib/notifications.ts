@@ -7,18 +7,10 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import { and, eq } from "drizzle-orm";
-
-type NotificationCategory = "activity" | "followers" | "system";
-type NotificationType =
-	| "announcement"
-	| "collect"
-	| "comment"
-	| "event"
-	| "follow"
-	| "like"
-	| "message"
-	| "mention"
-	| "system";
+import type {
+	NotificationCategory,
+	NotificationType,
+} from "../contracts/notifications";
 
 type CreateNotificationInput = {
 	actorId?: null | string;

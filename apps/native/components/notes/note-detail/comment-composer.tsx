@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
 import {
 	Avatar,
 	Button,
@@ -14,14 +15,10 @@ import { Text as NativeText, TextInput, View } from "react-native";
 import { EmojiKeyboard, type EmojiType } from "rn-emoji-keyboard";
 
 import { nativeQueryKeys } from "@/lib/query/query-keys";
+import type { TextSelection } from "@/lib/types/text-input";
 import { client } from "@/utils/orpc";
 
-import type {
-	CommentInputRef,
-	MentionTrigger,
-	MentionUser,
-	TextSelection,
-} from "./types";
+import type { CommentInputRef, MentionTrigger } from "./types";
 import { clampCursor } from "./utils";
 
 const COMMENT_INPUT_STYLE: TextStyle = {
@@ -276,7 +273,7 @@ function CommentMentionPicker({
 			}),
 		enabled: Boolean(trigger && keyword),
 	});
-	const items = (users.data ?? []) as MentionUser[];
+	const items: ProfileUser[] = users.data ?? [];
 
 	if (!trigger) return null;
 

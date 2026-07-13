@@ -1,4 +1,9 @@
 import { Button, Card } from "@heroui/react";
+import type { AdminUserListItem } from "@youni/api/contracts/admin";
+import type {
+	AdminHydratedContentNote as AdminNoteListItem,
+	AdminUserReference,
+} from "@youni/api/contracts/shared";
 import {
 	AnonymousUserBadge,
 	UserRoleBadge,
@@ -7,13 +12,7 @@ import {
 import { AppAvatar } from "@/components/app-avatar";
 
 import { NoteTable } from "../-admin-notes/note-table";
-import type { AdminNoteListItem } from "../-admin-notes/types";
-import {
-	type AdminUserListItem,
-	type AdminUserRelationItem,
-	toUserRole,
-	toUserStatus,
-} from "./types";
+import { toUserRole, toUserStatus } from "./types";
 
 export function UserDetailView({
 	followers,
@@ -25,8 +24,8 @@ export function UserDetailView({
 	onOpenUser,
 	user,
 }: {
-	followers: AdminUserRelationItem[];
-	following: AdminUserRelationItem[];
+	followers: AdminUserReference[];
+	following: AdminUserReference[];
 	isFetching: boolean;
 	notes: AdminNoteListItem[];
 	onBack: () => void;
@@ -127,7 +126,7 @@ function RelationList({
 	emptyText: string;
 	onOpenUser: (userId: string) => void;
 	title: string;
-	users: AdminUserRelationItem[];
+	users: AdminUserReference[];
 }) {
 	return (
 		<Card>

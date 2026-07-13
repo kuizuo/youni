@@ -1,7 +1,8 @@
+import type { UserRow } from "@youni/db/schema/auth";
 import z from "zod";
 import { output, procedure } from "./procedure";
 import type { HydratedContentNote } from "./shared";
-import { listInput, paginatedListInput } from "./shared";
+import { listInput, paginatedListInput, userGenders } from "./shared";
 
 // ====== Input ======
 
@@ -11,8 +12,11 @@ export const profileHandleInput = z.object({
 	handle: z.string().trim().min(1).max(30),
 });
 
+export const profileConnectionTypes = ["following", "followers"] as const;
+export type ProfileConnectionType = (typeof profileConnectionTypes)[number];
+
 export const connectionsInput = profileInput.extend({
-	type: z.enum(["following", "followers"]),
+	type: z.enum(profileConnectionTypes),
 	limit: z.number().int().min(1).max(60).default(30),
 });
 
@@ -32,7 +36,7 @@ export const profileUpdateInput = z.object({
 		.optional()
 		.or(z.literal("")),
 	bio: z.string().trim().max(160).optional(),
-	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
+	gender: z.enum(userGenders).default("unknown"),
 	image: z.string().trim().url().optional().or(z.literal("")),
 	coverImage: z.string().trim().url().optional().or(z.literal("")),
 });
@@ -41,160 +45,49 @@ export const userBlockInput = profileInput.extend({ blocked: z.boolean() });
 
 // ====== Output ======
 
+export type ProfileUser = Pick<
+	UserRow,
+	| "id"
+	| "name"
+	| "email"
+	| "image"
+	| "coverImage"
+	| "handle"
+	| "bio"
+	| "gender"
+	| "status"
+	| "createdAt"
+> & {
+	noteCount: number;
+	followerCount: number;
+	followingCount: number;
+	likedCount: number;
+	isFollowing: boolean;
+};
+
 export type ProfilesOutputs = {
-	searchUsers: {
-		noteCount: number;
-		followerCount: number;
-		followingCount: number;
-		likedCount: number;
-		isFollowing: boolean;
-		id: string;
-		name: string;
-		email: string;
-		image: string | null;
-		coverImage: string | null;
-		handle: string | null;
-		bio: string | null;
-		gender: string;
-		status: string;
-		createdAt: Date;
-	}[];
+	searchUsers: ProfileUser[];
 	searchUsersPage: {
-		items: {
-			noteCount: number;
-			followerCount: number;
-			followingCount: number;
-			likedCount: number;
-			isFollowing: boolean;
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			coverImage: string | null;
-			handle: string | null;
-			bio: string | null;
-			gender: string;
-			status: string;
-			createdAt: Date;
-		}[];
+		items: ProfileUser[];
 		hasMore: boolean;
 		nextOffset: number | null;
 	};
-	connections: {
-		noteCount: number;
-		followerCount: number;
-		followingCount: number;
-		likedCount: number;
-		isFollowing: boolean;
-		id: string;
-		name: string;
-		email: string;
-		image: string | null;
-		coverImage: string | null;
-		handle: string | null;
-		bio: string | null;
-		gender: string;
-		status: string;
-		createdAt: Date;
-	}[];
+	connections: ProfileUser[];
 	profile: {
 		isBlocked: boolean;
-		profile: {
-			noteCount: number;
-			followerCount: number;
-			followingCount: number;
-			likedCount: number;
-			isFollowing: boolean;
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			coverImage: string | null;
-			handle: string | null;
-			bio: string | null;
-			gender: string;
-			status: string;
-			createdAt: Date;
-		};
+		profile: ProfileUser;
 		notes: HydratedContentNote[];
 	};
-	profileByHandle: {
-		noteCount: number;
-		followerCount: number;
-		followingCount: number;
-		likedCount: number;
-		isFollowing: boolean;
-		id: string;
-		name: string;
-		email: string;
-		image: string | null;
-		coverImage: string | null;
-		handle: string | null;
-		bio: string | null;
-		gender: string;
-		status: string;
-		createdAt: Date;
-	};
+	profileByHandle: ProfileUser;
 	me: {
-		profile: {
-			noteCount: number;
-			followerCount: number;
-			followingCount: number;
-			likedCount: number;
-			isFollowing: boolean;
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			coverImage: string | null;
-			handle: string | null;
-			bio: string | null;
-			gender: string;
-			status: string;
-			createdAt: Date;
-		};
+		profile: ProfileUser;
 		notes: HydratedContentNote[];
 		collections: HydratedContentNote[];
 		liked: HydratedContentNote[];
 	};
-	meProfile: {
-		noteCount: number;
-		followerCount: number;
-		followingCount: number;
-		likedCount: number;
-		isFollowing: boolean;
-		id: string;
-		name: string;
-		email: string;
-		image: string | null;
-		coverImage: string | null;
-		handle: string | null;
-		bio: string | null;
-		gender: string;
-		status: string;
-		createdAt: Date;
-	};
+	meProfile: ProfileUser;
 	meFeed: HydratedContentNote[];
-	updateProfile:
-		| {
-				name: string;
-				email: string;
-				id: string;
-				emailVerified: boolean;
-				image: string | null;
-				coverImage: string | null;
-				handle: string | null;
-				bio: string | null;
-				gender: string;
-				role: string;
-				status: string;
-				banned: boolean;
-				banReason: string | null;
-				banExpires: Date | null;
-				createdAt: Date;
-				updatedAt: Date;
-		  }
-		| undefined;
+	updateProfile: UserRow | undefined;
 	toggleFollow: { following: boolean; followerCount: number };
 	blockedUsers: {
 		blockedAt: Date;

@@ -1,10 +1,7 @@
 import type { RefObject } from "react";
 import { Text, TextInput, type TextStyle, View } from "react-native";
-
-import {
-	LinkedComposerInput,
-	type TextSelection,
-} from "./linked-composer-input";
+import type { TextSelection } from "@/lib/types/text-input";
+import { LinkedComposerInput } from "./linked-composer-input";
 
 const TITLE_INPUT_STYLE: TextStyle = {
 	fontSize: 24,

@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
+import type { UserGender } from "@youni/api/contracts/shared";
 import {
 	Button,
 	Input,
@@ -14,14 +16,14 @@ import {
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
+import type { AuthUser } from "@/lib/auth-client";
 import { pickAndUploadAvatar } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
-import { GenderSelector, type GenderValue } from "./gender-selector";
-import type { SettingsProfile, SettingsUser } from "./types";
+import { GenderSelector } from "./gender-selector";
 
 export function SettingsProfileForm({
 	displayName,
@@ -32,8 +34,8 @@ export function SettingsProfileForm({
 }: {
 	displayName: string;
 	isLoadingProfile: boolean;
-	profile?: SettingsProfile;
-	user?: SettingsUser;
+	profile?: ProfileUser;
+	user?: AuthUser;
 	onProfileSaved: () => Promise<unknown>;
 }) {
 	const { toast } = useAppToast();
@@ -43,7 +45,7 @@ export function SettingsProfileForm({
 	const [handle, setHandle] = useState("");
 	const [bio, setBio] = useState("");
 	const [avatarUrl, setAvatarUrl] = useState("");
-	const [gender, setGender] = useState<GenderValue>("unknown");
+	const [gender, setGender] = useState<UserGender>("unknown");
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
 	useEffect(() => {

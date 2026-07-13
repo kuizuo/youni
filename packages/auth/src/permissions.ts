@@ -1,6 +1,7 @@
+import { type UserRole, userRoles } from "@youni/db/schema/auth-values";
 import { createAccessControl } from "better-auth/plugins/access";
 
-export const adminUserRoleOptions = ["admin", "operator", "user"] as const;
+export const adminUserRoleOptions = userRoles;
 export const backofficeUserRoleOptions = ["admin", "operator"] as const;
 
 export const adminPermissionStatements = {
@@ -24,7 +25,7 @@ export const adminPermissionStatements = {
 	session: ["list", "revoke", "delete"],
 } as const;
 
-export type AdminUserRole = (typeof adminUserRoleOptions)[number];
+export type AdminUserRole = UserRole;
 export type BackofficeUserRole = (typeof backofficeUserRoleOptions)[number];
 export type AdminPermissionResource = keyof typeof adminPermissionStatements;
 export type AdminPermissionRequest = {

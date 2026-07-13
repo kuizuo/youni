@@ -7,11 +7,7 @@ import { DiscoverNoteActionsSheet } from "@/components/home/discover-note-action
 import { HomeEmptyState } from "@/components/home/empty";
 import { DiscoverFooter } from "@/components/home/footer";
 import { HomeTopBar } from "@/components/home/top-bar";
-import {
-	DISCOVER_PAGE_SIZE,
-	type HomeFeedNote,
-	type HomeTab,
-} from "@/components/home/types";
+import { DISCOVER_PAGE_SIZE, type HomeTab } from "@/components/home/types";
 import { NoteCard, type NoteCardNote } from "@/components/note-card";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
@@ -39,7 +35,7 @@ export default function HomeScreen() {
 	const recordedImpressionsRef = useRef(new Set<string>());
 	const guestOpenedNoteIdsRef = useRef(new Set<string>());
 	const [cachedFollowingFeed, setCachedFollowingFeed] = useState<{
-		notes: HomeFeedNote[];
+		notes: NoteCardNote[];
 		userId: string;
 	} | null>(null);
 	const sessionUserId = socialNavigation.currentUserId;
@@ -70,7 +66,7 @@ export default function HomeScreen() {
 		enabled: activeTab === "following" && Boolean(sessionUserId),
 	});
 	const discoverNotes = useMemo(() => {
-		return flattenPages<HomeFeedNote>(discoverFeed.data?.pages).filter(
+		return flattenPages<NoteCardNote>(discoverFeed.data?.pages).filter(
 			(item) =>
 				!hiddenNoteIds.has(item.id) &&
 				!hiddenAuthorIds.has(item.author.id) &&
@@ -168,7 +164,7 @@ export default function HomeScreen() {
 	);
 
 	const onViewableItemsChanged = useCallback(
-		({ viewableItems }: { viewableItems: Array<ViewToken<HomeFeedNote>> }) => {
+		({ viewableItems }: { viewableItems: Array<ViewToken<NoteCardNote>> }) => {
 			if (activeTab !== "discover") return;
 			const events = viewableItems.flatMap((viewToken) => {
 				const item = viewToken.item;

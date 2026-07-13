@@ -1,10 +1,10 @@
+import type { ChatMessage } from "@youni/api/contracts/messages";
 import { Spinner, Typography } from "heroui-native";
 import { FlatList, View } from "react-native";
 
 import { ErrorState } from "@/components/social-states";
 
 import { MessageBubble } from "./message-bubble";
-import type { ChatMessage } from "./types";
 
 export function ChatMessageList({
 	currentUserId,

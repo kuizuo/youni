@@ -1,5 +1,6 @@
 import { Funnel, Plus, Xmark } from "@gravity-ui/icons";
 import { Button, Dropdown, Label, SearchField } from "@heroui/react";
+import type { AdminUserStatus } from "@youni/api/admin-user-governance";
 
 import { userStatusLabel } from "@/components/admin-status";
 import {
@@ -7,7 +8,6 @@ import {
 	accountTypeOptions,
 	statusOptions,
 	type UserAccountType,
-	type UserStatus,
 } from "./types";
 
 export function UserFilters({
@@ -26,8 +26,8 @@ export function UserFilters({
 	onAccountTypeChange: (value: UserAccountType | "") => void;
 	onCreateUser: () => void;
 	onKeywordChange: (value: string) => void;
-	onStatusChange: (value: UserStatus | "") => void;
-	statusFilter: UserStatus | "";
+	onStatusChange: (value: AdminUserStatus | "") => void;
+	statusFilter: AdminUserStatus | "";
 }) {
 	const selectedStatusLabel = statusFilter
 		? userStatusLabel[statusFilter]
@@ -98,7 +98,7 @@ export function UserFilters({
 						<Dropdown.Menu
 							selectionMode="single"
 							selectedKeys={statusFilter ? [statusFilter] : []}
-							onAction={(key) => onStatusChange(key as UserStatus)}
+							onAction={(key) => onStatusChange(key as AdminUserStatus)}
 						>
 							{statusOptions.map((value) => (
 								<Dropdown.Item

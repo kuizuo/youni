@@ -2,6 +2,7 @@ import * as ImagePicker from "expo-image-picker";
 
 import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
+import type { ImageUploadResponse } from "@/lib/media/types";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
 const PROFILE_IMAGE_UPLOAD_TIMEOUT_MS = 30_000;
@@ -12,11 +13,6 @@ const PROFILE_IMAGE_MIME_EXTENSIONS = new Map([
 	["image/webp", "webp"],
 	["image/gif", "gif"],
 ]);
-
-type ProfileImageUploadResponse = {
-	key: string;
-	url: string;
-};
 
 type ProfileImageOptions = {
 	aspect: [number, number];
@@ -92,7 +88,7 @@ async function parseUploadResponse(response: Response, label: string) {
 		throw new Error(`${label}上传失败`);
 	}
 
-	return payload as ProfileImageUploadResponse;
+	return payload as ImageUploadResponse;
 }
 
 async function pickAndUploadProfileImage(options: ProfileImageOptions) {

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { NotificationItem } from "@youni/api/contracts/notifications";
 import {
 	Avatar,
 	PressableFeedback,
@@ -12,8 +13,6 @@ import ReanimatedSwipeable, {
 
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { formatRelativeTime } from "@/utils/format";
-
-import type { NotificationItem } from "./types";
 
 export function NotificationRow({
 	item,

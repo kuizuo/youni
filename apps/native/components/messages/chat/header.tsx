@@ -1,8 +1,7 @@
+import type { ChatPeer } from "@youni/api/contracts/messages";
 import { Avatar, useThemeColor } from "heroui-native";
 
 import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
-
-import type { ChatPeer } from "./types";
 
 export function ChatHeader({
 	peer,

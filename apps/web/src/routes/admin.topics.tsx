@@ -5,6 +5,7 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
+import type { AdminTopicListItem } from "@youni/api/contracts/admin";
 import type { FormEvent } from "react";
 import { useCallback, useState } from "react";
 
@@ -15,7 +16,6 @@ import { TopicFilters } from "./-admin-topics/topic-filters";
 import { TopicFormDrawer } from "./-admin-topics/topic-form-drawer";
 import { TopicTable } from "./-admin-topics/topic-table";
 import {
-	type AdminTopicListItem,
 	emptyTopicForm,
 	getErrorMessage,
 	type TopicFormMode,
@@ -127,7 +127,7 @@ function AdminTopicsRoute() {
 				isDeletePending={deleteMutation.isPending}
 				isFetching={topics.isFetching}
 				pagination={list.pagination}
-				topics={(topics.data?.items ?? []) as AdminTopicListItem[]}
+				topics={topics.data?.items ?? []}
 				total={topics.data?.total ?? 0}
 				onDelete={deleteTopic}
 				onEdit={startEdit}

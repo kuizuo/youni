@@ -12,6 +12,7 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
+import type { AdminTopicListItem } from "@youni/api/contracts/admin";
 import { useCallback, useMemo, useState } from "react";
 import {
 	AdminTablePagination,
@@ -19,8 +20,6 @@ import {
 	normalizeTablePaginationUpdater,
 } from "@/components/admin-table-pagination";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
-
-import type { AdminTopicListItem } from "./types";
 
 const columnHelper = createColumnHelper<AdminTopicListItem>();
 

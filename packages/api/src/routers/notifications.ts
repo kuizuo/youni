@@ -10,6 +10,7 @@ import { and, count, desc, eq, inArray } from "drizzle-orm";
 import type z from "zod";
 
 import type {
+	NotificationCategory,
 	notificationCategoryInput,
 	notificationTypeInput,
 } from "../contracts/notifications";
@@ -43,7 +44,7 @@ async function getNotificationSummaryItem({
 	types,
 	userId,
 }: {
-	category: "activity" | "followers" | "system";
+	category: NotificationCategory;
 	id: string;
 	types?: z.infer<typeof notificationTypeInput>[];
 	userId: string;

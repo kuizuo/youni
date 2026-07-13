@@ -2,10 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Typography, useThemeColor } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 
-import { NoteCard } from "@/components/note-card";
+import { NoteCard, type NoteCardNote } from "@/components/note-card";
 import { EmptyState, FeedSkeleton } from "@/components/social-states";
-
-import type { UserFeedNote } from "./types";
 
 const FEED_MAX_WIDTH = 576;
 const FEED_HORIZONTAL_PADDING = 24;
@@ -18,7 +16,7 @@ export function UserProfileFeedSection({
 	notes,
 }: {
 	isLoading: boolean;
-	notes: UserFeedNote[];
+	notes: NoteCardNote[];
 }) {
 	const mutedColor = useThemeColor("muted");
 	const dimensions = useWindowDimensions();
@@ -69,13 +67,13 @@ export function UserProfileFeedSection({
 	);
 }
 
-function FeedCell({ item }: { item: UserFeedNote }) {
+function FeedCell({ item }: { item: NoteCardNote }) {
 	return <NoteCard compact note={item} />;
 }
 
-function createMasonryColumns(items: UserFeedNote[], cardWidth: number) {
-	const left: UserFeedNote[] = [];
-	const right: UserFeedNote[] = [];
+function createMasonryColumns(items: NoteCardNote[], cardWidth: number) {
+	const left: NoteCardNote[] = [];
+	const right: NoteCardNote[] = [];
 	let leftHeight = 0;
 	let rightHeight = 0;
 
@@ -94,7 +92,7 @@ function createMasonryColumns(items: UserFeedNote[], cardWidth: number) {
 	return [left, right];
 }
 
-function estimateCompactNoteCardHeight(item: UserFeedNote, cardWidth: number) {
+function estimateCompactNoteCardHeight(item: NoteCardNote, cardWidth: number) {
 	const coverImageMeta = item.imageMetas?.find(
 		(meta) => meta.url === item.cover,
 	);

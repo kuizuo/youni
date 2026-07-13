@@ -1,4 +1,5 @@
 import { Button, Drawer } from "@heroui/react";
+import type { AdminUserRole } from "@youni/api/admin-user-governance";
 import type { FormEvent } from "react";
 
 import { userRoleLabel, userStatusLabel } from "@/components/admin-status";
@@ -10,7 +11,6 @@ import {
 	getAvailableStatusOptions,
 	type UserFormMode,
 	type UserFormState,
-	type UserRole,
 	userFormId,
 } from "./types";
 import {
@@ -33,7 +33,7 @@ export function UserFormDrawer({
 	onSubmit,
 	onUploadAvatar,
 }: {
-	currentRole?: UserRole;
+	currentRole?: AdminUserRole;
 	currentUserId?: string;
 	form: UserFormState;
 	formMessage: string | null;

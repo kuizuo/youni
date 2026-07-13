@@ -1,7 +1,5 @@
 import * as SecureStore from "expo-secure-store";
 
-import type { NoteCard } from "@/components/note-card";
-
 export const PAGE_SIZE = 20;
 export const SEARCH_HISTORY_LIMIT = 8;
 export const SEARCH_TABS = [
@@ -13,26 +11,6 @@ export const SEARCH_TABS = [
 const SEARCH_HISTORY_STORAGE_KEY = "youni.search.history";
 
 export type SearchTabKey = (typeof SEARCH_TABS)[number]["key"];
-export type NoteSearchItem = Parameters<typeof NoteCard>[0]["note"];
-export type UserSearchItem = {
-	id: string;
-	name: string;
-	email: string;
-	image: null | string;
-	handle: null | string;
-	bio: null | string;
-	noteCount: number;
-	followerCount: number;
-	followingCount: number;
-	likedCount: number;
-	isFollowing: boolean;
-};
-export type TopicSearchItem = {
-	id: string;
-	name: string;
-	noteCount: number;
-	discussionCount: number;
-};
 
 let searchHistoryCache: string[] = [];
 let hasLoadedSearchHistory = false;

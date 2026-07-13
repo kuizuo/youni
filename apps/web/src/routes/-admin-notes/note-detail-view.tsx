@@ -1,8 +1,11 @@
 import { Button, Card, Chip } from "@heroui/react";
+import type {
+	AdminContentNoteDetail,
+	AdminUserReference,
+} from "@youni/api/contracts/shared";
 import { NoteStatusBadge } from "@/components/admin-status";
 import { AppAvatar } from "@/components/app-avatar";
 
-import type { AdminNoteDetail, AdminNoteUserAction } from "./types";
 import { toNoteStatus } from "./types";
 
 export function NoteDetailView({
@@ -11,7 +14,7 @@ export function NoteDetailView({
 	onOpenTopic,
 	onOpenUser,
 }: {
-	note: AdminNoteDetail;
+	note: AdminContentNoteDetail;
 	onBack: () => void;
 	onOpenTopic: (topicId: string) => void;
 	onOpenUser: (userId: string) => void;
@@ -208,7 +211,7 @@ function UserActionList({
 	emptyText: string;
 	onOpenUser: (userId: string) => void;
 	title: string;
-	users: AdminNoteUserAction[];
+	users: AdminUserReference[];
 }) {
 	return (
 		<Card>

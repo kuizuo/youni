@@ -1,12 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import { Modal, Pressable, View } from "react-native";
 
 import { EditProfileSheet } from "@/components/profile/edit-profile-sheet";
-import type {
-	EditableProfile,
-	ProfileSessionUser,
-} from "@/components/profile/profile-tabs";
+import type { AuthUser } from "@/lib/auth-client";
 
 export function MeEditProfileSheetHost({
 	displayName,
@@ -18,8 +16,8 @@ export function MeEditProfileSheetHost({
 }: {
 	displayName: string;
 	isOpen: boolean;
-	profile?: EditableProfile;
-	user?: ProfileSessionUser;
+	profile?: ProfileUser;
+	user?: AuthUser;
 	onOpenChange: (isOpen: boolean) => void;
 	onSaved: () => Promise<void>;
 }) {

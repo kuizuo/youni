@@ -1,4 +1,4 @@
-export type LocalDraftVisibility = "followers" | "private" | "public";
+import type { NoteVisibility } from "@youni/api/contracts/shared";
 
 export type LocalDraftAdvancedOptions = {
 	allowComment: boolean;
@@ -28,7 +28,7 @@ export type LocalDraft = {
 	topics: string[];
 	updatedAt: number;
 	userId: string;
-	visibility: LocalDraftVisibility;
+	visibility: NoteVisibility;
 };
 
 export type LocalDraftSummary = Omit<LocalDraft, "images"> & {
@@ -49,5 +49,5 @@ export type SaveLocalDraftInput = {
 	title: string;
 	topics: string[];
 	userId: string;
-	visibility: LocalDraftVisibility;
+	visibility: NoteVisibility;
 };

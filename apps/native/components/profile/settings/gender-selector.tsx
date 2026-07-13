@@ -1,14 +1,13 @@
+import type { UserGender } from "@youni/api/contracts/shared";
 import { Button, Typography } from "heroui-native";
 import { View } from "react-native";
-
-export type GenderValue = "female" | "male" | "unknown";
 
 export function GenderSelector({
 	value,
 	onChange,
 }: {
-	value: GenderValue;
-	onChange: (value: GenderValue) => void;
+	value: UserGender;
+	onChange: (value: UserGender) => void;
 }) {
 	return (
 		<View className="gap-2">

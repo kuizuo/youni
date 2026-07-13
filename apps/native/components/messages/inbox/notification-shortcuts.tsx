@@ -1,16 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { NotificationSummaryGroup } from "@youni/api/contracts/notifications";
 import type { Href } from "expo-router";
 import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import type { NotificationIconColor } from "@/components/messages/notification-colors";
 import { NOTIFICATION_SHORTCUTS } from "./constants";
-import type { MessageGroupSummary } from "./types";
 
 export function NotificationShortcutsSection({
 	messageGroups,
 	onOpenAction,
 }: {
-	messageGroups: MessageGroupSummary[];
+	messageGroups: NotificationSummaryGroup[];
 	onOpenAction: (href: Href) => void;
 }) {
 	return (

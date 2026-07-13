@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import type {
+	ProfileConnectionType,
+	ProfileUser,
+} from "@youni/api/contracts/profiles";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Alert, FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -8,10 +12,6 @@ import { ListSeparator } from "@/components/shared/app-separator";
 import { ConnectionRow } from "@/components/users/connections/connection-row";
 import { ConnectionsEmptyState } from "@/components/users/connections/empty";
 import { ConnectionsHeader } from "@/components/users/connections/header";
-import type {
-	ConnectionType,
-	ConnectionUser,
-} from "@/components/users/connections/types";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { orpc } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
@@ -29,19 +29,17 @@ export default function UserConnectionsScreen() {
 	const userId = getRouteParam(params.userId) ?? "";
 	const title = getRouteParam(params.title) ?? "用户";
 	const socialActions = useSocialActions();
-	const [activeType, setActiveType] = useState<ConnectionType>(initialType);
+	const [activeType, setActiveType] =
+		useState<ProfileConnectionType>(initialType);
 	const connections = useQuery({
 		...orpc.profiles.connections.queryOptions({
 			input: { userId: userId || "missing", type: activeType, limit: 60 },
 		}),
 		enabled: Boolean(userId),
 	});
-	const items = useMemo(
-		() => (connections.data ?? []) as ConnectionUser[],
-		[connections.data],
-	);
+	const items: ProfileUser[] = connections.data ?? [];
 
-	const switchType = (type: ConnectionType) => {
+	const switchType = (type: ProfileConnectionType) => {
 		setActiveType(type);
 	};
 
@@ -49,7 +47,7 @@ export default function UserConnectionsScreen() {
 		socialActions.goTo({ type: "user", id });
 	};
 
-	const runToggleFollow = (item: ConnectionUser) => {
+	const runToggleFollow = (item: ProfileUser) => {
 		if (socialActions.currentUserId === item.id) return;
 		if (socialActions.pending.follow(item.id)) return;
 		socialActions.toggleFollow(
@@ -60,7 +58,7 @@ export default function UserConnectionsScreen() {
 		);
 	};
 
-	const toggleFollow = (item: ConnectionUser) => {
+	const toggleFollow = (item: ProfileUser) => {
 		if (!item.isFollowing) {
 			runToggleFollow(item);
 			return;

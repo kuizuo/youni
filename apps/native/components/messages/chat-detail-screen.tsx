@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ChatMessage } from "@youni/api/contracts/messages";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Keyboard,
 	KeyboardAvoidingView,
@@ -14,7 +15,6 @@ import type { EmojiType } from "rn-emoji-keyboard";
 import { ChatHeader } from "@/components/messages/chat/header";
 import { ChatInputBar } from "@/components/messages/chat/input-bar";
 import { ChatMessageList } from "@/components/messages/chat/message-list";
-import type { ChatMessage } from "@/components/messages/chat/types";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -97,10 +97,7 @@ export default function ChatDetailScreen() {
 			},
 		}),
 	);
-	const messages = useMemo(
-		() => (chat.data?.messages ?? []) as ChatMessage[],
-		[chat.data?.messages],
-	);
+	const messages: ChatMessage[] = chat.data?.messages ?? [];
 	const peer = chat.data?.peer;
 	const disabledReason = chat.data?.isBlockedByPeer
 		? "对方已将你加入黑名单，暂时不能发送私信"

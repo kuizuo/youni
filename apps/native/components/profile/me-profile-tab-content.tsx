@@ -6,7 +6,7 @@ import Animated, {
 	useAnimatedStyle,
 } from "react-native-reanimated";
 
-import { NoteCard } from "@/components/note-card";
+import { NoteCard, type NoteCardNote } from "@/components/note-card";
 import {
 	PROFILE_TAB_BAR_HEIGHT,
 	PROFILE_TABS,
@@ -19,13 +19,6 @@ const FEED_HORIZONTAL_PADDING = 24;
 const FEED_COLUMN_GAP = 12;
 const FEED_ITEM_GAP = 12;
 const COMPACT_CARD_BODY_HEIGHT = 82;
-
-export type ProfileFeedNote = Parameters<typeof NoteCard>[0]["note"];
-export type ProfileFeedItem = ProfileFeedNote;
-
-export function createProfileFeedItems(notes: ProfileFeedNote[]) {
-	return notes;
-}
 
 export function ProfileTabBar({
 	accentColor,
@@ -133,7 +126,7 @@ export function ProfileTabPage({
 	width,
 }: {
 	emptyState: ReactNode;
-	feedItems: ProfileFeedItem[];
+	feedItems: NoteCardNote[];
 	isError: boolean;
 	isLoading: boolean;
 	onRetry: () => void;
@@ -181,13 +174,13 @@ export function ProfileTabPage({
 	);
 }
 
-function FeedCell({ item }: { item: ProfileFeedItem }) {
+function FeedCell({ item }: { item: NoteCardNote }) {
 	return <NoteCard compact note={item} />;
 }
 
-function createMasonryColumns(items: ProfileFeedItem[], cardWidth: number) {
-	const left: ProfileFeedItem[] = [];
-	const right: ProfileFeedItem[] = [];
+function createMasonryColumns(items: NoteCardNote[], cardWidth: number) {
+	const left: NoteCardNote[] = [];
+	const right: NoteCardNote[] = [];
 	let leftHeight = 0;
 	let rightHeight = 0;
 
@@ -206,10 +199,7 @@ function createMasonryColumns(items: ProfileFeedItem[], cardWidth: number) {
 	return [left, right];
 }
 
-function estimateCompactNoteCardHeight(
-	item: ProfileFeedItem,
-	cardWidth: number,
-) {
+function estimateCompactNoteCardHeight(item: NoteCardNote, cardWidth: number) {
 	const coverImageMeta = item.imageMetas?.find(
 		(meta) => meta.url === item.cover,
 	);

@@ -1,6 +1,17 @@
+import type { UserRow } from "@youni/db/schema/auth";
+import { type UserGender, userGenders } from "@youni/db/schema/auth-values";
+import type { NoteRow } from "@youni/db/schema/content";
 import z from "zod";
 
 // ====== Input ======
+
+export {
+	type NoteStatus as ContentNoteStatus,
+	type NoteVisibility,
+	noteStatuses,
+} from "@youni/db/schema/content-values";
+export type { UserGender };
+export { userGenders };
 
 export const idInput = z.object({ id: z.string().min(1) });
 
@@ -15,41 +26,7 @@ export const paginatedListInput = listInput.extend({
 
 // ====== Output ======
 
-export type ContentNoteStatus =
-	| "audit"
-	| "draft"
-	| "published"
-	| "rejected"
-	| "hidden";
-
-export type ContentNoteRow = {
-	id: string;
-	title: string;
-	content: string;
-	images: string[];
-	imageMetas: Array<{ height: number; url: string; width: number }>;
-	cover: string | null;
-	locationName: string | null;
-	visibility: "public" | "followers" | "private";
-	components: Array<{
-		options?: string[];
-		title: string;
-		type: "file" | "poll";
-		value?: string;
-	}>;
-	advancedOptions: {
-		allowComment: boolean;
-		allowShare: boolean;
-		contentDisclosure?: string | null;
-		isOriginal: boolean;
-	};
-	status: ContentNoteStatus;
-	rejectionReason: string | null;
-	publishedAt: Date | null;
-	draftSavedAt: Date | null;
-	createdAt: Date;
-	updatedAt: Date;
-	userId: string;
+export type ContentNoteRow = NoteRow & {
 	authorName: string;
 	authorImage: string | null;
 	authorHandle: string | null;
@@ -71,33 +48,7 @@ export type HydratedContentNote = ContentNoteRow & {
 	};
 };
 
-export type AdminContentNoteRow = {
-	id: string;
-	title: string;
-	content: string;
-	cover: string | null;
-	images: string[];
-	imageMetas: Array<{ height: number; url: string; width: number }>;
-	locationName: string | null;
-	visibility: "public" | "followers" | "private";
-	components: Array<{
-		options?: string[];
-		title: string;
-		type: "file" | "poll";
-		value?: string;
-	}>;
-	advancedOptions: {
-		allowComment: boolean;
-		allowShare: boolean;
-		contentDisclosure?: string | null;
-		isOriginal: boolean;
-	};
-	status: ContentNoteStatus;
-	rejectionReason: string | null;
-	createdAt: Date;
-	publishedAt: Date | null;
-	draftSavedAt: Date | null;
-	userId: string;
+export type AdminContentNoteRow = Omit<NoteRow, "updatedAt"> & {
 	authorName: string;
 	authorEmail: string;
 };
@@ -110,6 +61,13 @@ export type AdminHydratedContentNote<
 	likedCount: number;
 	commentCount: number;
 	collectedCount: number;
+};
+
+export type AdminUserReference = Pick<
+	UserRow,
+	"name" | "email" | "image" | "createdAt"
+> & {
+	userId: string;
 };
 
 export type AdminContentNoteDetail = AdminHydratedContentNote<
@@ -128,18 +86,6 @@ export type AdminContentNoteDetail = AdminHydratedContentNote<
 		authorEmail: string;
 		authorImage: string | null;
 	}>;
-	likedUsers: Array<{
-		userId: string;
-		name: string;
-		email: string;
-		image: string | null;
-		createdAt: Date;
-	}>;
-	collectedUsers: Array<{
-		userId: string;
-		name: string;
-		email: string;
-		image: string | null;
-		createdAt: Date;
-	}>;
+	likedUsers: AdminUserReference[];
+	collectedUsers: AdminUserReference[];
 };

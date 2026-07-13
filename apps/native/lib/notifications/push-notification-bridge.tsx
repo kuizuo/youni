@@ -8,6 +8,7 @@ import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import {
 	getNotificationIntent,
+	type NotificationData,
 	toSocialHref,
 } from "@/lib/social/navigation-intents";
 import { client } from "@/utils/orpc";
@@ -24,12 +25,6 @@ function loadNotifications() {
 	notificationsModulePromise ??= import("expo-notifications");
 	return notificationsModulePromise;
 }
-
-type NotificationData = {
-	noteId?: unknown;
-	targetId?: unknown;
-	targetType?: unknown;
-};
 
 function getPlatform() {
 	if (Platform.OS === "android" || Platform.OS === "ios") {

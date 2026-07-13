@@ -10,16 +10,14 @@ import { ulid } from "ulid";
 
 import { timestampColumn } from "./_columns";
 import { user } from "./auth";
+import { noteStatuses, noteVisibilities } from "./content-values";
 
-export const noteStatuses = [
-	"draft",
-	"audit",
-	"published",
-	"rejected",
-	"hidden",
-] as const;
-
-export const noteVisibilities = ["public", "followers", "private"] as const;
+export {
+	type NoteStatus,
+	type NoteVisibility,
+	noteStatuses,
+	noteVisibilities,
+} from "./content-values";
 
 export const note = sqliteTable(
 	"note",
@@ -82,6 +80,8 @@ export const note = sqliteTable(
 	],
 );
 
+export type NoteRow = typeof note.$inferSelect;
+
 export const topic = sqliteTable(
 	"topic",
 	{
@@ -97,6 +97,8 @@ export const topic = sqliteTable(
 	},
 	(table) => [uniqueIndex("topic_name_idx").on(table.name)],
 );
+
+export type TopicRow = typeof topic.$inferSelect;
 
 export const noteTopic = sqliteTable(
 	"note_topic",
@@ -206,3 +208,5 @@ export const noteViewHistory = sqliteTable(
 		index("note_view_history_note_idx").on(table.noteId),
 	],
 );
+
+export type NoteViewHistoryRow = typeof noteViewHistory.$inferSelect;

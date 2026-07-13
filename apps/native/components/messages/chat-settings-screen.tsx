@@ -37,21 +37,6 @@ const SWITCH_THUMB_ANIMATION = {
 	},
 };
 
-type ChatSettingsData = {
-	hasBlockedPeer: boolean;
-	id: string;
-	isBlockedByPeer: boolean;
-	isFollowing: boolean;
-	peer: {
-		bio: null | string;
-		email: string;
-		handle: null | string;
-		id: string;
-		image: null | string;
-		name: string;
-	};
-};
-
 export default function ChatSettingsScreen() {
 	const params = useLocalSearchParams<{ id?: string | string[] }>();
 	const conversationId = getRouteParam(params.id) ?? "";
@@ -69,7 +54,7 @@ export default function ChatSettingsScreen() {
 			conversationId && isRegisteredUser(socialActions.session.data?.user),
 		),
 	});
-	const data = settings.data as ChatSettingsData | undefined;
+	const data = settings.data;
 	const isFollowing = data?.isFollowing ?? false;
 	const isBlocked = data?.hasBlockedPeer ?? false;
 

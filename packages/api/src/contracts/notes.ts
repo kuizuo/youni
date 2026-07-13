@@ -1,7 +1,12 @@
+import { noteVisibilities } from "@youni/db/schema/content-values";
 import z from "zod";
 import type { CommentListRow } from "./comments";
 import { output, procedure } from "./procedure";
-import type { ContentNoteRow, HydratedContentNote } from "./shared";
+import type {
+	ContentNoteRow,
+	HydratedContentNote,
+	NoteVisibility,
+} from "./shared";
 import { idInput, listInput, paginatedListInput } from "./shared";
 
 // ====== Input ======
@@ -22,7 +27,7 @@ export const noteCreateInput = z.object({
 		.default([]),
 	topics: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
 	locationName: z.string().trim().min(1).max(80).optional(),
-	visibility: z.enum(["public", "followers", "private"]).default("public"),
+	visibility: z.enum(noteVisibilities).default("public"),
 	components: z
 		.array(
 			z.object({
@@ -52,7 +57,7 @@ export const noteEditInput = noteCreateInput.extend({ id: z.string().min(1) });
 
 export const noteVisibilityUpdateInput = z.object({
 	id: z.string().min(1),
-	visibility: z.enum(["public", "followers", "private"]),
+	visibility: z.enum(noteVisibilities),
 });
 
 export const noteFeedInput = z.object({
@@ -132,7 +137,7 @@ export type NotesOutputs = {
 	updateNote: { id: string; status: "audit" };
 	updateNoteVisibility: {
 		id: string;
-		visibility: "public" | "followers" | "private";
+		visibility: NoteVisibility;
 	};
 	deleteMyNote: { ok: boolean };
 	creatorStats: {

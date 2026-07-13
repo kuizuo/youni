@@ -82,3 +82,5 @@ export const directMessage = sqliteTable(
 		index("direct_message_sender_idx").on(table.senderId),
 	],
 );
+
+export type DirectMessageRow = typeof directMessage.$inferSelect;

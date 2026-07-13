@@ -1,4 +1,9 @@
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import type {
+	CommentSort,
+	CommentListRow as NoteComment,
+} from "@youni/api/contracts/comments";
+import type { NoteVisibility } from "@youni/api/contracts/shared";
 import * as Network from "expo-network";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,15 +34,12 @@ import { AppSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
+import type { TextSelection } from "@/lib/types/text-input";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { client, orpc, queryClient } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
-import {
-	NoteActionMenu,
-	type NoteVisibility,
-	NoteVisibilitySheet,
-} from "./note-detail/action-menu";
+import { NoteActionMenu, NoteVisibilitySheet } from "./note-detail/action-menu";
 import { BottomIconAction } from "./note-detail/bottom-actions";
 import { CommentComposerPanel } from "./note-detail/comment-composer";
 import {
@@ -52,12 +54,7 @@ import {
 	SimpleTopBar,
 } from "./note-detail/content";
 import { NoteDetailSkeleton } from "./note-detail/skeleton";
-import type {
-	CommentSort,
-	MentionTrigger,
-	NoteComment,
-	TextSelection,
-} from "./note-detail/types";
+import type { MentionTrigger } from "./note-detail/types";
 import { clampCursor, findMentionTrigger } from "./note-detail/utils";
 
 const COMMENTS_PAGE_SIZE = 20;
@@ -269,14 +266,10 @@ export default function NoteDetailScreen() {
 
 	const images = useMemo(() => note.data?.images ?? [], [note.data?.images]);
 	const rootComments = useMemo(
-		() =>
-			(comments.data?.pages.flatMap((page) => page.items) ??
-				[]) as NoteComment[],
+		() => comments.data?.pages.flatMap((page) => page.items) ?? [],
 		[comments.data?.pages],
 	);
-	const anchoredTargetComment = targetCommentAnchor.data?.comment as
-		| NoteComment
-		| undefined;
+	const anchoredTargetComment = targetCommentAnchor.data?.comment;
 	const targetRootCommentId =
 		targetCommentAnchor.data?.rootCommentId ?? targetCommentId;
 	const targetCommentRootIndex = useMemo(() => {

@@ -1,11 +1,9 @@
+import type { ProfileUser } from "@youni/api/contracts/profiles";
 import { BottomSheet } from "heroui-native";
 
 import { EditProfileSheet } from "@/components/profile/edit-profile-sheet";
-import type {
-	EditableProfile,
-	ProfileSessionUser,
-} from "@/components/profile/profile-tabs";
 import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
+import type { AuthUser } from "@/lib/auth-client";
 
 export function MeEditProfileSheetHost({
 	displayName,
@@ -17,8 +15,8 @@ export function MeEditProfileSheetHost({
 }: {
 	displayName: string;
 	isOpen: boolean;
-	profile?: EditableProfile;
-	user?: ProfileSessionUser;
+	profile?: ProfileUser;
+	user?: AuthUser;
 	onOpenChange: (isOpen: boolean) => void;
 	onSaved: () => Promise<void>;
 }) {

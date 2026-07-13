@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { ConversationItem } from "@youni/api/contracts/messages";
 import {
 	Avatar,
 	PressableFeedback,
@@ -10,8 +11,6 @@ import { View } from "react-native";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { formatRelativeTime } from "@/utils/format";
-
-import type { ConversationItem } from "./types";
 
 export function ConversationRow({ item }: { item: ConversationItem }) {
 	const socialNavigation = useSocialNavigation();

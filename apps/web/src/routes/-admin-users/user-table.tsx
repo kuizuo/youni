@@ -12,6 +12,11 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
+import type {
+	AdminUserRole,
+	AdminUserStatus,
+} from "@youni/api/admin-user-governance";
+import type { AdminUserListItem } from "@youni/api/contracts/admin";
 import { useCallback, useMemo, useState } from "react";
 import {
 	AnonymousUserBadge,
@@ -26,14 +31,7 @@ import {
 import { AdminTableEmptyState } from "@/components/admin-table-state";
 import { AppAvatar } from "@/components/app-avatar";
 
-import {
-	type AdminUserListItem,
-	canManageItem,
-	toUserRole,
-	toUserStatus,
-	type UserRole,
-	type UserStatus,
-} from "./types";
+import { canManageItem, toUserRole, toUserStatus } from "./types";
 
 const columnHelper = createColumnHelper<AdminUserListItem>();
 
@@ -87,7 +85,7 @@ export function UserTable({
 	canDeleteUsers?: boolean;
 	canRestoreUsers?: boolean;
 	canUpdateUsers?: boolean;
-	currentRole?: UserRole;
+	currentRole?: AdminUserRole;
 	currentUserId?: string;
 	isDeletePending: boolean;
 	isFetching: boolean;
@@ -97,7 +95,7 @@ export function UserTable({
 	onPaginationChange?: (pagination: PaginationState) => void;
 	onUpdateStatus: (
 		item: AdminUserListItem,
-		status: UserStatus,
+		status: AdminUserStatus,
 	) => Promise<void> | void;
 	pagination?: PaginationState;
 	total?: number;
@@ -383,11 +381,11 @@ function UserActionsCell({
 	isSelf: boolean;
 	isStatusBusy: boolean;
 	item: AdminUserListItem;
-	nextStatus: UserStatus;
+	nextStatus: AdminUserStatus;
 	onEdit: (item: AdminUserListItem) => void;
 	onUpdateStatus: (
 		item: AdminUserListItem,
-		status: UserStatus,
+		status: AdminUserStatus,
 	) => Promise<void> | void;
 }) {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);

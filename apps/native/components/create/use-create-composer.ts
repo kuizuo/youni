@@ -1,14 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { NoteVisibility } from "@youni/api/contracts/shared";
 import type * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import type {
-	AdvancedOptions,
-	NoteVisibility,
-	PublishSubmitMode,
-} from "@/components/create/create-types";
+import type { PublishSubmitMode } from "@/components/create/create-types";
 import { reorderImages } from "@/components/media/image-order";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
@@ -23,6 +20,7 @@ import {
 	getLocalDraft,
 	saveLocalDraft,
 } from "@/lib/local-drafts/store";
+import type { LocalDraftAdvancedOptions } from "@/lib/local-drafts/types";
 import { prepareMediaImage } from "@/lib/media/prepare-media-image";
 import { selectImagesFromSystem } from "@/lib/media/system-image-picker";
 import type { MediaImage } from "@/lib/media/types";
@@ -36,13 +34,13 @@ import { confirmAction } from "@/utils/confirm-action";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
-const DEFAULT_ADVANCED_OPTIONS: AdvancedOptions = {
+const DEFAULT_ADVANCED_OPTIONS: LocalDraftAdvancedOptions = {
 	allowComment: true,
 	allowShare: true,
 };
 
 function composerSignature(composer: {
-	advancedOptions: AdvancedOptions;
+	advancedOptions: LocalDraftAdvancedOptions;
 	content: string;
 	images: MediaImage[];
 	title: string;
@@ -108,9 +106,8 @@ export function useCreateComposer({
 	const [images, setImages] = useState<MediaImage[]>([]);
 	const [topics, setTopics] = useState<string[]>([]);
 	const [visibility, setVisibility] = useState<NoteVisibility>("public");
-	const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>(
-		DEFAULT_ADVANCED_OPTIONS,
-	);
+	const [advancedOptions, setAdvancedOptions] =
+		useState<LocalDraftAdvancedOptions>(DEFAULT_ADVANCED_OPTIONS);
 	const [pendingSubmitMode, setPendingSubmitMode] =
 		useState<PublishSubmitMode | null>(null);
 	const [isAddingImages, setIsAddingImages] = useState(false);

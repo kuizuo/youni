@@ -4,9 +4,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { AdminPage } from "@/components/admin-shell";
 import { orpc } from "@/utils/orpc";
-import type { AdminNoteListItem } from "./-admin-notes/types";
 import { TopicDetailView } from "./-admin-topics/topic-detail-view";
-import type { AdminTopicListItem } from "./-admin-topics/types";
 
 export const Route = createFileRoute("/admin/topics/$topicId")({
 	component: AdminTopicDetailRoute,
@@ -26,8 +24,8 @@ function AdminTopicDetailRoute() {
 			) : detail.data ? (
 				<TopicDetailView
 					isFetching={detail.isFetching}
-					notes={detail.data.notes as AdminNoteListItem[]}
-					topic={detail.data.topic as AdminTopicListItem}
+					notes={detail.data.notes}
+					topic={detail.data.topic}
 					onBack={() => navigate({ to: "/admin/topics" })}
 					onOpenNote={(item) =>
 						navigate({

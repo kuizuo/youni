@@ -1,13 +1,20 @@
+import type { UserRow } from "@youni/db/schema/auth";
+import type { NoteRow, TopicRow } from "@youni/db/schema/content";
+import { noteStatuses } from "@youni/db/schema/content-values";
 import z from "zod";
 import {
+	type AdminUserRole,
 	adminUserRoleOptions,
 	adminUserStatusOptions,
 	manageableUserStatusOptions,
 } from "../admin-user-governance";
 import { output, procedure } from "./procedure";
-import type {
-	AdminContentNoteDetail,
-	AdminHydratedContentNote,
+import {
+	type AdminContentNoteDetail,
+	type AdminHydratedContentNote,
+	type AdminUserReference,
+	type ContentNoteStatus,
+	userGenders,
 } from "./shared";
 
 // ====== Input ======
@@ -18,9 +25,7 @@ const manageableAdminUserStatusInput = z.enum(manageableUserStatusOptions);
 
 export const adminListInput = z.object({
 	keyword: z.string().trim().optional(),
-	status: z
-		.enum(["draft", "audit", "published", "rejected", "hidden"])
-		.optional(),
+	status: z.enum(noteStatuses).optional(),
 	limit: z.number().int().min(1).max(200).default(10),
 	offset: z.number().int().min(0).default(0),
 });
@@ -73,7 +78,7 @@ export const adminUserCreateInput = z.object({
 		.optional()
 		.or(z.literal("")),
 	bio: z.string().trim().max(160).optional(),
-	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
+	gender: z.enum(userGenders).default("unknown"),
 });
 
 export const adminUserUpdateInput = adminUserCreateInput
@@ -96,7 +101,7 @@ export const adminCurrentProfileInput = z.object({
 		.optional()
 		.or(z.literal("")),
 	bio: z.string().trim().max(160).optional(),
-	gender: z.enum(["unknown", "male", "female"]).default("unknown"),
+	gender: z.enum(userGenders).default("unknown"),
 });
 
 export const adminUserRestoreInput = z.object({
@@ -118,37 +123,52 @@ export const adminSearchKeywordControlInput = z.object({
 
 // ====== Output ======
 
+export type AdminUserListItem = Pick<
+	UserRow,
+	| "id"
+	| "name"
+	| "email"
+	| "image"
+	| "handle"
+	| "bio"
+	| "gender"
+	| "isAnonymous"
+	| "role"
+	| "status"
+	| "createdAt"
+	| "updatedAt"
+> & {
+	noteCount: number;
+	followerCount: number;
+	followingCount: number;
+};
+
+export type AdminTopicListItem = Pick<TopicRow, "id" | "name" | "createdAt"> & {
+	noteCount: number;
+};
+
+type AdminAccount = Pick<
+	UserRow,
+	| "id"
+	| "name"
+	| "email"
+	| "image"
+	| "handle"
+	| "bio"
+	| "gender"
+	| "role"
+	| "status"
+	| "createdAt"
+	| "updatedAt"
+>;
+
 export type AdminOutputs = {
 	me: {
 		isAdmin: boolean;
-		role: "admin" | "operator" | "user";
-		user: {
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			handle: string | null;
-			bio: string | null;
-			gender: string;
-			role: string;
-			status: string;
-			createdAt: Date;
-			updatedAt: Date;
-		};
+		role: AdminUserRole;
+		user: AdminAccount;
 	};
-	updateCurrentProfile: {
-		id: string;
-		name: string;
-		email: string;
-		image: string | null;
-		handle: string | null;
-		bio: string | null;
-		gender: string;
-		role: string;
-		status: string;
-		createdAt: Date;
-		updatedAt: Date;
-	};
+	updateCurrentProfile: AdminAccount;
 	overview: {
 		noteCount: number;
 		auditCount: number;
@@ -160,7 +180,7 @@ export type AdminOutputs = {
 		recentNotes: {
 			id: string;
 			title: string;
-			status: "draft" | "audit" | "published" | "rejected" | "hidden";
+			status: ContentNoteStatus;
 			createdAt: Date;
 			authorName: string;
 		}[];
@@ -214,296 +234,37 @@ export type AdminOutputs = {
 	};
 	setSearchKeywordExcluded: { excluded: boolean; keyword: string };
 	notes: {
-		items: AdminHydratedContentNote<{
-			id: string;
-			title: string;
-			content: string;
-			cover: string | null;
-			images: string[];
-			imageMetas: { height: number; url: string; width: number }[];
-			locationName: string | null;
-			visibility: "public" | "followers" | "private";
-			components: {
-				options?: string[];
-				title: string;
-				type: "file" | "poll";
-				value?: string;
-			}[];
-			advancedOptions: {
-				allowComment: boolean;
-				allowShare: boolean;
-				contentDisclosure?: string | null;
-				isOriginal: boolean;
-			};
-			status: "draft" | "audit" | "published" | "rejected" | "hidden";
-			rejectionReason: string | null;
-			createdAt: Date;
-			publishedAt: Date | null;
-			draftSavedAt: Date | null;
-			userId: string;
-			authorName: string;
-			authorEmail: string;
-		}>[];
+		items: AdminHydratedContentNote[];
 		total: number;
 	};
 	noteDetail: AdminContentNoteDetail;
-	updateNoteStatus:
-		| {
-				title: string;
-				images: string[];
-				id: string;
-				status: "draft" | "audit" | "published" | "rejected" | "hidden";
-				createdAt: Date;
-				updatedAt: Date;
-				userId: string;
-				content: string;
-				imageMetas: { height: number; url: string; width: number }[];
-				cover: string | null;
-				locationName: string | null;
-				visibility: "public" | "followers" | "private";
-				components: {
-					options?: string[];
-					title: string;
-					type: "file" | "poll";
-					value?: string;
-				}[];
-				advancedOptions: {
-					allowComment: boolean;
-					allowShare: boolean;
-					contentDisclosure?: string | null;
-					isOriginal: boolean;
-				};
-				rejectionReason: string | null;
-				publishedAt: Date | null;
-				draftSavedAt: Date | null;
-		  }
-		| undefined;
+	updateNoteStatus: NoteRow | undefined;
 	deleteNote: { ok: boolean };
 	topics: {
-		items: { noteCount: number; id: string; name: string; createdAt: Date }[];
+		items: AdminTopicListItem[];
 		total: number;
 	};
 	topicDetail: {
-		topic: {
-			noteCount: number;
-			id: string;
-			name: string;
-			createdAt: Date;
-			updatedAt: Date;
-		};
-		notes: AdminHydratedContentNote<{
-			id: string;
-			title: string;
-			content: string;
-			cover: string | null;
-			images: string[];
-			imageMetas: { height: number; url: string; width: number }[];
-			locationName: string | null;
-			visibility: "public" | "followers" | "private";
-			components: {
-				options?: string[];
-				title: string;
-				type: "file" | "poll";
-				value?: string;
-			}[];
-			advancedOptions: {
-				allowComment: boolean;
-				allowShare: boolean;
-				contentDisclosure?: string | null;
-				isOriginal: boolean;
-			};
-			status: "draft" | "audit" | "published" | "rejected" | "hidden";
-			rejectionReason: string | null;
-			createdAt: Date;
-			publishedAt: Date | null;
-			draftSavedAt: Date | null;
-			userId: string;
-			authorName: string;
-			authorEmail: string;
-		}>[];
+		topic: AdminTopicListItem & Pick<TopicRow, "updatedAt">;
+		notes: AdminHydratedContentNote[];
 	};
-	saveTopic:
-		| { name: string; id: string; createdAt: Date; updatedAt: Date }
-		| undefined;
+	saveTopic: TopicRow | undefined;
 	deleteTopic: { ok: boolean };
 	users: {
-		items: {
-			noteCount: number;
-			followerCount: number;
-			followingCount: number;
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			handle: string | null;
-			bio: string | null;
-			gender: string;
-			isAnonymous: boolean;
-			role: string;
-			status: string;
-			createdAt: Date;
-			updatedAt: Date;
-		}[];
+		items: AdminUserListItem[];
 		total: number;
 	};
 	userDetail: {
-		user: {
-			noteCount: number;
-			followerCount: number;
-			followingCount: number;
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			handle: string | null;
-			bio: string | null;
-			gender: string;
-			isAnonymous: boolean;
-			role: string;
-			status: string;
-			createdAt: Date;
-			updatedAt: Date;
-		};
-		notes: AdminHydratedContentNote<{
-			id: string;
-			title: string;
-			content: string;
-			cover: string | null;
-			images: string[];
-			imageMetas: { height: number; url: string; width: number }[];
-			locationName: string | null;
-			visibility: "public" | "followers" | "private";
-			components: {
-				options?: string[];
-				title: string;
-				type: "file" | "poll";
-				value?: string;
-			}[];
-			advancedOptions: {
-				allowComment: boolean;
-				allowShare: boolean;
-				contentDisclosure?: string | null;
-				isOriginal: boolean;
-			};
-			status: "draft" | "audit" | "published" | "rejected" | "hidden";
-			rejectionReason: string | null;
-			createdAt: Date;
-			publishedAt: Date | null;
-			draftSavedAt: Date | null;
-			userId: string;
-			authorName: string;
-			authorEmail: string;
-		}>[];
-		followers: {
-			userId: string;
-			name: string;
-			email: string;
-			image: string | null;
-			createdAt: Date;
-		}[];
-		following: {
-			userId: string;
-			name: string;
-			email: string;
-			image: string | null;
-			createdAt: Date;
-		}[];
+		user: AdminUserListItem;
+		notes: AdminHydratedContentNote[];
+		followers: AdminUserReference[];
+		following: AdminUserReference[];
 	};
-	createUser:
-		| {
-				name: string;
-				email: string;
-				id: string;
-				emailVerified: boolean;
-				image: string | null;
-				handle: string | null;
-				bio: string | null;
-				gender: string;
-				role: string;
-				status: string;
-				banned: boolean;
-				banReason: string | null;
-				banExpires: Date | null;
-				createdAt: Date;
-				updatedAt: Date;
-		  }
-		| undefined;
-	updateUser:
-		| {
-				name: string;
-				email: string;
-				id: string;
-				emailVerified: boolean;
-				image: string | null;
-				handle: string | null;
-				bio: string | null;
-				gender: string;
-				role: string;
-				status: string;
-				banned: boolean;
-				banReason: string | null;
-				banExpires: Date | null;
-				createdAt: Date;
-				updatedAt: Date;
-		  }
-		| undefined;
-	updateUserStatus:
-		| {
-				name: string;
-				email: string;
-				id: string;
-				emailVerified: boolean;
-				image: string | null;
-				handle: string | null;
-				bio: string | null;
-				gender: string;
-				role: string;
-				status: string;
-				banned: boolean;
-				banReason: string | null;
-				banExpires: Date | null;
-				createdAt: Date;
-				updatedAt: Date;
-		  }
-		| undefined;
-	softDeleteUser:
-		| {
-				name: string;
-				email: string;
-				id: string;
-				emailVerified: boolean;
-				image: string | null;
-				handle: string | null;
-				bio: string | null;
-				gender: string;
-				role: string;
-				status: string;
-				banned: boolean;
-				banReason: string | null;
-				banExpires: Date | null;
-				createdAt: Date;
-				updatedAt: Date;
-		  }
-		| undefined;
-	restoreUser:
-		| {
-				name: string;
-				email: string;
-				id: string;
-				emailVerified: boolean;
-				image: string | null;
-				handle: string | null;
-				bio: string | null;
-				gender: string;
-				role: string;
-				status: string;
-				banned: boolean;
-				banReason: string | null;
-				banExpires: Date | null;
-				createdAt: Date;
-				updatedAt: Date;
-		  }
-		| undefined;
+	createUser: UserRow | undefined;
+	updateUser: UserRow | undefined;
+	updateUserStatus: UserRow | undefined;
+	softDeleteUser: UserRow | undefined;
+	restoreUser: UserRow | undefined;
 };
 
 // ====== Contract ======

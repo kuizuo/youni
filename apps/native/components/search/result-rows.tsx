@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { ProfileUser } from "@youni/api/contracts/profiles";
+import type { TopicSearchItem } from "@youni/api/contracts/topics";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
@@ -10,10 +12,6 @@ import {
 } from "heroui-native";
 import { View } from "react-native";
 
-import type {
-	TopicSearchItem,
-	UserSearchItem,
-} from "@/components/search/search-utils";
 import { FollowButton } from "@/components/users/follow-button";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { formatCount } from "@/utils/format";
@@ -24,7 +22,7 @@ export function UserResultRow({
 	onToggleFollow,
 }: {
 	currentUserId?: string;
-	item: UserSearchItem;
+	item: ProfileUser;
 	onToggleFollow: (userId: string) => void;
 }) {
 	const router = useRouter();

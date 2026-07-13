@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { NoteVisibility } from "@youni/api/contracts/shared";
 import {
 	BottomSheet,
 	Button,
@@ -10,8 +11,6 @@ import { Modal, Pressable, View } from "react-native";
 
 import { ListDivider } from "@/components/create/create-ui";
 import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
-
-export type NoteVisibility = "followers" | "private" | "public";
 
 const VISIBILITY_OPTIONS: Array<{
 	icon: keyof typeof Ionicons.glyphMap;

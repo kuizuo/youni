@@ -1,5 +1,10 @@
 import type * as ImagePicker from "expo-image-picker";
 
+export type ImageUploadResponse = {
+	key: string;
+	url: string;
+};
+
 export type MediaFileAsset = {
 	file?: ImagePicker.ImagePickerAsset["file"];
 	fileName?: null | string;

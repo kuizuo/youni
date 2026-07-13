@@ -1,3 +1,4 @@
+import type { ProfileConnectionType } from "@youni/api/contracts/profiles";
 import type { Href } from "expo-router";
 
 import { getLoginHref } from "@/lib/auth-navigation";
@@ -20,11 +21,11 @@ export type SocialNavigationIntent =
 			title?: string;
 			type: "userConnections";
 			userId: string;
-			view: "followers" | "following";
+			view: ProfileConnectionType;
 	  }
 	| { type: "user"; id: string };
 
-type NotificationData = {
+export type NotificationData = {
 	noteId?: unknown;
 	targetId?: unknown;
 	targetType?: unknown;
