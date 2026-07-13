@@ -31,7 +31,7 @@ export default function UserConnectionsScreen() {
 	const socialActions = useSocialActions();
 	const [activeType, setActiveType] = useState<ConnectionType>(initialType);
 	const connections = useQuery({
-		...orpc.connections.queryOptions({
+		...orpc.profiles.connections.queryOptions({
 			input: { userId: userId || "missing", type: activeType, limit: 60 },
 		}),
 		enabled: Boolean(userId),

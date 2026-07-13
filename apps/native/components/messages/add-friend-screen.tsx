@@ -30,7 +30,7 @@ export default function AddFriendScreen() {
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const isAuthenticated = isRegisteredUser(session.data?.user);
 	const me = useQuery({
-		...orpc.me.queryOptions(),
+		...orpc.profiles.me.queryOptions(),
 		enabled: isAuthenticated,
 	});
 	const profile = me.data?.profile;

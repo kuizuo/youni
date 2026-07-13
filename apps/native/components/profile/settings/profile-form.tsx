@@ -60,7 +60,7 @@ export function SettingsProfileForm({
 	}, [profile, user]);
 
 	const updateProfile = useMutation(
-		orpc.updateProfile.mutationOptions({
+		orpc.profiles.updateProfile.mutationOptions({
 			onSuccess: async () => {
 				await onProfileSaved();
 				await queryClient.refetchQueries();

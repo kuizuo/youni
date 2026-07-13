@@ -131,7 +131,7 @@ export function useSocialActions() {
 	};
 
 	const likeMutation = useMutation(
-		orpc.toggleLike.mutationOptions<OptimisticMutationContext>({
+		orpc.notes.toggleLike.mutationOptions<OptimisticMutationContext>({
 			onError: (_error, _variables, context) => {
 				context?.rollback?.();
 			},
@@ -157,7 +157,7 @@ export function useSocialActions() {
 		}),
 	);
 	const collectMutation = useMutation(
-		orpc.toggleCollect.mutationOptions<OptimisticMutationContext>({
+		orpc.notes.toggleCollect.mutationOptions<OptimisticMutationContext>({
 			onError: (_error, _variables, context) => {
 				context?.rollback?.();
 			},
@@ -183,7 +183,7 @@ export function useSocialActions() {
 		}),
 	);
 	const followMutation = useMutation(
-		orpc.toggleFollow.mutationOptions<OptimisticMutationContext>({
+		orpc.profiles.toggleFollow.mutationOptions<OptimisticMutationContext>({
 			onError: (_error, _variables, context) => {
 				context?.rollback?.();
 			},
@@ -203,7 +203,7 @@ export function useSocialActions() {
 		}),
 	);
 	const commentMutation = useMutation(
-		orpc.addComment.mutationOptions<OptimisticMutationContext>({
+		orpc.comments.addComment.mutationOptions<OptimisticMutationContext>({
 			onError: (_error, _variables, context) => {
 				context?.rollback?.();
 			},
@@ -243,7 +243,7 @@ export function useSocialActions() {
 		}),
 	);
 	const commentLikeMutation = useMutation(
-		orpc.toggleCommentLike.mutationOptions<OptimisticMutationContext>({
+		orpc.comments.toggleCommentLike.mutationOptions<OptimisticMutationContext>({
 			onError: (_error, _variables, context) => {
 				context?.rollback?.();
 			},
@@ -263,7 +263,7 @@ export function useSocialActions() {
 		}),
 	);
 	const deleteCommentMutation = useMutation(
-		orpc.deleteComment.mutationOptions<OptimisticMutationContext>({
+		orpc.comments.deleteComment.mutationOptions<OptimisticMutationContext>({
 			onError: (_error, _variables, context) => {
 				context?.rollback?.();
 			},
@@ -288,7 +288,7 @@ export function useSocialActions() {
 
 	const pendingLikeIds = useMutationState({
 		filters: {
-			mutationKey: orpc.toggleLike.mutationKey(),
+			mutationKey: orpc.notes.toggleLike.mutationKey(),
 			status: "pending",
 		},
 		select: (mutation) =>
@@ -296,7 +296,7 @@ export function useSocialActions() {
 	});
 	const pendingCollectIds = useMutationState({
 		filters: {
-			mutationKey: orpc.toggleCollect.mutationKey(),
+			mutationKey: orpc.notes.toggleCollect.mutationKey(),
 			status: "pending",
 		},
 		select: (mutation) =>
@@ -304,7 +304,7 @@ export function useSocialActions() {
 	});
 	const pendingFollowIds = useMutationState({
 		filters: {
-			mutationKey: orpc.toggleFollow.mutationKey(),
+			mutationKey: orpc.profiles.toggleFollow.mutationKey(),
 			status: "pending",
 		},
 		select: (mutation) =>
@@ -312,7 +312,7 @@ export function useSocialActions() {
 	});
 	const pendingCommentLikeIds = useMutationState({
 		filters: {
-			mutationKey: orpc.toggleCommentLike.mutationKey(),
+			mutationKey: orpc.comments.toggleCommentLike.mutationKey(),
 			status: "pending",
 		},
 		select: (mutation) =>
@@ -320,7 +320,7 @@ export function useSocialActions() {
 	});
 	const pendingDeleteCommentIds = useMutationState({
 		filters: {
-			mutationKey: orpc.deleteComment.mutationKey(),
+			mutationKey: orpc.comments.deleteComment.mutationKey(),
 			status: "pending",
 		},
 		select: (mutation) =>

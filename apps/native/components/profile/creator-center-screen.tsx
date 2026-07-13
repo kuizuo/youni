@@ -24,7 +24,7 @@ export default function CreatorCenterScreen() {
 	const accentColor = useThemeColor("accent");
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
-	const stats = useQuery(orpc.creatorStats.queryOptions());
+	const stats = useQuery(orpc.notes.creatorStats.queryOptions());
 	const data = stats.data;
 	const refreshStats = async () => {
 		setIsManuallyRefreshing(true);

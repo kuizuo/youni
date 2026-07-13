@@ -51,20 +51,22 @@ export default function HomeScreen() {
 	const discoverFeed = useInfiniteQuery({
 		queryKey: discoverQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.feed({
+			client.notes.feed({
 				cursor: pageParam,
 				limit: DISCOVER_PAGE_SIZE,
 			}),
 		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
-	const recordEvents = useMutation(orpc.recordFeedEvents.mutationOptions());
-	const notInterested = useMutation(
-		orpc.setNoteNotInterested.mutationOptions(),
+	const recordEvents = useMutation(
+		orpc.notes.recordFeedEvents.mutationOptions(),
 	);
-	const setBlocked = useMutation(orpc.setBlocked.mutationOptions());
+	const notInterested = useMutation(
+		orpc.notes.setNoteNotInterested.mutationOptions(),
+	);
+	const setBlocked = useMutation(orpc.profiles.setBlocked.mutationOptions());
 	const followingFeed = useQuery({
-		...orpc.followingFeed.queryOptions({ input }),
+		...orpc.notes.followingFeed.queryOptions({ input }),
 		enabled: activeTab === "following" && Boolean(sessionUserId),
 	});
 	const discoverNotes = useMemo(() => {
@@ -110,7 +112,7 @@ export default function HomeScreen() {
 				await followingFeed.refetch();
 				return;
 			}
-			const refreshedPage = await client.feed({
+			const refreshedPage = await client.notes.feed({
 				limit: DISCOVER_PAGE_SIZE,
 			});
 			setGuestOpenedNoteIds(

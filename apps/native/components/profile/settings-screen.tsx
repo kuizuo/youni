@@ -22,7 +22,7 @@ export default function SettingsScreen() {
 		? session.data?.user
 		: undefined;
 	const me = useQuery({
-		...orpc.me.queryOptions(),
+		...orpc.profiles.me.queryOptions(),
 		enabled: Boolean(user),
 	});
 	const profile = me.data?.profile;

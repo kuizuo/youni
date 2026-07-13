@@ -54,11 +54,11 @@ export function MeCommentsTab({
 		null,
 	);
 	const suppressPressRef = useRef(false);
-	const myCommentsOptions = orpc.myComments.queryOptions({
+	const myCommentsOptions = orpc.comments.myComments.queryOptions({
 		input: { limit: 30 },
 	});
 	const deleteComment = useMutation(
-		orpc.deleteComment.mutationOptions<{
+		orpc.comments.deleteComment.mutationOptions<{
 			noteId?: string;
 			previous?: MyCommentRow[];
 		}>({

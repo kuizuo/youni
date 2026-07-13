@@ -51,7 +51,7 @@ export default function TopicDetailScreen() {
 	const topic = useInfiniteQuery({
 		queryKey,
 		queryFn: ({ pageParam }) =>
-			client.topicDetail({
+			client.topics.topicDetail({
 				id: id || "missing",
 				limit: PAGE_SIZE,
 				offset: Number(pageParam ?? 0),

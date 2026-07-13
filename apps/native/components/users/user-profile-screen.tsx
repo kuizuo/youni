@@ -27,13 +27,13 @@ export default function UserProfileScreen() {
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 
 	const profile = useQuery({
-		...orpc.profile.queryOptions({
+		...orpc.profiles.profile.queryOptions({
 			input: { userId: id || "missing" },
 		}),
 		enabled: Boolean(id),
 	});
 	const unblock = useMutation(
-		orpc.setBlocked.mutationOptions({
+		orpc.profiles.setBlocked.mutationOptions({
 			onSuccess: () => {
 				void profile.refetch();
 			},

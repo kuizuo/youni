@@ -17,9 +17,9 @@ import { orpc } from "@/utils/orpc";
 export function BlockedUsersCard() {
 	const mutedColor = useThemeColor("muted");
 	const { toast } = useAppToast();
-	const blockedUsers = useQuery(orpc.blockedUsers.queryOptions());
+	const blockedUsers = useQuery(orpc.profiles.blockedUsers.queryOptions());
 	const unblock = useMutation(
-		orpc.setBlocked.mutationOptions({
+		orpc.profiles.setBlocked.mutationOptions({
 			onError: (error) => {
 				toast.show({ label: error.message, variant: "danger" });
 			},

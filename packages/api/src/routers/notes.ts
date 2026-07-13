@@ -74,13 +74,13 @@ async function canViewNoteDetail(
 }
 
 export const notesRouter = {
-	feed: publicProcedure.feed.handler(async ({ input, context }) => {
+	feed: publicProcedure.notes.feed.handler(async ({ input, context }) => {
 		return getNoteFeed({
 			...input,
 			sessionUserId: context.session?.user.id,
 		});
 	}),
-	recordFeedEvents: protectedProcedure.recordFeedEvents.handler(
+	recordFeedEvents: protectedProcedure.notes.recordFeedEvents.handler(
 		async ({ input, context }) => {
 			return recordNoteFeedEvents({
 				events: input.events,
@@ -88,7 +88,7 @@ export const notesRouter = {
 			});
 		},
 	),
-	setNoteNotInterested: activeUserProcedure.setNoteNotInterested.handler(
+	setNoteNotInterested: activeUserProcedure.notes.setNoteNotInterested.handler(
 		async ({ input, context }) => {
 			return setNoteNotInterested({
 				...input,
@@ -97,7 +97,7 @@ export const notesRouter = {
 		},
 	),
 
-	followingFeed: protectedProcedure.followingFeed.handler(
+	followingFeed: protectedProcedure.notes.followingFeed.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const followingRows = await db
@@ -124,7 +124,7 @@ export const notesRouter = {
 		},
 	),
 
-	searchNotes: publicProcedure.searchNotes.handler(
+	searchNotes: publicProcedure.notes.searchNotes.handler(
 		async ({ input, context }) => {
 			const whereClause = await getSearchNoteWhereClause(input.keyword);
 			const blockedIds = await getBlockedUserIds(context.session?.user.id);
@@ -147,7 +147,7 @@ export const notesRouter = {
 		},
 	),
 
-	byId: publicProcedure.byId.handler(async ({ input, context }) => {
+	byId: publicProcedure.notes.byId.handler(async ({ input, context }) => {
 		const [row] = await selectContentNoteRows(
 			and(eq(note.id, input.id), ne(note.status, "hidden")),
 		);
@@ -182,14 +182,16 @@ export const notesRouter = {
 		};
 	}),
 
-	editById: protectedProcedure.editById.handler(async ({ input, context }) => {
-		return getEditableContentNoteById({
-			id: input.id,
-			userId: context.session.user.id,
-		});
-	}),
+	editById: protectedProcedure.notes.editById.handler(
+		async ({ input, context }) => {
+			return getEditableContentNoteById({
+				id: input.id,
+				userId: context.session.user.id,
+			});
+		},
+	),
 
-	updateNote: activeUserProcedure.updateNote.handler(
+	updateNote: activeUserProcedure.notes.updateNote.handler(
 		async ({ input, context }) => {
 			return updateEditableContentNote({
 				input,
@@ -198,7 +200,7 @@ export const notesRouter = {
 		},
 	),
 
-	updateNoteVisibility: activeUserProcedure.updateNoteVisibility.handler(
+	updateNoteVisibility: activeUserProcedure.notes.updateNoteVisibility.handler(
 		async ({ input, context }) => {
 			return updateContentNoteVisibility({
 				id: input.id,
@@ -208,7 +210,7 @@ export const notesRouter = {
 		},
 	),
 
-	deleteMyNote: activeUserProcedure.deleteMyNote.handler(
+	deleteMyNote: activeUserProcedure.notes.deleteMyNote.handler(
 		async ({ input, context }) => {
 			return softDeleteContentNote({
 				id: input.id,
@@ -217,53 +219,55 @@ export const notesRouter = {
 		},
 	),
 
-	creatorStats: protectedProcedure.creatorStats.handler(async ({ context }) => {
-		const userId = context.session.user.id;
-		const db = createDb();
-		const [statusRows, [likeCount], [collectionCount], [commentCount]] =
-			await Promise.all([
-				db
-					.select({ status: note.status, value: count() })
-					.from(note)
-					.where(eq(note.userId, userId))
-					.groupBy(note.status),
-				db
-					.select({ value: count() })
-					.from(noteLike)
-					.innerJoin(note, eq(noteLike.noteId, note.id))
-					.where(eq(note.userId, userId)),
-				db
-					.select({ value: count() })
-					.from(noteCollection)
-					.innerJoin(note, eq(noteCollection.noteId, note.id))
-					.where(eq(note.userId, userId)),
-				db
-					.select({ value: count() })
-					.from(comment)
-					.innerJoin(note, eq(comment.noteId, note.id))
-					.where(eq(note.userId, userId)),
-			]);
-		const byStatus = new Map(
-			statusRows.map((row) => [row.status, toNumber(row.value)]),
-		);
-		const published = byStatus.get("published") ?? 0;
-		const audit = byStatus.get("audit") ?? 0;
-		const rejected = byStatus.get("rejected") ?? 0;
-		const hidden = byStatus.get("hidden") ?? 0;
+	creatorStats: protectedProcedure.notes.creatorStats.handler(
+		async ({ context }) => {
+			const userId = context.session.user.id;
+			const db = createDb();
+			const [statusRows, [likeCount], [collectionCount], [commentCount]] =
+				await Promise.all([
+					db
+						.select({ status: note.status, value: count() })
+						.from(note)
+						.where(eq(note.userId, userId))
+						.groupBy(note.status),
+					db
+						.select({ value: count() })
+						.from(noteLike)
+						.innerJoin(note, eq(noteLike.noteId, note.id))
+						.where(eq(note.userId, userId)),
+					db
+						.select({ value: count() })
+						.from(noteCollection)
+						.innerJoin(note, eq(noteCollection.noteId, note.id))
+						.where(eq(note.userId, userId)),
+					db
+						.select({ value: count() })
+						.from(comment)
+						.innerJoin(note, eq(comment.noteId, note.id))
+						.where(eq(note.userId, userId)),
+				]);
+			const byStatus = new Map(
+				statusRows.map((row) => [row.status, toNumber(row.value)]),
+			);
+			const published = byStatus.get("published") ?? 0;
+			const audit = byStatus.get("audit") ?? 0;
+			const rejected = byStatus.get("rejected") ?? 0;
+			const hidden = byStatus.get("hidden") ?? 0;
 
-		return {
-			total: published + audit + rejected + hidden,
-			published,
-			audit,
-			rejected,
-			hidden,
-			liked: toNumber(likeCount?.value),
-			collected: toNumber(collectionCount?.value),
-			comments: toNumber(commentCount?.value),
-		};
-	}),
+			return {
+				total: published + audit + rejected + hidden,
+				published,
+				audit,
+				rejected,
+				hidden,
+				liked: toNumber(likeCount?.value),
+				collected: toNumber(collectionCount?.value),
+				comments: toNumber(commentCount?.value),
+			};
+		},
+	),
 
-	viewHistory: protectedProcedure.viewHistory.handler(
+	viewHistory: protectedProcedure.notes.viewHistory.handler(
 		async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const rows = await listViewedContentNoteRows(userId, input.limit);
@@ -277,7 +281,7 @@ export const notesRouter = {
 		},
 	),
 
-	deleteViewHistory: protectedProcedure.deleteViewHistory.handler(
+	deleteViewHistory: protectedProcedure.notes.deleteViewHistory.handler(
 		async ({ input, context }) => {
 			await createDb()
 				.delete(noteViewHistory)
@@ -292,7 +296,7 @@ export const notesRouter = {
 		},
 	),
 
-	clearViewHistory: protectedProcedure.clearViewHistory.handler(
+	clearViewHistory: protectedProcedure.notes.clearViewHistory.handler(
 		async ({ context }) => {
 			await createDb()
 				.delete(noteViewHistory)
@@ -302,14 +306,16 @@ export const notesRouter = {
 		},
 	),
 
-	create: activeUserProcedure.create.handler(async ({ input, context }) => {
-		return createContentNote({
-			input,
-			userId: context.session.user.id,
-		});
-	}),
+	create: activeUserProcedure.notes.create.handler(
+		async ({ input, context }) => {
+			return createContentNote({
+				input,
+				userId: context.session.user.id,
+			});
+		},
+	),
 
-	toggleLike: activeUserProcedure.toggleLike.handler(
+	toggleLike: activeUserProcedure.notes.toggleLike.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const whereClause = and(
@@ -344,7 +350,7 @@ export const notesRouter = {
 		},
 	),
 
-	toggleCollect: activeUserProcedure.toggleCollect.handler(
+	toggleCollect: activeUserProcedure.notes.toggleCollect.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const whereClause = and(

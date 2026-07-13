@@ -45,13 +45,13 @@ export default function HistoryScreen() {
 	const { toast } = useAppToast();
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const history = useQuery({
-		...orpc.viewHistory.queryOptions({
+		...orpc.notes.viewHistory.queryOptions({
 			input: { limit: 60 },
 		}),
 	});
 	const items = (history.data ?? []) as HistoryItem[];
 	const deleteMutation = useMutation(
-		orpc.deleteViewHistory.mutationOptions<{ rollback?: () => void }>({
+		orpc.notes.deleteViewHistory.mutationOptions<{ rollback?: () => void }>({
 			onError: (error, _variables, context) => {
 				context?.rollback?.();
 				if (isRequestTimeoutError(error)) return;
@@ -64,7 +64,7 @@ export default function HistoryScreen() {
 		}),
 	);
 	const clearMutation = useMutation(
-		orpc.clearViewHistory.mutationOptions<{ rollback?: () => void }>({
+		orpc.notes.clearViewHistory.mutationOptions<{ rollback?: () => void }>({
 			onError: (error, _variables, context) => {
 				context?.rollback?.();
 				if (isRequestTimeoutError(error)) return;

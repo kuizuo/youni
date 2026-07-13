@@ -262,7 +262,7 @@ async function collectCommentDescendantIds(rootId: string) {
 }
 
 export const commentsRouter = {
-	myComments: protectedProcedure.myComments.handler(
+	myComments: protectedProcedure.comments.myComments.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const viewerId = context.session.user.id;
@@ -353,17 +353,19 @@ export const commentsRouter = {
 		},
 	),
 
-	comments: publicProcedure.comments.handler(async ({ input, context }) => {
-		return listRootComments({
-			noteId: input.noteId,
-			limit: input.limit,
-			offset: input.offset,
-			sort: input.sort,
-			viewerId: context.session?.user.id,
-		});
-	}),
+	comments: publicProcedure.comments.comments.handler(
+		async ({ input, context }) => {
+			return listRootComments({
+				noteId: input.noteId,
+				limit: input.limit,
+				offset: input.offset,
+				sort: input.sort,
+				viewerId: context.session?.user.id,
+			});
+		},
+	),
 
-	commentReplies: publicProcedure.commentReplies.handler(
+	commentReplies: publicProcedure.comments.commentReplies.handler(
 		async ({ input, context }) => {
 			return listCommentReplies({
 				parentId: input.parentId,
@@ -374,7 +376,7 @@ export const commentsRouter = {
 		},
 	),
 
-	commentAnchor: publicProcedure.commentAnchor.handler(
+	commentAnchor: publicProcedure.comments.commentAnchor.handler(
 		async ({ input, context }) => {
 			const targetComment = await getCommentById({
 				commentId: input.id,
@@ -391,7 +393,7 @@ export const commentsRouter = {
 		},
 	),
 
-	addComment: activeUserProcedure.addComment.handler(
+	addComment: activeUserProcedure.comments.addComment.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const parentComment = input.parentId
@@ -461,7 +463,7 @@ export const commentsRouter = {
 		},
 	),
 
-	toggleCommentLike: activeUserProcedure.toggleCommentLike.handler(
+	toggleCommentLike: activeUserProcedure.comments.toggleCommentLike.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const [targetComment] = await db
@@ -506,7 +508,7 @@ export const commentsRouter = {
 		},
 	),
 
-	deleteComment: activeUserProcedure.deleteComment.handler(
+	deleteComment: activeUserProcedure.comments.deleteComment.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const [targetComment] = await db

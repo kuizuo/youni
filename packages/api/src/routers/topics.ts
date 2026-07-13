@@ -112,7 +112,7 @@ async function getPublicTopicStats(topicIds: string[], viewerId?: string) {
 }
 
 export const topicsRouter = {
-	topics: publicProcedure.topics.handler(async ({ input }) => {
+	topics: publicProcedure.topics.topics.handler(async ({ input }) => {
 		const db = createDb();
 		const rows = input.keyword
 			? await db
@@ -157,7 +157,7 @@ export const topicsRouter = {
 		}));
 	}),
 
-	searchTopics: publicProcedure.searchTopics.handler(
+	searchTopics: publicProcedure.topics.searchTopics.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const rows = input.keyword
@@ -200,7 +200,7 @@ export const topicsRouter = {
 		},
 	),
 
-	topicDetail: publicProcedure.topicDetail.handler(
+	topicDetail: publicProcedure.topics.topicDetail.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const blockedIds = await getBlockedUserIds(context.session?.user.id);
@@ -283,7 +283,7 @@ export const topicsRouter = {
 		},
 	),
 
-	topicByName: publicProcedure.topicByName.handler(async ({ input }) => {
+	topicByName: publicProcedure.topics.topicByName.handler(async ({ input }) => {
 		const [row] = await createDb()
 			.select({
 				id: topic.id,

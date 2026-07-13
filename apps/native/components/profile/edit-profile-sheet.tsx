@@ -50,7 +50,7 @@ export function EditProfileSheet({
 	);
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const updateProfile = useMutation(
-		orpc.updateProfile.mutationOptions({
+		orpc.profiles.updateProfile.mutationOptions({
 			onSuccess: async () => {
 				await onSaved();
 			},

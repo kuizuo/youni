@@ -13,13 +13,13 @@ import { topicsContract } from "./topics";
 export const appContract = {
 	healthCheck: procedure.output(output<"OK">()),
 	admin: adminContract,
+	comments: commentsContract,
 	messages: messagesContract,
+	notes: notesContract,
 	notifications: notificationsContract,
+	profiles: profilesContract,
 	searchDiscovery: searchDiscoveryContract,
-	...notesContract,
-	...topicsContract,
-	...profilesContract,
-	...commentsContract,
+	topics: topicsContract,
 };
 
 export type AppContract = typeof appContract;

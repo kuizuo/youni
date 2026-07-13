@@ -100,7 +100,7 @@ export function InlineMentionPicker({
 	const users = useQuery({
 		queryKey: nativeQueryKeys.create.mentionUsers(keyword),
 		queryFn: () =>
-			client.searchUsers({
+			client.profiles.searchUsers({
 				keyword,
 				limit: 8,
 			}),

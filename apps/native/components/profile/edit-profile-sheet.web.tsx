@@ -40,7 +40,7 @@ export function EditProfileSheet({
 	const [gender, setGender] = useState<Gender>("unknown");
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const updateProfile = useMutation(
-		orpc.updateProfile.mutationOptions({
+		orpc.profiles.updateProfile.mutationOptions({
 			onSuccess: onSaved,
 			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;

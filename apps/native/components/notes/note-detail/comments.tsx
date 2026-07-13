@@ -134,7 +134,7 @@ export function CommentItem({
 	const shouldFetchReplies =
 		isExpanded && comment.replyCount > comment.replies.length;
 	const repliesQuery = useQuery({
-		...orpc.commentReplies.queryOptions({
+		...orpc.comments.commentReplies.queryOptions({
 			input: { parentId: comment.id, limit: 30 },
 		}),
 		enabled: shouldFetchReplies,

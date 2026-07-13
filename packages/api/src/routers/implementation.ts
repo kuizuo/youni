@@ -11,11 +11,11 @@ import { topicsRouter } from "./topics";
 export const implementationRouter = {
 	healthCheck: publicProcedure.healthCheck.handler(() => "OK" as const),
 	admin: adminRouter,
+	comments: commentsRouter,
 	messages: messagesRouter,
+	notes: notesRouter,
 	notifications: notificationsRouter,
+	profiles: profilesRouter,
 	searchDiscovery: searchDiscoveryRouter,
-	...notesRouter,
-	...topicsRouter,
-	...profilesRouter,
-	...commentsRouter,
+	topics: topicsRouter,
 };

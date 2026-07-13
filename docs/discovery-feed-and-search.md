@@ -21,23 +21,38 @@
 | 不感兴趣 | 用户对单条图文的持续负反馈，可撤销 |
 | 拉黑用户 | 单向隐藏对方内容并禁止双方私信，可在设置中解除 |
 
-## 主要接口
+## 接口组织
 
-发现内容沿用图文业务接口；推荐搜索和搜索汇总由独立的 `searchDiscovery` 业务入口提供。
+图文、话题、用户资料和评论分别归入自己的业务分组。契约、服务端入口和客户端调用保持相同层级，不再把各组内容展开到根级。
+
+| 业务 | 服务端路径 | 客户端调用前缀 |
+| --- | --- | --- |
+| 图文 | `/rpc/notes/*` | `client.notes` / `orpc.notes` |
+| 话题 | `/rpc/topics/*` | `client.topics` / `orpc.topics` |
+| 用户资料 | `/rpc/profiles/*` | `client.profiles` / `orpc.profiles` |
+| 评论 | `/rpc/comments/*` | `client.comments` / `orpc.comments` |
+| 推荐搜索与搜索汇总 | `/rpc/searchDiscovery/*` | `client.searchDiscovery` / `orpc.searchDiscovery` |
+| 后台分析 | `/rpc/admin/*` | `client.admin` / `orpc.admin` |
+
+当前主要地址：
 
 | 地址 | 用途 |
 | --- | --- |
-| `/rpc/feed` | 获取发现内容和继续加载 |
-| `/rpc/recordFeedEvents` | 批量记录发现反馈 |
-| `/rpc/setNoteNotInterested` | 设置或撤销“不感兴趣” |
-| `/rpc/searchNotes` | 搜索公开图文 |
-| `/rpc/searchTopics` | 搜索话题 |
-| `/rpc/searchUsersPage` | 分页搜索用户 |
-| `/rpc/setBlocked` | 拉黑或解除拉黑用户 |
+| `/rpc/notes/feed` | 获取发现内容和继续加载 |
+| `/rpc/notes/recordFeedEvents` | 批量记录发现反馈 |
+| `/rpc/notes/setNoteNotInterested` | 设置或撤销“不感兴趣” |
+| `/rpc/notes/searchNotes` | 搜索公开图文 |
+| `/rpc/topics/searchTopics` | 搜索话题 |
+| `/rpc/profiles/searchUsersPage` | 分页搜索用户 |
+| `/rpc/profiles/setBlocked` | 拉黑或解除拉黑用户 |
 | `/rpc/searchDiscovery/recommendations` | 获取推荐搜索词 |
 | `/rpc/searchDiscovery/record` | 汇总一次真正提交的搜索 |
 | `/rpc/admin/analytics` | 获取发现与搜索汇总 |
 | `/rpc/admin/setSearchKeywordExcluded` | 停止或恢复趋势词推荐 |
+
+根入口位于 [`packages/api/src/contracts/index.ts`](../packages/api/src/contracts/index.ts) 和 [`packages/api/src/routers/implementation.ts`](../packages/api/src/routers/implementation.ts)。其中明确注册 `notes`、`topics`、`profiles` 和 `comments` 四组，不再使用展开写法。
+
+原来的 `/rpc/feed`、`/rpc/searchTopics`、`/rpc/searchUsers` 和 `/rpc/comments` 等根级地址已经失效。
 
 ## 发现内容流程
 
@@ -146,7 +161,7 @@ F = 0.5 ^ (发布小时数 / 72)
 
 ## 稳定翻页与刷新
 
-第一次请求 `/rpc/feed` 时，服务端会计算整次浏览的候选顺序和分页结果，再返回第一页与继续加载凭据。
+第一次请求 `/rpc/notes/feed` 时，服务端会计算整次浏览的候选顺序和分页结果，再返回第一页与继续加载凭据。
 
 继续加载凭据包含剩余页、当前位置和本次浏览编号，有效期 30 分钟，并经过服务端签名。客户端不能修改其中的顺序或位置。
 
@@ -279,8 +294,8 @@ F = 0.5 ^ (发布小时数 / 72)
 
 | 位置 | 职责 |
 | --- | --- |
-| [`packages/api/src/contracts/index.ts`](../packages/api/src/contracts/index.ts) | 共享接口入口 |
-| [`packages/api/src/routers/implementation.ts`](../packages/api/src/routers/implementation.ts) | 服务端实现入口 |
+| [`packages/api/src/contracts/index.ts`](../packages/api/src/contracts/index.ts) | 各业务接口的分组契约入口 |
+| [`packages/api/src/routers/implementation.ts`](../packages/api/src/routers/implementation.ts) | 各业务接口的分组实现入口 |
 | [`packages/api/src/routers/notes.ts`](../packages/api/src/routers/notes.ts) | 图文、发现列表和发现反馈入口 |
 | [`packages/api/src/lib/note-feed.ts`](../packages/api/src/lib/note-feed.ts) | 候选过滤、信号读取、分页、反馈和降级 |
 | [`packages/api/src/lib/note-feed-ranking.ts`](../packages/api/src/lib/note-feed-ranking.ts) | 个性化、冷启动、新内容和多样性混排 |

@@ -93,7 +93,7 @@ async function getProfile(userId: string, viewerId?: string) {
 }
 
 export const profilesRouter = {
-	searchUsers: publicProcedure.searchUsers.handler(
+	searchUsers: publicProcedure.profiles.searchUsers.handler(
 		async ({ input, context }) => {
 			const keyword = input.keyword?.trim();
 			if (!keyword) return [];
@@ -123,7 +123,7 @@ export const profilesRouter = {
 		},
 	),
 
-	searchUsersPage: publicProcedure.searchUsersPage.handler(
+	searchUsersPage: publicProcedure.profiles.searchUsersPage.handler(
 		async ({ input, context }) => {
 			const keyword = input.keyword?.trim();
 			if (!keyword) return { items: [], hasMore: false, nextOffset: null };
@@ -158,7 +158,7 @@ export const profilesRouter = {
 		},
 	),
 
-	connections: publicProcedure.connections.handler(
+	connections: publicProcedure.profiles.connections.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const blockedIds = await getBlockedUserIds(context.session?.user.id);
@@ -201,29 +201,31 @@ export const profilesRouter = {
 		},
 	),
 
-	profile: publicProcedure.profile.handler(async ({ input, context }) => {
-		const isBlocked = context.session?.user.id
-			? await isUserBlockedBy(context.session.user.id, input.userId)
-			: false;
-		const profile = await getProfile(input.userId, context.session?.user.id);
-		if (isBlocked) return { isBlocked, profile, notes: [] };
-		const rows = (
-			await selectContentNoteRows(
-				and(
-					eq(note.userId, input.userId),
-					eq(note.status, "published"),
-					eq(note.visibility, "public"),
-				),
-			)
-		).slice(0, 30);
-		return {
-			isBlocked,
-			profile,
-			notes: await hydrateContentNotes(rows, context.session?.user.id),
-		};
-	}),
+	profile: publicProcedure.profiles.profile.handler(
+		async ({ input, context }) => {
+			const isBlocked = context.session?.user.id
+				? await isUserBlockedBy(context.session.user.id, input.userId)
+				: false;
+			const profile = await getProfile(input.userId, context.session?.user.id);
+			if (isBlocked) return { isBlocked, profile, notes: [] };
+			const rows = (
+				await selectContentNoteRows(
+					and(
+						eq(note.userId, input.userId),
+						eq(note.status, "published"),
+						eq(note.visibility, "public"),
+					),
+				)
+			).slice(0, 30);
+			return {
+				isBlocked,
+				profile,
+				notes: await hydrateContentNotes(rows, context.session?.user.id),
+			};
+		},
+	),
 
-	profileByHandle: publicProcedure.profileByHandle.handler(
+	profileByHandle: publicProcedure.profiles.profileByHandle.handler(
 		async ({ input, context }) => {
 			const [row] = await createDb()
 				.select({ id: user.id })
@@ -251,7 +253,7 @@ export const profilesRouter = {
 		},
 	),
 
-	me: protectedProcedure.me.handler(async ({ context }) => {
+	me: protectedProcedure.profiles.me.handler(async ({ context }) => {
 		const userId = context.session.user.id;
 		const [profile, rows, collectedRows, likedRows] = await Promise.all([
 			getProfile(userId, userId),
@@ -291,18 +293,22 @@ export const profilesRouter = {
 		};
 	}),
 
-	meProfile: protectedProcedure.meProfile.handler(async ({ context }) => {
-		const userId = context.session.user.id;
-		return getProfile(userId, userId);
-	}),
+	meProfile: protectedProcedure.profiles.meProfile.handler(
+		async ({ context }) => {
+			const userId = context.session.user.id;
+			return getProfile(userId, userId);
+		},
+	),
 
-	meFeed: protectedProcedure.meFeed.handler(async ({ input, context }) => {
-		const userId = context.session.user.id;
-		const rows = await listMeContentNoteRows(userId, input.tab, input.limit);
-		return hydrateContentNotes(rows, userId);
-	}),
+	meFeed: protectedProcedure.profiles.meFeed.handler(
+		async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const rows = await listMeContentNoteRows(userId, input.tab, input.limit);
+			return hydrateContentNotes(rows, userId);
+		},
+	),
 
-	updateProfile: activeUserProcedure.updateProfile.handler(
+	updateProfile: activeUserProcedure.profiles.updateProfile.handler(
 		async ({ input, context }) => {
 			const db = createDb();
 			const [updated] = await db
@@ -323,7 +329,7 @@ export const profilesRouter = {
 		},
 	),
 
-	toggleFollow: activeUserProcedure.toggleFollow.handler(
+	toggleFollow: activeUserProcedure.profiles.toggleFollow.handler(
 		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
 			if (viewerId === input.userId) {
@@ -382,11 +388,13 @@ export const profilesRouter = {
 		},
 	),
 
-	blockedUsers: protectedProcedure.blockedUsers.handler(async ({ context }) => {
-		return listBlockedUsers(context.session.user.id);
-	}),
+	blockedUsers: protectedProcedure.profiles.blockedUsers.handler(
+		async ({ context }) => {
+			return listBlockedUsers(context.session.user.id);
+		},
+	),
 
-	setBlocked: activeUserProcedure.setBlocked.handler(
+	setBlocked: activeUserProcedure.profiles.setBlocked.handler(
 		async ({ input, context }) => {
 			return setUserBlocked({
 				blocked: input.blocked,

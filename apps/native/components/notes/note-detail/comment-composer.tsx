@@ -270,7 +270,7 @@ function CommentMentionPicker({
 	const users = useQuery({
 		queryKey: nativeQueryKeys.note.mentionUsers(keyword),
 		queryFn: () =>
-			client.searchUsers({
+			client.profiles.searchUsers({
 				keyword,
 				limit: 8,
 			}),

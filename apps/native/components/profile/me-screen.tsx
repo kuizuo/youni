@@ -63,29 +63,29 @@ export default function MeScreen() {
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
-		...orpc.meProfile.queryOptions(),
+		...orpc.profiles.meProfile.queryOptions(),
 		enabled: isAuthenticated,
 	});
 	const notesFeed = useQuery({
-		...orpc.meFeed.queryOptions({
+		...orpc.profiles.meFeed.queryOptions({
 			input: { limit: PROFILE_FEED_LIMIT, tab: "notes" },
 		}),
 		enabled: isAuthenticated,
 	});
 	const collectionsFeed = useQuery({
-		...orpc.meFeed.queryOptions({
+		...orpc.profiles.meFeed.queryOptions({
 			input: { limit: PROFILE_FEED_LIMIT, tab: "collections" },
 		}),
 		enabled: isAuthenticated && activeTab === "collections",
 	});
 	const likedFeed = useQuery({
-		...orpc.meFeed.queryOptions({
+		...orpc.profiles.meFeed.queryOptions({
 			input: { limit: PROFILE_FEED_LIMIT, tab: "liked" },
 		}),
 		enabled: isAuthenticated && activeTab === "liked",
 	});
 	const commentsFeed = useQuery({
-		...orpc.myComments.queryOptions({
+		...orpc.comments.myComments.queryOptions({
 			input: { limit: PROFILE_FEED_LIMIT },
 		}),
 		enabled: isAuthenticated && activeTab === "comments",
@@ -105,7 +105,9 @@ export default function MeScreen() {
 	const avatarImage = profile?.image ?? currentUser?.image;
 	const coverImage = profile?.coverImage;
 	const avatarInitial = displayName.slice(0, 1);
-	const updateProfile = useMutation(orpc.updateProfile.mutationOptions());
+	const updateProfile = useMutation(
+		orpc.profiles.updateProfile.mutationOptions(),
+	);
 
 	const feedItemsByTab = useMemo(
 		() => ({

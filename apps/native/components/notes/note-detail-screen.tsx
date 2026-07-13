@@ -157,7 +157,7 @@ export default function NoteDetailScreen() {
 	isSystemKeyboardVisibleRef.current = isSystemKeyboardVisible;
 
 	const note = useQuery({
-		...orpc.byId.queryOptions({ input: { id: id || "missing" } }),
+		...orpc.notes.byId.queryOptions({ input: { id: id || "missing" } }),
 		enabled: Boolean(id),
 	});
 	const viewerId = socialActions.session.data?.user?.id;
@@ -208,7 +208,7 @@ export default function NoteDetailScreen() {
 	}, [recordCurrentView]);
 	const authorId = note.data?.author.id ?? "";
 	const authorProfile = useQuery({
-		...orpc.profile.queryOptions({ input: { userId: authorId } }),
+		...orpc.profiles.profile.queryOptions({ input: { userId: authorId } }),
 		enabled: Boolean(authorId),
 	});
 	const commentsEnabled = note.data?.advancedOptions.allowComment ?? true;
@@ -219,7 +219,7 @@ export default function NoteDetailScreen() {
 	const comments = useInfiniteQuery({
 		queryKey: commentsQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.comments({
+			client.comments.comments({
 				noteId: id || "missing",
 				limit: COMMENTS_PAGE_SIZE,
 				offset: Number(pageParam ?? 0),
@@ -230,7 +230,7 @@ export default function NoteDetailScreen() {
 		enabled: Boolean(id && note.data && commentsEnabled),
 	});
 	const targetCommentAnchor = useQuery({
-		...orpc.commentAnchor.queryOptions({
+		...orpc.comments.commentAnchor.queryOptions({
 			input: { id: targetCommentId || "missing" },
 		}),
 		enabled: Boolean(targetCommentId),
@@ -238,7 +238,7 @@ export default function NoteDetailScreen() {
 			isNotFoundError(error) ? false : failureCount < 2,
 	});
 	const updateVisibilityMutation = useMutation(
-		orpc.updateNoteVisibility.mutationOptions({
+		orpc.notes.updateNoteVisibility.mutationOptions({
 			onError: (error) => {
 				toast.show({
 					variant: "danger",
@@ -252,7 +252,7 @@ export default function NoteDetailScreen() {
 		}),
 	);
 	const deleteNoteMutation = useMutation(
-		orpc.deleteMyNote.mutationOptions({
+		orpc.notes.deleteMyNote.mutationOptions({
 			onError: (error) => {
 				toast.show({
 					variant: "danger",
@@ -661,7 +661,7 @@ export default function NoteDetailScreen() {
 	const openMention = async (handle: string) => {
 		fireHaptic();
 		try {
-			const profile = await client.profileByHandle({ handle });
+			const profile = await client.profiles.profileByHandle({ handle });
 			router.push({
 				pathname: "/user/[id]",
 				params: { id: profile.id },
@@ -674,7 +674,7 @@ export default function NoteDetailScreen() {
 	const openTopic = async (name: string) => {
 		fireHaptic();
 		try {
-			const topic = await client.topicByName({ name });
+			const topic = await client.topics.topicByName({ name });
 			router.push({
 				pathname: "/topic/[id]",
 				params: { id: topic.id },

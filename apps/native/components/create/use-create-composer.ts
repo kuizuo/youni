@@ -185,7 +185,7 @@ export function useCreateComposer({
 				: "仅自己可见";
 	const advancedLabel = advancedOptions.allowComment ? "评论开启" : "评论关闭";
 	const editNoteQuery = useQuery({
-		...orpc.editById.queryOptions({
+		...orpc.notes.editById.queryOptions({
 			input: { id: noteId || "missing" },
 		}),
 		enabled: Boolean(isEditingNote && noteId && isAuthenticated),
@@ -208,7 +208,7 @@ export function useCreateComposer({
 	};
 
 	const createMutation = useMutation(
-		orpc.create.mutationOptions({
+		orpc.notes.create.mutationOptions({
 			onSuccess: async (result) => {
 				pendingUploadedKeysRef.current = [];
 				if (draftId && userId) {
@@ -241,7 +241,7 @@ export function useCreateComposer({
 		}),
 	);
 	const updateNoteMutation = useMutation(
-		orpc.updateNote.mutationOptions({
+		orpc.notes.updateNote.mutationOptions({
 			onSuccess: async (result) => {
 				pendingUploadedKeysRef.current = [];
 				resetForm();

@@ -46,7 +46,7 @@ export function SearchResults({
 	const notes = useInfiniteQuery({
 		queryKey: notesQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.searchNotes({
+			client.notes.searchNotes({
 				keyword: activeKeyword,
 				limit: PAGE_SIZE,
 				offset: Number(pageParam ?? 0),
@@ -58,7 +58,7 @@ export function SearchResults({
 	const users = useInfiniteQuery({
 		queryKey: usersQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.searchUsersPage({
+			client.profiles.searchUsersPage({
 				keyword: activeKeyword,
 				limit: PAGE_SIZE,
 				offset: Number(pageParam ?? 0),
@@ -70,7 +70,7 @@ export function SearchResults({
 	const topics = useInfiniteQuery({
 		queryKey: topicsQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.searchTopics({
+			client.topics.searchTopics({
 				keyword: activeKeyword,
 				limit: PAGE_SIZE,
 				offset: Number(pageParam ?? 0),
