@@ -3,6 +3,7 @@ import {
 	type Binding,
 	D1Database,
 	R2Bucket,
+	RateLimit,
 	Vite,
 	Website,
 	Worker,
@@ -144,6 +145,14 @@ export const youniDatabase = await D1Database("youni-db", {
 	migrationsDir: "../../packages/db/src/migrations",
 });
 
+const searchRateLimit = RateLimit({
+	namespace_id: 12_001,
+	simple: {
+		limit: 30,
+		period: 60,
+	},
+});
+
 export const server = await Worker("server", {
 	cwd: "../../apps/server",
 	entrypoint: "src/index.ts",
@@ -165,8 +174,10 @@ export const server = await Worker("server", {
 		GOOGLE_CLIENT_SECRET: optionalSecretEnv("GOOGLE_CLIENT_SECRET"),
 		RESEND_API_KEY: optionalSecretEnv("RESEND_API_KEY"),
 		RESEND_FROM_EMAIL: optionalEnv("RESEND_FROM_EMAIL"),
+		SEARCH_RATE_LIMIT: searchRateLimit,
 		YOUNI_BUCKET: youniBucket,
 	},
+	crons: ["0 17 * * *"],
 	dev: {
 		port: 3000,
 	},

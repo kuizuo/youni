@@ -4,7 +4,7 @@ export type AdminMetric = {
 	readonly icon: ComponentType<{ className?: string }>;
 	readonly label: string;
 	readonly status: "danger" | "success" | "warning";
-	readonly value: number;
+	readonly value: number | string;
 };
 
 const statusClassName: Record<AdminMetric["status"], string> = {
@@ -43,7 +43,9 @@ export function AdminMetricGroup({
 							</dt>
 						</div>
 						<dd className="mt-auto font-semibold text-2xl text-foreground tracking-tight">
-							{numberFormatter.format(metric.value)}
+							{typeof metric.value === "number"
+								? numberFormatter.format(metric.value)
+								: metric.value}
 						</dd>
 					</div>
 				);

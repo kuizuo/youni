@@ -10,7 +10,8 @@ export function SearchHome({
 	onClearHistory,
 	onDeleteHistoryWord,
 	onFinishEditingHistory,
-	onPressWord,
+	onPressHistoryWord,
+	onPressRecommendedWord,
 	onStartEditingHistory,
 	quickWords,
 	recentWords,
@@ -20,7 +21,8 @@ export function SearchHome({
 	onClearHistory: () => void;
 	onDeleteHistoryWord: (word: string) => void;
 	onFinishEditingHistory: () => void;
-	onPressWord: (word: string) => void;
+	onPressHistoryWord: (word: string) => void;
+	onPressRecommendedWord: (word: string) => void;
 	onStartEditingHistory: () => void;
 	quickWords: readonly string[];
 	recentWords: readonly string[];
@@ -81,17 +83,19 @@ export function SearchHome({
 						isEditing={isEditingHistory}
 						words={recentWords}
 						onDeleteWord={onDeleteHistoryWord}
-						onPressWord={onPressWord}
+						onPressWord={onPressHistoryWord}
 					/>
 				</View>
 			) : null}
 
-			<View className="gap-3">
-				<Typography.Paragraph weight="semibold" className="text-foreground">
-					推荐搜索
-				</Typography.Paragraph>
-				<WordWrap words={quickWords} onPressWord={onPressWord} />
-			</View>
+			{quickWords.length > 0 ? (
+				<View className="gap-3">
+					<Typography.Paragraph weight="semibold" className="text-foreground">
+						推荐搜索
+					</Typography.Paragraph>
+					<WordWrap words={quickWords} onPressWord={onPressRecommendedWord} />
+				</View>
+			) : null}
 		</ScrollView>
 	);
 }

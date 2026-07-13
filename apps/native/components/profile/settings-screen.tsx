@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
 import { SettingsAccountCard } from "@/components/profile/settings/account-card";
+import { BlockedUsersCard } from "@/components/profile/settings/blocked-users-card";
 import { SettingsProfileForm } from "@/components/profile/settings/profile-form";
 import { SignOutButton } from "@/components/profile/settings/sign-out-button";
 import { isRegisteredUser } from "@/lib/anonymous-session";
@@ -50,6 +51,8 @@ export default function SettingsScreen() {
 					image={image}
 					isLoading={me.isLoading}
 				/>
+
+				{user ? <BlockedUsersCard /> : null}
 
 				<SettingsProfileForm
 					displayName={displayName}

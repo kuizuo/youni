@@ -37,6 +37,8 @@ export const profileUpdateInput = z.object({
 	coverImage: z.string().trim().url().optional().or(z.literal("")),
 });
 
+export const userBlockInput = profileInput.extend({ blocked: z.boolean() });
+
 // ====== Output ======
 
 export type ProfilesOutputs = {
@@ -96,6 +98,7 @@ export type ProfilesOutputs = {
 		createdAt: Date;
 	}[];
 	profile: {
+		isBlocked: boolean;
 		profile: {
 			noteCount: number;
 			followerCount: number;
@@ -193,6 +196,14 @@ export type ProfilesOutputs = {
 		  }
 		| undefined;
 	toggleFollow: { following: boolean; followerCount: number };
+	blockedUsers: {
+		blockedAt: Date;
+		id: string;
+		image: string | null;
+		handle: string | null;
+		name: string;
+	}[];
+	setBlocked: { blocked: boolean; userId: string };
 };
 
 // ====== Contract ======
@@ -224,4 +235,8 @@ export const profilesContract = {
 	toggleFollow: procedure
 		.input(profileInput)
 		.output(output<ProfilesOutputs["toggleFollow"]>()),
+	blockedUsers: procedure.output(output<ProfilesOutputs["blockedUsers"]>()),
+	setBlocked: procedure
+		.input(userBlockInput)
+		.output(output<ProfilesOutputs["setBlocked"]>()),
 };

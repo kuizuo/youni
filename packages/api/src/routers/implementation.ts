@@ -5,6 +5,7 @@ import { messagesRouter } from "./messages";
 import { notesRouter } from "./notes";
 import { notificationsRouter } from "./notifications";
 import { profilesRouter } from "./profiles";
+import { searchDiscoveryRouter } from "./search-discovery";
 import { topicsRouter } from "./topics";
 
 export const implementationRouter = {
@@ -12,6 +13,7 @@ export const implementationRouter = {
 	admin: adminRouter,
 	messages: messagesRouter,
 	notifications: notificationsRouter,
+	searchDiscovery: searchDiscoveryRouter,
 	...notesRouter,
 	...topicsRouter,
 	...profilesRouter,

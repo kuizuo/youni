@@ -8,7 +8,7 @@ export const nativeQueryKeys = {
 			["create", "mention-users", keyword] as const,
 	},
 	home: {
-		discover: () => ["home", "discover"] as const,
+		discover: (audienceId: string) => ["home", "discover", audienceId] as const,
 	},
 	note: {
 		comments: (noteId: string, sort: CommentSort) =>
@@ -23,6 +23,7 @@ export const nativeQueryKeys = {
 		notes: (keyword: string) => ["search", "notes", keyword] as const,
 		topics: (keyword: string) => ["search", "topics", keyword] as const,
 		users: (keyword: string) => ["search", "users", keyword] as const,
+		recommendations: () => ["search", "recommendations"] as const,
 	},
 	topic: {
 		detail: (topicId: string, sort: TopicSort) =>

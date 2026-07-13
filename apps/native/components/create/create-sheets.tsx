@@ -1,6 +1,8 @@
 import { BottomSheet, ListGroup, Switch } from "heroui-native";
 import { View } from "react-native";
 
+import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
+
 import { ListDivider } from "./create-ui";
 
 const SWITCH_THUMB_ANIMATION = {
@@ -29,13 +31,8 @@ export function AdvancedOptionsSheet({
 		<BottomSheet isOpen={isOpen} onOpenChange={onOpenChange}>
 			<BottomSheet.Portal disableFullWindowOverlay>
 				<BottomSheet.Overlay />
-				<BottomSheet.Content
-					snapPoints={["34%"]}
-					enableDynamicSizing={false}
-					enableOverDrag={false}
-					contentContainerClassName="h-full"
-				>
-					<View className="gap-3 px-3 pb-3">
+				<AppBottomSheetContent enableOverDrag={false}>
+					<View className="gap-2">
 						<BottomSheet.Title>高级选项</BottomSheet.Title>
 						<ListGroup
 							variant="secondary"
@@ -54,7 +51,7 @@ export function AdvancedOptionsSheet({
 							/>
 						</ListGroup>
 					</View>
-				</BottomSheet.Content>
+				</AppBottomSheetContent>
 			</BottomSheet.Portal>
 		</BottomSheet>
 	);

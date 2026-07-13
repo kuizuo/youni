@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
@@ -10,13 +11,15 @@ import {
 	getCachedSearchHistory,
 	loadSearchHistory,
 	persistSearchHistory,
-	QUICK_WORDS,
 	SEARCH_HISTORY_LIMIT,
 	type SearchTabKey,
 	uniqueWords,
 } from "@/components/search/search-utils";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
+import { client, orpc } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
+
+type SearchSource = "external" | "history" | "recommended" | "typed";
 
 export default function SearchScreen() {
 	const params = useLocalSearchParams<{
@@ -34,10 +37,21 @@ export default function SearchScreen() {
 		getCachedSearchHistory(),
 	);
 	const [isEditingHistory, setIsEditingHistory] = useState(false);
+	const recommendations = useQuery({
+		...orpc.searchDiscovery.recommendations.queryOptions({
+			input: { limit: 12 },
+		}),
+		staleTime: 5 * 60 * 1_000,
+	});
 	const hasActiveSearch = activeKeyword.length > 0;
 	const normalizedKeyword = keyword.trim();
 	const canSubmitKeyword = normalizedKeyword.length > 0;
-	const quickWords = uniqueWords([...recentWords, ...QUICK_WORDS], 12);
+	const quickWords = uniqueWords(
+		(recommendations.data?.items ?? []).filter(
+			(item) => !recentWords.includes(item),
+		),
+		12,
+	);
 	const contentBottomPadding =
 		process.env.EXPO_OS === "ios" ? insets.bottom + 28 : 128;
 
@@ -54,7 +68,7 @@ export default function SearchScreen() {
 	);
 
 	const applyKeyword = useCallback(
-		(value: string) => {
+		(value: string, source: SearchSource = "typed") => {
 			const nextKeyword = value.trim();
 			if (!nextKeyword) return;
 
@@ -65,6 +79,9 @@ export default function SearchScreen() {
 			updateRecentWords((items) =>
 				uniqueWords([nextKeyword, ...items], SEARCH_HISTORY_LIMIT),
 			);
+			void client.searchDiscovery
+				.record({ keyword: nextKeyword, source })
+				.catch(() => undefined);
 		},
 		[updateRecentWords],
 	);
@@ -99,11 +116,11 @@ export default function SearchScreen() {
 		if (handledExternalSearch.current === key) return;
 
 		handledExternalSearch.current = key;
-		applyKeyword(nextKeyword);
+		applyKeyword(nextKeyword, "external");
 	}, [applyKeyword, params.actionAt, params.keyword, params.source]);
 
 	const submitSearch = () => {
-		applyKeyword(keyword);
+		applyKeyword(keyword, "typed");
 	};
 
 	const clearSearch = () => {
@@ -173,7 +190,8 @@ export default function SearchScreen() {
 					onClearHistory={clearHistory}
 					onDeleteHistoryWord={deleteHistoryWord}
 					onFinishEditingHistory={finishEditingHistory}
-					onPressWord={applyKeyword}
+					onPressHistoryWord={(word) => applyKeyword(word, "history")}
+					onPressRecommendedWord={(word) => applyKeyword(word, "recommended")}
 					onStartEditingHistory={startEditingHistory}
 				/>
 			)}

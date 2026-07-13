@@ -104,6 +104,18 @@ export const adminUserRestoreInput = z.object({
 	status: manageableAdminUserStatusInput.default("active"),
 });
 
+const analyticsDayInput = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+export const adminAnalyticsInput = z.object({
+	from: analyticsDayInput,
+	to: analyticsDayInput,
+});
+
+export const adminSearchKeywordControlInput = z.object({
+	excluded: z.boolean(),
+	keyword: z.string().trim().min(1).max(50),
+});
+
 // ====== Output ======
 
 export type AdminOutputs = {
@@ -153,6 +165,54 @@ export type AdminOutputs = {
 			authorName: string;
 		}[];
 	};
+	analytics: {
+		from: string;
+		to: string;
+		discovery: {
+			totals: {
+				blockAuthorCount: number;
+				collectCount: number;
+				impressionCount: number;
+				likeCount: number;
+				notInterestedCount: number;
+				openCount: number;
+			};
+			series: {
+				blockAuthorCount: number;
+				collectCount: number;
+				day: string;
+				impressionCount: number;
+				likeCount: number;
+				notInterestedCount: number;
+				openCount: number;
+			}[];
+		};
+		search: {
+			summary: {
+				externalCount: number;
+				historyCount: number;
+				recommendedCount: number;
+				successfulCount: number;
+				totalCount: number;
+				typedCount: number;
+				uniqueKeywordCount: number;
+			};
+			series: { day: string; successfulCount: number; totalCount: number }[];
+			keywords: {
+				displayKeyword: string;
+				excluded: boolean;
+				externalCount: number;
+				historyCount: number;
+				keyword: string;
+				previousCount: number;
+				recommendedCount: number;
+				successfulCount: number;
+				totalCount: number;
+				typedCount: number;
+			}[];
+		};
+	};
+	setSearchKeywordExcluded: { excluded: boolean; keyword: string };
 	notes: {
 		items: AdminHydratedContentNote<{
 			id: string;
@@ -454,6 +514,12 @@ export const adminContract = {
 		.input(adminCurrentProfileInput)
 		.output(output<AdminOutputs["updateCurrentProfile"]>()),
 	overview: procedure.output(output<AdminOutputs["overview"]>()),
+	analytics: procedure
+		.input(adminAnalyticsInput)
+		.output(output<AdminOutputs["analytics"]>()),
+	setSearchKeywordExcluded: procedure
+		.input(adminSearchKeywordControlInput)
+		.output(output<AdminOutputs["setSearchKeywordExcluded"]>()),
 	notes: procedure
 		.input(adminListInput)
 		.output(output<AdminOutputs["notes"]>()),

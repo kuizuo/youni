@@ -1,4 +1,5 @@
 import { createAuth } from "@youni/auth";
+import { env } from "@youni/env/server";
 import type { Context as HonoContext } from "hono";
 
 export type CreateContextOptions = {
@@ -11,6 +12,11 @@ export async function createContext({ context }: CreateContextOptions) {
 	});
 	return {
 		auth: null,
+		rateLimitKey:
+			context.req.header("CF-Connecting-IP") ??
+			context.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
+			"local",
+		searchRateLimit: env.SEARCH_RATE_LIMIT,
 		session,
 	};
 }

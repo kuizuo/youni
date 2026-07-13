@@ -88,8 +88,10 @@ export default function NoteDetailScreen() {
 	const params = useLocalSearchParams<{
 		commentId?: string | string[];
 		id?: string | string[];
+		feedImpressionId?: string | string[];
 	}>();
 	const id = getRouteParam(params.id) ?? "";
+	const feedImpressionId = getRouteParam(params.feedImpressionId);
 	const targetCommentId = getRouteParam(params.commentId);
 	const targetCommentScrollKey = targetCommentId
 		? `${id}:${targetCommentId}`
@@ -713,6 +715,20 @@ export default function NoteDetailScreen() {
 			{ id: note.data.id },
 			{
 				redirectTo: `/note/${id}`,
+				onSuccess: (result) => {
+					if (!result.liked || !feedImpressionId) return;
+					void client.notes
+						.recordFeedEvents({
+							events: [
+								{
+									impressionId: feedImpressionId,
+									noteId: note.data?.id ?? id,
+									type: "like",
+								},
+							],
+						})
+						.catch(() => undefined);
+				},
 			},
 		);
 	};
@@ -724,6 +740,20 @@ export default function NoteDetailScreen() {
 			{ id: note.data.id },
 			{
 				redirectTo: `/note/${id}`,
+				onSuccess: (result) => {
+					if (!result.collected || !feedImpressionId) return;
+					void client.notes
+						.recordFeedEvents({
+							events: [
+								{
+									impressionId: feedImpressionId,
+									noteId: note.data?.id ?? id,
+									type: "collect",
+								},
+							],
+						})
+						.catch(() => undefined);
+				},
 			},
 		);
 	};

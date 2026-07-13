@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import { follow, note, noteLike, user } from "@youni/db/schema/index";
-import { and, count, desc, eq, or } from "drizzle-orm";
+import { and, count, desc, eq, notInArray, or } from "drizzle-orm";
 import {
 	activeUserProcedure,
 	protectedProcedure,
@@ -15,6 +15,13 @@ import {
 } from "../lib/content-notes";
 import { notifyFollow } from "../lib/notifications";
 import { containsInsensitive } from "../lib/search";
+import {
+	getBlockedUserIds,
+	hasMessagingBlock,
+	isUserBlockedBy,
+	listBlockedUsers,
+	setUserBlocked,
+} from "../lib/user-blocks";
 import { toNumber, toPage } from "./utils";
 
 async function getProfile(userId: string, viewerId?: string) {
@@ -90,6 +97,7 @@ export const profilesRouter = {
 		async ({ input, context }) => {
 			const keyword = input.keyword?.trim();
 			if (!keyword) return [];
+			const blockedIds = await getBlockedUserIds(context.session?.user.id);
 
 			const rows = await createDb()
 				.select({ id: user.id })
@@ -98,6 +106,7 @@ export const profilesRouter = {
 					and(
 						eq(user.status, "active"),
 						eq(user.isAnonymous, false),
+						...(blockedIds.length > 0 ? [notInArray(user.id, blockedIds)] : []),
 						or(
 							containsInsensitive(user.name, keyword),
 							containsInsensitive(user.handle, keyword),
@@ -118,6 +127,7 @@ export const profilesRouter = {
 		async ({ input, context }) => {
 			const keyword = input.keyword?.trim();
 			if (!keyword) return { items: [], hasMore: false, nextOffset: null };
+			const blockedIds = await getBlockedUserIds(context.session?.user.id);
 
 			const rows = await createDb()
 				.select({ id: user.id })
@@ -126,6 +136,7 @@ export const profilesRouter = {
 					and(
 						eq(user.status, "active"),
 						eq(user.isAnonymous, false),
+						...(blockedIds.length > 0 ? [notInArray(user.id, blockedIds)] : []),
 						or(
 							containsInsensitive(user.name, keyword),
 							containsInsensitive(user.handle, keyword),
@@ -150,6 +161,7 @@ export const profilesRouter = {
 	connections: publicProcedure.connections.handler(
 		async ({ input, context }) => {
 			const db = createDb();
+			const blockedIds = await getBlockedUserIds(context.session?.user.id);
 			const rows =
 				input.type === "following"
 					? await db
@@ -160,6 +172,9 @@ export const profilesRouter = {
 								and(
 									eq(follow.followerId, input.userId),
 									eq(user.status, "active"),
+									...(blockedIds.length > 0
+										? [notInArray(user.id, blockedIds)]
+										: []),
 								),
 							)
 							.orderBy(desc(follow.createdAt))
@@ -172,6 +187,9 @@ export const profilesRouter = {
 								and(
 									eq(follow.followingId, input.userId),
 									eq(user.status, "active"),
+									...(blockedIds.length > 0
+										? [notInArray(user.id, blockedIds)]
+										: []),
 								),
 							)
 							.orderBy(desc(follow.createdAt))
@@ -184,7 +202,11 @@ export const profilesRouter = {
 	),
 
 	profile: publicProcedure.profile.handler(async ({ input, context }) => {
+		const isBlocked = context.session?.user.id
+			? await isUserBlockedBy(context.session.user.id, input.userId)
+			: false;
 		const profile = await getProfile(input.userId, context.session?.user.id);
+		if (isBlocked) return { isBlocked, profile, notes: [] };
 		const rows = (
 			await selectContentNoteRows(
 				and(
@@ -195,6 +217,7 @@ export const profilesRouter = {
 			)
 		).slice(0, 30);
 		return {
+			isBlocked,
 			profile,
 			notes: await hydrateContentNotes(rows, context.session?.user.id),
 		};
@@ -218,6 +241,12 @@ export const profilesRouter = {
 				throw new ORPCError("NOT_FOUND");
 			}
 
+			if (
+				context.session?.user.id &&
+				(await isUserBlockedBy(context.session.user.id, row.id))
+			) {
+				throw new ORPCError("NOT_FOUND");
+			}
 			return getProfile(row.id, context.session?.user.id);
 		},
 	),
@@ -300,6 +329,11 @@ export const profilesRouter = {
 			if (viewerId === input.userId) {
 				throw new ORPCError("BAD_REQUEST");
 			}
+			if (await hasMessagingBlock(viewerId, input.userId)) {
+				throw new ORPCError("FORBIDDEN", {
+					message: "拉黑状态下不能关注对方",
+				});
+			}
 
 			const db = createDb();
 			const [target] = await db
@@ -345,6 +379,20 @@ export const profilesRouter = {
 				.from(follow)
 				.where(eq(follow.followingId, input.userId));
 			return { following, followerCount: toNumber(row?.value) };
+		},
+	),
+
+	blockedUsers: protectedProcedure.blockedUsers.handler(async ({ context }) => {
+		return listBlockedUsers(context.session.user.id);
+	}),
+
+	setBlocked: activeUserProcedure.setBlocked.handler(
+		async ({ input, context }) => {
+			return setUserBlocked({
+				blocked: input.blocked,
+				blockedId: input.userId,
+				blockerId: context.session.user.id,
+			});
 		},
 	),
 };

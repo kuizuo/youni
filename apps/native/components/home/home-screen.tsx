@@ -1,9 +1,9 @@
 import { FlashList } from "@shopify/flash-list";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { Platform, View } from "react-native";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Platform, View, type ViewToken } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { DiscoverNoteActionsSheet } from "@/components/home/discover-note-actions-sheet";
 import { HomeEmptyState } from "@/components/home/empty";
 import { DiscoverFooter } from "@/components/home/footer";
 import { HomeTopBar } from "@/components/home/top-bar";
@@ -12,42 +12,74 @@ import {
 	type HomeFeedNote,
 	type HomeTab,
 } from "@/components/home/types";
-import { NoteCard } from "@/components/note-card";
+import { NoteCard, type NoteCardNote } from "@/components/note-card";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
-import { client, orpc } from "@/utils/orpc";
+import { useAppToast } from "@/utils/app-toast";
+import { client, orpc, queryClient } from "@/utils/orpc";
 import { flattenPages } from "@/utils/pagination";
 
 export default function HomeScreen() {
 	const socialNavigation = useSocialNavigation();
+	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
 	const [activeTab, setActiveTab] = useState<HomeTab>("discover");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const [selectedDiscoverNote, setSelectedDiscoverNote] =
+		useState<NoteCardNote | null>(null);
+	const [hiddenNoteIds, setHiddenNoteIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [hiddenAuthorIds, setHiddenAuthorIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [guestOpenedNoteIds, setGuestOpenedNoteIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const recordedImpressionsRef = useRef(new Set<string>());
+	const guestOpenedNoteIdsRef = useRef(new Set<string>());
 	const [cachedFollowingFeed, setCachedFollowingFeed] = useState<{
 		notes: HomeFeedNote[];
 		userId: string;
 	} | null>(null);
 	const sessionUserId = socialNavigation.currentUserId;
 	const input = useMemo(() => ({ limit: 30 }), []);
-	const discoverQueryKey = useMemo(() => nativeQueryKeys.home.discover(), []);
+	const discoverQueryKey = useMemo(
+		() => nativeQueryKeys.home.discover(sessionUserId ?? "guest"),
+		[sessionUserId],
+	);
 	const discoverFeed = useInfiniteQuery({
 		queryKey: discoverQueryKey,
 		queryFn: ({ pageParam }) =>
-			client.searchNotes({
+			client.feed({
+				cursor: pageParam,
 				limit: DISCOVER_PAGE_SIZE,
-				offset: Number(pageParam ?? 0),
 			}),
-		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
+	const recordEvents = useMutation(orpc.recordFeedEvents.mutationOptions());
+	const notInterested = useMutation(
+		orpc.setNoteNotInterested.mutationOptions(),
+	);
+	const setBlocked = useMutation(orpc.setBlocked.mutationOptions());
 	const followingFeed = useQuery({
 		...orpc.followingFeed.queryOptions({ input }),
 		enabled: activeTab === "following" && Boolean(sessionUserId),
 	});
-	const discoverNotes = useMemo(
-		() => flattenPages<HomeFeedNote>(discoverFeed.data?.pages),
-		[discoverFeed.data?.pages],
-	);
+	const discoverNotes = useMemo(() => {
+		return flattenPages<HomeFeedNote>(discoverFeed.data?.pages).filter(
+			(item) =>
+				!hiddenNoteIds.has(item.id) &&
+				!hiddenAuthorIds.has(item.author.id) &&
+				!guestOpenedNoteIds.has(item.id),
+		);
+	}, [
+		discoverFeed.data?.pages,
+		guestOpenedNoteIds,
+		hiddenAuthorIds,
+		hiddenNoteIds,
+	]);
 	useEffect(() => {
 		if (sessionUserId && followingFeed.data) {
 			setCachedFollowingFeed({
@@ -78,10 +110,165 @@ export default function HomeScreen() {
 				await followingFeed.refetch();
 				return;
 			}
-			await discoverFeed.refetch();
+			const refreshedPage = await client.feed({
+				limit: DISCOVER_PAGE_SIZE,
+			});
+			setGuestOpenedNoteIds(
+				sessionUserId ? new Set() : new Set(guestOpenedNoteIdsRef.current),
+			);
+			setHiddenNoteIds(new Set());
+			recordedImpressionsRef.current.clear();
+			queryClient.setQueryData(discoverQueryKey, {
+				pageParams: [undefined],
+				pages: [refreshedPage],
+			});
+		} catch {
+			toast.show({ label: "刷新失败，请稍后重试", variant: "danger" });
 		} finally {
 			setIsManuallyRefreshing(false);
 		}
+	};
+
+	const recordDiscoverEvent = useCallback(
+		(
+			note: NoteCardNote,
+			type:
+				| "block_author"
+				| "collect"
+				| "impression"
+				| "like"
+				| "not_interested"
+				| "open",
+		) => {
+			if (!sessionUserId) {
+				if (type === "open") {
+					guestOpenedNoteIdsRef.current.add(note.id);
+					if (guestOpenedNoteIdsRef.current.size > 200) {
+						const oldest = guestOpenedNoteIdsRef.current.values().next().value;
+						if (oldest) guestOpenedNoteIdsRef.current.delete(oldest);
+					}
+				}
+				return;
+			}
+			if (!note.feedContext) return;
+			recordEvents.mutate({
+				events: [
+					{
+						impressionId: note.feedContext.impressionId,
+						noteId: note.id,
+						position: note.feedContext.position,
+						type,
+					},
+				],
+			});
+		},
+		[recordEvents.mutate, sessionUserId],
+	);
+
+	const onViewableItemsChanged = useCallback(
+		({ viewableItems }: { viewableItems: Array<ViewToken<HomeFeedNote>> }) => {
+			if (activeTab !== "discover") return;
+			const events = viewableItems.flatMap((viewToken) => {
+				const item = viewToken.item;
+				if (!viewToken.isViewable || !item) return [];
+				if (!sessionUserId) return [];
+				const discoverContext = item.feedContext;
+				if (
+					!discoverContext ||
+					recordedImpressionsRef.current.has(discoverContext.impressionId)
+				) {
+					return [];
+				}
+				recordedImpressionsRef.current.add(discoverContext.impressionId);
+				return [
+					{
+						impressionId: discoverContext.impressionId,
+						noteId: item.id,
+						position: discoverContext.position,
+						type: "impression" as const,
+					},
+				];
+			});
+			if (events.length > 0) recordEvents.mutate({ events });
+		},
+		[activeTab, recordEvents.mutate, sessionUserId],
+	);
+
+	const handleNotInterested = (note: NoteCardNote) => {
+		setSelectedDiscoverNote(null);
+		if (!socialNavigation.requireLogin("/")) return;
+		setHiddenNoteIds((items) => new Set(items).add(note.id));
+		notInterested.mutate(
+			{
+				impressionId: note.feedContext?.impressionId,
+				noteId: note.id,
+				notInterested: true,
+			},
+			{
+				onError: () => {
+					setHiddenNoteIds((items) => {
+						const next = new Set(items);
+						next.delete(note.id);
+						return next;
+					});
+				},
+				onSuccess: () => {
+					toast.show({
+						actionLabel: "撤销",
+						label: "已减少相似内容推荐",
+						onActionPress: () => {
+							setHiddenNoteIds((items) => {
+								const next = new Set(items);
+								next.delete(note.id);
+								return next;
+							});
+							notInterested.mutate({
+								noteId: note.id,
+								notInterested: false,
+							});
+						},
+						variant: "success",
+					});
+				},
+			},
+		);
+	};
+
+	const handleBlockAuthor = (note: NoteCardNote) => {
+		setSelectedDiscoverNote(null);
+		if (!socialNavigation.requireLogin("/")) return;
+		Alert.alert(
+			`拉黑 ${note.author.name}`,
+			"你将不再看到该作者，双方也不能继续私信。可在设置中解除。",
+			[
+				{ text: "取消", style: "cancel" },
+				{
+					text: "确认拉黑",
+					style: "destructive",
+					onPress: () => {
+						setHiddenAuthorIds((items) => new Set(items).add(note.author.id));
+						setBlocked.mutate(
+							{ blocked: true, userId: note.author.id },
+							{
+								onError: () => {
+									setHiddenAuthorIds((items) => {
+										const next = new Set(items);
+										next.delete(note.author.id);
+										return next;
+									});
+								},
+								onSuccess: () => {
+									recordDiscoverEvent(note, "block_author");
+									void queryClient.invalidateQueries({ queryKey: ["home"] });
+									void queryClient.invalidateQueries({ queryKey: ["search"] });
+									toast.show({ label: "已拉黑该作者", variant: "success" });
+								},
+							},
+						);
+					},
+				},
+			],
+		);
 	};
 
 	return (
@@ -100,9 +287,21 @@ export default function HomeScreen() {
 				optimizeItemArrangement={false}
 				renderItem={({ item }) => (
 					<View className="px-1 pb-2">
-						<NoteCard compact note={item} />
+						<NoteCard
+							compact
+							note={item}
+							onOpenDiscoverActions={
+								activeTab === "discover" ? setSelectedDiscoverNote : undefined
+							}
+							onRecordDiscoverEvent={recordDiscoverEvent}
+						/>
 					</View>
 				)}
+				onViewableItemsChanged={onViewableItemsChanged}
+				viewabilityConfig={{
+					itemVisiblePercentThreshold: 50,
+					minimumViewTime: 1_000,
+				}}
 				contentInsetAdjustmentBehavior="automatic"
 				showsVerticalScrollIndicator={false}
 				refreshing={isManuallyRefreshing}
@@ -151,6 +350,16 @@ export default function HomeScreen() {
 						}}
 					/>
 				}
+			/>
+			<DiscoverNoteActionsSheet
+				isOpen={Boolean(selectedDiscoverNote)}
+				note={selectedDiscoverNote}
+				onBlockAuthor={handleBlockAuthor}
+				onNotInterested={handleNotInterested}
+				onRecordDiscoverEvent={recordDiscoverEvent}
+				onOpenChange={(isOpen) => {
+					if (!isOpen) setSelectedDiscoverNote(null);
+				}}
 			/>
 		</View>
 	);

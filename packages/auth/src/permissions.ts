@@ -6,6 +6,7 @@ export const backofficeUserRoleOptions = ["admin", "operator"] as const;
 export const adminPermissionStatements = {
 	backoffice: ["access"],
 	dashboard: ["view"],
+	analytics: ["view", "moderate"],
 	note: ["list", "detail", "audit", "delete"],
 	topic: ["list", "detail", "save", "delete"],
 	user: [
@@ -37,6 +38,7 @@ export const adminAccessControl = createAccessControl(
 const adminPermissionRole = adminAccessControl.newRole({
 	backoffice: ["access"],
 	dashboard: ["view"],
+	analytics: ["view", "moderate"],
 	note: ["list", "detail", "audit", "delete"],
 	topic: ["list", "detail", "save", "delete"],
 	user: [
@@ -57,6 +59,7 @@ const adminPermissionRole = adminAccessControl.newRole({
 const operatorPermissionRole = adminAccessControl.newRole({
 	backoffice: ["access"],
 	dashboard: ["view"],
+	analytics: ["view"],
 	note: ["list", "detail", "audit", "delete"],
 	topic: ["list", "detail", "save", "delete"],
 	user: ["list", "get"],
@@ -66,6 +69,7 @@ const operatorPermissionRole = adminAccessControl.newRole({
 const userPermissionRole = adminAccessControl.newRole({
 	backoffice: [],
 	dashboard: [],
+	analytics: [],
 	note: [],
 	profile: [],
 	session: [],

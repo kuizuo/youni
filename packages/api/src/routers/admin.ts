@@ -9,14 +9,17 @@ import {
 	comment,
 	follow,
 	note,
+	noteFeedDailyMetric,
 	noteLike,
 	noteTopic,
+	searchKeywordControl,
+	searchKeywordDaily,
 	session,
 	topic,
 	user,
 } from "@youni/db/schema/index";
 import { hashPassword } from "better-auth/crypto";
-import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
+import { and, between, count, desc, eq, inArray, ne, or } from "drizzle-orm";
 
 import {
 	type AdminUserRuleResult,
@@ -37,6 +40,11 @@ import {
 	updateContentNoteStatus,
 } from "../lib/content-notes";
 import { containsInsensitive } from "../lib/search";
+import {
+	getRetentionCutoffDay,
+	getShanghaiDay,
+	normalizeSearchKeyword,
+} from "../lib/search-analytics";
 
 const adminProcedure = protectedProcedure.admin.use(
 	async ({ context, next }) => {
@@ -199,6 +207,97 @@ async function getUserForAdmin(id: string) {
 	return target;
 }
 
+function shiftDay(day: string, offset: number) {
+	const date = new Date(`${day}T12:00:00.000Z`);
+	date.setUTCDate(date.getUTCDate() + offset);
+	return date.toISOString().slice(0, 10);
+}
+
+function daySpan(from: string, to: string) {
+	return Math.floor(
+		(Date.parse(`${to}T12:00:00.000Z`) - Date.parse(`${from}T12:00:00.000Z`)) /
+			86_400_000,
+	);
+}
+
+function listDays(from: string, to: string) {
+	const days: string[] = [];
+	for (let day = from; day <= to; day = shiftDay(day, 1)) days.push(day);
+	return days;
+}
+
+function assertAnalyticsRange(from: string, to: string) {
+	const today = getShanghaiDay(new Date());
+	const cutoff = getRetentionCutoffDay(new Date(), 90);
+	const span = daySpan(from, to);
+	if (from < cutoff || to > today || span < 0 || span >= 90) {
+		throw new ORPCError("BAD_REQUEST", {
+			message: "只能查询最近 90 天内的日期",
+		});
+	}
+}
+
+type SearchKeywordSummary = {
+	displayKeyword: string;
+	externalCount: number;
+	historyCount: number;
+	keyword: string;
+	recommendedCount: number;
+	successfulCount: number;
+	totalCount: number;
+	typedCount: number;
+};
+
+function emptySearchKeywordSummary(
+	keyword: string,
+	displayKeyword = keyword,
+): SearchKeywordSummary {
+	return {
+		displayKeyword,
+		externalCount: 0,
+		historyCount: 0,
+		keyword,
+		recommendedCount: 0,
+		successfulCount: 0,
+		totalCount: 0,
+		typedCount: 0,
+	};
+}
+
+function addSearchRow(
+	target: SearchKeywordSummary,
+	row: typeof searchKeywordDaily.$inferSelect,
+) {
+	target.displayKeyword = row.displayKeyword;
+	target.externalCount += row.externalCount;
+	target.historyCount += row.historyCount;
+	target.recommendedCount += row.recommendedCount;
+	target.successfulCount += row.successfulCount;
+	target.totalCount += row.totalCount;
+	target.typedCount += row.typedCount;
+}
+
+function sumFeedMetrics(rows: Array<typeof noteFeedDailyMetric.$inferSelect>) {
+	return rows.reduce(
+		(totals, row) => ({
+			blockAuthorCount: totals.blockAuthorCount + row.blockAuthorCount,
+			collectCount: totals.collectCount + row.collectCount,
+			impressionCount: totals.impressionCount + row.impressionCount,
+			likeCount: totals.likeCount + row.likeCount,
+			notInterestedCount: totals.notInterestedCount + row.notInterestedCount,
+			openCount: totals.openCount + row.openCount,
+		}),
+		{
+			blockAuthorCount: 0,
+			collectCount: 0,
+			impressionCount: 0,
+			likeCount: 0,
+			notInterestedCount: 0,
+			openCount: 0,
+		},
+	);
+}
+
 export const adminRouter = {
 	me: adminProcedure.me.handler(async ({ context }) => {
 		const [profile] = await createDb()
@@ -330,6 +429,134 @@ export const adminRouter = {
 			};
 		},
 	),
+
+	analytics: adminPermissionProcedure({
+		analytics: ["view"],
+	}).analytics.handler(async ({ input }) => {
+		assertAnalyticsRange(input.from, input.to);
+		const periodDays = daySpan(input.from, input.to) + 1;
+		const previousTo = shiftDay(input.from, -1);
+		const previousFrom = shiftDay(previousTo, -(periodDays - 1));
+		const db = createDb();
+		const [searchRows, feedRows, controlRows] = await Promise.all([
+			db
+				.select()
+				.from(searchKeywordDaily)
+				.where(between(searchKeywordDaily.day, previousFrom, input.to)),
+			db
+				.select()
+				.from(noteFeedDailyMetric)
+				.where(between(noteFeedDailyMetric.day, input.from, input.to)),
+			db.select().from(searchKeywordControl),
+		]);
+		const currentKeywords = new Map<string, SearchKeywordSummary>();
+		const previousKeywords = new Map<string, SearchKeywordSummary>();
+		const searchSeriesByDay = new Map<
+			string,
+			{ successfulCount: number; totalCount: number }
+		>();
+		for (const row of searchRows) {
+			const isCurrent = row.day >= input.from;
+			const map = isCurrent ? currentKeywords : previousKeywords;
+			const summary =
+				map.get(row.keyword) ??
+				emptySearchKeywordSummary(row.keyword, row.displayKeyword);
+			addSearchRow(summary, row);
+			map.set(row.keyword, summary);
+			if (isCurrent) {
+				const day = searchSeriesByDay.get(row.day) ?? {
+					successfulCount: 0,
+					totalCount: 0,
+				};
+				day.successfulCount += row.successfulCount;
+				day.totalCount += row.totalCount;
+				searchSeriesByDay.set(row.day, day);
+			}
+		}
+		const excludedByKeyword = new Map(
+			controlRows.map((row) => [row.keyword, row.excluded]),
+		);
+		const keywords = [...currentKeywords.values()]
+			.map((item) => ({
+				...item,
+				excluded: excludedByKeyword.get(item.keyword) ?? false,
+				previousCount: previousKeywords.get(item.keyword)?.totalCount ?? 0,
+			}))
+			.sort(
+				(left, right) =>
+					right.totalCount - left.totalCount ||
+					left.keyword.localeCompare(right.keyword),
+			)
+			.slice(0, 100);
+		const searchSummary = [...currentKeywords.values()].reduce(
+			(summary, item) => ({
+				externalCount: summary.externalCount + item.externalCount,
+				historyCount: summary.historyCount + item.historyCount,
+				recommendedCount: summary.recommendedCount + item.recommendedCount,
+				successfulCount: summary.successfulCount + item.successfulCount,
+				totalCount: summary.totalCount + item.totalCount,
+				typedCount: summary.typedCount + item.typedCount,
+				uniqueKeywordCount: currentKeywords.size,
+			}),
+			{
+				externalCount: 0,
+				historyCount: 0,
+				recommendedCount: 0,
+				successfulCount: 0,
+				totalCount: 0,
+				typedCount: 0,
+				uniqueKeywordCount: currentKeywords.size,
+			},
+		);
+		const feedByDay = new Map(feedRows.map((row) => [row.day, row]));
+		const emptyFeedMetrics = sumFeedMetrics([]);
+		return {
+			from: input.from,
+			to: input.to,
+			discovery: {
+				series: listDays(input.from, input.to).map((day) => ({
+					day,
+					...(feedByDay.get(day) ?? emptyFeedMetrics),
+				})),
+				totals: sumFeedMetrics(feedRows),
+			},
+			search: {
+				keywords,
+				series: listDays(input.from, input.to).map((day) => ({
+					day,
+					successfulCount: searchSeriesByDay.get(day)?.successfulCount ?? 0,
+					totalCount: searchSeriesByDay.get(day)?.totalCount ?? 0,
+				})),
+				summary: searchSummary,
+			},
+		};
+	}),
+
+	setSearchKeywordExcluded: adminPermissionProcedure({
+		analytics: ["moderate"],
+	}).setSearchKeywordExcluded.handler(async ({ input, context }) => {
+		const keyword = normalizeSearchKeyword(input.keyword);
+		if (!keyword) throw new ORPCError("BAD_REQUEST");
+		const now = new Date();
+		await createDb()
+			.insert(searchKeywordControl)
+			.values({
+				createdAt: now,
+				excluded: input.excluded,
+				keyword,
+				updatedAt: now,
+				updatedBy: context.adminUser.id,
+			})
+			.onConflictDoUpdate({
+				target: searchKeywordControl.keyword,
+				set: {
+					excluded: input.excluded,
+					updatedAt: now,
+					updatedBy: context.adminUser.id,
+				},
+			});
+		return { excluded: input.excluded, keyword };
+	}),
 
 	notes: adminPermissionProcedure({ note: ["list"] }).notes.handler(
 		async ({ input }) => {

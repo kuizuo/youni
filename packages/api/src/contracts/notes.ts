@@ -55,10 +55,58 @@ export const noteVisibilityUpdateInput = z.object({
 	visibility: z.enum(["public", "followers", "private"]),
 });
 
+export const noteFeedInput = z.object({
+	limit: z.number().int().min(1).max(30).default(20),
+	cursor: z.string().max(16_000).optional(),
+});
+
+export const noteFeedEventType = z.enum([
+	"impression",
+	"open",
+	"like",
+	"collect",
+	"not_interested",
+	"block_author",
+]);
+
+export type NoteFeedEventType = z.infer<typeof noteFeedEventType>;
+
+export const noteFeedEventsInput = z.object({
+	events: z
+		.array(
+			z.object({
+				impressionId: z.string().min(1).max(1_000),
+				noteId: z.string().min(1),
+				position: z.number().int().min(0).max(300).optional(),
+				type: noteFeedEventType,
+			}),
+		)
+		.min(1)
+		.max(30),
+});
+
+export const noteNotInterestedInput = z.object({
+	impressionId: z.string().min(1).max(1_000).optional(),
+	noteId: z.string().min(1),
+	notInterested: z.boolean(),
+});
+
 // ====== Output ======
 
 export type NotesOutputs = {
-	feed: HydratedContentNote[];
+	feed: {
+		items: Array<
+			HydratedContentNote & {
+				feedContext: {
+					impressionId: string;
+					position: number;
+				};
+			}
+		>;
+		nextCursor: string | null;
+	};
+	recordFeedEvents: { accepted: number };
+	setNoteNotInterested: { notInterested: boolean; noteId: string };
 	followingFeed: HydratedContentNote[];
 	searchNotes: {
 		items: HydratedContentNote[];
@@ -108,7 +156,13 @@ export type NotesOutputs = {
 // ====== Contract ======
 
 export const notesContract = {
-	feed: procedure.input(listInput).output(output<NotesOutputs["feed"]>()),
+	feed: procedure.input(noteFeedInput).output(output<NotesOutputs["feed"]>()),
+	recordFeedEvents: procedure
+		.input(noteFeedEventsInput)
+		.output(output<NotesOutputs["recordFeedEvents"]>()),
+	setNoteNotInterested: procedure
+		.input(noteNotInterestedInput)
+		.output(output<NotesOutputs["setNoteNotInterested"]>()),
 	followingFeed: procedure
 		.input(listInput)
 		.output(output<NotesOutputs["followingFeed"]>()),

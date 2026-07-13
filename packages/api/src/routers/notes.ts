@@ -8,7 +8,7 @@ import {
 	noteLike,
 	noteViewHistory,
 } from "@youni/db/schema/index";
-import { and, count, eq, inArray, ne, or } from "drizzle-orm";
+import { and, count, eq, inArray, ne, notInArray, or } from "drizzle-orm";
 import {
 	activeUserProcedure,
 	protectedProcedure,
@@ -24,7 +24,13 @@ import {
 	updateContentNoteVisibility,
 	updateEditableContentNote,
 } from "../lib/content-notes";
+import {
+	getNoteFeed,
+	recordNoteFeedEvents,
+	setNoteNotInterested,
+} from "../lib/note-feed";
 import { notifyNoteOwner } from "../lib/notifications";
+import { getBlockedUserIds, isUserBlockedBy } from "../lib/user-blocks";
 import { listRootComments } from "./comments";
 import { getSearchNoteWhereClause } from "./topics";
 import { toNumber, toPage } from "./utils";
@@ -69,13 +75,27 @@ async function canViewNoteDetail(
 
 export const notesRouter = {
 	feed: publicProcedure.feed.handler(async ({ input, context }) => {
-		const whereClause = await getSearchNoteWhereClause(input.keyword);
-		const rows = (await selectContentNoteRows(whereClause)).slice(
-			0,
-			input.limit,
-		);
-		return hydrateContentNotes(rows, context.session?.user.id);
+		return getNoteFeed({
+			...input,
+			sessionUserId: context.session?.user.id,
+		});
 	}),
+	recordFeedEvents: protectedProcedure.recordFeedEvents.handler(
+		async ({ input, context }) => {
+			return recordNoteFeedEvents({
+				events: input.events,
+				userId: context.session.user.id,
+			});
+		},
+	),
+	setNoteNotInterested: activeUserProcedure.setNoteNotInterested.handler(
+		async ({ input, context }) => {
+			return setNoteNotInterested({
+				...input,
+				userId: context.session.user.id,
+			});
+		},
+	),
 
 	followingFeed: protectedProcedure.followingFeed.handler(
 		async ({ input, context }) => {
@@ -107,10 +127,17 @@ export const notesRouter = {
 	searchNotes: publicProcedure.searchNotes.handler(
 		async ({ input, context }) => {
 			const whereClause = await getSearchNoteWhereClause(input.keyword);
-			const rows = (await selectContentNoteRows(whereClause)).slice(
-				input.offset,
-				input.offset + input.limit + 1,
-			);
+			const blockedIds = await getBlockedUserIds(context.session?.user.id);
+			const rows = (
+				await selectContentNoteRows(
+					and(
+						whereClause,
+						...(blockedIds.length > 0
+							? [notInArray(note.userId, blockedIds)]
+							: []),
+					),
+				)
+			).slice(input.offset, input.offset + input.limit + 1);
 			const page = toPage(rows, input.limit, input.offset);
 
 			return {
@@ -125,7 +152,12 @@ export const notesRouter = {
 			and(eq(note.id, input.id), ne(note.status, "hidden")),
 		);
 
-		if (!row || !(await canViewNoteDetail(row, context.session?.user.id))) {
+		if (
+			!row ||
+			!(await canViewNoteDetail(row, context.session?.user.id)) ||
+			(context.session?.user.id &&
+				(await isUserBlockedBy(context.session.user.id, row.userId)))
+		) {
 			throw new ORPCError("NOT_FOUND");
 		}
 

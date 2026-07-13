@@ -33,6 +33,7 @@ import { orpc } from "@/utils/orpc";
 
 type AdminRouteTo =
 	| "/admin"
+	| "/admin/analytics"
 	| "/admin/notes"
 	| "/admin/profile"
 	| "/admin/settings"
@@ -65,6 +66,12 @@ const NAV_ITEMS: readonly AdminNavItem[] = [
 		icon: ChartColumn,
 		label: "概览",
 		permission: { dashboard: ["view"] },
+	},
+	{
+		href: "/admin/analytics",
+		icon: Magnifier,
+		label: "推荐与搜索",
+		permission: { analytics: ["view"] },
 	},
 	{
 		href: "/admin/notes",
@@ -100,6 +107,14 @@ const SEARCH_ITEMS = [
 		keywords: "dashboard overview 指标 数据 最近图文",
 		label: "概览",
 		permission: { dashboard: ["view"] },
+	},
+	{
+		description: "查看发现页效果、搜索趋势和无结果关键词。",
+		href: "/admin/analytics",
+		icon: Magnifier,
+		keywords: "recommendation search analytics trend 推荐 搜索 趋势",
+		label: "推荐与搜索",
+		permission: { analytics: ["view"] },
 	},
 	{
 		description: "搜索、筛选、审核、隐藏或删除图文。",

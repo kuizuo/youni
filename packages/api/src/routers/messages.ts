@@ -11,6 +11,7 @@ import {
 import { and, count, desc, eq, gt, ne } from "drizzle-orm";
 import { activeUserProcedure, protectedProcedure } from "../index";
 import { notifyMessage } from "../lib/notifications";
+import { hasMessagingBlock, setUserBlocked } from "../lib/user-blocks";
 
 function createMemberKey(leftUserId: string, rightUserId: string) {
 	return [leftUserId, rightUserId].sort().join(":");
@@ -342,26 +343,11 @@ export const messagesRouter = {
 			const viewerId = context.session.user.id;
 			await assertParticipant(input.conversationId, viewerId);
 			const peer = await getPeer(input.conversationId, viewerId);
-			const db = createDb();
-
-			if (input.blocked) {
-				await db
-					.insert(userBlock)
-					.values({
-						blockerId: viewerId,
-						blockedId: peer.id,
-					})
-					.onConflictDoNothing();
-			} else {
-				await db
-					.delete(userBlock)
-					.where(
-						and(
-							eq(userBlock.blockerId, viewerId),
-							eq(userBlock.blockedId, peer.id),
-						),
-					);
-			}
+			await setUserBlocked({
+				blocked: input.blocked,
+				blockedId: peer.id,
+				blockerId: viewerId,
+			});
 
 			const state = await getConversationState(input.conversationId, viewerId);
 			return {
@@ -399,20 +385,10 @@ export const messagesRouter = {
 			await assertParticipant(input.conversationId, viewerId);
 			const peer = await getPeer(input.conversationId, viewerId);
 			const db = createDb();
-			const [block] = await db
-				.select({ blockerId: userBlock.blockerId })
-				.from(userBlock)
-				.where(
-					and(
-						eq(userBlock.blockerId, peer.id),
-						eq(userBlock.blockedId, viewerId),
-					),
-				)
-				.limit(1);
 
-			if (block) {
+			if (await hasMessagingBlock(viewerId, peer.id)) {
 				throw new ORPCError("FORBIDDEN", {
-					message: "对方已将你加入黑名单，暂时不能发送私信",
+					message: "拉黑状态下不能发送私信",
 				});
 			}
 

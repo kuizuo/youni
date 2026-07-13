@@ -13,31 +13,41 @@ import { useSocialActions } from "@/lib/social/use-social-actions";
 
 const DEFAULT_IMAGE_ASPECT_RATIO = 1;
 
-type NoteCardProps = {
-	compact?: boolean;
-	note: {
-		author: {
-			handle?: null | string;
-			id: string;
-			image: null | string;
-			isFollowing?: boolean;
-			name: string;
-		};
-		commentCount?: number;
-		collected?: boolean;
-		collectedCount?: number;
-		cover: null | string;
+export type NoteCardNote = {
+	author: {
+		handle?: null | string;
 		id: string;
-		imageMetas?: Array<{ height: number; url: string; width: number }>;
-		liked?: boolean;
-		likedCount: number;
-		status?: "audit" | "draft" | "hidden" | "published" | "rejected";
-		title: string;
-		topics?: string[];
+		image: null | string;
+		isFollowing?: boolean;
+		name: string;
 	};
+	commentCount?: number;
+	collected?: boolean;
+	collectedCount?: number;
+	cover: null | string;
+	id: string;
+	imageMetas?: Array<{ height: number; url: string; width: number }>;
+	liked?: boolean;
+	likedCount: number;
+	feedContext?: { impressionId: string; position: number };
+	status?: "audit" | "draft" | "hidden" | "published" | "rejected";
+	title: string;
+	topics?: string[];
 };
 
-export function NoteCard({ compact = false, note }: NoteCardProps) {
+type NoteCardProps = {
+	compact?: boolean;
+	note: NoteCardNote;
+	onOpenDiscoverActions?: (note: NoteCardNote) => void;
+	onRecordDiscoverEvent?: (note: NoteCardNote, type: "like" | "open") => void;
+};
+
+export function NoteCard({
+	compact = false,
+	note,
+	onOpenDiscoverActions,
+	onRecordDiscoverEvent,
+}: NoteCardProps) {
 	const socialActions = useSocialActions();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
@@ -52,11 +62,20 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 			: DEFAULT_IMAGE_ASPECT_RATIO;
 
 	const openDetail = () => {
-		socialActions.goTo({ type: "note", id: note.id });
+		onRecordDiscoverEvent?.(note, "open");
+		socialActions.goTo({
+			type: "note",
+			id: note.id,
+			feedImpressionId: note.feedContext?.impressionId,
+		});
 	};
 
 	const openAuthor = () => {
 		socialActions.goTo({ type: "user", id: note.author.id });
+	};
+
+	const openDiscoverActions = () => {
+		onOpenDiscoverActions?.(note);
 	};
 
 	const toggleLike = () => {
@@ -66,6 +85,9 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 			{ id: note.id },
 			{
 				redirectTo: "/",
+				onSuccess: (result) => {
+					if (result.liked) onRecordDiscoverEvent?.(note, "like");
+				},
 			},
 		);
 	};
@@ -80,7 +102,11 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 			}
 		>
 			<Card.Header className="p-0">
-				<PressableFeedback onPress={openDetail} className="bg-content2">
+				<PressableFeedback
+					onLongPress={onOpenDiscoverActions ? openDiscoverActions : undefined}
+					onPress={openDetail}
+					className="bg-content2"
+				>
 					{note.cover ? (
 						<Image
 							source={{ uri: note.cover }}
@@ -108,7 +134,10 @@ export function NoteCard({ compact = false, note }: NoteCardProps) {
 			</Card.Header>
 
 			<Card.Body className={compact ? "gap-1.5 px-2.5 pt-2 pb-3" : "gap-2 p-3"}>
-				<PressableFeedback onPress={openDetail}>
+				<PressableFeedback
+					onLongPress={onOpenDiscoverActions ? openDiscoverActions : undefined}
+					onPress={openDetail}
+				>
 					<Card.Title
 						className={
 							compact

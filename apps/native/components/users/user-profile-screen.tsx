@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { RefreshControl, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ErrorState } from "@/components/social-states";
+import { EmptyState, ErrorState } from "@/components/social-states";
 import { UserProfileFeedSection } from "@/components/users/profile/feed-section";
 import { UserProfileHero } from "@/components/users/profile/hero";
 import { ProfileTopBar } from "@/components/users/profile/top-bar";
@@ -14,6 +14,7 @@ import type {
 	UserProfileData,
 } from "@/components/users/profile/types";
 import { useSocialActions } from "@/lib/social/use-social-actions";
+import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { orpc } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
 
@@ -26,9 +27,18 @@ export default function UserProfileScreen() {
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 
 	const profile = useQuery({
-		...orpc.profile.queryOptions({ input: { userId: id || "missing" } }),
+		...orpc.profile.queryOptions({
+			input: { userId: id || "missing" },
+		}),
 		enabled: Boolean(id),
 	});
+	const unblock = useMutation(
+		orpc.setBlocked.mutationOptions({
+			onSuccess: () => {
+				void profile.refetch();
+			},
+		}),
+	);
 
 	const profileData = profile.data?.profile as UserProfileData | undefined;
 	const notes = useMemo(
@@ -84,6 +94,25 @@ export default function UserProfileScreen() {
 					title="主页未能成功打开"
 					description="用户可能已不存在，请重试。"
 					onRetry={() => profile.refetch()}
+				/>
+			</View>
+		);
+	}
+
+	if (profile.data?.isBlocked) {
+		return (
+			<View className="flex-1 bg-background pt-6">
+				<ProfileTopBar onBack={() => router.back()} />
+				<EmptyState
+					icon="ban-outline"
+					title="你已拉黑该用户"
+					description="解除后可以重新查看对方的公开主页和内容。"
+					actionLabel={unblock.isPending ? "正在解除" : "解除拉黑"}
+					onAction={() => {
+						if (unblock.isPending) return;
+						fireHaptic();
+						unblock.mutate({ blocked: false, userId: id });
+					}}
 				/>
 			</View>
 		);

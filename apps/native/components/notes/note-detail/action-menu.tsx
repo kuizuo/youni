@@ -9,6 +9,7 @@ import {
 import { Modal, Pressable, View } from "react-native";
 
 import { ListDivider } from "@/components/create/create-ui";
+import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
 
 export type NoteVisibility = "followers" | "private" | "public";
 
@@ -96,13 +97,8 @@ export function NoteVisibilitySheet({
 		<BottomSheet isOpen={isOpen} onOpenChange={onOpenChange}>
 			<BottomSheet.Portal disableFullWindowOverlay>
 				<BottomSheet.Overlay />
-				<BottomSheet.Content
-					snapPoints={["38%"]}
-					enableDynamicSizing={false}
-					enableOverDrag={false}
-					contentContainerClassName="h-full"
-				>
-					<View className="gap-3 px-3 pb-3">
+				<AppBottomSheetContent enableOverDrag={false}>
+					<View className="gap-2">
 						<BottomSheet.Title>权限设置</BottomSheet.Title>
 						<ListGroup
 							variant="secondary"
@@ -152,7 +148,7 @@ export function NoteVisibilitySheet({
 							})}
 						</ListGroup>
 					</View>
-				</BottomSheet.Content>
+				</AppBottomSheetContent>
 			</BottomSheet.Portal>
 		</BottomSheet>
 	);

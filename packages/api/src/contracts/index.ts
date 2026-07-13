@@ -7,6 +7,7 @@ import { notesContract } from "./notes";
 import { notificationsContract } from "./notifications";
 import { output, procedure } from "./procedure";
 import { profilesContract } from "./profiles";
+import { searchDiscoveryContract } from "./search-discovery";
 import { topicsContract } from "./topics";
 
 export const appContract = {
@@ -14,6 +15,7 @@ export const appContract = {
 	admin: adminContract,
 	messages: messagesContract,
 	notifications: notificationsContract,
+	searchDiscovery: searchDiscoveryContract,
 	...notesContract,
 	...topicsContract,
 	...profilesContract,

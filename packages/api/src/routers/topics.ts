@@ -1,13 +1,14 @@
 import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import { comment, note, noteTopic, topic } from "@youni/db/schema/index";
-import { and, count, desc, eq, inArray, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, notInArray, or } from "drizzle-orm";
 import { publicProcedure } from "../index";
 import {
 	hydrateContentNotes,
 	selectContentNoteRows,
 } from "../lib/content-notes";
 import { containsInsensitive } from "../lib/search";
+import { getBlockedUserIds } from "../lib/user-blocks";
 import { toNumber, toPage } from "./utils";
 
 export async function getTopicNoteIds(keyword: string) {
@@ -46,7 +47,7 @@ export async function getSearchNoteWhereClause(keyword?: string) {
 	);
 }
 
-async function getPublicTopicStats(topicIds: string[]) {
+async function getPublicTopicStats(topicIds: string[], viewerId?: string) {
 	if (topicIds.length === 0) {
 		return {
 			discussionsByTopic: new Map<string, number>(),
@@ -55,6 +56,7 @@ async function getPublicTopicStats(topicIds: string[]) {
 	}
 
 	const db = createDb();
+	const blockedIds = await getBlockedUserIds(viewerId);
 	const noteRows = await db
 		.select({ noteId: noteTopic.noteId, topicId: noteTopic.topicId })
 		.from(noteTopic)
@@ -64,6 +66,7 @@ async function getPublicTopicStats(topicIds: string[]) {
 				inArray(noteTopic.topicId, topicIds),
 				eq(note.status, "published"),
 				eq(note.visibility, "public"),
+				...(blockedIds.length > 0 ? [notInArray(note.userId, blockedIds)] : []),
 			),
 		);
 	const notesByTopic = new Map<string, number>();
@@ -154,48 +157,53 @@ export const topicsRouter = {
 		}));
 	}),
 
-	searchTopics: publicProcedure.searchTopics.handler(async ({ input }) => {
-		const db = createDb();
-		const rows = input.keyword
-			? await db
-					.select({
-						id: topic.id,
-						name: topic.name,
-						createdAt: topic.createdAt,
-					})
-					.from(topic)
-					.where(containsInsensitive(topic.name, input.keyword))
-					.orderBy(desc(topic.createdAt))
-					.limit(input.limit + 1)
-					.offset(input.offset)
-			: await db
-					.select({
-						id: topic.id,
-						name: topic.name,
-						createdAt: topic.createdAt,
-					})
-					.from(topic)
-					.orderBy(desc(topic.createdAt))
-					.limit(input.limit + 1)
-					.offset(input.offset);
-		const page = toPage(rows, input.limit, input.offset);
-		const topicIds = page.items.map((row) => row.id);
-		const { discussionsByTopic, notesByTopic } =
-			await getPublicTopicStats(topicIds);
+	searchTopics: publicProcedure.searchTopics.handler(
+		async ({ input, context }) => {
+			const db = createDb();
+			const rows = input.keyword
+				? await db
+						.select({
+							id: topic.id,
+							name: topic.name,
+							createdAt: topic.createdAt,
+						})
+						.from(topic)
+						.where(containsInsensitive(topic.name, input.keyword))
+						.orderBy(desc(topic.createdAt))
+						.limit(input.limit + 1)
+						.offset(input.offset)
+				: await db
+						.select({
+							id: topic.id,
+							name: topic.name,
+							createdAt: topic.createdAt,
+						})
+						.from(topic)
+						.orderBy(desc(topic.createdAt))
+						.limit(input.limit + 1)
+						.offset(input.offset);
+			const page = toPage(rows, input.limit, input.offset);
+			const topicIds = page.items.map((row) => row.id);
+			const { discussionsByTopic, notesByTopic } = await getPublicTopicStats(
+				topicIds,
+				context.session?.user.id,
+			);
 
-		return {
-			...page,
-			items: page.items.map((row) => ({
-				...row,
-				discussionCount: discussionsByTopic.get(row.id) ?? 0,
-				noteCount: notesByTopic.get(row.id) ?? 0,
-			})),
-		};
-	}),
+			return {
+				...page,
+				items: page.items.map((row) => ({
+					...row,
+					discussionCount: discussionsByTopic.get(row.id) ?? 0,
+					noteCount: notesByTopic.get(row.id) ?? 0,
+				})),
+			};
+		},
+	),
 
 	topicDetail: publicProcedure.topicDetail.handler(
 		async ({ input, context }) => {
 			const db = createDb();
+			const blockedIds = await getBlockedUserIds(context.session?.user.id);
 			const [topicRow] = await db
 				.select({
 					id: topic.id,
@@ -219,6 +227,9 @@ export const topicsRouter = {
 						eq(noteTopic.topicId, input.id),
 						eq(note.status, "published"),
 						eq(note.visibility, "public"),
+						...(blockedIds.length > 0
+							? [notInArray(note.userId, blockedIds)]
+							: []),
 					),
 				)
 				.orderBy(desc(note.createdAt));

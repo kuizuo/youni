@@ -16,6 +16,7 @@ import { useRef, useState } from "react";
 import { Alert, Platform, Pressable, View } from "react-native";
 
 import { ListDivider } from "@/components/create/create-ui";
+import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
 import { EmptyState, ErrorState } from "@/components/social-states";
 import { removeMyComment } from "@/lib/query/my-comments-cache";
 import {
@@ -260,8 +261,8 @@ export function MeCommentsTab({
 			>
 				<BottomSheet.Portal disableFullWindowOverlay>
 					<BottomSheet.Overlay />
-					<BottomSheet.Content>
-						<View className="gap-3 px-3 pb-3">
+					<AppBottomSheetContent enableOverDrag={false}>
+						<View className="gap-2">
 							<BottomSheet.Title>评论操作</BottomSheet.Title>
 							<ListGroup
 								variant="secondary"
@@ -313,7 +314,7 @@ export function MeCommentsTab({
 								</ListGroup.Item>
 							</ListGroup>
 						</View>
-					</BottomSheet.Content>
+					</AppBottomSheetContent>
 				</BottomSheet.Portal>
 			</BottomSheet>
 		</View>

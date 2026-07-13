@@ -18,6 +18,7 @@ import { Route as AdminTopicsRouteImport } from './routes/admin.topics'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminProfileRouteImport } from './routes/admin.profile'
 import { Route as AdminNotesRouteImport } from './routes/admin.notes'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as PublicLoginRouteImport } from './routes/_public.login'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin.users.$userId'
 import { Route as AdminTopicsTopicIdRouteImport } from './routes/admin.topics.$topicId'
@@ -67,6 +68,11 @@ const AdminNotesRoute = AdminNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 const PublicLoginRoute = PublicLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof PublicLoginRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/notes': typeof AdminNotesRouteWithChildren
   '/admin/profile': typeof AdminProfileRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof PublicLoginRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/notes': typeof AdminNotesRouteWithChildren
   '/admin/profile': typeof AdminProfileRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/_public/login': typeof PublicLoginRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/notes': typeof AdminNotesRouteWithChildren
   '/admin/profile': typeof AdminProfileRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/admin/analytics'
     | '/admin/notes'
     | '/admin/profile'
     | '/admin/settings'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/admin/analytics'
     | '/admin/notes'
     | '/admin/profile'
     | '/admin/settings'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/_public'
     | '/admin'
     | '/_public/login'
+    | '/admin/analytics'
     | '/admin/notes'
     | '/admin/profile'
     | '/admin/settings'
@@ -244,6 +256,13 @@ declare module '@tanstack/react-router' {
       path: '/notes'
       fullPath: '/admin/notes'
       preLoaderRoute: typeof AdminNotesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_public/login': {
@@ -327,6 +346,7 @@ const AdminUsersRouteWithChildren = AdminUsersRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminNotesRoute: typeof AdminNotesRouteWithChildren
   AdminProfileRoute: typeof AdminProfileRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -336,6 +356,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminNotesRoute: AdminNotesRouteWithChildren,
   AdminProfileRoute: AdminProfileRoute,
   AdminSettingsRoute: AdminSettingsRoute,

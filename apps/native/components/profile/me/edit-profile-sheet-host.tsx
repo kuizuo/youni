@@ -5,6 +5,7 @@ import type {
 	EditableProfile,
 	ProfileSessionUser,
 } from "@/components/profile/profile-tabs";
+import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
 
 export function MeEditProfileSheetHost({
 	displayName,
@@ -25,12 +26,12 @@ export function MeEditProfileSheetHost({
 		<BottomSheet isOpen={isOpen} onOpenChange={onOpenChange}>
 			<BottomSheet.Portal disableFullWindowOverlay>
 				<BottomSheet.Overlay />
-				<BottomSheet.Content
+				<AppBottomSheetContent
 					snapPoints={["86%"]}
 					enableDynamicSizing={false}
 					enableOverDrag={false}
 					keyboardBehavior="extend"
-					contentContainerClassName="h-full"
+					contentContainerClassName="h-full px-0"
 				>
 					<EditProfileSheet
 						displayName={displayName}
@@ -38,7 +39,7 @@ export function MeEditProfileSheetHost({
 						user={user}
 						onSaved={onSaved}
 					/>
-				</BottomSheet.Content>
+				</AppBottomSheetContent>
 			</BottomSheet.Portal>
 		</BottomSheet>
 	);

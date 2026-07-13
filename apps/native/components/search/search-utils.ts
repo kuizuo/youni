@@ -2,18 +2,6 @@ import * as SecureStore from "expo-secure-store";
 
 import type { NoteCard } from "@/components/note-card";
 
-export const QUICK_WORDS = [
-	"摄影",
-	"旅行",
-	"美食",
-	"设计",
-	"穿搭",
-	"校园",
-	"生活方式",
-	"创作者",
-	"咖啡",
-] as const;
-
 export const PAGE_SIZE = 20;
 export const SEARCH_HISTORY_LIMIT = 8;
 export const SEARCH_TABS = [
