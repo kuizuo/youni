@@ -152,6 +152,23 @@ const searchRateLimit = RateLimit({
 		period: 60,
 	},
 });
+const localD1HttpBindings: Record<string, Binding> = app.local
+	? {
+			CLOUDFLARE_ACCOUNT_ID: requiredEnv(
+				alchemy.env.CLOUDFLARE_ACCOUNT_ID,
+				"CLOUDFLARE_ACCOUNT_ID",
+			),
+			CLOUDFLARE_API_TOKEN: requiredEnv(
+				alchemy.secret.env.CLOUDFLARE_API_TOKEN,
+				"CLOUDFLARE_API_TOKEN",
+			),
+			CLOUDFLARE_D1_DATABASE_ID: requiredEnv(
+				alchemy.env.CLOUDFLARE_D1_DATABASE_ID,
+				"CLOUDFLARE_D1_DATABASE_ID",
+			),
+			YOUNI_D1_HTTP_DIRECT: "true",
+		}
+	: {};
 
 export const server = await Worker("server", {
 	cwd: "../../apps/server",
@@ -176,6 +193,7 @@ export const server = await Worker("server", {
 		RESEND_FROM_EMAIL: optionalEnv("RESEND_FROM_EMAIL"),
 		SEARCH_RATE_LIMIT: searchRateLimit,
 		YOUNI_BUCKET: youniBucket,
+		...localD1HttpBindings,
 	},
 	crons: ["0 17 * * *"],
 	dev: {

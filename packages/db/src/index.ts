@@ -7,6 +7,7 @@ import * as schema from "./schema";
 const globalForDb = globalThis as typeof globalThis & {
 	youniD1HttpDatabase?: D1Database;
 };
+const d1HttpEnv = env as unknown as Record<string, string | undefined>;
 
 function isD1Database(value: unknown): value is D1Database {
 	return (
@@ -20,11 +21,19 @@ function isD1Database(value: unknown): value is D1Database {
 function getD1Database(database?: D1Database) {
 	if (database) return database;
 
+	if (d1HttpEnv.YOUNI_D1_HTTP_DIRECT === "true") {
+		const credentials = getD1HttpCredentials(d1HttpEnv);
+		if (credentials) {
+			globalForDb.youniD1HttpDatabase ??= createD1HttpDatabase(credentials);
+			return globalForDb.youniD1HttpDatabase;
+		}
+	}
+
 	if (isD1Database(env.DB)) {
 		return env.DB;
 	}
 
-	const credentials = getD1HttpCredentials();
+	const credentials = getD1HttpCredentials(d1HttpEnv);
 	if (credentials) {
 		globalForDb.youniD1HttpDatabase ??= createD1HttpDatabase(credentials);
 		return globalForDb.youniD1HttpDatabase;

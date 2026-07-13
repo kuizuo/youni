@@ -1,6 +1,7 @@
 type D1HttpCredentials = {
 	accountId: string;
 	databaseId: string;
+	queryUrl?: string;
 	token: string;
 };
 
@@ -28,33 +29,48 @@ type D1HttpResponse = {
 const credentialNames = {
 	accountId: ["CLOUDFLARE_ACCOUNT_ID"],
 	databaseId: ["CLOUDFLARE_D1_DATABASE_ID", "D1_DATABASE_ID"],
+	queryUrl: ["CLOUDFLARE_D1_QUERY_URL"],
 	token: ["CLOUDFLARE_API_TOKEN"],
 };
 
-function firstEnvValue(names: string[]) {
+const runtimeEnv: Record<string, string | undefined> =
+	typeof process === "undefined" ? {} : process.env;
+
+function firstEnvValue(
+	names: string[],
+	source?: Record<string, string | undefined>,
+) {
 	for (const name of names) {
-		const value = process.env[name];
+		const value = source?.[name];
+		if (value) return value;
+	}
+
+	for (const name of names) {
+		const value = runtimeEnv[name];
 		if (value) return value;
 	}
 
 	return undefined;
 }
 
-export function getD1HttpCredentials(): D1HttpCredentials | null {
-	const accountId = firstEnvValue(credentialNames.accountId);
-	const databaseId = firstEnvValue(credentialNames.databaseId);
-	const token = firstEnvValue(credentialNames.token);
+export function getD1HttpCredentials(
+	source?: Record<string, string | undefined>,
+): D1HttpCredentials | null {
+	const accountId = firstEnvValue(credentialNames.accountId, source);
+	const databaseId = firstEnvValue(credentialNames.databaseId, source);
+	const queryUrl = firstEnvValue(credentialNames.queryUrl, source);
+	const token = firstEnvValue(credentialNames.token, source);
 
 	if (!accountId || !databaseId || !token) {
 		return null;
 	}
 
-	return { accountId, databaseId, token };
+	return { accountId, databaseId, queryUrl, token };
 }
 
 function d1HttpUrl(credentials: D1HttpCredentials) {
-	if (process.env.CLOUDFLARE_D1_QUERY_URL) {
-		return process.env.CLOUDFLARE_D1_QUERY_URL;
+	if (credentials.queryUrl) {
+		return credentials.queryUrl;
 	}
 
 	return `https://api.cloudflare.com/client/v4/accounts/${credentials.accountId}/d1/database/${credentials.databaseId}/query`;
