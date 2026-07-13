@@ -21,8 +21,7 @@
 		"better-auth": "catalog:",
 		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
-		"ulid": "^3.0.2",
-		"zod": "catalog:"
+		"ulid": "^3.0.2"
 	},
 	"devDependencies": {
 		"@youni/config": "workspace:*",

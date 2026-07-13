@@ -20,7 +20,6 @@
 		"update:preview": "bunx eas-cli@latest update --channel preview --environment production"
 	},
 	"dependencies": {
-		"@ai-sdk/react": "catalog:",
 		"@better-auth/expo": "catalog:",
 		"@expo-google-fonts/nunito": "^0.4.2",
 		"@expo/metro-runtime": "~57.0.3",
@@ -33,15 +32,12 @@
 		"@shopify/flash-list": "2.0.2",
 		"@shopify/react-native-skia": "2.6.2",
 		"@stardazed/streams-text-encoding": "^1.0.2",
-		"@tanstack/react-form": "catalog:",
 		"@tanstack/react-query": "catalog:",
 		"@ungap/structured-clone": "^1.3.0",
 		"@youni/api": "workspace:*",
 		"@youni/env": "workspace:*",
-		"ai": "catalog:",
 		"base64-js": "^1.5.1",
 		"better-auth": "catalog:",
-		"dotenv": "catalog:",
 		"expo": "~57.0.4",
 		"expo-build-properties": "~57.0.3",
 		"expo-camera": "~57.0.1",

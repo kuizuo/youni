@@ -25,7 +25,6 @@ import {
 
 import { AppLayout } from "@/components/shared/app-layout";
 import { AnonymousSessionBridge } from "@/lib/anonymous-session-bridge";
-import { AppThemeProvider } from "@/lib/contexts/app-theme-context";
 import { PushNotificationBridge } from "@/lib/notifications/push-notification-bridge";
 import { ReactNativeQueryProvider } from "@/lib/query/react-native-query";
 import { useAppToast } from "@/utils/app-toast";
@@ -41,32 +40,6 @@ LogBox.ignoreLogs([
 	"React does not recognize the `accessibilityElementsHidden` prop",
 	"React does not recognize the `importantForAccessibility` prop",
 ]);
-
-function StackLayout() {
-	return (
-		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="(tabs)" />
-			<Stack.Screen name="add-friend" />
-			<Stack.Screen name="chat/[id]" />
-			<Stack.Screen name="creator-center" />
-			<Stack.Screen name="drafts" />
-			<Stack.Screen name="forgot-password" />
-			<Stack.Screen name="history" />
-			<Stack.Screen name="missing/[kind]" />
-			<Stack.Screen name="note/[id]" />
-			<Stack.Screen name="notifications/[kind]" />
-			<Stack.Screen name="user/[id]" />
-			<Stack.Screen name="login" />
-			<Stack.Screen name="publish" />
-			<Stack.Screen name="register" />
-			<Stack.Screen name="scan" />
-			<Stack.Screen name="settings" />
-			<Stack.Screen name="topic/[id]" />
-			<Stack.Screen name="user-connections" />
-			<Stack.Screen name="modal" options={{ presentation: "modal" }} />
-		</Stack>
-	);
-}
 
 function RequestToastBridge() {
 	const { toast } = useAppToast();
@@ -97,28 +70,26 @@ function AppContent() {
 
 	return (
 		<KeyboardProvider>
-			<AppThemeProvider>
-				<HeroUINativeProvider
-					config={{
-						toast: {
-							contentWrapper: toastContentWrapper,
-							defaultProps: {
-								isSwipeable: true,
-								placement: "top",
-							},
-							insets: toastInsets,
-							maxVisibleToasts: 2,
+			<HeroUINativeProvider
+				config={{
+					toast: {
+						contentWrapper: toastContentWrapper,
+						defaultProps: {
+							isSwipeable: true,
+							placement: "top",
 						},
-					}}
-				>
-					<RequestToastBridge />
-					<AnonymousSessionBridge />
-					<PushNotificationBridge />
-					<AppLayout>
-						<StackLayout />
-					</AppLayout>
-				</HeroUINativeProvider>
-			</AppThemeProvider>
+						insets: toastInsets,
+						maxVisibleToasts: 2,
+					},
+				}}
+			>
+				<RequestToastBridge />
+				<AnonymousSessionBridge />
+				<PushNotificationBridge />
+				<AppLayout>
+					<Stack screenOptions={{ headerShown: false }} />
+				</AppLayout>
+			</HeroUINativeProvider>
 		</KeyboardProvider>
 	);
 }

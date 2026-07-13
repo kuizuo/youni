@@ -8,8 +8,7 @@
 		"destroy": "alchemy destroy"
 	},
 	"dependencies": {
-		"dotenv": "catalog:",
-		"zod": "catalog:"
+		"dotenv": "catalog:"
 	},
 	"devDependencies": {
 		"@youni/config": "workspace:*",

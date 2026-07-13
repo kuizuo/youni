@@ -1,2 +1,10 @@
-@import "@youni/ui/globals.css";
-@source "../node_modules/streamdown/dist/*.js";
+@import "tailwindcss";
+@import "@heroui/styles";
+@source "./**/*.{ts,tsx}";
+
+@layer base {
+	body {
+		@apply bg-background text-foreground antialiased;
+		text-rendering: optimizeLegibility;
+	}
+}

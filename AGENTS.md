@@ -13,7 +13,6 @@ Youni is a Bun-powered TypeScript monorepo generated from Better-T-Stack and ext
 - `packages/db`: Drizzle Cloudflare D1 schema, migrations, seed script, and database client.
 - `packages/auth`: Better Auth configuration shared by server and clients.
 - `packages/env`: Environment variable loading and validation for server, web, native, and local Cloudflare-style runtime.
-- `packages/ui`: Shared HeroUI styles and global CSS exports.
 - `packages/infra`: Cloudflare deployment through Alchemy.
 - `packages/config`: Shared TypeScript config.
 
@@ -99,7 +98,7 @@ Run from the repository root unless noted.
 
 ## Styling and UI
 
-- Web global styles come from `packages/ui/src/styles/globals.css` through `@youni/ui`.
+- Web global styles live in `apps/web/src/index.css`.
 - Native global styles are in `apps/native/global.css`.
 - Biome sorts class names for `clsx`, `cva`, and `cn`; expect `bun run check` to rewrite class order.
 - Preserve existing Chinese UI copy style in user-facing screens unless a task asks for a language change.

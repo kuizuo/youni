@@ -23,7 +23,6 @@
 			"@orpc/client": "^1.13.14",
 			"@tanstack/react-query": "^5.90.12",
 			"@tanstack/react-form": "^1.28.0",
-			"@ai-sdk/react": "^3.0.3",
 			"@types/react-dom": "^19.2.3",
 			"@better-auth/expo": "1.6.9",
 			"@better-auth/i18n": "1.6.9",
@@ -48,11 +47,6 @@
 		"release:update": "bun scripts/release-native-update.ts",
 		"destroy": "turbo -F @youni/infra destroy",
 		"check": "biome check --write ."
-	},
-	"dependencies": {
-		"@youni/env": "workspace:*",
-		"dotenv": "catalog:",
-		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.0",

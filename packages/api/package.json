@@ -11,16 +11,12 @@
 	},
 	"scripts": {},
 	"dependencies": {
-		"@orpc/client": "catalog:",
 		"@orpc/contract": "catalog:",
-		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
-		"@orpc/zod": "catalog:",
 		"@youni/auth": "workspace:*",
 		"@youni/db": "workspace:*",
 		"@youni/env": "workspace:*",
 		"better-auth": "catalog:",
-		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
 		"zod": "catalog:"
 	},

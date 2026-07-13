@@ -19,19 +19,14 @@
 		"@youni/db": "workspace:*",
 		"@youni/env": "workspace:*",
 		"ai": "catalog:",
-		"better-auth": "catalog:",
-		"dotenv": "catalog:",
 		"drizzle-orm": "catalog:",
-		"hono": "catalog:",
-		"zod": "catalog:"
+		"hono": "catalog:"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "catalog:",
 		"@types/node": "^22.13.14",
 		"@youni/config": "workspace:*",
-		"alchemy": "catalog:",
 		"tsdown": "^0.21.9",
-		"typescript": "^6",
-		"wrangler": "^4.77.0"
+		"typescript": "^6"
 	}
 }

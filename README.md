@@ -20,7 +20,6 @@ youni/
 │   ├── db/          # 数据表、迁移和演示数据
 │   ├── env/         # 环境变量校验
 │   ├── infra/       # Cloudflare 本地运行与部署配置
-│   ├── ui/          # 网页端共享样式
 │   └── config/      # 共享开发配置
 └── package.json     # 项目统一命令入口
 ```

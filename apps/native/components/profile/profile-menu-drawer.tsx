@@ -11,10 +11,10 @@ import {
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn, SlideInLeft } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Uniwind, useUniwind } from "uniwind";
 
 import { YouniMark } from "@/components/brand/youni-logo";
 import { AppSeparator } from "@/components/shared/app-separator";
-import { useAppTheme } from "@/lib/contexts/app-theme-context";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 
 type DrawerItem = {
@@ -60,7 +60,8 @@ export function ProfileMenuDrawer({
 	const insets = useSafeAreaInsets();
 	const { width } = useWindowDimensions();
 	const dangerColor = useThemeColor("danger");
-	const { isDark, toggleTheme } = useAppTheme();
+	const { theme } = useUniwind();
+	const isDark = theme === "dark";
 	const drawerWidth = Math.min(width * 0.82, 336);
 
 	const openRoute = (href: Href) => {
@@ -77,7 +78,7 @@ export function ProfileMenuDrawer({
 
 	const toggleAppearance = () => {
 		fireHaptic();
-		toggleTheme();
+		Uniwind.setTheme(isDark ? "light" : "dark");
 	};
 
 	return (
