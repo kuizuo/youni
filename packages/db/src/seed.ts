@@ -35,8 +35,7 @@ const seedUsers = [
 		email: "admin@youni.app",
 		handle: "youni_admin",
 		bio: "维护社区内容与演示数据。",
-		image:
-			"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=80",
+		image: null,
 		password: adminPassword,
 		role: "admin" as const,
 	},
