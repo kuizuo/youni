@@ -8,3 +8,15 @@
 		text-rendering: optimizeLegibility;
 	}
 }
+
+@layer components {
+	.review-queue-loading .skeleton {
+		@apply bg-surface-tertiary;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.review-queue-loading .skeleton::after {
+		animation: none;
+	}
+}

@@ -296,7 +296,7 @@ export function AdminPage({
 	const hasPageHeader = Boolean(description || actions);
 
 	return (
-		<main className="mx-auto flex w-full max-w-[1800px] flex-col gap-4 px-4 pt-4 pb-10 sm:px-6 lg:px-8">
+		<main className="mx-auto flex w-full max-w-[1800px] flex-col gap-4 px-3 pt-4 pb-10 sm:px-4 lg:px-5">
 			<h1 className="sr-only">{title}</h1>
 			{hasPageHeader ? (
 				<section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

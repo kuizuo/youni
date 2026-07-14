@@ -27,7 +27,7 @@ import type {
 	ContentModerationStatus,
 	ContentNoteStatus,
 } from "@youni/api/contracts/shared";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { NoteStatusBadge } from "@/components/admin-status";
 
@@ -137,29 +137,38 @@ function moderationReasonText(note: ReviewNote) {
 
 export function ReviewQueue({
 	bucket,
+	contentErrorMessage,
 	errorMessage,
-	isFetching,
+	isContentLoading,
 	isMutating,
+	isSyncing,
 	items,
 	keyword,
+	lastSyncedAt,
 	onBucketChange,
 	onKeywordChange,
 	onPageChange,
+	onRetry,
 	onReview,
 	page,
 	successMessage,
 	summary,
+	syncErrorMessage,
 	total,
 }: {
 	bucket: ModerationQueueBucket;
+	contentErrorMessage: string | null;
 	errorMessage: string | null;
-	isFetching: boolean;
+	isContentLoading: boolean;
 	isMutating: boolean;
+	isSyncing: boolean;
 	items: ReviewNote[];
 	keyword: string;
+	lastSyncedAt: number | null;
 	onBucketChange: (bucket: ModerationQueueBucket) => void;
 	onKeywordChange: (keyword: string) => void;
 	onPageChange: (page: number) => void;
+	onRetry: () => Promise<void>;
 	onReview: (
 		note: ReviewNote,
 		status: Extract<ContentNoteStatus, "published" | "rejected">,
@@ -168,22 +177,42 @@ export function ReviewQueue({
 	page: number;
 	successMessage: string | null;
 	summary: QueueSummary;
+	syncErrorMessage: string | null;
 	total: number;
 }) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
-	const [detailNote, setDetailNote] = useState<ReviewNote | null>(null);
+	const [detailNoteId, setDetailNoteId] = useState<string | null>(null);
 	const [isDetailOpen, setIsDetailOpen] = useState(false);
 	const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
 	const selectedNote = useMemo(
 		() => items.find((item) => item.id === selectedId) ?? items[0] ?? null,
 		[items, selectedId],
 	);
+	const detailNote = useMemo(
+		() => items.find((item) => item.id === detailNoteId) ?? null,
+		[detailNoteId, items],
+	);
+	useEffect(() => {
+		if (items.length === 0) {
+			setSelectedId(null);
+			return;
+		}
+		if (!selectedId || !items.some((item) => item.id === selectedId)) {
+			setSelectedId(items[0]?.id ?? null);
+		}
+	}, [items, selectedId]);
+	useEffect(() => {
+		if (detailNoteId && !detailNote) {
+			setIsDetailOpen(false);
+			setDetailNoteId(null);
+		}
+	}, [detailNote, detailNoteId]);
 	const pageCount = Math.max(Math.ceil(total / 20), 1);
 	const rejectionReason = selectedNote
 		? (reasonDrafts[selectedNote.id] ?? selectedNote.rejectionReason ?? "")
 		: "";
 	const openFullDetail = (note: ReviewNote) => {
-		setDetailNote(note);
+		setDetailNoteId(note.id);
 		setIsDetailOpen(true);
 	};
 
@@ -228,8 +257,22 @@ export function ReviewQueue({
 							<SearchField.ClearButton />
 						</SearchField.Group>
 					</SearchField>
-					<div className="flex items-center gap-2 text-muted text-sm">
-						<span>共 {total} 条</span>
+					<div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-muted text-sm">
+						<span
+							data-sync-updated-at={lastSyncedAt ?? ""}
+							data-testid="moderation-sync-status"
+							className="flex items-center gap-1.5"
+						>
+							<span
+								className={`size-1.5 rounded-full ${
+									isSyncing
+										? "animate-pulse bg-accent motion-reduce:animate-none"
+										: "bg-success"
+								}`}
+							/>
+							{isSyncing ? "正在同步" : "自动同步"}
+						</span>
+						<span>{isContentLoading ? "正在查询…" : `共 ${total} 条`}</span>
 					</div>
 				</Card.Content>
 			</Card>
@@ -244,13 +287,21 @@ export function ReviewQueue({
 					{successMessage}
 				</div>
 			) : null}
+			{syncErrorMessage ? (
+				<div className="flex items-center gap-2 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning-soft-foreground">
+					<TriangleExclamation className="size-4 shrink-0" />
+					{syncErrorMessage}
+				</div>
+			) : null}
 
-			{isFetching ? (
+			{isContentLoading ? (
 				<ReviewQueueLoading />
+			) : contentErrorMessage ? (
+				<QueueLoadError message={contentErrorMessage} onRetry={onRetry} />
 			) : items.length === 0 ? (
 				<EmptyQueue bucket={bucket} />
 			) : (
-				<div className="grid min-h-[620px] gap-4 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
+				<div className="grid min-h-[620px] gap-3 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
 					<Card className="overflow-hidden">
 						<Card.Header className="border-border border-b px-4 py-3">
 							<Card.Title className="text-base">审核记录</Card.Title>
@@ -737,6 +788,31 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 	);
 }
 
+function QueueLoadError({
+	message,
+	onRetry,
+}: {
+	message: string;
+	onRetry: () => Promise<void>;
+}) {
+	return (
+		<Card>
+			<Card.Content className="flex min-h-72 flex-col items-center justify-center gap-4 p-8 text-center">
+				<div className="flex size-12 items-center justify-center rounded-full bg-danger-soft text-danger">
+					<TriangleExclamation className="size-6" />
+				</div>
+				<div className="max-w-lg">
+					<h2 className="font-medium">当前审核内容加载失败</h2>
+					<p className="mt-1 text-muted text-sm">{message}</p>
+				</div>
+				<Button variant="secondary" onPress={() => void onRetry()}>
+					重新加载
+				</Button>
+			</Card.Content>
+		</Card>
+	);
+}
+
 function EmptyQueue({ bucket }: { bucket: ModerationQueueBucket }) {
 	return (
 		<Card>
@@ -762,17 +838,17 @@ function ReviewQueueLoading() {
 		<div
 			aria-busy="true"
 			aria-live="polite"
-			className="grid gap-3"
+			className="review-queue-loading grid gap-3"
 			role="status"
 		>
 			<div className="flex items-center gap-2 rounded-2xl bg-accent-soft px-4 py-3 text-accent text-sm">
 				<span className="size-2 animate-pulse rounded-full bg-accent motion-reduce:animate-none" />
 				<span className="font-medium">正在加载当前分类的审核内容…</span>
 			</div>
-			<div className="grid min-h-[620px] gap-4 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
-				<Card className="skeleton--shimmer relative overflow-hidden">
+			<div className="grid min-h-[620px] gap-3 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
+				<Card className="relative overflow-hidden">
 					<Card.Header className="border-border border-b px-4 py-4">
-						<Skeleton animationType="none" className="h-5 w-24 rounded-lg" />
+						<Skeleton className="h-5 w-24 rounded-lg" />
 					</Card.Header>
 					<Card.Content className="grid content-start p-0">
 						{["first", "second", "third", "fourth", "fifth"].map((item) => (
@@ -780,106 +856,69 @@ function ReviewQueueLoading() {
 								key={item}
 								className="flex gap-3 border-border border-b p-4 last:border-b-0"
 							>
-								<Skeleton
-									animationType="none"
-									className="size-[72px] shrink-0 rounded-xl"
-								/>
+								<Skeleton className="size-[72px] shrink-0 rounded-xl" />
 								<div className="grid flex-1 content-center gap-2.5">
 									<div className="flex items-center justify-between gap-3">
-										<Skeleton
-											animationType="none"
-											className="h-4 w-2/5 rounded-md"
-										/>
-										<Skeleton
-											animationType="none"
-											className="h-6 w-20 rounded-full"
-										/>
+										<Skeleton className="h-4 w-2/5 rounded-md" />
+										<Skeleton className="h-6 w-20 rounded-full" />
 									</div>
-									<Skeleton
-										animationType="none"
-										className="h-3 w-4/5 rounded-md"
-									/>
-									<Skeleton
-										animationType="none"
-										className="h-3 w-3/5 rounded-md"
-									/>
+									<Skeleton className="h-3 w-4/5 rounded-md" />
+									<Skeleton className="h-3 w-3/5 rounded-md" />
 								</div>
 							</div>
 						))}
 					</Card.Content>
 					<Card.Footer className="flex items-center justify-between border-border border-t px-4 py-4">
-						<Skeleton animationType="none" className="h-4 w-20 rounded-md" />
+						<Skeleton className="h-4 w-20 rounded-md" />
 						<div className="flex gap-2">
-							<Skeleton animationType="none" className="h-8 w-16 rounded-lg" />
-							<Skeleton animationType="none" className="h-8 w-16 rounded-lg" />
+							<Skeleton className="h-8 w-16 rounded-lg" />
+							<Skeleton className="h-8 w-16 rounded-lg" />
 						</div>
 					</Card.Footer>
 				</Card>
 
-				<Card className="skeleton--shimmer relative h-fit overflow-hidden">
+				<Card className="relative h-fit overflow-hidden">
 					<Card.Header className="flex-row items-start justify-between gap-4 border-border border-b px-5 py-4">
 						<div className="grid flex-1 gap-2">
-							<Skeleton animationType="none" className="h-5 w-2/5 rounded-md" />
-							<Skeleton animationType="none" className="h-3 w-1/3 rounded-md" />
+							<Skeleton className="h-5 w-2/5 rounded-md" />
+							<Skeleton className="h-3 w-1/3 rounded-md" />
 						</div>
 						<div className="flex gap-2">
-							<Skeleton
-								animationType="none"
-								className="h-6 w-20 rounded-full"
-							/>
-							<Skeleton
-								animationType="none"
-								className="h-6 w-16 rounded-full"
-							/>
+							<Skeleton className="h-6 w-20 rounded-full" />
+							<Skeleton className="h-6 w-16 rounded-full" />
 						</div>
 					</Card.Header>
 					<Card.Content className="grid gap-5 p-5">
 						<section className="grid gap-3">
 							<div className="flex items-center justify-between gap-3">
-								<Skeleton
-									animationType="none"
-									className="h-4 w-24 rounded-md"
-								/>
-								<Skeleton
-									animationType="none"
-									className="h-8 w-24 rounded-lg"
-								/>
+								<Skeleton className="h-4 w-24 rounded-md" />
+								<Skeleton className="h-8 w-24 rounded-lg" />
 							</div>
-							<Skeleton
-								animationType="none"
-								className="h-3 w-full rounded-md"
-							/>
-							<Skeleton animationType="none" className="h-3 w-3/4 rounded-md" />
+							<Skeleton className="h-3 w-full rounded-md" />
+							<Skeleton className="h-3 w-3/4 rounded-md" />
 							<div className="grid grid-cols-3 gap-2">
 								{["image-first", "image-second", "image-third"].map((image) => (
 									<Skeleton
 										key={image}
-										animationType="none"
 										className="aspect-[4/3] w-full rounded-xl"
 									/>
 								))}
 							</div>
 						</section>
 						<section className="grid gap-3 rounded-2xl bg-surface-secondary p-4">
-							<Skeleton animationType="none" className="h-4 w-32 rounded-md" />
+							<Skeleton className="h-4 w-32 rounded-md" />
 							<div className="grid gap-2 sm:grid-cols-2">
-								<Skeleton animationType="none" className="h-16 rounded-xl" />
-								<Skeleton animationType="none" className="h-16 rounded-xl" />
+								<Skeleton className="h-16 rounded-xl" />
+								<Skeleton className="h-16 rounded-xl" />
 							</div>
-							<Skeleton animationType="none" className="h-20 rounded-xl" />
+							<Skeleton className="h-20 rounded-xl" />
 						</section>
 						<section className="grid gap-3 border-border border-t pt-5">
-							<Skeleton animationType="none" className="h-4 w-24 rounded-md" />
-							<Skeleton animationType="none" className="h-20 rounded-xl" />
+							<Skeleton className="h-4 w-24 rounded-md" />
+							<Skeleton className="h-20 rounded-xl" />
 							<div className="flex justify-end gap-2">
-								<Skeleton
-									animationType="none"
-									className="h-9 w-32 rounded-lg"
-								/>
-								<Skeleton
-									animationType="none"
-									className="h-9 w-24 rounded-lg"
-								/>
+								<Skeleton className="h-9 w-32 rounded-lg" />
+								<Skeleton className="h-9 w-24 rounded-lg" />
 							</div>
 						</section>
 					</Card.Content>
