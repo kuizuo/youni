@@ -12,7 +12,7 @@ import {
 	hydrateContentNotes,
 	listMeContentNoteRows,
 	selectContentNoteRows,
-} from "../lib/content-notes";
+} from "../lib/notes/content";
 import { notifyFollow } from "../lib/notifications";
 import { containsInsensitive } from "../lib/search";
 import {
@@ -21,7 +21,7 @@ import {
 	isUserBlockedBy,
 	listBlockedUsers,
 	setUserBlocked,
-} from "../lib/user-blocks";
+} from "../lib/users/blocks";
 import { toNumber, toPage } from "./utils";
 
 async function getProfile(userId: string, viewerId?: string) {

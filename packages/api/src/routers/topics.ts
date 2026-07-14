@@ -6,9 +6,9 @@ import { publicProcedure } from "../index";
 import {
 	hydrateContentNotes,
 	selectContentNoteRows,
-} from "../lib/content-notes";
+} from "../lib/notes/content";
 import { containsInsensitive } from "../lib/search";
-import { getBlockedUserIds } from "../lib/user-blocks";
+import { getBlockedUserIds } from "../lib/users/blocks";
 import { toNumber, toPage } from "./utils";
 
 export async function getTopicNoteIds(keyword: string) {

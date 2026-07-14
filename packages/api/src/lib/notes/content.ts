@@ -13,22 +13,19 @@ import {
 } from "@youni/db/schema/index";
 import type { SQL } from "drizzle-orm";
 import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
-import type { ModerationQueueBucket } from "../contracts/admin";
+import type { ModerationQueueBucket } from "../../contracts/admin";
 import type {
 	AdminHydratedContentNote,
+	ContentModerationStatus,
 	ContentNoteRow,
 	ContentNoteStatus,
 	HydratedContentNote,
-	NoteModerationStatus,
 	NoteVisibility,
-} from "../contracts/shared";
-import { hasBlockedNoteText } from "./content-moderation";
-import {
-	enqueueNoteModeration,
-	isOwnedNoteImageUrl,
-} from "./note-image-moderation";
-import { getMissingPublishItems } from "./note-publish-validation";
-import { containsInsensitive } from "./search";
+} from "../../contracts/shared";
+import { hasBlockedContentText } from "../moderation/text";
+import { containsInsensitive } from "../search";
+import { enqueueContentReview, isOwnedNoteImageUrl } from "./moderation";
+import { getMissingPublishItems } from "./publish-validation";
 
 export type {
 	AdminHydratedContentNote,
@@ -36,7 +33,7 @@ export type {
 	ContentNoteStatus,
 	HydratedContentNote,
 	NoteVisibility,
-} from "../contracts/shared";
+} from "../../contracts/shared";
 
 export type ContentNoteMutationInput = {
 	title: string;
@@ -117,8 +114,8 @@ const attentionModerationStatuses = [
 	"processing",
 	"needs_review",
 	"failed",
-] as const satisfies readonly NoteModerationStatus[];
-const attentionModerationStatusSet = new Set<NoteModerationStatus>(
+] as const satisfies readonly ContentModerationStatus[];
+const attentionModerationStatusSet = new Set<ContentModerationStatus>(
 	attentionModerationStatuses,
 );
 
@@ -172,7 +169,7 @@ function assertPublishReady(input: ContentNoteMutationInput) {
 		});
 	}
 
-	if (hasBlockedNoteText(input)) {
+	if (hasBlockedContentText(input)) {
 		throw new ORPCError("BAD_REQUEST", {
 			message: "内容包含不适合发布的信息，请修改后重试",
 		});
@@ -527,9 +524,9 @@ export async function updateEditableContentNote({
 		topicNames,
 		clearExisting: true,
 	});
-	await enqueueNoteModeration({
+	await enqueueContentReview({
+		contentId: input.id,
 		images: input.images,
-		noteId: input.id,
 		userId,
 	});
 
@@ -578,9 +575,9 @@ export async function createContentNote({
 	}
 
 	await syncNoteTopics({ db, noteId: createdNote.id, topicNames });
-	await enqueueNoteModeration({
+	await enqueueContentReview({
+		contentId: createdNote.id,
 		images: input.images,
-		noteId: createdNote.id,
 		userId,
 	});
 

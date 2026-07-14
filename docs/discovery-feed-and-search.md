@@ -297,12 +297,12 @@ F = 0.5 ^ (发布小时数 / 72)
 | [`packages/api/src/contracts/index.ts`](../packages/api/src/contracts/index.ts) | 各业务接口的分组契约入口 |
 | [`packages/api/src/routers/implementation.ts`](../packages/api/src/routers/implementation.ts) | 各业务接口的分组实现入口 |
 | [`packages/api/src/routers/notes.ts`](../packages/api/src/routers/notes.ts) | 图文、发现列表和发现反馈入口 |
-| [`packages/api/src/lib/note-feed.ts`](../packages/api/src/lib/note-feed.ts) | 候选过滤、信号读取、分页、反馈和降级 |
-| [`packages/api/src/lib/note-feed-ranking.ts`](../packages/api/src/lib/note-feed-ranking.ts) | 个性化、冷启动、新内容和多样性混排 |
-| [`packages/api/src/lib/note-feed-tokens.ts`](../packages/api/src/lib/note-feed-tokens.ts) | 翻页与展示凭据校验 |
+| [`packages/api/src/lib/notes/feed.ts`](../packages/api/src/lib/notes/feed.ts) | 候选过滤、信号读取、分页、反馈和降级 |
+| [`packages/api/src/lib/notes/feed-ranking.ts`](../packages/api/src/lib/notes/feed-ranking.ts) | 个性化、冷启动、新内容和多样性混排 |
+| [`packages/api/src/lib/notes/feed-tokens.ts`](../packages/api/src/lib/notes/feed-tokens.ts) | 翻页与展示凭据校验 |
 | [`packages/api/src/routers/search-discovery.ts`](../packages/api/src/routers/search-discovery.ts) | 推荐搜索与真实搜索汇总入口 |
-| [`packages/api/src/lib/search-analytics.ts`](../packages/api/src/lib/search-analytics.ts) | 关键词归一、趋势排序、上海日期和来源计数 |
-| [`packages/api/src/lib/analytics-retention.ts`](../packages/api/src/lib/analytics-retention.ts) | 发现与搜索过期数据清理 |
+| [`packages/api/src/lib/analytics/search.ts`](../packages/api/src/lib/analytics/search.ts) | 关键词归一、趋势排序、上海日期和来源计数 |
+| [`packages/api/src/lib/analytics/retention.ts`](../packages/api/src/lib/analytics/retention.ts) | 发现与搜索过期数据清理 |
 | [`packages/db/src/schema/discovery.ts`](../packages/db/src/schema/discovery.ts) | 负反馈、发现反馈、每日汇总和趋势词控制数据 |
 | [`apps/native/components/home/home-screen.tsx`](../apps/native/components/home/home-screen.tsx) | 发现页加载、刷新、反馈提交和即时隐藏 |
 | [`apps/native/components/home/discover-note-actions-sheet.tsx`](../apps/native/components/home/discover-note-actions-sheet.tsx) | 长按图文后的操作面板 |

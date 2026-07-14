@@ -32,6 +32,11 @@ import {
 } from "../admin-user-governance";
 import { protectedProcedure } from "../index";
 import {
+	getRetentionCutoffDay,
+	getShanghaiDay,
+	normalizeSearchKeyword,
+} from "../lib/analytics/search";
+import {
 	deleteContentNote,
 	getAdminContentNoteDetail,
 	listAdminContentNotes,
@@ -39,13 +44,8 @@ import {
 	listAdminContentNotesByUser,
 	listAdminModerationQueue,
 	updateContentNoteStatus,
-} from "../lib/content-notes";
+} from "../lib/notes/content";
 import { containsInsensitive } from "../lib/search";
-import {
-	getRetentionCutoffDay,
-	getShanghaiDay,
-	normalizeSearchKeyword,
-} from "../lib/search-analytics";
 
 const adminProcedure = protectedProcedure.admin.use(
 	async ({ context, next }) => {

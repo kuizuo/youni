@@ -65,7 +65,7 @@ Run from the repository root unless noted.
 - Shared database tables are exported from `packages/db/src/schema/index.ts`.
 - Admin-only API behavior belongs in `packages/api/src/routers/admin.ts`; admin access is based on the user's stored role.
 - User-facing social behavior belongs in `packages/api/src/routers/social.ts`.
-- Notification behavior belongs in `packages/api/src/routers/notifications.ts` and `packages/api/src/lib/notifications.ts`.
+- Notification behavior belongs in `packages/api/src/routers/notifications.ts` and `packages/api/src/lib/notifications/`.
 - The `todo` router and schema still exist as starter-stack functionality; do not expand them unless the task explicitly concerns todo behavior.
 
 ## Web App Conventions

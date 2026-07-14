@@ -6,12 +6,12 @@ import { ORPCError, onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@youni/api/context";
-import { cleanupExpiredAnalytics } from "@youni/api/lib/analytics-retention";
-import { linkAnonymousUserActivity } from "@youni/api/lib/anonymous-linking";
+import { cleanupExpiredAnalytics } from "@youni/api/lib/analytics/retention";
 import {
-	type NoteModerationJob,
-	processNoteModerationJob,
-} from "@youni/api/lib/note-image-moderation";
+	type ContentReviewJob,
+	processContentReviewJob,
+} from "@youni/api/lib/notes/moderation";
+import { linkAnonymousUserActivity } from "@youni/api/lib/users/anonymous-linking";
 import { appRouter } from "@youni/api/routers/index";
 import { createAuth } from "@youni/auth";
 import { hasAdminPermission } from "@youni/auth/permissions";
@@ -552,7 +552,7 @@ app.get("/", (c) => {
 	return c.text("OK");
 });
 
-const worker: ExportedHandler<Env, NoteModerationJob> = {
+const worker: ExportedHandler<Env, ContentReviewJob> = {
 	fetch(request, workerEnv, executionContext) {
 		return app.fetch(request, workerEnv, executionContext);
 	},
@@ -563,10 +563,10 @@ const worker: ExportedHandler<Env, NoteModerationJob> = {
 		await Promise.all(
 			batch.messages.map(async (message) => {
 				try {
-					await processNoteModerationJob(message.body);
+					await processContentReviewJob(message.body);
 					message.ack();
 				} catch (error) {
-					console.error("note moderation queue failed", {
+					console.error("content review queue failed", {
 						attempts: message.attempts,
 						error,
 						messageId: message.id,

@@ -11,24 +11,24 @@ import { ulid } from "ulid";
 import { timestampColumn } from "./_columns";
 import { user } from "./auth";
 import {
-	noteModerationReasons,
-	noteModerationStatuses,
+	contentModerationReasons,
+	contentModerationStatuses,
 	noteStatuses,
 	noteVisibilities,
 } from "./content-values";
 
 export {
-	type NoteModerationReason,
-	type NoteModerationStatus,
+	type ContentModerationReason,
+	type ContentModerationStatus,
+	contentModerationReasons,
+	contentModerationStatuses,
 	type NoteStatus,
 	type NoteVisibility,
-	noteModerationReasons,
-	noteModerationStatuses,
 	noteStatuses,
 	noteVisibilities,
 } from "./content-values";
 
-export type NoteModerationDetail = {
+export type ContentModerationDetail = {
 	categories: string[];
 	confidence: number;
 	decision: "block" | "pass" | "review";
@@ -80,15 +80,15 @@ export const note = sqliteTable(
 		status: text("status", { enum: noteStatuses }).default("audit").notNull(),
 		rejectionReason: text("rejection_reason"),
 		moderationStatus: text("moderation_status", {
-			enum: noteModerationStatuses,
+			enum: contentModerationStatuses,
 		})
 			.default("not_started")
 			.notNull(),
 		moderationReason: text("moderation_reason", {
-			enum: noteModerationReasons,
+			enum: contentModerationReasons,
 		}),
 		moderationDetails: text("moderation_details", { mode: "json" })
-			.$type<NoteModerationDetail[]>()
+			.$type<ContentModerationDetail[]>()
 			.default(sql`'[]'`)
 			.notNull(),
 		moderatedAt: timestampColumn("moderated_at"),

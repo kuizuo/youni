@@ -117,13 +117,15 @@ Cloudflare 负责后台任务和图片判断，不需要自建显卡服务器。
 
 ## 涉及的项目位置
 
-- 文字规则：`packages/api/src/lib/content-moderation.ts`
-- 图片判断和审核结果处理：`packages/api/src/lib/note-image-moderation.ts`
-- 发布和编辑接入：`packages/api/src/lib/content-notes.ts`
+- 文字规则：`packages/api/src/lib/moderation/text.ts`
+- 图片判断和审核结果处理：`packages/api/src/lib/moderation/image.ts` 与 `packages/api/src/lib/notes/moderation.ts`
+- 发布和编辑接入：`packages/api/src/lib/notes/content.ts`
 - 后台审核队列：`apps/web/src/routes/admin.reviews.tsx`
 - Cloudflare 后台任务配置：`packages/infra/alchemy.run.ts`
 - 后台任务入口：`apps/server/src/index.ts`
 - 作者端状态提示：`apps/native/components/create/use-create-composer.ts`、`apps/native/components/notes/note-detail/content.tsx`
+
+`moderation/image.ts` 只负责图片判断和结果汇总，不读取图文数据、文件存储或任务队列。图文图片的归属检查、文件读取、审核状态写回和队列处理统一放在 `notes/moderation.ts`。后续头像、封面等图片审核应直接复用通用图片模块，并在各自业务目录提供接入逻辑。
 
 ## 上线方式
 

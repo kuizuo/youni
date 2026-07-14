@@ -6,11 +6,11 @@ import z from "zod";
 // ====== Input ======
 
 export {
-	type NoteModerationReason,
-	type NoteModerationStatus,
+	type ContentModerationReason,
+	type ContentModerationStatus,
+	contentModerationStatuses,
 	type NoteStatus as ContentNoteStatus,
 	type NoteVisibility,
-	noteModerationStatuses,
 	noteStatuses,
 } from "@youni/db/schema/content-values";
 export type { UserGender };

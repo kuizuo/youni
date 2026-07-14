@@ -10,7 +10,7 @@ import { and, eq } from "drizzle-orm";
 import type {
 	NotificationCategory,
 	NotificationType,
-} from "../contracts/notifications";
+} from "../../contracts/notifications";
 
 type CreateNotificationInput = {
 	actorId?: null | string;

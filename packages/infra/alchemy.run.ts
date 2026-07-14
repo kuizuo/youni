@@ -19,9 +19,9 @@ config({ path: "../../apps/server/.env" });
 
 const app = await alchemy("youni");
 
-type NoteModerationJob = {
+type ContentReviewJob = {
+	contentId: string;
 	images: string[];
-	noteId: string;
 	userId: string;
 };
 
@@ -204,8 +204,9 @@ const localD1HttpBindings: Record<string, Binding> = app.local
 			YOUNI_D1_HTTP_DIRECT: "true",
 		}
 	: {};
-export const noteModerationQueue =
-	await Queue<NoteModerationJob>("note-moderation");
+// Keep the deployed resource identity stable so pending jobs survive this rename.
+export const contentReviewQueue =
+	await Queue<ContentReviewJob>("note-moderation");
 const workersAi = Ai<YouniAiModels>();
 
 export const server = await Worker("server", {
@@ -231,14 +232,14 @@ export const server = await Worker("server", {
 		RESEND_API_KEY: optionalSecretEnv("RESEND_API_KEY"),
 		RESEND_FROM_EMAIL: optionalEnv("RESEND_FROM_EMAIL"),
 		SEARCH_RATE_LIMIT: searchRateLimit,
-		NOTE_MODERATION_QUEUE: noteModerationQueue,
+		CONTENT_REVIEW_QUEUE: contentReviewQueue,
 		YOUNI_BUCKET: youniBucket,
 		...localD1HttpBindings,
 	},
 	crons: ["0 17 * * *"],
 	eventSources: [
 		{
-			queue: noteModerationQueue,
+			queue: contentReviewQueue,
 			settings: {
 				batchSize: 1,
 				maxConcurrency: 2,

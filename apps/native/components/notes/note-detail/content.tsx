@@ -202,7 +202,7 @@ export function ImageCarousel({
 	);
 }
 
-export function NoteModerationNotice({
+export function ContentModerationNotice({
 	rejectionReason,
 	status,
 }: {

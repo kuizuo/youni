@@ -8,7 +8,7 @@ export const noteStatuses = [
 
 export const noteVisibilities = ["public", "followers", "private"] as const;
 
-export const noteModerationStatuses = [
+export const contentModerationStatuses = [
 	"not_started",
 	"pending",
 	"processing",
@@ -18,7 +18,7 @@ export const noteModerationStatuses = [
 	"failed",
 ] as const;
 
-export const noteModerationReasons = [
+export const contentModerationReasons = [
 	"invalid_response",
 	"low_confidence",
 	"policy_violation",
@@ -29,5 +29,6 @@ export const noteModerationReasons = [
 
 export type NoteStatus = (typeof noteStatuses)[number];
 export type NoteVisibility = (typeof noteVisibilities)[number];
-export type NoteModerationStatus = (typeof noteModerationStatuses)[number];
-export type NoteModerationReason = (typeof noteModerationReasons)[number];
+export type ContentModerationStatus =
+	(typeof contentModerationStatuses)[number];
+export type ContentModerationReason = (typeof contentModerationReasons)[number];

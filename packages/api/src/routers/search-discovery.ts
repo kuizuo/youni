@@ -10,7 +10,6 @@ import {
 import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
 
 import { publicProcedure } from "../index";
-import { containsInsensitive } from "../lib/search";
 import {
 	getRetentionCutoffDay,
 	getSearchSourceCounts,
@@ -18,7 +17,8 @@ import {
 	normalizeSearchKeyword,
 	rankRecommendedSearches,
 	selectAvailableRecommendedSearches,
-} from "../lib/search-analytics";
+} from "../lib/analytics/search";
+import { containsInsensitive } from "../lib/search";
 import { getSearchNoteWhereClause } from "./topics";
 
 async function hasPublicSearchResult(keyword: string) {

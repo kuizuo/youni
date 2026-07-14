@@ -23,14 +23,14 @@ import {
 	softDeleteContentNote,
 	updateContentNoteVisibility,
 	updateEditableContentNote,
-} from "../lib/content-notes";
+} from "../lib/notes/content";
 import {
 	getNoteFeed,
 	recordNoteFeedEvents,
 	setNoteNotInterested,
-} from "../lib/note-feed";
+} from "../lib/notes/feed";
 import { notifyNoteOwner } from "../lib/notifications";
-import { getBlockedUserIds, isUserBlockedBy } from "../lib/user-blocks";
+import { getBlockedUserIds, isUserBlockedBy } from "../lib/users/blocks";
 import { listRootComments } from "./comments";
 import { getSearchNoteWhereClause } from "./topics";
 import { toNumber, toPage } from "./utils";

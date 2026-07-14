@@ -23,9 +23,9 @@ import {
 import type { ModerationQueueBucket } from "@youni/api/contracts/admin";
 import type {
 	AdminHydratedContentNote,
+	ContentModerationReason,
+	ContentModerationStatus,
 	ContentNoteStatus,
-	NoteModerationReason,
-	NoteModerationStatus,
 } from "@youni/api/contracts/shared";
 import { useMemo, useState } from "react";
 
@@ -55,7 +55,7 @@ const queueFilters: Array<{
 	{ key: "all", label: "全部记录", summaryKey: "all" },
 ];
 
-const moderationStatusLabel: Record<NoteModerationStatus, string> = {
+const moderationStatusLabel: Record<ContentModerationStatus, string> = {
 	blocked: "自动拦截",
 	failed: "运行失败",
 	needs_review: "等待人工复核",
@@ -65,7 +65,7 @@ const moderationStatusLabel: Record<NoteModerationStatus, string> = {
 	processing: "自动审核中",
 };
 
-const moderationReasonLabel: Record<NoteModerationReason, string> = {
+const moderationReasonLabel: Record<ContentModerationReason, string> = {
 	invalid_response: "自动审核没有给出完整结果",
 	low_confidence: "未能自动确认，等待人工复核",
 	policy_violation: "图片命中了内容风险规则",
@@ -74,7 +74,7 @@ const moderationReasonLabel: Record<NoteModerationReason, string> = {
 	service_unavailable: "自动审核服务暂时不可用",
 };
 
-const moderationReasonDescription: Record<NoteModerationReason, string> = {
+const moderationReasonDescription: Record<ContentModerationReason, string> = {
 	invalid_response:
 		"自动审核没有返回完整的判断，本次不能自动发布，请人工查看后决定。",
 	low_confidence: "自动审核无法确认是否可以直接处理，请人工查看图片后决定。",
@@ -708,7 +708,7 @@ function formatDate(value?: Date | string | null) {
 	return value ? new Date(value).toLocaleString() : "暂无";
 }
 
-function ModerationStatusChip({ status }: { status: NoteModerationStatus }) {
+function ModerationStatusChip({ status }: { status: ContentModerationStatus }) {
 	const config = {
 		blocked: { color: "danger" as const, icon: CircleXmark },
 		failed: { color: "danger" as const, icon: TriangleExclamation },

@@ -49,9 +49,9 @@ import {
 } from "./note-detail/comments";
 import {
 	AuthorTopBar,
+	ContentModerationNotice,
 	ImageCarousel,
 	NoteBody,
-	NoteModerationNotice,
 	SimpleTopBar,
 } from "./note-detail/content";
 import { NoteDetailSkeleton } from "./note-detail/skeleton";
@@ -959,7 +959,7 @@ export default function NoteDetailScreen() {
 				ListHeaderComponent={
 					<View>
 						{isSelf ? (
-							<NoteModerationNotice
+							<ContentModerationNotice
 								rejectionReason={note.data.rejectionReason}
 								status={note.data.status}
 							/>

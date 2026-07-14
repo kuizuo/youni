@@ -1,6 +1,6 @@
 import SensitiveWordTool from "sensitive-word-tool";
 
-const BLOCKED_NOTE_TERMS = [
+const BLOCKED_CONTENT_TERMS = [
 	"出售枪支",
 	"购买枪支",
 	"枪支货到付款",
@@ -42,11 +42,11 @@ const BLOCKED_NOTE_TERMS = [
 	"煞笔",
 ];
 
-const blockedNoteText = new SensitiveWordTool({
-	wordList: BLOCKED_NOTE_TERMS,
+const blockedContentText = new SensitiveWordTool({
+	wordList: BLOCKED_CONTENT_TERMS,
 });
 
-type NoteTextModerationInput = {
+type ContentTextModerationInput = {
 	advancedOptions: {
 		contentDisclosure?: string | null;
 	};
@@ -61,7 +61,7 @@ type NoteTextModerationInput = {
 	topics: string[];
 };
 
-function noteTextParts(input: NoteTextModerationInput) {
+function contentTextParts(input: ContentTextModerationInput) {
 	const componentParts = input.components.flatMap((component) => [
 		component.title,
 		component.value ?? "",
@@ -78,8 +78,8 @@ function noteTextParts(input: NoteTextModerationInput) {
 	];
 }
 
-export function hasBlockedNoteText(input: NoteTextModerationInput) {
-	return noteTextParts(input).some((part) =>
-		blockedNoteText.verify(part.normalize("NFKC")),
+export function hasBlockedContentText(input: ContentTextModerationInput) {
+	return contentTextParts(input).some((part) =>
+		blockedContentText.verify(part.normalize("NFKC")),
 	);
 }

@@ -16,16 +16,16 @@ import {
 import { env } from "@youni/env/server";
 import { and, count, eq, gte, inArray, notInArray, sql } from "drizzle-orm";
 
-import type { NoteFeedEventType } from "../contracts/notes";
-import { hydrateContentNotes, selectContentNoteRows } from "./content-notes";
+import type { NoteFeedEventType } from "../../contracts/notes";
+import { getShanghaiDay } from "../analytics/search";
+import { getBlockedUserIds } from "../users/blocks";
+import { hydrateContentNotes, selectContentNoteRows } from "./content";
 import {
 	buildNoteFeedPages,
 	type NoteFeedCandidate,
 	rankFallbackCandidates,
-} from "./note-feed-ranking";
-import { decodeNoteFeedToken, encodeNoteFeedToken } from "./note-feed-tokens";
-import { getShanghaiDay } from "./search-analytics";
-import { getBlockedUserIds } from "./user-blocks";
+} from "./feed-ranking";
+import { decodeNoteFeedToken, encodeNoteFeedToken } from "./feed-tokens";
 
 const CANDIDATE_LIMIT = 300;
 const CURSOR_TTL_MS = 30 * 60 * 1_000;

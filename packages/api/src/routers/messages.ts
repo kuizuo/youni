@@ -11,7 +11,7 @@ import {
 import { and, count, desc, eq, gt, ne } from "drizzle-orm";
 import { activeUserProcedure, protectedProcedure } from "../index";
 import { notifyMessage } from "../lib/notifications";
-import { hasMessagingBlock, setUserBlocked } from "../lib/user-blocks";
+import { hasMessagingBlock, setUserBlocked } from "../lib/users/blocks";
 
 function createMemberKey(leftUserId: string, rightUserId: string) {
 	return [leftUserId, rightUserId].sort().join(":");

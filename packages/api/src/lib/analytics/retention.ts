@@ -6,7 +6,7 @@ import {
 } from "@youni/db/schema/index";
 import { lt } from "drizzle-orm";
 
-import { getRetentionCutoffDay } from "./search-analytics";
+import { getRetentionCutoffDay } from "./search";
 
 const NOTE_FEED_EVENT_RETENTION_DAYS = 30;
 const ANALYTICS_RETENTION_DAYS = 90;
