@@ -139,7 +139,6 @@ export function ReviewQueue({
 	bucket,
 	errorMessage,
 	isFetching,
-	isLoading,
 	isMutating,
 	items,
 	keyword,
@@ -155,7 +154,6 @@ export function ReviewQueue({
 	bucket: ModerationQueueBucket;
 	errorMessage: string | null;
 	isFetching: boolean;
-	isLoading: boolean;
 	isMutating: boolean;
 	items: ReviewNote[];
 	keyword: string;
@@ -231,7 +229,6 @@ export function ReviewQueue({
 						</SearchField.Group>
 					</SearchField>
 					<div className="flex items-center gap-2 text-muted text-sm">
-						{isFetching && !isLoading ? <span>正在刷新…</span> : null}
 						<span>共 {total} 条</span>
 					</div>
 				</Card.Content>
@@ -248,7 +245,7 @@ export function ReviewQueue({
 				</div>
 			) : null}
 
-			{isLoading ? (
+			{isFetching ? (
 				<ReviewQueueLoading />
 			) : items.length === 0 ? (
 				<EmptyQueue bucket={bucket} />
@@ -762,9 +759,132 @@ function EmptyQueue({ bucket }: { bucket: ModerationQueueBucket }) {
 
 function ReviewQueueLoading() {
 	return (
-		<div className="grid gap-4 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
-			<Skeleton className="h-[620px] rounded-2xl" />
-			<Skeleton className="h-[620px] rounded-2xl" />
+		<div
+			aria-busy="true"
+			aria-live="polite"
+			className="grid gap-3"
+			role="status"
+		>
+			<div className="flex items-center gap-2 rounded-2xl bg-accent-soft px-4 py-3 text-accent text-sm">
+				<span className="size-2 animate-pulse rounded-full bg-accent motion-reduce:animate-none" />
+				<span className="font-medium">正在加载当前分类的审核内容…</span>
+			</div>
+			<div className="grid min-h-[620px] gap-4 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
+				<Card className="skeleton--shimmer relative overflow-hidden">
+					<Card.Header className="border-border border-b px-4 py-4">
+						<Skeleton animationType="none" className="h-5 w-24 rounded-lg" />
+					</Card.Header>
+					<Card.Content className="grid content-start p-0">
+						{["first", "second", "third", "fourth", "fifth"].map((item) => (
+							<div
+								key={item}
+								className="flex gap-3 border-border border-b p-4 last:border-b-0"
+							>
+								<Skeleton
+									animationType="none"
+									className="size-[72px] shrink-0 rounded-xl"
+								/>
+								<div className="grid flex-1 content-center gap-2.5">
+									<div className="flex items-center justify-between gap-3">
+										<Skeleton
+											animationType="none"
+											className="h-4 w-2/5 rounded-md"
+										/>
+										<Skeleton
+											animationType="none"
+											className="h-6 w-20 rounded-full"
+										/>
+									</div>
+									<Skeleton
+										animationType="none"
+										className="h-3 w-4/5 rounded-md"
+									/>
+									<Skeleton
+										animationType="none"
+										className="h-3 w-3/5 rounded-md"
+									/>
+								</div>
+							</div>
+						))}
+					</Card.Content>
+					<Card.Footer className="flex items-center justify-between border-border border-t px-4 py-4">
+						<Skeleton animationType="none" className="h-4 w-20 rounded-md" />
+						<div className="flex gap-2">
+							<Skeleton animationType="none" className="h-8 w-16 rounded-lg" />
+							<Skeleton animationType="none" className="h-8 w-16 rounded-lg" />
+						</div>
+					</Card.Footer>
+				</Card>
+
+				<Card className="skeleton--shimmer relative h-fit overflow-hidden">
+					<Card.Header className="flex-row items-start justify-between gap-4 border-border border-b px-5 py-4">
+						<div className="grid flex-1 gap-2">
+							<Skeleton animationType="none" className="h-5 w-2/5 rounded-md" />
+							<Skeleton animationType="none" className="h-3 w-1/3 rounded-md" />
+						</div>
+						<div className="flex gap-2">
+							<Skeleton
+								animationType="none"
+								className="h-6 w-20 rounded-full"
+							/>
+							<Skeleton
+								animationType="none"
+								className="h-6 w-16 rounded-full"
+							/>
+						</div>
+					</Card.Header>
+					<Card.Content className="grid gap-5 p-5">
+						<section className="grid gap-3">
+							<div className="flex items-center justify-between gap-3">
+								<Skeleton
+									animationType="none"
+									className="h-4 w-24 rounded-md"
+								/>
+								<Skeleton
+									animationType="none"
+									className="h-8 w-24 rounded-lg"
+								/>
+							</div>
+							<Skeleton
+								animationType="none"
+								className="h-3 w-full rounded-md"
+							/>
+							<Skeleton animationType="none" className="h-3 w-3/4 rounded-md" />
+							<div className="grid grid-cols-3 gap-2">
+								{["image-first", "image-second", "image-third"].map((image) => (
+									<Skeleton
+										key={image}
+										animationType="none"
+										className="aspect-[4/3] w-full rounded-xl"
+									/>
+								))}
+							</div>
+						</section>
+						<section className="grid gap-3 rounded-2xl bg-surface-secondary p-4">
+							<Skeleton animationType="none" className="h-4 w-32 rounded-md" />
+							<div className="grid gap-2 sm:grid-cols-2">
+								<Skeleton animationType="none" className="h-16 rounded-xl" />
+								<Skeleton animationType="none" className="h-16 rounded-xl" />
+							</div>
+							<Skeleton animationType="none" className="h-20 rounded-xl" />
+						</section>
+						<section className="grid gap-3 border-border border-t pt-5">
+							<Skeleton animationType="none" className="h-4 w-24 rounded-md" />
+							<Skeleton animationType="none" className="h-20 rounded-xl" />
+							<div className="flex justify-end gap-2">
+								<Skeleton
+									animationType="none"
+									className="h-9 w-32 rounded-lg"
+								/>
+								<Skeleton
+									animationType="none"
+									className="h-9 w-24 rounded-lg"
+								/>
+							</div>
+						</section>
+					</Card.Content>
+				</Card>
+			</div>
 		</div>
 	);
 }

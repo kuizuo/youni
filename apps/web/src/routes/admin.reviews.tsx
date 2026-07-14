@@ -88,7 +88,6 @@ function AdminReviewsRoute() {
 					(queue.error instanceof Error ? queue.error.message : null)
 				}
 				isFetching={queue.isFetching}
-				isLoading={queue.isLoading}
 				isMutating={reviewMutation.isPending}
 				items={queue.data?.items ?? []}
 				keyword={keyword}
