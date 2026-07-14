@@ -9,6 +9,7 @@ import {
 	Hashtag,
 	Magnifier,
 	Persons,
+	ShieldCheck,
 	SquareBars,
 	Xmark,
 } from "@gravity-ui/icons";
@@ -36,6 +37,7 @@ type AdminRouteTo =
 	| "/admin/analytics"
 	| "/admin/notes"
 	| "/admin/profile"
+	| "/admin/reviews"
 	| "/admin/settings"
 	| "/admin/topics"
 	| "/admin/users";
@@ -77,6 +79,12 @@ const NAV_ITEMS: readonly AdminNavItem[] = [
 		href: "/admin/notes",
 		icon: FileText,
 		label: "图文",
+		permission: { note: ["list"] },
+	},
+	{
+		href: "/admin/reviews",
+		icon: ShieldCheck,
+		label: "审核队列",
 		permission: { note: ["list"] },
 	},
 	{
@@ -125,6 +133,14 @@ const SEARCH_ITEMS = [
 		permission: { note: ["list"] },
 	},
 	{
+		description: "查看自动审核结果、失败原因并进行人工处理。",
+		href: "/admin/reviews",
+		icon: ShieldCheck,
+		keywords: "moderation review queue failed reason 自动审核 失败 原因",
+		label: "审核队列",
+		permission: { note: ["list"] },
+	},
+	{
 		description: "新增、编辑、删除话题并查看使用量。",
 		href: "/admin/topics",
 		icon: Hashtag,
@@ -160,6 +176,7 @@ const SEARCH_ITEMS = [
 const ROUTE_LABELS = new Map<string, string>([
 	...NAV_ITEMS.map((item) => [item.href, item.label] as const),
 	["/admin/profile", "个人主页"] as const,
+	["/admin/reviews", "审核队列"] as const,
 ]);
 
 function getAdminRouteLabel(pathname: string) {
@@ -276,17 +293,25 @@ export function AdminPage({
 	children,
 	actions,
 }: AdminPageProps) {
+	const hasPageHeader = Boolean(description || actions);
+
 	return (
-		<main className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-5 pt-4 pb-10">
-			<section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-				<div className="min-w-0">
-					<h1 className="sr-only">{title}</h1>
+		<main className="mx-auto flex w-full max-w-[1800px] flex-col gap-4 px-4 pt-4 pb-10 sm:px-6 lg:px-8">
+			<h1 className="sr-only">{title}</h1>
+			{hasPageHeader ? (
+				<section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 					{description ? (
-						<p className="text-muted text-sm">{description}</p>
+						<p className="max-w-3xl text-muted text-sm leading-6">
+							{description}
+						</p>
+					) : (
+						<span />
+					)}
+					{actions ? (
+						<div className="flex flex-wrap gap-2">{actions}</div>
 					) : null}
-				</div>
-				{actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
-			</section>
+				</section>
+			) : null}
 			{children}
 		</main>
 	);
@@ -342,7 +367,7 @@ function DashboardNavbar({
 			<header className="h-16 shrink-0 border-separator border-b bg-background">
 				<nav
 					aria-label="后台工具栏"
-					className="flex h-full w-full items-center gap-4 px-4 md:px-6"
+					className="flex h-full w-full items-center gap-4 px-4 sm:px-6 lg:px-8"
 				>
 					<IconButton
 						className="-ml-2 md:hidden"

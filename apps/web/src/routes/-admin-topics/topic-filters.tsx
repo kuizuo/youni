@@ -14,7 +14,7 @@ export function TopicFilters({
 		<div className="flex flex-wrap items-center justify-between gap-2">
 			<SearchField
 				aria-label="搜索话题"
-				className="w-full sm:w-[260px]"
+				className="w-full sm:w-80"
 				name="topics-search"
 				value={keyword}
 				variant="secondary"

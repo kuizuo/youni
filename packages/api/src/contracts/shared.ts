@@ -6,8 +6,11 @@ import z from "zod";
 // ====== Input ======
 
 export {
+	type NoteModerationReason,
+	type NoteModerationStatus,
 	type NoteStatus as ContentNoteStatus,
 	type NoteVisibility,
+	noteModerationStatuses,
 	noteStatuses,
 } from "@youni/db/schema/content-values";
 export type { UserGender };
@@ -26,7 +29,10 @@ export const paginatedListInput = listInput.extend({
 
 // ====== Output ======
 
-export type ContentNoteRow = NoteRow & {
+export type ContentNoteRow = Omit<
+	NoteRow,
+	"moderatedAt" | "moderationDetails" | "moderationReason" | "moderationStatus"
+> & {
 	authorName: string;
 	authorImage: string | null;
 	authorHandle: string | null;

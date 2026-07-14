@@ -36,13 +36,23 @@ import { canManageItem, toUserRole, toUserStatus } from "./types";
 const columnHelper = createColumnHelper<AdminUserListItem>();
 
 const columnMinWidth: Record<string, number> = {
-	name: 280,
-	role: 110,
-	status: 110,
-	bio: 260,
-	stats: 140,
-	createdAt: 180,
-	actions: 140,
+	name: 190,
+	role: 76,
+	status: 80,
+	bio: 170,
+	stats: 120,
+	createdAt: 144,
+	actions: 116,
+};
+
+const columnClassName: Record<string, string> = {
+	name: "w-[19%]",
+	role: "w-[7%] whitespace-nowrap",
+	status: "w-[7%] whitespace-nowrap",
+	bio: "w-[18%]",
+	stats: "w-[12%] whitespace-nowrap",
+	createdAt: "w-36 whitespace-nowrap",
+	actions: "w-32 whitespace-nowrap text-end",
 };
 
 function toSortDescriptor(sorting: SortingState): SortDescriptor | undefined {
@@ -133,12 +143,18 @@ export function UserTable({
 				header: "用户",
 			}),
 			columnHelper.accessor("role", {
-				cell: (info) => <UserRoleBadge role={toUserRole(info.getValue())} />,
+				cell: (info) => (
+					<span className="inline-flex whitespace-nowrap">
+						<UserRoleBadge role={toUserRole(info.getValue())} />
+					</span>
+				),
 				header: "角色",
 			}),
 			columnHelper.accessor("status", {
 				cell: (info) => (
-					<UserStatusBadge status={toUserStatus(info.getValue())} />
+					<span className="inline-flex whitespace-nowrap">
+						<UserStatusBadge status={toUserStatus(info.getValue())} />
+					</span>
 				),
 				header: "状态",
 			}),
@@ -158,7 +174,7 @@ export function UserTable({
 			}),
 			columnHelper.accessor((row) => new Date(row.createdAt).getTime(), {
 				cell: (info) => (
-					<span className="text-muted tabular-nums">
+					<span className="whitespace-nowrap text-muted text-sm tabular-nums">
 						{new Date(info.row.original.createdAt).toLocaleString()}
 					</span>
 				),
@@ -237,7 +253,7 @@ export function UserTable({
 			<Table.ScrollContainer className="overflow-x-auto">
 				<Table.Content
 					aria-label="用户列表"
-					className="min-w-[1320px]"
+					className="min-w-[940px] table-fixed"
 					sortDescriptor={sortDescriptor}
 					onSortChange={(descriptor) => setSorting(toSortingState(descriptor))}
 				>
@@ -248,6 +264,7 @@ export function UserTable({
 								isRowHeader={header.column.id === "name"}
 								key={header.id}
 								allowsSorting={header.column.getCanSort()}
+								className={columnClassName[header.column.id]}
 								minWidth={columnMinWidth[header.column.id]}
 							>
 								{({ sortDirection }) =>
@@ -350,10 +367,19 @@ function UserIdentityCell({
 
 function UserStatsCell({ user }: { user: AdminUserListItem }) {
 	return (
-		<div className="text-muted text-sm">
-			<div>图文 {user.noteCount}</div>
-			<div>粉丝 {user.followerCount}</div>
-			<div>关注 {user.followingCount}</div>
+		<dl className="grid grid-cols-3 gap-2 text-center text-sm">
+			<CompactStat label="图文" value={user.noteCount} />
+			<CompactStat label="粉丝" value={user.followerCount} />
+			<CompactStat label="关注" value={user.followingCount} />
+		</dl>
+	);
+}
+
+function CompactStat({ label, value }: { label: string; value: number }) {
+	return (
+		<div className="grid gap-0.5">
+			<dt className="whitespace-nowrap text-muted text-xs">{label}</dt>
+			<dd className="font-medium text-foreground tabular-nums">{value}</dd>
 		</div>
 	);
 }
@@ -397,7 +423,7 @@ function UserActionsCell({
 	const StatusActionIcon = item.status === "active" ? Ban : ArrowsRotateLeft;
 
 	return (
-		<div className="flex justify-end gap-2">
+		<div className="flex justify-end gap-1">
 			{canUpdate && !item.isAnonymous ? (
 				<Button
 					size="sm"

@@ -13,11 +13,13 @@ import {
 } from "@youni/db/schema/index";
 import type { SQL } from "drizzle-orm";
 import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
+import type { ModerationQueueBucket } from "../contracts/admin";
 import type {
 	AdminHydratedContentNote,
 	ContentNoteRow,
 	ContentNoteStatus,
 	HydratedContentNote,
+	NoteModerationStatus,
 	NoteVisibility,
 } from "../contracts/shared";
 import { hasBlockedNoteText } from "./content-moderation";
@@ -97,6 +99,10 @@ const adminContentNoteRowFields = {
 	advancedOptions: note.advancedOptions,
 	status: note.status,
 	rejectionReason: note.rejectionReason,
+	moderationStatus: note.moderationStatus,
+	moderationReason: note.moderationReason,
+	moderationDetails: note.moderationDetails,
+	moderatedAt: note.moderatedAt,
 	createdAt: note.createdAt,
 	publishedAt: note.publishedAt,
 	draftSavedAt: note.draftSavedAt,
@@ -104,6 +110,17 @@ const adminContentNoteRowFields = {
 	authorName: user.name,
 	authorEmail: user.email,
 };
+
+const attentionModerationStatuses = [
+	"not_started",
+	"pending",
+	"processing",
+	"needs_review",
+	"failed",
+] as const satisfies readonly NoteModerationStatus[];
+const attentionModerationStatusSet = new Set<NoteModerationStatus>(
+	attentionModerationStatuses,
+);
 
 function toNumber(value: unknown) {
 	return Number(value ?? 0);
@@ -489,6 +506,10 @@ export async function updateEditableContentNote({
 			advancedOptions: input.advancedOptions,
 			status: "audit",
 			rejectionReason: null,
+			moderationStatus: "pending",
+			moderationReason: null,
+			moderationDetails: [],
+			moderatedAt: null,
 			publishedAt: null,
 			draftSavedAt: null,
 		})
@@ -547,6 +568,7 @@ export async function createContentNote({
 			components: input.components,
 			advancedOptions: input.advancedOptions,
 			status,
+			moderationStatus: "pending",
 			draftSavedAt: null,
 			userId,
 		})
@@ -721,6 +743,90 @@ export async function listAdminContentNotes(input: {
 
 	return {
 		items: await hydrateAdminContentNotes(rows),
+		total: toNumber(totalRow?.value),
+	};
+}
+
+function moderationBucketCondition(bucket: ModerationQueueBucket) {
+	if (bucket === "attention") {
+		return and(
+			eq(note.status, "audit"),
+			inArray(note.moderationStatus, [...attentionModerationStatuses]),
+		);
+	}
+	if (bucket === "passed") return eq(note.moderationStatus, "passed");
+	if (bucket === "blocked") return eq(note.moderationStatus, "blocked");
+	if (bucket === "failed") return eq(note.moderationStatus, "failed");
+	return undefined;
+}
+
+export async function listAdminModerationQueue(input: {
+	bucket: ModerationQueueBucket;
+	keyword?: string;
+	limit: number;
+	offset: number;
+}) {
+	const db = createDb();
+	const conditions: SQL[] = [];
+	const bucketCondition = moderationBucketCondition(input.bucket);
+	if (bucketCondition) conditions.push(bucketCondition);
+	if (input.keyword) {
+		const keywordClause = or(
+			containsInsensitive(note.title, input.keyword),
+			containsInsensitive(note.content, input.keyword),
+			containsInsensitive(user.name, input.keyword),
+		);
+		if (keywordClause) conditions.push(keywordClause);
+	}
+	const whereClause = conditions.length ? and(...conditions) : undefined;
+	const [totalRow, summaryRows, rows] = await Promise.all([
+		db
+			.select({ value: count() })
+			.from(note)
+			.innerJoin(user, eq(note.userId, user.id))
+			.where(whereClause)
+			.then((values) => values[0]),
+		db
+			.select({
+				moderationStatus: note.moderationStatus,
+				noteStatus: note.status,
+				value: count(),
+			})
+			.from(note)
+			.groupBy(note.moderationStatus, note.status),
+		db
+			.select(adminContentNoteRowFields)
+			.from(note)
+			.innerJoin(user, eq(note.userId, user.id))
+			.where(whereClause)
+			.orderBy(desc(note.createdAt))
+			.limit(input.limit)
+			.offset(input.offset),
+	]);
+	const counts = new Map<string, number>();
+	for (const row of summaryRows) {
+		counts.set(
+			row.moderationStatus,
+			(counts.get(row.moderationStatus) ?? 0) + toNumber(row.value),
+		);
+	}
+	const attentionCount = summaryRows
+		.filter(
+			(row) =>
+				row.noteStatus === "audit" &&
+				attentionModerationStatusSet.has(row.moderationStatus),
+		)
+		.reduce((total, row) => total + toNumber(row.value), 0);
+
+	return {
+		items: await hydrateAdminContentNotes(rows),
+		summary: {
+			all: [...counts.values()].reduce((total, value) => total + value, 0),
+			attention: attentionCount,
+			blocked: counts.get("blocked") ?? 0,
+			failed: counts.get("failed") ?? 0,
+			passed: counts.get("passed") ?? 0,
+		},
 		total: toNumber(totalRow?.value),
 	};
 }

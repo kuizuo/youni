@@ -10,14 +10,31 @@ import { ulid } from "ulid";
 
 import { timestampColumn } from "./_columns";
 import { user } from "./auth";
-import { noteStatuses, noteVisibilities } from "./content-values";
-
-export {
-	type NoteStatus,
-	type NoteVisibility,
+import {
+	noteModerationReasons,
+	noteModerationStatuses,
 	noteStatuses,
 	noteVisibilities,
 } from "./content-values";
+
+export {
+	type NoteModerationReason,
+	type NoteModerationStatus,
+	type NoteStatus,
+	type NoteVisibility,
+	noteModerationReasons,
+	noteModerationStatuses,
+	noteStatuses,
+	noteVisibilities,
+} from "./content-values";
+
+export type NoteModerationDetail = {
+	categories: string[];
+	confidence: number;
+	decision: "block" | "pass" | "review";
+	image: string;
+	reason: "invalid_response" | "model" | "service_unavailable";
+};
 
 export const note = sqliteTable(
 	"note",
@@ -62,6 +79,19 @@ export const note = sqliteTable(
 			.notNull(),
 		status: text("status", { enum: noteStatuses }).default("audit").notNull(),
 		rejectionReason: text("rejection_reason"),
+		moderationStatus: text("moderation_status", {
+			enum: noteModerationStatuses,
+		})
+			.default("not_started")
+			.notNull(),
+		moderationReason: text("moderation_reason", {
+			enum: noteModerationReasons,
+		}),
+		moderationDetails: text("moderation_details", { mode: "json" })
+			.$type<NoteModerationDetail[]>()
+			.default(sql`'[]'`)
+			.notNull(),
+		moderatedAt: timestampColumn("moderated_at"),
 		publishedAt: timestampColumn("published_at"),
 		draftSavedAt: timestampColumn("draft_saved_at"),
 		createdAt: timestampColumn("created_at").defaultNow().notNull(),

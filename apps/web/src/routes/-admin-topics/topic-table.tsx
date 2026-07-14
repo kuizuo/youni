@@ -24,10 +24,17 @@ import { AdminTableEmptyState } from "@/components/admin-table-state";
 const columnHelper = createColumnHelper<AdminTopicListItem>();
 
 const columnMinWidth: Record<string, number> = {
-	name: 280,
-	noteCount: 140,
-	createdAt: 180,
-	actions: 120,
+	name: 260,
+	noteCount: 120,
+	createdAt: 160,
+	actions: 108,
+};
+
+const columnClassName: Record<string, string> = {
+	name: "w-[46%]",
+	noteCount: "w-[18%] whitespace-nowrap",
+	createdAt: "w-40 whitespace-nowrap",
+	actions: "w-28 whitespace-nowrap text-end",
 };
 
 function toSortDescriptor(sorting: SortingState): SortDescriptor | undefined {
@@ -104,7 +111,7 @@ export function TopicTable({
 			}),
 			columnHelper.accessor((row) => new Date(row.createdAt).getTime(), {
 				cell: (info) => (
-					<span className="text-muted tabular-nums">
+					<span className="whitespace-nowrap text-muted text-sm tabular-nums">
 						{new Date(info.row.original.createdAt).toLocaleString()}
 					</span>
 				),
@@ -146,7 +153,7 @@ export function TopicTable({
 			<Table.ScrollContainer className="overflow-x-auto">
 				<Table.Content
 					aria-label="话题列表"
-					className="min-w-[760px]"
+					className="min-w-[680px] table-fixed"
 					sortDescriptor={sortDescriptor}
 					onSortChange={(descriptor) => setSorting(toSortingState(descriptor))}
 				>
@@ -157,6 +164,7 @@ export function TopicTable({
 								isRowHeader={header.column.id === "name"}
 								key={header.id}
 								allowsSorting={header.column.getCanSort()}
+								className={columnClassName[header.column.id]}
 								minWidth={columnMinWidth[header.column.id]}
 							>
 								{({ sortDirection }) =>
@@ -249,7 +257,7 @@ function TopicActionsCell({
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
 	return (
-		<div className="flex justify-end gap-2">
+		<div className="flex justify-end gap-1">
 			<Button
 				size="sm"
 				variant="tertiary"

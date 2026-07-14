@@ -28,13 +28,21 @@ import { type MutableNoteStatus, toNoteStatus } from "./types";
 const columnHelper = createColumnHelper<AdminNoteListItem>();
 
 const columnMinWidth: Record<string, number> = {
-	cover: 120,
-	content: 420,
-	author: 220,
-	status: 150,
-	stats: 120,
-	createdAt: 180,
-	actions: 190,
+	content: 326,
+	author: 120,
+	status: 88,
+	stats: 116,
+	createdAt: 144,
+	actions: 144,
+};
+
+const columnClassName: Record<string, string> = {
+	content: "w-[36%]",
+	author: "w-[12%]",
+	status: "w-[9%] whitespace-nowrap",
+	stats: "w-[12%] whitespace-nowrap",
+	createdAt: "w-36 whitespace-nowrap",
+	actions: "w-36 whitespace-nowrap text-end",
 };
 
 function toSortDescriptor(sorting: SortingState): SortDescriptor | undefined {
@@ -109,12 +117,6 @@ export function NoteTable({
 	const canMutate = Boolean(onDelete && onUpdateStatus);
 	const columns = useMemo(() => {
 		const tableColumns = [
-			columnHelper.display({
-				cell: (info) => <NoteCoverCell note={info.row.original} />,
-				enableSorting: false,
-				header: "封面",
-				id: "cover",
-			}),
 			columnHelper.accessor("title", {
 				cell: (info) => (
 					<NoteContentCell
@@ -146,7 +148,7 @@ export function NoteTable({
 			}),
 			columnHelper.accessor((row) => new Date(row.createdAt).getTime(), {
 				cell: (info) => (
-					<span className="text-muted tabular-nums">
+					<span className="whitespace-nowrap text-muted text-sm tabular-nums">
 						{new Date(info.row.original.createdAt).toLocaleString()}
 					</span>
 				),
@@ -204,7 +206,7 @@ export function NoteTable({
 			<Table.ScrollContainer className="overflow-x-auto">
 				<Table.Content
 					aria-label="图文列表"
-					className="min-w-[1400px]"
+					className="min-w-[940px] table-fixed"
 					sortDescriptor={sortDescriptor}
 					onSortChange={(descriptor) => setSorting(toSortingState(descriptor))}
 				>
@@ -215,6 +217,7 @@ export function NoteTable({
 								isRowHeader={header.column.id === "content"}
 								key={header.id}
 								allowsSorting={header.column.getCanSort()}
+								className={columnClassName[header.column.id]}
 								minWidth={columnMinWidth[header.column.id]}
 							>
 								{({ sortDirection }) =>
@@ -276,10 +279,10 @@ function NoteCoverCell({ note }: { note: AdminNoteListItem }) {
 		<img
 			src={note.cover}
 			alt=""
-			className="size-20 rounded-lg object-cover ring-1 ring-border"
+			className="size-16 shrink-0 rounded-xl object-cover ring-1 ring-border"
 		/>
 	) : (
-		<div className="flex size-20 items-center justify-center rounded-lg bg-surface-secondary text-muted text-xs ring-1 ring-border">
+		<div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted text-xs ring-1 ring-border">
 			无封面
 		</div>
 	);
@@ -297,58 +300,61 @@ function NoteContentCell({
 	onToggleActive: (id: string | null) => void;
 }) {
 	return (
-		<div className="grid gap-2">
-			<button
-				type="button"
-				className="line-clamp-1 text-left font-medium text-accent hover:underline"
-				onClick={() => {
-					if (onOpenNote) {
-						onOpenNote(note);
-						return;
-					}
-					onToggleActive(activeId === note.id ? null : note.id);
-				}}
-			>
-				{note.title}
-			</button>
-			<p className="line-clamp-2 text-muted text-sm">{note.content}</p>
-			<div className="flex flex-wrap gap-1">
-				{note.topics.map((topic) => (
-					<Chip key={topic} color="accent" size="sm" variant="soft">
-						#{topic}
-					</Chip>
-				))}
-				{note.locationName ? (
-					<Chip color="default" size="sm" variant="soft">
-						{note.locationName}
-					</Chip>
-				) : null}
-				<Chip color="default" size="sm" variant="soft">
-					{visibilityLabel(note.visibility)}
-				</Chip>
-			</div>
-			{activeId === note.id ? (
-				<div className="grid gap-2 rounded-xl bg-background p-3 text-muted text-sm ring-1 ring-border">
-					<p>{note.content}</p>
-					<p>
-						组件 {note.components.length} 个 · 评论
-						{note.advancedOptions?.allowComment ? "开启" : "关闭"} · 分享
-						{note.advancedOptions?.allowShare ? "开启" : "关闭"}
-					</p>
-					{note.images.length > 0 ? (
-						<div className="flex gap-2 overflow-x-auto">
-							{note.images.map((image) => (
-								<img
-									key={image}
-									src={image}
-									alt=""
-									className="size-24 rounded-md object-cover ring-1 ring-border"
-								/>
-							))}
-						</div>
+		<div className="flex min-w-0 items-start gap-3 py-1">
+			<NoteCoverCell note={note} />
+			<div className="grid min-w-0 flex-1 gap-1.5">
+				<button
+					type="button"
+					className="line-clamp-1 text-left font-medium text-accent hover:underline"
+					onClick={() => {
+						if (onOpenNote) {
+							onOpenNote(note);
+							return;
+						}
+						onToggleActive(activeId === note.id ? null : note.id);
+					}}
+				>
+					{note.title}
+				</button>
+				<p className="line-clamp-1 text-muted text-sm">{note.content}</p>
+				<div className="flex flex-wrap gap-1">
+					{note.topics.map((topic) => (
+						<Chip key={topic} color="accent" size="sm" variant="soft">
+							#{topic}
+						</Chip>
+					))}
+					{note.locationName ? (
+						<Chip color="default" size="sm" variant="soft">
+							{note.locationName}
+						</Chip>
 					) : null}
+					<Chip color="default" size="sm" variant="soft">
+						{visibilityLabel(note.visibility)}
+					</Chip>
 				</div>
-			) : null}
+				{activeId === note.id ? (
+					<div className="grid gap-2 rounded-xl bg-background p-3 text-muted text-sm ring-1 ring-border">
+						<p>{note.content}</p>
+						<p>
+							组件 {note.components.length} 个 · 评论
+							{note.advancedOptions?.allowComment ? "开启" : "关闭"} · 分享
+							{note.advancedOptions?.allowShare ? "开启" : "关闭"}
+						</p>
+						{note.images.length > 0 ? (
+							<div className="flex gap-2 overflow-x-auto">
+								{note.images.map((image) => (
+									<img
+										key={image}
+										src={image}
+										alt=""
+										className="size-24 rounded-lg object-cover ring-1 ring-border"
+									/>
+								))}
+							</div>
+						) : null}
+					</div>
+				) : null}
+			</div>
 		</div>
 	);
 }
@@ -368,11 +374,11 @@ function NoteAuthorCell({
 	);
 
 	return (
-		<div>
+		<div className="min-w-0 max-w-44">
 			{onOpenUser ? (
 				<button
 					type="button"
-					className="text-left hover:text-accent"
+					className="block min-w-0 max-w-full text-left hover:text-accent"
 					onClick={() => onOpenUser(note.userId)}
 				>
 					{authorName}
@@ -386,10 +392,12 @@ function NoteAuthorCell({
 
 function NoteStatusCell({ note }: { note: AdminNoteListItem }) {
 	return (
-		<div className="grid gap-1">
+		<div className="grid w-fit gap-1 whitespace-nowrap">
 			<NoteStatusBadge status={toNoteStatus(note.status)} />
 			{note.rejectionReason ? (
-				<div className="text-danger text-xs">{note.rejectionReason}</div>
+				<div className="max-w-32 whitespace-normal text-danger text-xs leading-5">
+					{note.rejectionReason}
+				</div>
 			) : null}
 		</div>
 	);
@@ -397,10 +405,19 @@ function NoteStatusCell({ note }: { note: AdminNoteListItem }) {
 
 function NoteStatsCell({ note }: { note: AdminNoteListItem }) {
 	return (
-		<div className="text-muted text-sm">
-			<div>赞 {note.likedCount}</div>
-			<div>藏 {note.collectedCount}</div>
-			<div>评 {note.commentCount}</div>
+		<dl className="grid grid-cols-3 gap-2 text-center text-sm">
+			<CompactStat label="赞" value={note.likedCount} />
+			<CompactStat label="藏" value={note.collectedCount} />
+			<CompactStat label="评" value={note.commentCount} />
+		</dl>
+	);
+}
+
+function CompactStat({ label, value }: { label: string; value: number }) {
+	return (
+		<div className="grid gap-0.5">
+			<dt className="text-muted text-xs">{label}</dt>
+			<dd className="font-medium text-foreground tabular-nums">{value}</dd>
 		</div>
 	);
 }
@@ -425,7 +442,7 @@ function NoteActionsCell({
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
 	return (
-		<div className="flex justify-end gap-2">
+		<div className="flex justify-end gap-1">
 			<Button
 				size="sm"
 				variant="outline"

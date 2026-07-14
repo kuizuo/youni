@@ -35,9 +35,13 @@ type MoondreamInput = {
 	temperature?: number;
 };
 
-type MoondreamOutput = {
+type MoondreamAnswer = {
 	answer?: string | null;
 };
+
+type MoondreamOutput =
+	| MoondreamAnswer
+	| { result: MoondreamAnswer; usage?: unknown };
 
 type YouniAiModels = {
 	"@cf/moondream/moondream3.1-9B-A2B": {
@@ -188,8 +192,10 @@ const localD1HttpBindings: Record<string, Binding> = app.local
 				"CLOUDFLARE_ACCOUNT_ID",
 			),
 			CLOUDFLARE_API_TOKEN: requiredEnv(
-				alchemy.secret.env.CLOUDFLARE_API_TOKEN,
-				"CLOUDFLARE_API_TOKEN",
+				process.env.CLOUDFLARE_D1_API_TOKEN
+					? alchemy.secret.env.CLOUDFLARE_D1_API_TOKEN
+					: alchemy.secret.env.CLOUDFLARE_API_TOKEN,
+				"CLOUDFLARE_D1_API_TOKEN",
 			),
 			CLOUDFLARE_D1_DATABASE_ID: requiredEnv(
 				alchemy.env.CLOUDFLARE_D1_DATABASE_ID,

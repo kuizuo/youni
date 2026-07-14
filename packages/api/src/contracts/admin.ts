@@ -30,6 +30,23 @@ export const adminListInput = z.object({
 	offset: z.number().int().min(0).default(0),
 });
 
+export const moderationQueueBuckets = [
+	"attention",
+	"passed",
+	"blocked",
+	"failed",
+	"all",
+] as const;
+
+export type ModerationQueueBucket = (typeof moderationQueueBuckets)[number];
+
+export const adminModerationQueueInput = z.object({
+	bucket: z.enum(moderationQueueBuckets).default("attention"),
+	keyword: z.string().trim().optional(),
+	limit: z.number().int().min(1).max(100).default(20),
+	offset: z.number().int().min(0).default(0),
+});
+
 export const adminIdInput = z.object({ id: z.string().min(1) });
 
 export const adminNoteStatusInput = z.object({
@@ -237,6 +254,17 @@ export type AdminOutputs = {
 		items: AdminHydratedContentNote[];
 		total: number;
 	};
+	moderationQueue: {
+		items: AdminHydratedContentNote[];
+		summary: {
+			all: number;
+			attention: number;
+			blocked: number;
+			failed: number;
+			passed: number;
+		};
+		total: number;
+	};
 	noteDetail: AdminContentNoteDetail;
 	updateNoteStatus: NoteRow | undefined;
 	deleteNote: { ok: boolean };
@@ -284,6 +312,9 @@ export const adminContract = {
 	notes: procedure
 		.input(adminListInput)
 		.output(output<AdminOutputs["notes"]>()),
+	moderationQueue: procedure
+		.input(adminModerationQueueInput)
+		.output(output<AdminOutputs["moderationQueue"]>()),
 	noteDetail: procedure
 		.input(adminIdInput)
 		.output(output<AdminOutputs["noteDetail"]>()),

@@ -37,6 +37,7 @@ import {
 	listAdminContentNotes,
 	listAdminContentNotesByTopic,
 	listAdminContentNotesByUser,
+	listAdminModerationQueue,
 	updateContentNoteStatus,
 } from "../lib/content-notes";
 import { containsInsensitive } from "../lib/search";
@@ -563,6 +564,12 @@ export const adminRouter = {
 			return listAdminContentNotes(input);
 		},
 	),
+
+	moderationQueue: adminPermissionProcedure({
+		note: ["list"],
+	}).moderationQueue.handler(async ({ input }) => {
+		return listAdminModerationQueue(input);
+	}),
 
 	noteDetail: adminPermissionProcedure({ note: ["detail"] }).noteDetail.handler(
 		async ({ input }) => {

@@ -25,7 +25,7 @@ export function NoteFilters({
 		<div className="flex flex-wrap items-center gap-2">
 			<SearchField
 				aria-label="搜索图文"
-				className="w-full sm:w-[260px]"
+				className="w-full sm:w-80"
 				name="notes-search"
 				value={keyword}
 				variant="secondary"

@@ -59,14 +59,18 @@ function AdminOverviewRoute() {
 			},
 			{
 				accessorKey: "status",
+				cellClassName: "whitespace-nowrap",
 				header: "状态",
+				headerClassName: "whitespace-nowrap",
 				id: "status",
 				minWidth: 120,
 				cell: (item) => <NoteStatusBadge status={item.status} />,
 			},
 			{
 				accessorKey: "createdAt",
+				cellClassName: "whitespace-nowrap",
 				header: "创建时间",
+				headerClassName: "whitespace-nowrap",
 				id: "createdAt",
 				minWidth: 180,
 				cell: (item) => (
@@ -157,8 +161,8 @@ function AdminOverviewRoute() {
 							<Card.Header>
 								<Card.Title>运营提示</Card.Title>
 							</Card.Header>
-							<Card.Content className="grid gap-3">
-								<div className="rounded-2xl border border-border bg-background p-3">
+							<Card.Content className="grid divide-y divide-separator py-0">
+								<div className="py-4 first:pt-0">
 									<div className="flex items-center gap-2 font-medium">
 										<ChartColumn className="size-4 text-accent" />
 										审核队列
@@ -169,7 +173,7 @@ function AdminOverviewRoute() {
 											: "当前没有待审核图文。"}
 									</p>
 								</div>
-								<div className="rounded-2xl border border-border bg-background p-3">
+								<div className="py-4 last:pb-0">
 									<div className="flex items-center gap-2 font-medium">
 										<Comment className="size-4 text-accent" />
 										互动反馈

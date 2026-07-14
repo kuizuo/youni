@@ -41,7 +41,7 @@ export function UserFilters({
 			<div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
 				<SearchField
 					aria-label="搜索用户"
-					className="w-full sm:w-[260px]"
+					className="w-full sm:w-80"
 					name="users-search"
 					value={keyword}
 					variant="secondary"
