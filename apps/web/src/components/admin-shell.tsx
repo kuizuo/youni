@@ -93,7 +93,7 @@ const NAV_ITEMS: readonly AdminNavItem[] = [
 	{
 		href: "/admin/reviews",
 		icon: ShieldCheck,
-		label: "审核队列",
+		label: "审核",
 		permission: { note: ["list"] },
 	},
 	{
@@ -146,7 +146,7 @@ const SEARCH_ITEMS = [
 		href: "/admin/reviews",
 		icon: ShieldCheck,
 		keywords: "moderation review queue failed reason 自动审核 失败 原因",
-		label: "审核队列",
+		label: "审核",
 		permission: { note: ["list"] },
 	},
 	{
@@ -949,8 +949,8 @@ function getNotifications(
 	return [
 		auditCount > 0
 			? {
-					description: "进入图文列表处理通过、拒绝或隐藏。",
-					href: "/admin/notes",
+					description: "进入审核页面处理通过、拒绝或隐藏。",
+					href: "/admin/reviews",
 					icon: FileText,
 					id: "audit",
 					label: `${auditCount} 篇图文待审核`,
@@ -958,8 +958,8 @@ function getNotifications(
 					tone: "warning",
 				}
 			: {
-					description: "图文管理里没有待处理审核。",
-					href: "/admin/notes",
+					description: "审核页面里没有待处理内容。",
+					href: "/admin/reviews",
 					icon: Check,
 					id: "audit-clear",
 					label: "审核队列已清空",
