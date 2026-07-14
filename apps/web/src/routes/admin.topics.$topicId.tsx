@@ -24,7 +24,7 @@ function AdminTopicDetailRoute() {
 					isFetching={detail.isInitialLoading}
 					notes={topicDetail.notes}
 					topic={topicDetail.topic}
-					onBack={() => navigate({ to: "/admin/topics" })}
+					onBack={() => navigate({ to: "/admin/topics", search: true })}
 					onOpenNote={(item) =>
 						navigate({
 							to: "/admin/notes/$noteId",

@@ -1,11 +1,13 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
+import { moderationQueueBuckets } from "@youni/api/contracts/admin";
 import type {
 	AdminHydratedContentNote,
 	ContentNoteStatus,
 } from "@youni/api/contracts/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
+import z from "zod";
 
 import { AdminPage } from "@/components/admin-shell";
 import {
@@ -15,6 +17,10 @@ import {
 	reconcileReviewQueueVisibleIds,
 	reviewQueueQueryInput,
 } from "@/data/review-collection";
+import {
+	parseAdminListSearch,
+	parseAdminSearchOption,
+} from "@/lib/admin-list-search";
 import { ReviewQueue } from "@/routes/-admin-reviews/review-queue";
 import { client, orpc, queryClient } from "@/utils/orpc";
 
@@ -26,8 +32,37 @@ const EMPTY_SUMMARY: ReviewQueueResponse["summary"] = {
 	passed: 0,
 };
 
+const reviewSearchDefaults = {
+	bucket: "attention" as ReviewQueueBucket,
+	page: 1,
+	q: "",
+};
+
+function validateReviewSearch(search: Record<string, unknown>) {
+	const common = parseAdminListSearch(search, ["createdAt"] as const);
+	return {
+		bucket:
+			parseAdminSearchOption(search.bucket, moderationQueueBuckets) ||
+			reviewSearchDefaults.bucket,
+		page: common.page,
+		q: common.q,
+	};
+}
+
+const reviewSearchSchema = z
+	.object({
+		bucket: z.unknown().optional(),
+		page: z.unknown().optional(),
+		q: z.unknown().optional(),
+	})
+	.transform(validateReviewSearch);
+
 export const Route = createFileRoute("/admin/reviews")({
 	component: AdminReviewsRoute,
+	search: {
+		middlewares: [stripSearchParams(reviewSearchDefaults)],
+	},
+	validateSearch: reviewSearchSchema,
 });
 
 function sameQueueItems(
@@ -66,10 +101,9 @@ function waitForNextPaint() {
 }
 
 function AdminReviewsRoute() {
-	const [bucket, setBucket] = useState<ReviewQueueBucket>("attention");
-	const [keyword, setKeyword] = useState("");
-	const [settledKeyword, setSettledKeyword] = useState("");
-	const [page, setPage] = useState(0);
+	const navigate = Route.useNavigate();
+	const search = Route.useSearch();
+	const [keyword, setKeyword] = useState(search.q);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [isBlockingRefresh, setIsBlockingRefresh] = useState(false);
@@ -80,22 +114,17 @@ function AdminReviewsRoute() {
 	const [displayTotal, setDisplayTotal] = useState(0);
 
 	useEffect(() => {
-		const normalizedKeyword = keyword.trim();
-		if (normalizedKeyword === settledKeyword) return;
-		const timeout = window.setTimeout(() => {
-			setSettledKeyword(normalizedKeyword);
-		}, 300);
-		return () => window.clearTimeout(timeout);
-	}, [keyword, settledKeyword]);
+		setKeyword(search.q);
+	}, [search.q]);
 
 	const queryInput = useMemo(
 		() =>
 			reviewQueueQueryInput({
-				bucket,
-				keyword: settledKeyword,
-				page,
+				bucket: search.bucket,
+				keyword: search.q,
+				page: search.page - 1,
 			}),
-		[bucket, page, settledKeyword],
+		[search.bucket, search.page, search.q],
 	);
 	const scopeKey = JSON.stringify(queryInput);
 	const scope = useMemo(
@@ -111,18 +140,14 @@ function AdminReviewsRoute() {
 	const activeScopeRef = useRef(scope);
 	activeScopeRef.current = scope;
 
-	useEffect(
-		() => () => {
-			void scope.collection.cleanup();
-		},
-		[scope.collection],
-	);
-
 	const liveQueue = useLiveQuery(
-		(query) =>
-			query
-				.from({ note: scope.collection })
-				.orderBy(({ note }) => note.createdAt, "desc"),
+		{
+			gcTime: 0,
+			query: (query) =>
+				query
+					.from({ note: scope.collection })
+					.orderBy(({ note }) => note.createdAt, "desc"),
+		},
 		[scope.collection],
 	);
 	const queue = useQuery({
@@ -140,11 +165,9 @@ function AdminReviewsRoute() {
 		orpc.admin.updateNoteStatus.mutationOptions(),
 	);
 	const liveItems = liveQueue.data ?? [];
-	const isSearchSettling = keyword.trim() !== settledKeyword;
 
 	useEffect(() => {
 		if (
-			isSearchSettling ||
 			queue.isFetching ||
 			!queue.isSuccess ||
 			!liveQueue.isReady ||
@@ -157,23 +180,22 @@ function AdminReviewsRoute() {
 		setDisplayTotal(queue.data.total);
 		setVisibleItemIds((currentIds) =>
 			reconcileReviewQueueVisibleIds({
-				allowNewItems: bucket === "attention" && page === 0,
+				allowNewItems: search.bucket === "attention" && search.page === 1,
 				currentIds,
 				nextItems: liveItems,
 				replace: loadedScopeKey !== scopeKey || isBlockingRefresh,
 			}),
 		);
 	}, [
-		bucket,
 		isBlockingRefresh,
-		isSearchSettling,
 		liveItems,
 		liveQueue.isReady,
 		loadedScopeKey,
-		page,
 		queue.data,
 		queue.isFetching,
 		queue.isSuccess,
+		search.bucket,
+		search.page,
 		scopeKey,
 	]);
 
@@ -181,9 +203,7 @@ function AdminReviewsRoute() {
 	const hasInitialError =
 		!hasLoadedCurrentScope && queue.isError && !queue.isFetching;
 	const isContentLoading =
-		isSearchSettling ||
-		isBlockingRefresh ||
-		(!hasLoadedCurrentScope && !hasInitialError);
+		isBlockingRefresh || (!hasLoadedCurrentScope && !hasInitialError);
 	const visibleItems = useMemo(() => {
 		const liveById = new Map(liveItems.map((item) => [item.id, item]));
 		return visibleItemIds.flatMap((id) => {
@@ -192,9 +212,18 @@ function AdminReviewsRoute() {
 		});
 	}, [liveItems, visibleItemIds]);
 	const displayedItems =
-		hasLoadedCurrentScope && !isSearchSettling && !isBlockingRefresh
-			? visibleItems
-			: [];
+		hasLoadedCurrentScope && !isBlockingRefresh ? visibleItems : [];
+
+	useEffect(() => {
+		if (!hasLoadedCurrentScope) return;
+		const pageCount = Math.max(Math.ceil(displayTotal / 20), 1);
+		if (search.page <= pageCount) return;
+		void navigate({
+			replace: true,
+			resetScroll: false,
+			search: (current) => ({ ...current, page: pageCount }),
+		});
+	}, [displayTotal, hasLoadedCurrentScope, navigate, search.page]);
 
 	const clearMessages = () => {
 		setErrorMessage(null);
@@ -202,19 +231,44 @@ function AdminReviewsRoute() {
 	};
 
 	const updateBucket = (nextBucket: ReviewQueueBucket) => {
-		setBucket(nextBucket);
-		setPage(0);
+		void navigate({
+			resetScroll: false,
+			search: (current) => ({ ...current, bucket: nextBucket, page: 1 }),
+		});
 		clearMessages();
 	};
 
 	const updateKeyword = (value: string) => {
 		setKeyword(value);
-		setPage(0);
+		clearMessages();
+	};
+	const submitKeyword = (value: string) => {
+		const normalized = value.trim();
+		setKeyword(normalized);
+		if (normalized === search.q) return;
+		void navigate({
+			replace: true,
+			resetScroll: false,
+			search: (current) => ({ ...current, page: 1, q: normalized }),
+		});
+		clearMessages();
+	};
+	const clearKeyword = () => {
+		setKeyword("");
+		if (!search.q) return;
+		void navigate({
+			replace: true,
+			resetScroll: false,
+			search: (current) => ({ ...current, page: 1, q: "" }),
+		});
 		clearMessages();
 	};
 
 	const updatePage = (nextPage: number) => {
-		setPage(nextPage);
+		void navigate({
+			resetScroll: false,
+			search: (current) => ({ ...current, page: nextPage + 1 }),
+		});
 		clearMessages();
 	};
 
@@ -270,7 +324,7 @@ function AdminReviewsRoute() {
 			description="查看自动审核结果和判断原因，处理需要人工复核的图文。"
 		>
 			<ReviewQueue
-				bucket={bucket}
+				bucket={search.bucket}
 				contentErrorMessage={
 					hasInitialError
 						? queue.error instanceof Error
@@ -289,7 +343,7 @@ function AdminReviewsRoute() {
 						? queue.dataUpdatedAt
 						: null
 				}
-				page={page}
+				page={search.page - 1}
 				successMessage={successMessage}
 				summary={displaySummary}
 				syncErrorMessage={
@@ -299,7 +353,9 @@ function AdminReviewsRoute() {
 				}
 				total={hasLoadedCurrentScope ? displayTotal : 0}
 				onBucketChange={updateBucket}
+				onClearKeyword={clearKeyword}
 				onKeywordChange={updateKeyword}
+				onKeywordSubmit={submitKeyword}
 				onPageChange={updatePage}
 				onRetry={retryQueue}
 				onReview={reviewNote}

@@ -6,7 +6,6 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getPaginationRowModel,
-	getSortedRowModel,
 	type OnChangeFn,
 	type PaginationState,
 	type SortingState,
@@ -16,7 +15,6 @@ import type { AdminTopicListItem } from "@youni/api/contracts/admin";
 import { useCallback, useMemo, useState } from "react";
 import {
 	AdminTablePagination,
-	defaultTablePagination,
 	normalizeTablePaginationUpdater,
 } from "@/components/admin-table-pagination";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
@@ -58,44 +56,40 @@ function toSortingState(descriptor: SortDescriptor): SortingState {
 export function TopicTable({
 	isDeletePending,
 	isFetching,
+	loadError,
 	onDelete,
 	onEdit,
 	onOpenTopic,
 	onPaginationChange,
+	onPageIndexCorrection,
+	onRetry,
+	onSortingChange,
 	pagination,
+	sorting,
 	topics,
 	total,
 }: {
 	isDeletePending: boolean;
 	isFetching: boolean;
+	loadError?: string | null;
 	onDelete: (item: AdminTopicListItem) => Promise<void> | void;
 	onEdit: (item: AdminTopicListItem) => void;
 	onOpenTopic?: (item: AdminTopicListItem) => void;
-	onPaginationChange?: (pagination: PaginationState) => void;
-	pagination?: PaginationState;
+	onPaginationChange: (pagination: PaginationState) => void;
+	onPageIndexCorrection?: (pageIndex: number) => void;
+	onRetry?: () => unknown;
+	onSortingChange: (sorting: SortingState) => void;
+	pagination: PaginationState;
+	sorting: SortingState;
 	topics: AdminTopicListItem[];
-	total?: number;
+	total: number;
 }) {
-	const [localPagination, setLocalPagination] = useState<PaginationState>(
-		defaultTablePagination,
-	);
-	const [sorting, setSorting] = useState<SortingState>([]);
-	const isPaginationControlled =
-		Boolean(pagination && onPaginationChange) && typeof total === "number";
-	const currentPagination = pagination ?? localPagination;
-	const totalItems = total ?? topics.length;
 	const handlePaginationChange = useCallback<OnChangeFn<PaginationState>>(
 		(updater) => {
-			const next = normalizeTablePaginationUpdater(updater, currentPagination);
-
-			if (isPaginationControlled) {
-				onPaginationChange?.(next);
-				return;
-			}
-
-			setLocalPagination(next);
+			const next = normalizeTablePaginationUpdater(updater, pagination);
+			onPaginationChange(next);
 		},
-		[currentPagination, isPaginationControlled, onPaginationChange],
+		[onPaginationChange, pagination],
 	);
 	const columns = useMemo(
 		() => [
@@ -139,12 +133,15 @@ export function TopicTable({
 		data: topics,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		manualPagination: isPaginationControlled,
+		manualPagination: true,
+		manualSorting: true,
 		onPaginationChange: handlePaginationChange,
-		onSortingChange: setSorting,
-		pageCount: Math.max(Math.ceil(totalItems / currentPagination.pageSize), 1),
-		state: { pagination: currentPagination, sorting },
+		onSortingChange: (updater) =>
+			onSortingChange(
+				typeof updater === "function" ? updater(sorting) : updater,
+			),
+		pageCount: Math.max(Math.ceil(total / pagination.pageSize), 1),
+		state: { pagination, sorting },
 	});
 	const sortDescriptor = useMemo(() => toSortDescriptor(sorting), [sorting]);
 
@@ -155,7 +152,9 @@ export function TopicTable({
 					aria-label="话题列表"
 					className="min-w-[680px] table-fixed"
 					sortDescriptor={sortDescriptor}
-					onSortChange={(descriptor) => setSorting(toSortingState(descriptor))}
+					onSortChange={(descriptor) =>
+						onSortingChange(toSortingState(descriptor))
+					}
 				>
 					<Table.Header>
 						{table.getFlatHeaders().map((header) => (
@@ -189,33 +188,42 @@ export function TopicTable({
 						renderEmptyState={() => (
 							<AdminTableEmptyState
 								emptyText="暂无话题"
+								errorMessage={loadError}
 								isLoading={isFetching}
+								onRetry={onRetry}
 							/>
 						)}
 					>
-						{table.getRowModel().rows.map((row) => (
-							<Table.Row id={row.original.id} key={row.original.id}>
-								{row.getVisibleCells().map((cell) => (
-									<Table.Cell key={cell.id}>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</Table.Cell>
+						{isFetching || loadError
+							? []
+							: table.getRowModel().rows.map((row) => (
+									<Table.Row id={row.original.id} key={row.original.id}>
+										{row.getVisibleCells().map((cell) => (
+											<Table.Cell key={cell.id}>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext(),
+												)}
+											</Table.Cell>
+										))}
+									</Table.Row>
 								))}
-							</Table.Row>
-						))}
 					</Table.Body>
 				</Table.Content>
 			</Table.ScrollContainer>
 			<AdminTablePagination
+				canCorrectPageIndex={!isFetching && !loadError}
 				emptyText="暂无话题"
 				itemLabel="个话题"
 				onPageIndexChange={(pageIndex) =>
-					handlePaginationChange({ ...currentPagination, pageIndex })
+					handlePaginationChange({ ...pagination, pageIndex })
 				}
+				onPageIndexCorrection={onPageIndexCorrection}
 				onPageSizeChange={(pageSize) =>
 					handlePaginationChange({ pageIndex: 0, pageSize })
 				}
 				table={table}
-				total={totalItems}
+				total={total}
 			/>
 		</Table>
 	);

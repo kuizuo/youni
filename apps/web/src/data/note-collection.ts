@@ -5,7 +5,6 @@ import type {
 import { useMemo } from "react";
 
 import {
-	compareCreatedAtDescending,
 	createQueryCollection,
 	createSingletonQueryCollection,
 	useQueryCollection,
@@ -16,6 +15,8 @@ export type NotesQueryInput = {
 	keyword?: string;
 	limit: number;
 	offset: number;
+	sortBy: "title" | "author" | "status" | "createdAt";
+	sortDirection: "asc" | "desc";
 	status?: ContentNoteStatus;
 };
 
@@ -33,7 +34,7 @@ export function useNotesCollection(input: NotesQueryInput) {
 		[input],
 	);
 
-	return useQueryCollection(scope, compareCreatedAtDescending);
+	return useQueryCollection(scope);
 }
 
 export function useNoteDetailCollection(noteId: string) {

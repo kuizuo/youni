@@ -22,12 +22,17 @@ import {
 const adminUserRoleInput = z.enum(adminUserRoleOptions);
 const adminUserStatusInput = z.enum(adminUserStatusOptions);
 const manageableAdminUserStatusInput = z.enum(manageableUserStatusOptions);
+const adminSortDirectionInput = z.enum(["asc", "desc"]);
 
 export const adminListInput = z.object({
 	keyword: z.string().trim().optional(),
 	status: z.enum(noteStatuses).optional(),
 	limit: z.number().int().min(1).max(200).default(10),
 	offset: z.number().int().min(0).default(0),
+	sortBy: z
+		.enum(["title", "author", "status", "createdAt"])
+		.default("createdAt"),
+	sortDirection: adminSortDirectionInput.default("desc"),
 });
 
 export const moderationQueueBuckets = [
@@ -66,12 +71,16 @@ export const adminUserListInput = z.object({
 	status: adminUserStatusInput.optional(),
 	limit: z.number().int().min(1).max(200).default(10),
 	offset: z.number().int().min(0).default(0),
+	sortBy: z.enum(["name", "role", "status", "createdAt"]).default("createdAt"),
+	sortDirection: adminSortDirectionInput.default("desc"),
 });
 
 export const adminTopicListInput = z.object({
 	keyword: z.string().trim().optional(),
 	limit: z.number().int().min(1).max(200).default(10),
 	offset: z.number().int().min(0).default(0),
+	sortBy: z.enum(["name", "noteCount", "createdAt"]).default("createdAt"),
+	sortDirection: adminSortDirectionInput.default("desc"),
 });
 
 export const adminUserStatusChangeInput = z.object({

@@ -12,7 +12,7 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import type { SQL } from "drizzle-orm";
-import { and, count, desc, eq, inArray, ne, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import type { ModerationQueueBucket } from "../../contracts/admin";
 import type {
 	AdminHydratedContentNote,
@@ -701,6 +701,8 @@ export async function listAdminContentNotes(input: {
 	status?: ContentNoteStatus;
 	limit: number;
 	offset: number;
+	sortBy: "title" | "author" | "status" | "createdAt";
+	sortDirection: "asc" | "desc";
 }) {
 	const db = createDb();
 	const conditions: SQL[] = [];
@@ -721,20 +723,36 @@ export async function listAdminContentNotes(input: {
 	const [totalRow] = whereClause
 		? await db.select({ value: count() }).from(note).where(whereClause)
 		: await db.select({ value: count() }).from(note);
+	const noteStatusOrder = sql<number>`case ${note.status}
+		when 'draft' then 0
+		when 'audit' then 1
+		when 'published' then 2
+		when 'rejected' then 3
+		when 'hidden' then 4
+		else 5 end`;
+	const sortExpression =
+		input.sortBy === "title"
+			? sql`lower(${note.title})`
+			: input.sortBy === "author"
+				? sql`lower(${user.name})`
+				: input.sortBy === "status"
+					? noteStatusOrder
+					: note.createdAt;
+	const order = input.sortDirection === "asc" ? asc : desc;
 	const rows = whereClause
 		? await db
 				.select(adminContentNoteRowFields)
 				.from(note)
 				.innerJoin(user, eq(note.userId, user.id))
 				.where(whereClause)
-				.orderBy(desc(note.createdAt))
+				.orderBy(order(sortExpression), order(note.id))
 				.limit(input.limit)
 				.offset(input.offset)
 		: await db
 				.select(adminContentNoteRowFields)
 				.from(note)
 				.innerJoin(user, eq(note.userId, user.id))
-				.orderBy(desc(note.createdAt))
+				.orderBy(order(sortExpression), order(note.id))
 				.limit(input.limit)
 				.offset(input.offset);
 

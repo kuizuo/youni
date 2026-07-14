@@ -15,8 +15,10 @@ export function UserFilters({
 	canCreateUser = true,
 	keyword,
 	onAccountTypeChange,
+	onClearKeyword,
 	onCreateUser,
 	onKeywordChange,
+	onKeywordSubmit,
 	onStatusChange,
 	statusFilter,
 }: {
@@ -24,8 +26,10 @@ export function UserFilters({
 	canCreateUser?: boolean;
 	keyword: string;
 	onAccountTypeChange: (value: UserAccountType | "") => void;
+	onClearKeyword: () => void;
 	onCreateUser: () => void;
 	onKeywordChange: (value: string) => void;
+	onKeywordSubmit: (value: string) => void;
 	onStatusChange: (value: AdminUserStatus | "") => void;
 	statusFilter: AdminUserStatus | "";
 }) {
@@ -39,20 +43,31 @@ export function UserFilters({
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-2">
 			<div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-				<SearchField
-					aria-label="搜索用户"
-					className="w-full sm:w-80"
-					name="users-search"
-					value={keyword}
-					variant="secondary"
-					onChange={onKeywordChange}
-				>
-					<SearchField.Group>
-						<SearchField.SearchIcon />
-						<SearchField.Input placeholder="搜索用户..." />
-						<SearchField.ClearButton />
-					</SearchField.Group>
-				</SearchField>
+				<div className="flex w-full gap-2 sm:w-auto">
+					<SearchField
+						aria-label="搜索用户"
+						className="min-w-0 flex-1 sm:w-80"
+						name="users-search"
+						value={keyword}
+						variant="secondary"
+						onChange={onKeywordChange}
+						onClear={onClearKeyword}
+						onSubmit={onKeywordSubmit}
+					>
+						<SearchField.Group className="md:h-8">
+							<SearchField.SearchIcon />
+							<SearchField.Input placeholder="搜索用户..." />
+							<SearchField.ClearButton />
+						</SearchField.Group>
+					</SearchField>
+					<Button
+						size="sm"
+						variant="secondary"
+						onPress={() => onKeywordSubmit(keyword)}
+					>
+						搜索
+					</Button>
+				</div>
 
 				<Dropdown>
 					<Button size="sm" variant="secondary">

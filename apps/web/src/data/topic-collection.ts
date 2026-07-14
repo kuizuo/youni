@@ -2,7 +2,6 @@ import type { AdminTopicListItem } from "@youni/api/contracts/admin";
 import { useMemo } from "react";
 
 import {
-	compareCreatedAtDescending,
 	createQueryCollection,
 	createSingletonQueryCollection,
 	useQueryCollection,
@@ -13,6 +12,8 @@ export type TopicsQueryInput = {
 	keyword?: string;
 	limit: number;
 	offset: number;
+	sortBy: "name" | "noteCount" | "createdAt";
+	sortDirection: "asc" | "desc";
 };
 
 export function useTopicsCollection(input: TopicsQueryInput) {
@@ -29,7 +30,7 @@ export function useTopicsCollection(input: TopicsQueryInput) {
 		[input],
 	);
 
-	return useQueryCollection(scope, compareCreatedAtDescending);
+	return useQueryCollection(scope);
 }
 
 export function useTopicDetailCollection(topicId: string) {

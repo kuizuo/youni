@@ -146,7 +146,9 @@ export function ReviewQueue({
 	keyword,
 	lastSyncedAt,
 	onBucketChange,
+	onClearKeyword,
 	onKeywordChange,
+	onKeywordSubmit,
 	onPageChange,
 	onRetry,
 	onReview,
@@ -166,7 +168,9 @@ export function ReviewQueue({
 	keyword: string;
 	lastSyncedAt: number | null;
 	onBucketChange: (bucket: ModerationQueueBucket) => void;
+	onClearKeyword: () => void;
 	onKeywordChange: (keyword: string) => void;
+	onKeywordSubmit: (keyword: string) => void;
 	onPageChange: (page: number) => void;
 	onRetry: () => Promise<void>;
 	onReview: (
@@ -241,22 +245,33 @@ export function ReviewQueue({
 
 			<Card>
 				<Card.Content className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-					<SearchField
-						aria-label="搜索审核队列"
-						className="w-full sm:w-[320px]"
-						name="review-search"
-						value={keyword}
-						variant="secondary"
-						onChange={onKeywordChange}
-					>
-						<SearchField.Group>
-							<SearchField.SearchIcon>
-								<Magnifier className="size-4" />
-							</SearchField.SearchIcon>
-							<SearchField.Input placeholder="搜索标题、正文或作者" />
-							<SearchField.ClearButton />
-						</SearchField.Group>
-					</SearchField>
+					<div className="flex w-full gap-2 sm:w-auto">
+						<SearchField
+							aria-label="搜索审核队列"
+							className="min-w-0 flex-1 sm:w-[320px]"
+							name="review-search"
+							value={keyword}
+							variant="secondary"
+							onChange={onKeywordChange}
+							onClear={onClearKeyword}
+							onSubmit={onKeywordSubmit}
+						>
+							<SearchField.Group className="md:h-8">
+								<SearchField.SearchIcon>
+									<Magnifier className="size-4" />
+								</SearchField.SearchIcon>
+								<SearchField.Input placeholder="搜索标题、正文或作者" />
+								<SearchField.ClearButton />
+							</SearchField.Group>
+						</SearchField>
+						<Button
+							size="sm"
+							variant="secondary"
+							onPress={() => onKeywordSubmit(keyword)}
+						>
+							搜索
+						</Button>
+					</div>
 					<div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-muted text-sm">
 						<span
 							data-sync-updated-at={lastSyncedAt ?? ""}

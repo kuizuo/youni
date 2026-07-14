@@ -23,7 +23,7 @@ function AdminNoteDetailRoute() {
 			) : noteDetail ? (
 				<NoteDetailView
 					note={noteDetail}
-					onBack={() => navigate({ to: "/admin/notes" })}
+					onBack={() => navigate({ to: "/admin/notes", search: true })}
 					onOpenTopic={(topicId) =>
 						navigate({
 							to: "/admin/topics/$topicId",

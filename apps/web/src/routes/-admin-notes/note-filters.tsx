@@ -8,12 +8,16 @@ import { noteStatusOptions } from "./types";
 
 export function NoteFilters({
 	keyword,
+	onClearKeyword,
 	onKeywordChange,
+	onKeywordSubmit,
 	onStatusChange,
 	statusFilter,
 }: {
 	keyword: string;
+	onClearKeyword: () => void;
 	onKeywordChange: (value: string) => void;
+	onKeywordSubmit: (value: string) => void;
 	onStatusChange: (value: ContentNoteStatus | "") => void;
 	statusFilter: ContentNoteStatus | "";
 }) {
@@ -23,22 +27,33 @@ export function NoteFilters({
 
 	return (
 		<div className="flex flex-wrap items-center gap-2">
-			<SearchField
-				aria-label="搜索图文"
-				className="w-full sm:w-80"
-				name="notes-search"
-				value={keyword}
-				variant="secondary"
-				onChange={onKeywordChange}
-			>
-				<SearchField.Group>
-					<SearchField.SearchIcon>
-						<Magnifier className="size-4" />
-					</SearchField.SearchIcon>
-					<SearchField.Input placeholder="搜索图文..." />
-					<SearchField.ClearButton />
-				</SearchField.Group>
-			</SearchField>
+			<div className="flex w-full gap-2 sm:w-auto">
+				<SearchField
+					aria-label="搜索图文"
+					className="min-w-0 flex-1 sm:w-80"
+					name="notes-search"
+					value={keyword}
+					variant="secondary"
+					onChange={onKeywordChange}
+					onClear={onClearKeyword}
+					onSubmit={onKeywordSubmit}
+				>
+					<SearchField.Group className="md:h-8">
+						<SearchField.SearchIcon>
+							<Magnifier className="size-4" />
+						</SearchField.SearchIcon>
+						<SearchField.Input placeholder="搜索图文..." />
+						<SearchField.ClearButton />
+					</SearchField.Group>
+				</SearchField>
+				<Button
+					size="sm"
+					variant="secondary"
+					onPress={() => onKeywordSubmit(keyword)}
+				>
+					搜索
+				</Button>
+			</div>
 
 			<Dropdown>
 				<Button size="sm" variant="secondary">

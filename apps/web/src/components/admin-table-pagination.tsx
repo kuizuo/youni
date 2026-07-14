@@ -7,12 +7,7 @@ import type {
 import type { ReactNode } from "react";
 import { useEffect, useMemo } from "react";
 
-const pageSizeOptions = [10, 20, 50, 100, 200];
-
-export const defaultTablePagination: PaginationState = {
-	pageIndex: 0,
-	pageSize: 10,
-};
+import { adminPageSizeOptions } from "@/lib/admin-list-search";
 
 export function normalizeTablePaginationUpdater(
 	updater: Updater<PaginationState>,
@@ -26,16 +21,20 @@ export function normalizeTablePaginationUpdater(
 }
 
 export function AdminTablePagination<TData>({
+	canCorrectPageIndex = true,
 	emptyText,
 	itemLabel,
 	onPageIndexChange,
+	onPageIndexCorrection,
 	onPageSizeChange,
 	table,
 	total,
 }: {
+	canCorrectPageIndex?: boolean;
 	emptyText: string;
 	itemLabel: string;
 	onPageIndexChange?: (pageIndex: number) => void;
+	onPageIndexCorrection?: (pageIndex: number) => void;
 	onPageSizeChange?: (pageSize: number) => void;
 	table: ReactTable<TData>;
 	total: number;
@@ -54,10 +53,16 @@ export function AdminTablePagination<TData>({
 	const canNextPage = safePageIndex < pageCount - 1;
 
 	useEffect(() => {
-		if (total > 0 && pageIndex > pageCount - 1) {
-			onPageIndexChange?.(pageCount - 1);
+		if (canCorrectPageIndex && pageIndex > pageCount - 1) {
+			(onPageIndexCorrection ?? onPageIndexChange)?.(pageCount - 1);
 		}
-	}, [onPageIndexChange, pageCount, pageIndex, total]);
+	}, [
+		canCorrectPageIndex,
+		onPageIndexChange,
+		onPageIndexCorrection,
+		pageCount,
+		pageIndex,
+	]);
 
 	const setPageIndex = (nextPageIndex: number) => {
 		if (onPageIndexChange) {
@@ -195,7 +200,7 @@ function PageSizeSelect({
 					selectedKeys={[String(pageSize)]}
 					onAction={(key) => onPageSizeChange(Number(key))}
 				>
-					{pageSizeOptions.map((value) => (
+					{adminPageSizeOptions.map((value) => (
 						<Dropdown.Item
 							key={value}
 							id={String(value)}

@@ -3,7 +3,6 @@ import type { AdminUserListItem } from "@youni/api/contracts/admin";
 import { useMemo } from "react";
 
 import {
-	compareCreatedAtDescending,
 	createQueryCollection,
 	createSingletonQueryCollection,
 	useQueryCollection,
@@ -15,6 +14,8 @@ export type UsersQueryInput = {
 	keyword?: string;
 	limit: number;
 	offset: number;
+	sortBy: "name" | "role" | "status" | "createdAt";
+	sortDirection: "asc" | "desc";
 	status?: AdminUserStatus;
 };
 
@@ -32,7 +33,7 @@ export function useUsersCollection(input: UsersQueryInput) {
 		[input],
 	);
 
-	return useQueryCollection(scope, compareCreatedAtDescending);
+	return useQueryCollection(scope);
 }
 
 export function useUserDetailCollection(userId: string) {

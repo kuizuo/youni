@@ -1,4 +1,4 @@
-import { Check, EyeSlash, TrashBin, Xmark } from "@gravity-ui/icons";
+import { TrashBin } from "@gravity-ui/icons";
 import type { SortDescriptor } from "@heroui/react";
 import { Button, Chip, Popover, Table } from "@heroui/react";
 import {
@@ -18,31 +18,30 @@ import { useCallback, useMemo, useState } from "react";
 import { NoteStatusBadge } from "@/components/admin-status";
 import {
 	AdminTablePagination,
-	defaultTablePagination,
 	normalizeTablePaginationUpdater,
 } from "@/components/admin-table-pagination";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
 
-import { type MutableNoteStatus, toNoteStatus } from "./types";
+import { toNoteStatus } from "./types";
 
 const columnHelper = createColumnHelper<AdminNoteListItem>();
 
 const columnMinWidth: Record<string, number> = {
-	content: 326,
+	title: 326,
 	author: 120,
 	status: 88,
 	stats: 116,
 	createdAt: 144,
-	actions: 144,
+	actions: 72,
 };
 
 const columnClassName: Record<string, string> = {
-	content: "w-[36%]",
+	title: "w-[36%]",
 	author: "w-[12%]",
 	status: "w-[9%] whitespace-nowrap",
 	stats: "w-[12%] whitespace-nowrap",
 	createdAt: "w-36 whitespace-nowrap",
-	actions: "w-36 whitespace-nowrap text-end",
+	actions: "w-20 whitespace-nowrap text-end",
 };
 
 function toSortDescriptor(sorting: SortingState): SortDescriptor | undefined {
@@ -66,55 +65,74 @@ function toSortingState(descriptor: SortDescriptor): SortingState {
 export function NoteTable({
 	isDeletePending,
 	isFetching,
-	isStatusBusy,
+	loadError,
 	notes,
 	onDelete,
 	onOpenNote,
 	onOpenUser,
 	onPaginationChange,
-	onUpdateStatus,
+	onPageIndexCorrection,
+	onRetry,
+	onSortingChange,
 	pagination,
+	sorting: controlledSorting,
 	total,
 }: {
 	isDeletePending?: boolean;
 	isFetching: boolean;
-	isStatusBusy?: boolean;
+	loadError?: string | null;
 	notes: AdminNoteListItem[];
 	onDelete?: (item: AdminNoteListItem) => Promise<void> | void;
 	onOpenNote?: (item: AdminNoteListItem) => void;
 	onOpenUser?: (userId: string) => void;
 	onPaginationChange?: (pagination: PaginationState) => void;
-	onUpdateStatus?: (
-		item: AdminNoteListItem,
-		status: MutableNoteStatus,
-		rejectionReason?: string,
-	) => Promise<void> | void;
+	onPageIndexCorrection?: (pageIndex: number) => void;
+	onRetry?: () => unknown;
+	onSortingChange?: (sorting: SortingState) => void;
 	pagination?: PaginationState;
+	sorting?: SortingState;
 	total?: number;
 }) {
 	const [activeId, setActiveId] = useState<string | null>(null);
-	const [localPagination, setLocalPagination] = useState<PaginationState>(
-		defaultTablePagination,
+	const [localPagination, setLocalPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
+	const [localSorting, setLocalSorting] = useState<SortingState>([
+		{ desc: true, id: "createdAt" },
+	]);
+	const isServerControlled = Boolean(
+		pagination &&
+			controlledSorting &&
+			onPaginationChange &&
+			onSortingChange &&
+			typeof total === "number",
 	);
-	const [sorting, setSorting] = useState<SortingState>([]);
-	const isPaginationControlled =
-		Boolean(pagination && onPaginationChange) && typeof total === "number";
 	const currentPagination = pagination ?? localPagination;
+	const sorting = controlledSorting ?? localSorting;
 	const totalItems = total ?? notes.length;
 	const handlePaginationChange = useCallback<OnChangeFn<PaginationState>>(
 		(updater) => {
 			const next = normalizeTablePaginationUpdater(updater, currentPagination);
-
-			if (isPaginationControlled) {
-				onPaginationChange?.(next);
+			if (isServerControlled && onPaginationChange) {
+				onPaginationChange(next);
 				return;
 			}
-
 			setLocalPagination(next);
 		},
-		[currentPagination, isPaginationControlled, onPaginationChange],
+		[currentPagination, isServerControlled, onPaginationChange],
 	);
-	const canMutate = Boolean(onDelete && onUpdateStatus);
+	const handleSortingChange = useCallback(
+		(next: SortingState) => {
+			if (isServerControlled && onSortingChange) {
+				onSortingChange(next);
+				return;
+			}
+			setLocalSorting(next);
+		},
+		[isServerControlled, onSortingChange],
+	);
+	const canDelete = Boolean(onDelete);
 	const columns = useMemo(() => {
 		const tableColumns = [
 			columnHelper.accessor("title", {
@@ -127,7 +145,7 @@ export function NoteTable({
 					/>
 				),
 				header: "内容",
-				id: "content",
+				id: "title",
 			}),
 			columnHelper.accessor("authorName", {
 				cell: (info) => (
@@ -157,16 +175,14 @@ export function NoteTable({
 			}),
 		];
 
-		if (canMutate && onDelete && onUpdateStatus) {
+		if (canDelete && onDelete) {
 			tableColumns.push(
 				columnHelper.display({
 					cell: (info) => (
 						<NoteActionsCell
 							isDeletePending={Boolean(isDeletePending)}
-							isStatusBusy={Boolean(isStatusBusy)}
 							note={info.row.original}
 							onDelete={onDelete}
-							onUpdateStatus={onUpdateStatus}
 						/>
 					),
 					enableSorting: false,
@@ -177,25 +193,20 @@ export function NoteTable({
 		}
 
 		return tableColumns;
-	}, [
-		activeId,
-		canMutate,
-		isDeletePending,
-		isStatusBusy,
-		onDelete,
-		onOpenNote,
-		onOpenUser,
-		onUpdateStatus,
-	]);
+	}, [activeId, canDelete, isDeletePending, onDelete, onOpenNote, onOpenUser]);
 	const table = useReactTable({
 		columns,
 		data: notes,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
-		manualPagination: isPaginationControlled,
+		manualPagination: isServerControlled,
+		manualSorting: isServerControlled,
 		onPaginationChange: handlePaginationChange,
-		onSortingChange: setSorting,
+		onSortingChange: (updater) =>
+			handleSortingChange(
+				typeof updater === "function" ? updater(sorting) : updater,
+			),
 		pageCount: Math.max(Math.ceil(totalItems / currentPagination.pageSize), 1),
 		state: { pagination: currentPagination, sorting },
 	});
@@ -208,13 +219,15 @@ export function NoteTable({
 					aria-label="图文列表"
 					className="min-w-[940px] table-fixed"
 					sortDescriptor={sortDescriptor}
-					onSortChange={(descriptor) => setSorting(toSortingState(descriptor))}
+					onSortChange={(descriptor) =>
+						handleSortingChange(toSortingState(descriptor))
+					}
 				>
 					<Table.Header>
 						{table.getFlatHeaders().map((header) => (
 							<Table.Column
 								id={header.column.id}
-								isRowHeader={header.column.id === "content"}
+								isRowHeader={header.column.id === "title"}
 								key={header.id}
 								allowsSorting={header.column.getCanSort()}
 								className={columnClassName[header.column.id]}
@@ -242,28 +255,37 @@ export function NoteTable({
 						renderEmptyState={() => (
 							<AdminTableEmptyState
 								emptyText="暂无图文"
+								errorMessage={loadError}
 								isLoading={isFetching}
+								onRetry={onRetry}
 							/>
 						)}
 					>
-						{table.getRowModel().rows.map((row) => (
-							<Table.Row id={row.original.id} key={row.original.id}>
-								{row.getVisibleCells().map((cell) => (
-									<Table.Cell key={cell.id}>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</Table.Cell>
+						{isFetching || loadError
+							? []
+							: table.getRowModel().rows.map((row) => (
+									<Table.Row id={row.original.id} key={row.original.id}>
+										{row.getVisibleCells().map((cell) => (
+											<Table.Cell key={cell.id}>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext(),
+												)}
+											</Table.Cell>
+										))}
+									</Table.Row>
 								))}
-							</Table.Row>
-						))}
 					</Table.Body>
 				</Table.Content>
 			</Table.ScrollContainer>
 			<AdminTablePagination
+				canCorrectPageIndex={!isFetching && !loadError}
 				emptyText="暂无图文"
 				itemLabel="篇图文"
 				onPageIndexChange={(pageIndex) =>
 					handlePaginationChange({ ...currentPagination, pageIndex })
 				}
+				onPageIndexCorrection={onPageIndexCorrection}
 				onPageSizeChange={(pageSize) =>
 					handlePaginationChange({ pageIndex: 0, pageSize })
 				}
@@ -424,58 +446,17 @@ function CompactStat({ label, value }: { label: string; value: number }) {
 
 function NoteActionsCell({
 	isDeletePending,
-	isStatusBusy,
 	note,
 	onDelete,
-	onUpdateStatus,
 }: {
 	isDeletePending: boolean;
-	isStatusBusy: boolean;
 	note: AdminNoteListItem;
 	onDelete: (item: AdminNoteListItem) => Promise<void> | void;
-	onUpdateStatus: (
-		item: AdminNoteListItem,
-		status: MutableNoteStatus,
-		rejectionReason?: string,
-	) => Promise<void> | void;
 }) {
 	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
 	return (
 		<div className="flex justify-end gap-1">
-			<Button
-				size="sm"
-				variant="outline"
-				isIconOnly
-				aria-label="通过"
-				isDisabled={isStatusBusy}
-				isPending={isStatusBusy}
-				onPress={() => onUpdateStatus(note, "published")}
-			>
-				<Check className="size-4" />
-			</Button>
-			<Button
-				size="sm"
-				variant="outline"
-				isIconOnly
-				aria-label="拒绝"
-				isDisabled={isStatusBusy}
-				isPending={isStatusBusy}
-				onPress={() => onUpdateStatus(note, "rejected", "内容未通过审核")}
-			>
-				<Xmark className="size-4" />
-			</Button>
-			<Button
-				size="sm"
-				variant="outline"
-				isIconOnly
-				aria-label="隐藏"
-				isDisabled={isStatusBusy}
-				isPending={isStatusBusy}
-				onPress={() => onUpdateStatus(note, "hidden")}
-			>
-				<EyeSlash className="size-4" />
-			</Button>
 			<Popover isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
 				<Popover.Trigger>
 					<Button

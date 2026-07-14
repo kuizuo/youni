@@ -27,7 +27,7 @@ function AdminUserDetailRoute() {
 					isFetching={detail.isInitialLoading}
 					notes={userDetail.notes}
 					user={userDetail.user}
-					onBack={() => navigate({ to: "/admin/users" })}
+					onBack={() => navigate({ to: "/admin/users", search: true })}
 					onOpenNote={(item) =>
 						navigate({
 							to: "/admin/notes/$noteId",

@@ -14,7 +14,7 @@ import {
 	type QueryKey,
 	useQuery,
 } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export const QUERY_COLLECTION_SYNC_INTERVAL = 2_000;
 
@@ -33,6 +33,7 @@ export type QueryCollectionScope<
 	>;
 	queryFn: (context: QueryFunctionContext<TQueryKey>) => Promise<TResponse>;
 	queryKey: TQueryKey;
+	select: (response: TResponse) => TItem[];
 };
 
 export function createQueryCollection<
@@ -92,7 +93,7 @@ export function createQueryCollection<
 		>(options),
 	);
 
-	return { collection, queryFn, queryKey };
+	return { collection, queryFn, queryKey, select };
 }
 
 export function createSingletonQueryCollection<
@@ -131,14 +132,13 @@ export function useQueryCollection<
 	scope: QueryCollectionScope<TItem, TResponse, TQueryKey, TItemKey>,
 	compareItems?: (left: TItem, right: TItem) => number,
 ) {
-	useEffect(
-		() => () => {
-			void scope.collection.cleanup();
+	const live = useLiveQuery(
+		{
+			gcTime: 0,
+			query: (query) => query.from({ item: scope.collection }),
 		},
 		[scope.collection],
 	);
-
-	const live = useLiveQuery(() => scope.collection, [scope.collection]);
 	const query = useQuery({
 		gcTime: 0,
 		queryFn: scope.queryFn,
@@ -151,9 +151,9 @@ export function useQueryCollection<
 		staleTime: 0,
 	});
 	const items = useMemo(() => {
-		const current = live.data ?? [];
+		const current = query.data ? scope.select(query.data) : (live.data ?? []);
 		return compareItems ? [...current].sort(compareItems) : current;
-	}, [compareItems, live.data]);
+	}, [compareItems, live.data, query.data, scope]);
 	const refetch = useCallback(
 		(throwOnError = true) => scope.collection.utils.refetch({ throwOnError }),
 		[scope.collection],
@@ -162,20 +162,13 @@ export function useQueryCollection<
 	return {
 		dataUpdatedAt: query.dataUpdatedAt,
 		error: query.error,
-		isError: query.isError,
+		isError: Boolean(query.error) && !query.isFetching,
 		isInitialLoading:
 			!query.isError && !query.data && (query.isPending || !live.isReady),
+		isRetrying: Boolean(query.error) && query.isFetching,
 		isSyncing: Boolean(query.data) && query.isFetching,
 		items,
 		refetch,
 		response: query.data,
 	};
-}
-
-export function compareCreatedAtDescending<
-	TItem extends { createdAt: Date | string },
->(left: TItem, right: TItem) {
-	return (
-		new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-	);
 }

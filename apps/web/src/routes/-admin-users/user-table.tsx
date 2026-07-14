@@ -6,7 +6,6 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getPaginationRowModel,
-	getSortedRowModel,
 	type OnChangeFn,
 	type PaginationState,
 	type SortingState,
@@ -25,7 +24,6 @@ import {
 } from "@/components/admin-status";
 import {
 	AdminTablePagination,
-	defaultTablePagination,
 	normalizeTablePaginationUpdater,
 } from "@/components/admin-table-pagination";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
@@ -83,11 +81,16 @@ export function UserTable({
 	isDeletePending,
 	isFetching,
 	isStatusBusy,
+	loadError,
 	onEdit,
 	onOpenUser,
 	onPaginationChange,
+	onPageIndexCorrection,
+	onRetry,
+	onSortingChange,
 	onUpdateStatus,
 	pagination,
+	sorting,
 	total,
 	users,
 }: {
@@ -100,37 +103,28 @@ export function UserTable({
 	isDeletePending: boolean;
 	isFetching: boolean;
 	isStatusBusy: boolean;
+	loadError?: string | null;
 	onEdit: (item: AdminUserListItem) => void;
 	onOpenUser?: (item: AdminUserListItem) => void;
-	onPaginationChange?: (pagination: PaginationState) => void;
+	onPaginationChange: (pagination: PaginationState) => void;
+	onPageIndexCorrection?: (pageIndex: number) => void;
+	onRetry?: () => unknown;
+	onSortingChange: (sorting: SortingState) => void;
 	onUpdateStatus: (
 		item: AdminUserListItem,
 		status: AdminUserStatus,
 	) => Promise<void> | void;
-	pagination?: PaginationState;
-	total?: number;
+	pagination: PaginationState;
+	sorting: SortingState;
+	total: number;
 	users: AdminUserListItem[];
 }) {
-	const [localPagination, setLocalPagination] = useState<PaginationState>(
-		defaultTablePagination,
-	);
-	const [sorting, setSorting] = useState<SortingState>([]);
-	const isPaginationControlled =
-		Boolean(pagination && onPaginationChange) && typeof total === "number";
-	const currentPagination = pagination ?? localPagination;
-	const totalItems = total ?? users.length;
 	const handlePaginationChange = useCallback<OnChangeFn<PaginationState>>(
 		(updater) => {
-			const next = normalizeTablePaginationUpdater(updater, currentPagination);
-
-			if (isPaginationControlled) {
-				onPaginationChange?.(next);
-				return;
-			}
-
-			setLocalPagination(next);
+			const next = normalizeTablePaginationUpdater(updater, pagination);
+			onPaginationChange(next);
 		},
-		[currentPagination, isPaginationControlled, onPaginationChange],
+		[onPaginationChange, pagination],
 	);
 	const hasUserActions =
 		canUpdateUsers || canBanUsers || canDeleteUsers || canRestoreUsers;
@@ -164,6 +158,7 @@ export function UserTable({
 						{info.getValue() || "暂无简介"}
 					</span>
 				),
+				enableSorting: false,
 				header: "简介",
 			}),
 			columnHelper.display({
@@ -239,12 +234,15 @@ export function UserTable({
 		data: users,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		manualPagination: isPaginationControlled,
+		manualPagination: true,
+		manualSorting: true,
 		onPaginationChange: handlePaginationChange,
-		onSortingChange: setSorting,
-		pageCount: Math.max(Math.ceil(totalItems / currentPagination.pageSize), 1),
-		state: { pagination: currentPagination, sorting },
+		onSortingChange: (updater) =>
+			onSortingChange(
+				typeof updater === "function" ? updater(sorting) : updater,
+			),
+		pageCount: Math.max(Math.ceil(total / pagination.pageSize), 1),
+		state: { pagination, sorting },
 	});
 	const sortDescriptor = useMemo(() => toSortDescriptor(sorting), [sorting]);
 
@@ -255,7 +253,9 @@ export function UserTable({
 					aria-label="用户列表"
 					className="min-w-[940px] table-fixed"
 					sortDescriptor={sortDescriptor}
-					onSortChange={(descriptor) => setSorting(toSortingState(descriptor))}
+					onSortChange={(descriptor) =>
+						onSortingChange(toSortingState(descriptor))
+					}
 				>
 					<Table.Header>
 						{table.getFlatHeaders().map((header) => (
@@ -289,33 +289,42 @@ export function UserTable({
 						renderEmptyState={() => (
 							<AdminTableEmptyState
 								emptyText="暂无用户"
+								errorMessage={loadError}
 								isLoading={isFetching}
+								onRetry={onRetry}
 							/>
 						)}
 					>
-						{table.getRowModel().rows.map((row) => (
-							<Table.Row id={row.original.id} key={row.original.id}>
-								{row.getVisibleCells().map((cell) => (
-									<Table.Cell key={cell.id}>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</Table.Cell>
+						{isFetching || loadError
+							? []
+							: table.getRowModel().rows.map((row) => (
+									<Table.Row id={row.original.id} key={row.original.id}>
+										{row.getVisibleCells().map((cell) => (
+											<Table.Cell key={cell.id}>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext(),
+												)}
+											</Table.Cell>
+										))}
+									</Table.Row>
 								))}
-							</Table.Row>
-						))}
 					</Table.Body>
 				</Table.Content>
 			</Table.ScrollContainer>
 			<AdminTablePagination
+				canCorrectPageIndex={!isFetching && !loadError}
 				emptyText="暂无用户"
 				itemLabel="个用户"
 				onPageIndexChange={(pageIndex) =>
-					handlePaginationChange({ ...currentPagination, pageIndex })
+					handlePaginationChange({ ...pagination, pageIndex })
 				}
+				onPageIndexCorrection={onPageIndexCorrection}
 				onPageSizeChange={(pageSize) =>
 					handlePaginationChange({ pageIndex: 0, pageSize })
 				}
 				table={table}
-				total={totalItems}
+				total={total}
 			/>
 		</Table>
 	);

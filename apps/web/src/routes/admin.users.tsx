@@ -2,24 +2,34 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
-	useNavigate,
+	retainSearchParams,
+	stripSearchParams,
 	useRouterState,
 } from "@tanstack/react-router";
-import type {
-	AdminUserRole,
-	AdminUserStatus,
+import {
+	type AdminUserRole,
+	type AdminUserStatus,
+	adminUserStatusOptions,
 } from "@youni/api/admin-user-governance";
 import type { AdminUserListItem } from "@youni/api/contracts/admin";
 import { env } from "@youni/env/web";
 import type { FormEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
+import z from "zod";
 import { AdminPage } from "@/components/admin-shell";
 import { useUsersCollection } from "@/data/user-collection";
+import {
+	adminListSearchDefaults,
+	adminUserSortFields,
+	parseAdminListSearch,
+	parseAdminSearchOption,
+} from "@/lib/admin-list-search";
 import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { getUserManagementPermissions } from "@/lib/admin-permissions";
 import { orpc } from "@/utils/orpc";
 
 import {
+	accountTypeOptions,
 	canManageItem,
 	emptyForm,
 	getErrorMessage,
@@ -34,19 +44,59 @@ import { UserFilters } from "./-admin-users/user-filters";
 import { UserFormDrawer } from "./-admin-users/user-form-drawer";
 import { UserTable } from "./-admin-users/user-table";
 
+const userSearchDefaults = {
+	...adminListSearchDefaults,
+	accountType: "" as UserAccountType | "",
+	status: "" as AdminUserStatus | "",
+};
+
+function validateUserSearch(search: Record<string, unknown>) {
+	return {
+		...parseAdminListSearch(search, adminUserSortFields),
+		accountType: parseAdminSearchOption(search.accountType, accountTypeOptions),
+		status: parseAdminSearchOption(search.status, adminUserStatusOptions),
+	};
+}
+
+const userSearchSchema = z
+	.object({
+		accountType: z.unknown().optional(),
+		page: z.unknown().optional(),
+		pageSize: z.unknown().optional(),
+		q: z.unknown().optional(),
+		sort: z.unknown().optional(),
+		status: z.unknown().optional(),
+	})
+	.transform(validateUserSearch);
+
+type UserSearch = z.output<typeof userSearchSchema>;
+type UserSearchInput = z.input<typeof userSearchSchema>;
+
 export const Route = createFileRoute("/admin/users")({
 	component: AdminUsersRoute,
+	search: {
+		middlewares: [
+			stripSearchParams<UserSearchInput>(userSearchDefaults),
+			retainSearchParams<UserSearchInput>([
+				"accountType",
+				"page",
+				"pageSize",
+				"q",
+				"sort",
+				"status",
+			]),
+		],
+	},
+	validateSearch: userSearchSchema,
 });
 
 function AdminUsersRoute() {
-	const navigate = useNavigate();
+	const navigate = Route.useNavigate();
+	const list = useAdminListWorkflow<UserSearch>(Route);
+	const search = list.search;
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const list = useAdminListWorkflow<AdminUserStatus>();
-	const [accountTypeFilter, setAccountTypeFilter] = useState<
-		UserAccountType | ""
-	>("");
 	const [formMode, setFormMode] = useState<UserFormMode>("create");
 	const [form, setForm] = useState<UserFormState>(emptyForm);
 	const [formMessage, setFormMessage] = useState<string | null>(null);
@@ -54,10 +104,11 @@ function AdminUsersRoute() {
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const usersQueryInput = useMemo(
 		() => ({
-			...list.queryInput,
-			accountType: accountTypeFilter || undefined,
+			...list.paginationInput,
+			accountType: search.accountType || undefined,
+			status: search.status || undefined,
 		}),
-		[accountTypeFilter, list.queryInput],
+		[list.paginationInput, search.accountType, search.status],
 	);
 	const users = useUsersCollection(usersQueryInput);
 	const admin = useQuery(orpc.admin.me.queryOptions());
@@ -123,14 +174,6 @@ function AdminUsersRoute() {
 	const refetchUsers = useCallback(async () => {
 		await users.refetch();
 	}, [users.refetch]);
-	const updateAccountTypeFilter = useCallback(
-		(value: UserAccountType | "") => {
-			setAccountTypeFilter(value);
-			list.resetPage();
-		},
-		[list],
-	);
-
 	const submitForm = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		setFormMessage(null);
@@ -238,14 +281,20 @@ function AdminUsersRoute() {
 	return (
 		<AdminPage title="用户管理">
 			<UserFilters
-				accountTypeFilter={accountTypeFilter}
+				accountTypeFilter={search.accountType}
 				canCreateUser={userPermissions.canCreate}
 				keyword={list.keyword}
-				statusFilter={list.statusFilter}
-				onAccountTypeChange={updateAccountTypeFilter}
+				statusFilter={search.status}
+				onAccountTypeChange={(accountType) =>
+					list.updateSearch({ accountType }, { resetPage: true })
+				}
+				onClearKeyword={list.clearKeyword}
 				onKeywordChange={list.updateKeyword}
+				onKeywordSubmit={list.submitKeyword}
 				onCreateUser={openCreateDrawer}
-				onStatusChange={list.updateStatusFilter}
+				onStatusChange={(status) =>
+					list.updateSearch({ status }, { resetPage: true })
+				}
 			/>
 
 			<UserFormDrawer
@@ -271,16 +320,25 @@ function AdminUsersRoute() {
 				currentRole={currentRole}
 				currentUserId={currentUserId}
 				isDeletePending={deleteMutation.isPending}
-				isFetching={users.isInitialLoading}
+				isFetching={users.isInitialLoading || users.isRetrying}
 				isStatusBusy={isStatusBusy}
+				loadError={users.isError ? "用户加载失败，请稍后重试" : null}
 				pagination={list.pagination}
+				sorting={list.sorting}
 				total={users.response?.total ?? 0}
 				users={users.items}
 				onEdit={startEdit}
 				onOpenUser={(item) =>
-					navigate({ to: "/admin/users/$userId", params: { userId: item.id } })
+					navigate({
+						to: "/admin/users/$userId",
+						params: { userId: item.id },
+						search: true,
+					})
 				}
 				onPaginationChange={list.setPagination}
+				onPageIndexCorrection={list.correctPageIndex}
+				onRetry={() => users.refetch(false)}
+				onSortingChange={list.setSorting}
 				onUpdateStatus={updateStatus}
 			/>
 		</AdminPage>

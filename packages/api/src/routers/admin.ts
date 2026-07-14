@@ -19,7 +19,18 @@ import {
 	user,
 } from "@youni/db/schema/index";
 import { hashPassword } from "better-auth/crypto";
-import { and, between, count, desc, eq, inArray, ne, or } from "drizzle-orm";
+import {
+	and,
+	asc,
+	between,
+	count,
+	desc,
+	eq,
+	inArray,
+	ne,
+	or,
+	sql,
+} from "drizzle-orm";
 
 import {
 	type AdminUserRuleResult,
@@ -598,16 +609,27 @@ export const adminRouter = {
 			const [totalRow] = whereClause
 				? await db.select({ value: count() }).from(topic).where(whereClause)
 				: await db.select({ value: count() }).from(topic);
+			const topicNoteCount = count(noteTopic.noteId);
+			const sortExpression =
+				input.sortBy === "name"
+					? sql`lower(${topic.name})`
+					: input.sortBy === "noteCount"
+						? topicNoteCount
+						: topic.createdAt;
+			const order = input.sortDirection === "asc" ? asc : desc;
 			const rows = whereClause
 				? await db
 						.select({
 							id: topic.id,
 							name: topic.name,
 							createdAt: topic.createdAt,
+							noteCount: topicNoteCount,
 						})
 						.from(topic)
+						.leftJoin(noteTopic, eq(topic.id, noteTopic.topicId))
 						.where(whereClause)
-						.orderBy(desc(topic.createdAt))
+						.groupBy(topic.id)
+						.orderBy(order(sortExpression), order(topic.id))
 						.limit(input.limit)
 						.offset(input.offset)
 				: await db
@@ -615,33 +637,19 @@ export const adminRouter = {
 							id: topic.id,
 							name: topic.name,
 							createdAt: topic.createdAt,
+							noteCount: topicNoteCount,
 						})
 						.from(topic)
-						.orderBy(desc(topic.createdAt))
+						.leftJoin(noteTopic, eq(topic.id, noteTopic.topicId))
+						.groupBy(topic.id)
+						.orderBy(order(sortExpression), order(topic.id))
 						.limit(input.limit)
 						.offset(input.offset);
-
-			if (rows.length === 0) {
-				return { items: [], total: toNumber(totalRow?.value) };
-			}
-			const counts = await db
-				.select({ topicId: noteTopic.topicId, value: count() })
-				.from(noteTopic)
-				.where(
-					inArray(
-						noteTopic.topicId,
-						rows.map((row) => row.id),
-					),
-				)
-				.groupBy(noteTopic.topicId);
-			const countByTopic = new Map(
-				counts.map((row) => [row.topicId, toNumber(row.value)]),
-			);
 
 			return {
 				items: rows.map((row) => ({
 					...row,
-					noteCount: countByTopic.get(row.id) ?? 0,
+					noteCount: toNumber(row.noteCount),
 				})),
 				total: toNumber(totalRow?.value),
 			};
@@ -739,6 +747,25 @@ export const adminRouter = {
 			const [totalRow] = whereClause
 				? await db.select({ value: count() }).from(user).where(whereClause)
 				: await db.select({ value: count() }).from(user);
+			const userRoleOrder = sql<number>`case ${user.role}
+				when 'admin' then 0
+				when 'operator' then 1
+				when 'user' then 2
+				else 3 end`;
+			const userStatusOrder = sql<number>`case ${user.status}
+				when 'active' then 0
+				when 'disabled' then 1
+				when 'deleted' then 2
+				else 3 end`;
+			const sortExpression =
+				input.sortBy === "name"
+					? sql`lower(${user.name})`
+					: input.sortBy === "role"
+						? userRoleOrder
+						: input.sortBy === "status"
+							? userStatusOrder
+							: user.createdAt;
+			const order = input.sortDirection === "asc" ? asc : desc;
 			const rows = whereClause
 				? await db
 						.select({
@@ -757,7 +784,7 @@ export const adminRouter = {
 						})
 						.from(user)
 						.where(whereClause)
-						.orderBy(desc(user.createdAt))
+						.orderBy(order(sortExpression), order(user.id))
 						.limit(input.limit)
 						.offset(input.offset)
 				: await db
@@ -776,7 +803,7 @@ export const adminRouter = {
 							updatedAt: user.updatedAt,
 						})
 						.from(user)
-						.orderBy(desc(user.createdAt))
+						.orderBy(order(sortExpression), order(user.id))
 						.limit(input.limit)
 						.offset(input.offset);
 
