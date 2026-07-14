@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
@@ -14,6 +14,7 @@ import { env } from "@youni/env/web";
 import type { FormEvent } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { AdminPage } from "@/components/admin-shell";
+import { useUsersCollection } from "@/data/user-collection";
 import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { getUserManagementPermissions } from "@/lib/admin-permissions";
 import { orpc } from "@/utils/orpc";
@@ -58,10 +59,7 @@ function AdminUsersRoute() {
 		}),
 		[accountTypeFilter, list.queryInput],
 	);
-	const users = useQuery({
-		...orpc.admin.users.queryOptions({ input: usersQueryInput }),
-		placeholderData: keepPreviousData,
-	});
+	const users = useUsersCollection(usersQueryInput);
 	const admin = useQuery(orpc.admin.me.queryOptions());
 	const createMutation = useMutation(orpc.admin.createUser.mutationOptions());
 	const updateMutation = useMutation(orpc.admin.updateUser.mutationOptions());
@@ -123,8 +121,8 @@ function AdminUsersRoute() {
 	);
 
 	const refetchUsers = useCallback(async () => {
-		await list.refetchList(users);
-	}, [list, users]);
+		await users.refetch();
+	}, [users.refetch]);
 	const updateAccountTypeFilter = useCallback(
 		(value: UserAccountType | "") => {
 			setAccountTypeFilter(value);
@@ -273,11 +271,11 @@ function AdminUsersRoute() {
 				currentRole={currentRole}
 				currentUserId={currentUserId}
 				isDeletePending={deleteMutation.isPending}
-				isFetching={users.isFetching}
+				isFetching={users.isInitialLoading}
 				isStatusBusy={isStatusBusy}
 				pagination={list.pagination}
-				total={users.data?.total ?? 0}
-				users={users.data?.items ?? []}
+				total={users.response?.total ?? 0}
+				users={users.items}
 				onEdit={startEdit}
 				onOpenUser={(item) =>
 					navigate({ to: "/admin/users/$userId", params: { userId: item.id } })

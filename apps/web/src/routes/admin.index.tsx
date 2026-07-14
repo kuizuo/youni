@@ -9,7 +9,6 @@ import {
 	ShieldCheck,
 } from "@gravity-ui/icons";
 import { Card, Skeleton } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 
@@ -18,9 +17,8 @@ import {
 	type AdminDataGridColumn,
 } from "@/components/admin-data-grid";
 import { AdminMetricGroup } from "@/components/admin-metric-group";
-import { AdminPage } from "@/components/admin-shell";
+import { AdminPage, useAdminOverview } from "@/components/admin-shell";
 import { NoteStatusBadge } from "@/components/admin-status";
-import { orpc } from "@/utils/orpc";
 
 const overviewSkeletonKeys = [
 	"notes",
@@ -36,7 +34,7 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminOverviewRoute() {
-	const overview = useQuery(orpc.admin.overview.queryOptions());
+	const overview = useAdminOverview();
 	type RecentNote = NonNullable<typeof overview.data>["recentNotes"][number];
 
 	const recentNoteColumns = useMemo<AdminDataGridColumn<RecentNote>[]>(

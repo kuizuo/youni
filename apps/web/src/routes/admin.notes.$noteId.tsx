@@ -1,9 +1,8 @@
 import { Card, Skeleton } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { AdminPage } from "@/components/admin-shell";
-import { orpc } from "@/utils/orpc";
+import { useNoteDetailCollection } from "@/data/note-collection";
 
 import { NoteDetailView } from "./-admin-notes/note-detail-view";
 
@@ -14,17 +13,16 @@ export const Route = createFileRoute("/admin/notes/$noteId")({
 function AdminNoteDetailRoute() {
 	const navigate = useNavigate();
 	const { noteId } = Route.useParams();
-	const note = useQuery(
-		orpc.admin.noteDetail.queryOptions({ input: { id: noteId } }),
-	);
+	const note = useNoteDetailCollection(noteId);
+	const noteDetail = note.items[0];
 
 	return (
 		<AdminPage title="图文详情">
-			{note.isLoading ? (
+			{note.isInitialLoading ? (
 				<DetailLoading />
-			) : note.data ? (
+			) : noteDetail ? (
 				<NoteDetailView
-					note={note.data}
+					note={noteDetail}
 					onBack={() => navigate({ to: "/admin/notes" })}
 					onOpenTopic={(topicId) =>
 						navigate({

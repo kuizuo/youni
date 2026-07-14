@@ -14,10 +14,6 @@ export type AdminListQueryInput<TStatus extends string> =
 		status?: TStatus;
 	};
 
-export type AdminListRefetchable = {
-	refetch: () => Promise<unknown>;
-};
-
 export function useAdminListWorkflow<TStatus extends string = never>() {
 	const [keyword, setKeyword] = useState("");
 	const [statusFilter, setStatusFilter] = useState<TStatus | "">("");
@@ -62,17 +58,12 @@ export function useAdminListWorkflow<TStatus extends string = never>() {
 		[paginationInput, statusFilter],
 	);
 
-	const refetchList = useCallback(async (query: AdminListRefetchable) => {
-		await query.refetch();
-	}, []);
-
 	return useMemo(
 		() => ({
 			keyword,
 			pagination,
 			paginationInput,
 			queryInput: queryInput as AdminListQueryInput<TStatus>,
-			refetchList,
 			resetPage,
 			setPagination,
 			statusFilter,
@@ -84,7 +75,6 @@ export function useAdminListWorkflow<TStatus extends string = never>() {
 			pagination,
 			paginationInput,
 			queryInput,
-			refetchList,
 			resetPage,
 			statusFilter,
 			updateKeyword,

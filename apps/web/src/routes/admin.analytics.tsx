@@ -67,9 +67,12 @@ function AdminAnalyticsRoute() {
 	const today = shanghaiToday();
 	const [range, setRange] = useState({ from: shiftDay(today, -6), to: today });
 	const [draftRange, setDraftRange] = useState(range);
-	const analytics = useQuery(
-		orpc.admin.analytics.queryOptions({ input: range }),
-	);
+	const analytics = useQuery({
+		...orpc.admin.analytics.queryOptions({ input: range }),
+		refetchInterval: 2_000,
+		refetchOnReconnect: "always",
+		refetchOnWindowFocus: "always",
+	});
 	const admin = useQuery(orpc.admin.me.queryOptions());
 	const keywordMutation = useMutation(
 		orpc.admin.setSearchKeywordExcluded.mutationOptions(),

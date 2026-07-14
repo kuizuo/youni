@@ -2,10 +2,6 @@ import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type {
-	AdminOutputs,
-	ModerationQueueBucket,
-} from "@youni/api/contracts/admin";
-import type {
 	AdminHydratedContentNote,
 	ContentNoteStatus,
 } from "@youni/api/contracts/shared";
@@ -13,14 +9,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminPage } from "@/components/admin-shell";
 import {
-	createModerationQueueCollection,
-	moderationQueueQueryInput,
-	reconcileModerationQueueVisibleIds,
-} from "@/data/moderation-queue-collection";
+	createReviewQueueCollection,
+	type ReviewQueueBucket,
+	type ReviewQueueResponse,
+	reconcileReviewQueueVisibleIds,
+	reviewQueueQueryInput,
+} from "@/data/review-collection";
 import { ReviewQueue } from "@/routes/-admin-reviews/review-queue";
 import { client, orpc, queryClient } from "@/utils/orpc";
 
-const EMPTY_SUMMARY: AdminOutputs["moderationQueue"]["summary"] = {
+const EMPTY_SUMMARY: ReviewQueueResponse["summary"] = {
 	all: 0,
 	attention: 0,
 	blocked: 0,
@@ -68,7 +66,7 @@ function waitForNextPaint() {
 }
 
 function AdminReviewsRoute() {
-	const [bucket, setBucket] = useState<ModerationQueueBucket>("attention");
+	const [bucket, setBucket] = useState<ReviewQueueBucket>("attention");
 	const [keyword, setKeyword] = useState("");
 	const [settledKeyword, setSettledKeyword] = useState("");
 	const [page, setPage] = useState(0);
@@ -78,7 +76,7 @@ function AdminReviewsRoute() {
 	const [loadedScopeKey, setLoadedScopeKey] = useState<string | null>(null);
 	const [visibleItemIds, setVisibleItemIds] = useState<string[]>([]);
 	const [displaySummary, setDisplaySummary] =
-		useState<AdminOutputs["moderationQueue"]["summary"]>(EMPTY_SUMMARY);
+		useState<ReviewQueueResponse["summary"]>(EMPTY_SUMMARY);
 	const [displayTotal, setDisplayTotal] = useState(0);
 
 	useEffect(() => {
@@ -92,7 +90,7 @@ function AdminReviewsRoute() {
 
 	const queryInput = useMemo(
 		() =>
-			moderationQueueQueryInput({
+			reviewQueueQueryInput({
 				bucket,
 				keyword: settledKeyword,
 				page,
@@ -102,7 +100,7 @@ function AdminReviewsRoute() {
 	const scopeKey = JSON.stringify(queryInput);
 	const scope = useMemo(
 		() =>
-			createModerationQueueCollection({
+			createReviewQueueCollection({
 				fetchQueue: (input, options) =>
 					client.admin.moderationQueue(input, options),
 				input: queryInput,
@@ -158,7 +156,7 @@ function AdminReviewsRoute() {
 		setDisplaySummary(queue.data.summary);
 		setDisplayTotal(queue.data.total);
 		setVisibleItemIds((currentIds) =>
-			reconcileModerationQueueVisibleIds({
+			reconcileReviewQueueVisibleIds({
 				allowNewItems: bucket === "attention" && page === 0,
 				currentIds,
 				nextItems: liveItems,
@@ -203,7 +201,7 @@ function AdminReviewsRoute() {
 		setSuccessMessage(null);
 	};
 
-	const updateBucket = (nextBucket: ModerationQueueBucket) => {
+	const updateBucket = (nextBucket: ReviewQueueBucket) => {
 		setBucket(nextBucket);
 		setPage(0);
 		clearMessages();

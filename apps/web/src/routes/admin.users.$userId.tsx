@@ -1,9 +1,8 @@
 import { Card, Skeleton } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { AdminPage } from "@/components/admin-shell";
-import { orpc } from "@/utils/orpc";
+import { useUserDetailCollection } from "@/data/user-collection";
 
 import { UserDetailView } from "./-admin-users/user-detail-view";
 
@@ -14,21 +13,20 @@ export const Route = createFileRoute("/admin/users/$userId")({
 function AdminUserDetailRoute() {
 	const navigate = useNavigate();
 	const { userId } = Route.useParams();
-	const detail = useQuery(
-		orpc.admin.userDetail.queryOptions({ input: { id: userId } }),
-	);
+	const detail = useUserDetailCollection(userId);
+	const userDetail = detail.items[0];
 
 	return (
 		<AdminPage title="用户详情">
-			{detail.isLoading ? (
+			{detail.isInitialLoading ? (
 				<DetailLoading />
-			) : detail.data ? (
+			) : userDetail ? (
 				<UserDetailView
-					followers={detail.data.followers}
-					following={detail.data.following}
-					isFetching={detail.isFetching}
-					notes={detail.data.notes}
-					user={detail.data.user}
+					followers={userDetail.followers}
+					following={userDetail.following}
+					isFetching={detail.isInitialLoading}
+					notes={userDetail.notes}
+					user={userDetail.user}
 					onBack={() => navigate({ to: "/admin/users" })}
 					onOpenNote={(item) =>
 						navigate({

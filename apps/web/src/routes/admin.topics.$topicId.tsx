@@ -1,9 +1,8 @@
 import { Card, Skeleton } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { AdminPage } from "@/components/admin-shell";
-import { orpc } from "@/utils/orpc";
+import { useTopicDetailCollection } from "@/data/topic-collection";
 import { TopicDetailView } from "./-admin-topics/topic-detail-view";
 
 export const Route = createFileRoute("/admin/topics/$topicId")({
@@ -13,19 +12,18 @@ export const Route = createFileRoute("/admin/topics/$topicId")({
 function AdminTopicDetailRoute() {
 	const navigate = useNavigate();
 	const { topicId } = Route.useParams();
-	const detail = useQuery(
-		orpc.admin.topicDetail.queryOptions({ input: { id: topicId } }),
-	);
+	const detail = useTopicDetailCollection(topicId);
+	const topicDetail = detail.items[0];
 
 	return (
 		<AdminPage title="话题详情">
-			{detail.isLoading ? (
+			{detail.isInitialLoading ? (
 				<DetailLoading />
-			) : detail.data ? (
+			) : topicDetail ? (
 				<TopicDetailView
-					isFetching={detail.isFetching}
-					notes={detail.data.notes}
-					topic={detail.data.topic}
+					isFetching={detail.isInitialLoading}
+					notes={topicDetail.notes}
+					topic={topicDetail.topic}
 					onBack={() => navigate({ to: "/admin/topics" })}
 					onOpenNote={(item) =>
 						navigate({

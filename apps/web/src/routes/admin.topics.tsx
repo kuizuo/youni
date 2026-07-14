@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
@@ -10,6 +10,7 @@ import type { FormEvent } from "react";
 import { useCallback, useState } from "react";
 
 import { AdminPage } from "@/components/admin-shell";
+import { useTopicsCollection } from "@/data/topic-collection";
 import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { orpc } from "@/utils/orpc";
 import { TopicFilters } from "./-admin-topics/topic-filters";
@@ -36,10 +37,7 @@ function AdminTopicsRoute() {
 	const [form, setForm] = useState<TopicFormState>(emptyTopicForm);
 	const [formMessage, setFormMessage] = useState<string | null>(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
-	const topics = useQuery({
-		...orpc.admin.topics.queryOptions({ input: list.paginationInput }),
-		placeholderData: keepPreviousData,
-	});
+	const topics = useTopicsCollection(list.paginationInput);
 	const saveMutation = useMutation(orpc.admin.saveTopic.mutationOptions());
 	const deleteMutation = useMutation(orpc.admin.deleteTopic.mutationOptions());
 
@@ -67,8 +65,8 @@ function AdminTopicsRoute() {
 	}, []);
 
 	const refetchTopics = useCallback(async () => {
-		await list.refetchList(topics);
-	}, [list, topics]);
+		await topics.refetch();
+	}, [topics.refetch]);
 
 	const submitForm = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -125,10 +123,10 @@ function AdminTopicsRoute() {
 
 			<TopicTable
 				isDeletePending={deleteMutation.isPending}
-				isFetching={topics.isFetching}
+				isFetching={topics.isInitialLoading}
 				pagination={list.pagination}
-				topics={topics.data?.items ?? []}
-				total={topics.data?.total ?? 0}
+				topics={topics.items}
+				total={topics.response?.total ?? 0}
 				onDelete={deleteTopic}
 				onEdit={startEdit}
 				onOpenTopic={(item) =>

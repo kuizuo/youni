@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import type { AdminOutputs } from "@youni/api/contracts/admin";
 import type { AdminHydratedContentNote } from "@youni/api/contracts/shared";
 
 import {
-	createModerationQueueCollection,
-	moderationQueueQueryInput,
-	reconcileModerationQueueVisibleIds,
-} from "./moderation-queue-collection";
+	createReviewQueueCollection,
+	type ReviewQueueResponse,
+	reconcileReviewQueueVisibleIds,
+	reviewQueueQueryInput,
+} from "./review-collection";
 
 const cleanups: Array<() => Promise<void>> = [];
 
@@ -57,7 +57,7 @@ function createNote(
 
 function createResponse(
 	items: AdminHydratedContentNote[],
-): AdminOutputs["moderationQueue"] {
+): ReviewQueueResponse {
 	return {
 		items,
 		summary: {
@@ -72,10 +72,10 @@ function createResponse(
 	};
 }
 
-describe("moderation queue collection", () => {
+describe("review queue collection", () => {
 	test("normalizes search text and pagination before building the collection", () => {
 		expect(
-			moderationQueueQueryInput({
+			reviewQueueQueryInput({
 				bucket: "attention",
 				keyword: "  测试内容  ",
 				page: 2,
@@ -92,7 +92,7 @@ describe("moderation queue collection", () => {
 		const first = createNote("first", new Date("2026-07-14T10:00:00Z"));
 		const second = createNote("second", new Date("2026-07-14T11:00:00Z"));
 		expect(
-			reconcileModerationQueueVisibleIds({
+			reconcileReviewQueueVisibleIds({
 				allowNewItems: true,
 				currentIds: [first.id],
 				nextItems: [second, first],
@@ -100,7 +100,7 @@ describe("moderation queue collection", () => {
 			}),
 		).toEqual([second.id, first.id]);
 		expect(
-			reconcileModerationQueueVisibleIds({
+			reconcileReviewQueueVisibleIds({
 				allowNewItems: false,
 				currentIds: [first.id],
 				nextItems: [second, first],
@@ -108,7 +108,7 @@ describe("moderation queue collection", () => {
 			}),
 		).toEqual([first.id]);
 		expect(
-			reconcileModerationQueueVisibleIds({
+			reconcileReviewQueueVisibleIds({
 				allowNewItems: false,
 				currentIds: [first.id],
 				nextItems: [second],
@@ -124,9 +124,9 @@ describe("moderation queue collection", () => {
 		const queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false } },
 		});
-		const scope = createModerationQueueCollection({
+		const scope = createReviewQueueCollection({
 			fetchQueue: async () => response,
-			input: moderationQueueQueryInput({
+			input: reviewQueueQueryInput({
 				bucket: "attention",
 				keyword: "",
 				page: 0,
@@ -160,9 +160,9 @@ describe("moderation queue collection", () => {
 		const queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false } },
 		});
-		const attentionScope = createModerationQueueCollection({
+		const attentionScope = createReviewQueueCollection({
 			fetchQueue: async () => createResponse([first]),
-			input: moderationQueueQueryInput({
+			input: reviewQueueQueryInput({
 				bucket: "attention",
 				keyword: "",
 				page: 0,
@@ -170,9 +170,9 @@ describe("moderation queue collection", () => {
 			queryClient,
 			syncInterval: false,
 		});
-		const passedScope = createModerationQueueCollection({
+		const passedScope = createReviewQueueCollection({
 			fetchQueue: async () => createResponse([]),
-			input: moderationQueueQueryInput({
+			input: reviewQueueQueryInput({
 				bucket: "passed",
 				keyword: "",
 				page: 0,
@@ -202,12 +202,12 @@ describe("moderation queue collection", () => {
 		const queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false } },
 		});
-		const scope = createModerationQueueCollection({
+		const scope = createReviewQueueCollection({
 			fetchQueue: async () => {
 				if (shouldFail) throw new Error("temporary failure");
 				return createResponse([first]);
 			},
-			input: moderationQueueQueryInput({
+			input: reviewQueueQueryInput({
 				bucket: "attention",
 				keyword: "",
 				page: 0,

@@ -24,9 +24,18 @@ import {
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import type { AdminOutputs } from "@youni/api/contracts/admin";
 import type { AdminPermissionRequest } from "@youni/auth/permissions";
 import type { ComponentPropsWithRef, ComponentType, ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 
 import UserMenu from "@/components/user-menu";
 import { checkAdminRolePermission } from "@/lib/admin-permissions";
@@ -193,12 +202,40 @@ type AdminShellProps = {
 	children: ReactNode;
 };
 
+type AdminOverviewSync = {
+	data: AdminOutputs["overview"] | undefined;
+	isLoading: boolean;
+	isSyncing: boolean;
+};
+
+const AdminOverviewContext = createContext<AdminOverviewSync | null>(null);
+
+export function useAdminOverview() {
+	const value = useContext(AdminOverviewContext);
+	if (!value) throw new Error("Admin overview is outside AdminShell");
+	return value;
+}
+
 export function AdminShell({ user, children }: AdminShellProps) {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+	const overview = useQuery({
+		...orpc.admin.overview.queryOptions(),
+		refetchInterval: 2_000,
+		refetchOnReconnect: "always",
+		refetchOnWindowFocus: "always",
+	});
+	const overviewValue = useMemo<AdminOverviewSync>(
+		() => ({
+			data: overview.data,
+			isLoading: overview.isLoading,
+			isSyncing: Boolean(overview.data) && overview.isFetching,
+		}),
+		[overview.data, overview.isFetching, overview.isLoading],
+	);
 	const visibleNavItems = useMemo(
 		() =>
 			NAV_ITEMS.filter((item) =>
@@ -231,52 +268,56 @@ export function AdminShell({ user, children }: AdminShellProps) {
 	}, [pathname]);
 
 	return (
-		<div className="flex h-dvh min-h-0 overflow-hidden bg-background">
-			<div
-				aria-hidden={!isSidebarOpen}
-				className={`hidden h-dvh shrink-0 overflow-hidden transition-[width] duration-200 motion-reduce:transition-none md:block ${isSidebarOpen ? "visible w-60" : "invisible w-0"}`}
-			>
-				<DashboardSidebar items={visibleNavItems} pathname={pathname} />
+		<AdminOverviewContext.Provider value={overviewValue}>
+			<div className="flex h-dvh min-h-0 overflow-hidden bg-background">
+				<div
+					aria-hidden={!isSidebarOpen}
+					className={`hidden h-dvh shrink-0 overflow-hidden transition-[width] duration-200 motion-reduce:transition-none md:block ${isSidebarOpen ? "visible w-60" : "invisible w-0"}`}
+				>
+					<DashboardSidebar items={visibleNavItems} pathname={pathname} />
+				</div>
+
+				<Drawer>
+					<Drawer.Backdrop
+						isDismissable
+						isOpen={isMobileSidebarOpen}
+						variant="blur"
+						onOpenChange={setIsMobileSidebarOpen}
+					>
+						<Drawer.Content placement="left">
+							<Drawer.Dialog
+								aria-label="后台导航"
+								className="h-dvh w-[min(240px,85vw)] p-0"
+							>
+								<DashboardSidebar
+									items={visibleNavItems}
+									pathname={pathname}
+									onNavigate={() => setIsMobileSidebarOpen(false)}
+								/>
+							</Drawer.Dialog>
+						</Drawer.Content>
+					</Drawer.Backdrop>
+				</Drawer>
+
+				<section className="flex min-w-0 flex-1 flex-col">
+					<DashboardNavbar
+						isSidebarOpen={isSidebarOpen}
+						isOverviewLoading={overview.isLoading}
+						overview={overview.data}
+						title={title}
+						user={user}
+						onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+						onToggleSidebar={() => setIsSidebarOpen((value) => !value)}
+					/>
+					<main
+						aria-label="后台内容"
+						className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
+					>
+						<div className="min-h-full bg-background">{children}</div>
+					</main>
+				</section>
 			</div>
-
-			<Drawer>
-				<Drawer.Backdrop
-					isDismissable
-					isOpen={isMobileSidebarOpen}
-					variant="blur"
-					onOpenChange={setIsMobileSidebarOpen}
-				>
-					<Drawer.Content placement="left">
-						<Drawer.Dialog
-							aria-label="后台导航"
-							className="h-dvh w-[min(240px,85vw)] p-0"
-						>
-							<DashboardSidebar
-								items={visibleNavItems}
-								pathname={pathname}
-								onNavigate={() => setIsMobileSidebarOpen(false)}
-							/>
-						</Drawer.Dialog>
-					</Drawer.Content>
-				</Drawer.Backdrop>
-			</Drawer>
-
-			<section className="flex min-w-0 flex-1 flex-col">
-				<DashboardNavbar
-					isSidebarOpen={isSidebarOpen}
-					title={title}
-					user={user}
-					onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
-					onToggleSidebar={() => setIsSidebarOpen((value) => !value)}
-				/>
-				<main
-					aria-label="后台内容"
-					className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
-				>
-					<div className="min-h-full bg-background">{children}</div>
-				</main>
-			</section>
-		</div>
+		</AdminOverviewContext.Provider>
 	);
 }
 
@@ -319,20 +360,23 @@ export function AdminPage({
 
 function DashboardNavbar({
 	isSidebarOpen,
+	isOverviewLoading,
 	onOpenMobileSidebar,
 	onToggleSidebar,
+	overview,
 	title,
 	user,
 }: {
 	isSidebarOpen: boolean;
+	isOverviewLoading: boolean;
 	onOpenMobileSidebar: () => void;
 	onToggleSidebar: () => void;
+	overview: AdminOutputs["overview"] | undefined;
 	title: string;
 	user: AdminUser;
 }) {
 	const navigate = useNavigate();
 	const searchState = useOverlayState();
-	const overview = useQuery(orpc.admin.overview.queryOptions());
 	const visibleSearchItems = useMemo(
 		() =>
 			SEARCH_ITEMS.filter((item) =>
@@ -405,9 +449,9 @@ function DashboardNavbar({
 							</IconButton>
 						) : null}
 						<NotificationButton
-							isLoading={overview.isLoading}
+							isLoading={isOverviewLoading}
 							navigateTo={navigateToAdminRoute}
-							overview={overview.data}
+							overview={overview}
 							role={user.role}
 						/>
 						<div className="border-separator border-l pl-2">

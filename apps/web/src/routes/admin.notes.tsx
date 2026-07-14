@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Outlet,
@@ -11,6 +11,7 @@ import type {
 } from "@youni/api/contracts/shared";
 import { useCallback } from "react";
 import { AdminPage } from "@/components/admin-shell";
+import { useNotesCollection } from "@/data/note-collection";
 import { useAdminListWorkflow } from "@/lib/admin-list-workflow";
 import { orpc } from "@/utils/orpc";
 import { NoteFilters } from "./-admin-notes/note-filters";
@@ -27,17 +28,14 @@ function AdminNotesRoute() {
 		select: (state) => state.location.pathname,
 	});
 	const list = useAdminListWorkflow<ContentNoteStatus>();
-	const notes = useQuery({
-		...orpc.admin.notes.queryOptions({ input: list.queryInput }),
-		placeholderData: keepPreviousData,
-	});
+	const notes = useNotesCollection(list.queryInput);
 	const statusMutation = useMutation(
 		orpc.admin.updateNoteStatus.mutationOptions(),
 	);
 	const deleteMutation = useMutation(orpc.admin.deleteNote.mutationOptions());
 	const refetchNotes = useCallback(async () => {
-		await list.refetchList(notes);
-	}, [list, notes]);
+		await notes.refetch();
+	}, [notes.refetch]);
 
 	const updateStatus = useCallback(
 		async (
@@ -78,9 +76,9 @@ function AdminNotesRoute() {
 
 			<NoteTable
 				isDeletePending={deleteMutation.isPending}
-				isFetching={notes.isFetching}
+				isFetching={notes.isInitialLoading}
 				isStatusBusy={statusMutation.isPending}
-				notes={notes.data?.items ?? []}
+				notes={notes.items}
 				onDelete={deleteNote}
 				onOpenNote={(item) =>
 					navigate({ to: "/admin/notes/$noteId", params: { noteId: item.id } })
@@ -91,7 +89,7 @@ function AdminNotesRoute() {
 				onPaginationChange={list.setPagination}
 				onUpdateStatus={updateStatus}
 				pagination={list.pagination}
-				total={notes.data?.total ?? 0}
+				total={notes.response?.total ?? 0}
 			/>
 		</AdminPage>
 	);
