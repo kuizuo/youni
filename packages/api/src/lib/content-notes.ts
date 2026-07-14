@@ -162,20 +162,23 @@ function assertPublishReady(input: ContentNoteMutationInput) {
 	}
 }
 
-function assertNoteImageOwnership({
+export function assertNoteImageOwnership({
 	allowedExistingImages = [],
 	images,
+	requestOrigin,
 	userId,
 }: {
 	allowedExistingImages?: string[];
 	images: string[];
+	requestOrigin: string;
 	userId: string;
 }) {
 	const allowedExisting = new Set(allowedExistingImages);
 	if (
 		images.some(
 			(image) =>
-				!allowedExisting.has(image) && !isOwnedNoteImageUrl(image, userId),
+				!allowedExisting.has(image) &&
+				!isOwnedNoteImageUrl(image, userId, requestOrigin),
 		)
 	) {
 		throw new ORPCError("BAD_REQUEST", {
@@ -436,9 +439,11 @@ export async function getEditableContentNoteById({
 
 export async function updateEditableContentNote({
 	input,
+	requestOrigin,
 	userId,
 }: {
 	input: ContentNoteEditInput;
+	requestOrigin: string;
 	userId: string;
 }) {
 	const db = createDb();
@@ -463,6 +468,7 @@ export async function updateEditableContentNote({
 	assertNoteImageOwnership({
 		allowedExistingImages: existing.images,
 		images: input.images,
+		requestOrigin,
 		userId,
 	});
 
@@ -511,9 +517,11 @@ export async function updateEditableContentNote({
 
 export async function createContentNote({
 	input,
+	requestOrigin,
 	userId,
 }: {
 	input: ContentNoteMutationInput;
+	requestOrigin: string;
 	userId: string;
 }) {
 	const db = createDb();
@@ -524,7 +532,7 @@ export async function createContentNote({
 	const content = input.content.trim();
 	const status = "audit" as const;
 	assertPublishReady(input);
-	assertNoteImageOwnership({ images: input.images, userId });
+	assertNoteImageOwnership({ images: input.images, requestOrigin, userId });
 
 	const [createdNote] = await db
 		.insert(note)

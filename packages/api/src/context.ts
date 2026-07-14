@@ -16,6 +16,7 @@ export async function createContext({ context }: CreateContextOptions) {
 			context.req.header("CF-Connecting-IP") ??
 			context.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
 			"local",
+		requestOrigin: new URL(context.req.url).origin,
 		searchRateLimit: env.SEARCH_RATE_LIMIT,
 		session,
 	};

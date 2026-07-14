@@ -6,7 +6,6 @@ import { ListDivider } from "./create-ui";
 export function SubmitBar({
 	bottomInset,
 	isSubmitting,
-	isUploadingImages,
 	pendingSubmitMode,
 	onPublish,
 	onSaveDraft,
@@ -15,7 +14,6 @@ export function SubmitBar({
 }: {
 	bottomInset: number;
 	isSubmitting: boolean;
-	isUploadingImages: boolean;
 	pendingSubmitMode: "draft" | "publish" | null;
 	onPublish: () => void;
 	onSaveDraft: () => void;
@@ -40,9 +38,7 @@ export function SubmitBar({
 						isDisabled={isSubmitting}
 						className="h-12 flex-1 rounded-full"
 					>
-						{pendingSubmitMode === "draft" || isUploadingImages ? (
-							<Spinner size="sm" />
-						) : null}
+						{pendingSubmitMode === "draft" ? <Spinner size="sm" /> : null}
 						<Button.Label>存草稿</Button.Label>
 					</Button>
 				) : null}
@@ -58,9 +54,7 @@ export function SubmitBar({
 							: "h-12 flex-1 rounded-full"
 					}
 				>
-					{pendingSubmitMode === "publish" || isUploadingImages ? (
-						<Spinner size="sm" />
-					) : null}
+					{pendingSubmitMode === "publish" ? <Spinner size="sm" /> : null}
 					<Button.Label>{publishLabel}</Button.Label>
 				</Button>
 			</View>

@@ -50,7 +50,7 @@ export type ImageModerationResult = {
 export function isOwnedNoteImageUrl(
 	image: string,
 	userId: string,
-	serverUrl = env.BETTER_AUTH_URL,
+	serverUrl: string,
 ) {
 	try {
 		const actual = new URL(image);

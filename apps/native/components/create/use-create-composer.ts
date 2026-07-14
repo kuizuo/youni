@@ -4,6 +4,7 @@ import type * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { InteractionManager } from "react-native";
 
 import type { PublishSubmitMode } from "@/components/create/create-types";
 import { reorderImages } from "@/components/media/image-order";
@@ -206,25 +207,23 @@ export function useCreateComposer({
 
 	const createMutation = useMutation(
 		orpc.notes.create.mutationOptions({
-			onSuccess: async (result) => {
+			onSuccess: (result) => {
 				pendingUploadedKeysRef.current = [];
 				if (draftId && userId) {
-					try {
-						await deleteLocalDraft(userId, draftId);
-					} catch {
+					void deleteLocalDraft(userId, draftId).catch(() => {
 						toast.show({
 							label: "发布成功，本地草稿未能自动删除",
 							variant: "warning",
 						});
-					}
+					});
 				}
-				resetForm();
-				await queryClient.invalidateQueries();
 				toast.show({
 					label: "已提交审核，通过后会自动发布",
 					variant: "success",
 				});
 				router.replace(`/note/${result.id}` as Href);
+				InteractionManager.runAfterInteractions(resetForm);
+				void queryClient.invalidateQueries();
 			},
 			onError: async (error) => {
 				if (isRequestTimeoutError(error)) return;
@@ -243,15 +242,15 @@ export function useCreateComposer({
 	);
 	const updateNoteMutation = useMutation(
 		orpc.notes.updateNote.mutationOptions({
-			onSuccess: async (result) => {
+			onSuccess: (result) => {
 				pendingUploadedKeysRef.current = [];
-				resetForm();
-				await queryClient.invalidateQueries();
 				toast.show({
 					label: "修改已提交审核，通过后会自动发布",
 					variant: "success",
 				});
 				router.replace(`/note/${result.id}` as Href);
+				InteractionManager.runAfterInteractions(resetForm);
+				void queryClient.invalidateQueries();
 			},
 			onError: async (error) => {
 				if (isRequestTimeoutError(error)) return;
@@ -751,7 +750,6 @@ export function useCreateComposer({
 			(isEditingNote && (editNoteQuery.isLoading || !editNoteQuery.data)),
 		loadExistingContentError: draftLoadError ?? editNoteQuery.error,
 		isSubmitting,
-		isUploadingImages,
 		pendingSubmitMode,
 		pickImagesFromSystem,
 		openDrafts,

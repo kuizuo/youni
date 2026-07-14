@@ -195,6 +195,7 @@ export const notesRouter = {
 		async ({ input, context }) => {
 			return updateEditableContentNote({
 				input,
+				requestOrigin: context.requestOrigin,
 				userId: context.session.user.id,
 			});
 		},
@@ -310,6 +311,7 @@ export const notesRouter = {
 		async ({ input, context }) => {
 			return createContentNote({
 				input,
+				requestOrigin: context.requestOrigin,
 				userId: context.session.user.id,
 			});
 		},

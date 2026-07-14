@@ -444,7 +444,6 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					<SubmitBar
 						bottomInset={insets.bottom}
 						isSubmitting={composer.isSubmitting}
-						isUploadingImages={composer.isUploadingImages}
 						pendingSubmitMode={composer.pendingSubmitMode}
 						publishLabel={composer.isEditingNote ? "提交审核" : "发布笔记"}
 						showSaveDraft={!composer.isEditingNote}
