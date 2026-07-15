@@ -8,17 +8,25 @@ import {
 } from "heroui-native";
 import { View } from "react-native";
 
+const FEED_SKELETON_COLUMNS = [
+	[0.82, 1.18, 0.9],
+	[1.08, 0.76, 1.05],
+] as const;
+
 export function FeedSkeleton() {
 	return (
 		<View className="flex-row gap-3 px-3 py-2">
-			{[0, 1].map((column) => (
-				<View key={column} className="flex-1 gap-3">
-					{[0, 1].map((item) => (
+			{FEED_SKELETON_COLUMNS.map((column) => (
+				<View key={column[0]} className="flex-1 gap-3">
+					{column.map((aspectRatio) => (
 						<View
-							key={`${column}-${item}`}
+							key={aspectRatio}
 							className="overflow-hidden rounded-xl bg-surface"
 						>
-							<Skeleton className="h-48 w-full rounded-none" />
+							<Skeleton
+								className="w-full rounded-none"
+								style={{ aspectRatio }}
+							/>
 							<View className="gap-2 p-3">
 								<Skeleton className="h-4 w-full rounded-full" />
 								<Skeleton className="h-4 w-3/4 rounded-full" />

@@ -114,7 +114,7 @@ export default function NoteDetailScreen() {
 	const dangerColor = useThemeColor("danger");
 	const accentColor = useThemeColor("accent");
 	const { width } = useWindowDimensions();
-	const pageWidth = Math.min(width, 560);
+	const pageWidth = Math.min(width, 576);
 	const imageHeight = Math.min(620, Math.max(380, pageWidth * 1.08));
 	const topBarHeight = insets.top + 64;
 	const commentListRef = useRef<FlatList<NoteComment>>(null);
