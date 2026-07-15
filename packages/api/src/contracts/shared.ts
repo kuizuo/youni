@@ -31,7 +31,11 @@ export const paginatedListInput = listInput.extend({
 
 export type ContentNoteRow = Omit<
 	NoteRow,
-	"moderatedAt" | "moderationDetails" | "moderationReason" | "moderationStatus"
+	| "moderatedAt"
+	| "moderationDetails"
+	| "moderationReason"
+	| "moderationStatus"
+	| "viewCount"
 > & {
 	authorName: string;
 	authorImage: string | null;
@@ -54,7 +58,7 @@ export type HydratedContentNote = ContentNoteRow & {
 	};
 };
 
-export type AdminContentNoteRow = Omit<NoteRow, "updatedAt"> & {
+export type AdminContentNoteRow = Omit<NoteRow, "updatedAt" | "viewCount"> & {
 	authorName: string;
 	authorEmail: string;
 };

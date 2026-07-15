@@ -29,30 +29,12 @@ import {
 	recordNoteFeedEvents,
 	setNoteNotInterested,
 } from "../lib/notes/feed";
+import { recordNoteView } from "../lib/notes/views";
 import { notifyNoteOwner } from "../lib/notifications";
 import { getBlockedUserIds, isUserBlockedBy } from "../lib/users/blocks";
 import { listRootComments } from "./comments";
 import { getSearchNoteWhereClause } from "./topics";
 import { toNumber, toPage } from "./utils";
-
-async function recordNoteView(noteId: string, userId: string) {
-	const now = new Date();
-	await createDb()
-		.insert(noteViewHistory)
-		.values({
-			noteId,
-			userId,
-			viewedAt: now,
-			updatedAt: now,
-		})
-		.onConflictDoUpdate({
-			target: [noteViewHistory.userId, noteViewHistory.noteId],
-			set: {
-				viewedAt: now,
-				updatedAt: now,
-			},
-		});
-}
 
 async function canViewNoteDetail(
 	row: Awaited<ReturnType<typeof selectContentNoteRows>>[number],
@@ -172,7 +154,14 @@ export const notesRouter = {
 			viewerId: context.session?.user.id,
 		});
 		if (context.session?.user.id) {
-			await recordNoteView(input.id, context.session.user.id);
+			try {
+				await recordNoteView(input.id, context.session.user.id);
+			} catch (error) {
+				console.error("Failed to record note view", {
+					error,
+					noteId: input.id,
+				});
+			}
 		}
 
 		return {

@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import { follow, note, noteLike, user } from "@youni/db/schema/index";
-import { and, count, desc, eq, notInArray, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, notInArray, or } from "drizzle-orm";
 import {
 	activeUserProcedure,
 	protectedProcedure,
@@ -304,7 +304,28 @@ export const profilesRouter = {
 		async ({ input, context }) => {
 			const userId = context.session.user.id;
 			const rows = await listMeContentNoteRows(userId, input.tab, input.limit);
-			return hydrateContentNotes(rows, userId);
+			const items = await hydrateContentNotes(rows, userId);
+			if (input.tab !== "notes" || items.length === 0) {
+				return items.map((item) => ({ ...item, viewCount: null }));
+			}
+
+			const countRows = await createDb()
+				.select({ id: note.id, viewCount: note.viewCount })
+				.from(note)
+				.where(
+					inArray(
+						note.id,
+						items.map((item) => item.id),
+					),
+				);
+			const viewCountById = new Map(
+				countRows.map((row) => [row.id, row.viewCount]),
+			);
+
+			return items.map((item) => ({
+				...item,
+				viewCount: viewCountById.get(item.id) ?? 0,
+			}));
 		},
 	),
 

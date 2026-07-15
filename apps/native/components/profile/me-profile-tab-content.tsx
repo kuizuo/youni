@@ -124,6 +124,7 @@ export function ProfileTabPage({
 	isLoading,
 	onLongPressNote,
 	onRetry,
+	showViewCount = false,
 	width,
 }: {
 	emptyState: ReactNode;
@@ -132,6 +133,7 @@ export function ProfileTabPage({
 	isLoading: boolean;
 	onLongPressNote?: (note: NoteCardNote) => void;
 	onRetry: () => void;
+	showViewCount?: boolean;
 	width: number;
 }) {
 	const backgroundColor = useThemeColor("background");
@@ -167,6 +169,7 @@ export function ProfileTabPage({
 										key={item.id}
 										item={item}
 										onLongPress={onLongPressNote}
+										showViewCount={showViewCount}
 									/>
 								))}
 							</View>
@@ -183,11 +186,20 @@ export function ProfileTabPage({
 function FeedCell({
 	item,
 	onLongPress,
+	showViewCount,
 }: {
 	item: NoteCardNote;
 	onLongPress?: (note: NoteCardNote) => void;
+	showViewCount: boolean;
 }) {
-	return <NoteCard compact note={item} onLongPress={onLongPress} />;
+	return (
+		<NoteCard
+			compact
+			note={item}
+			onLongPress={onLongPress}
+			showViewCount={showViewCount}
+		/>
+	);
 }
 
 function createMasonryColumns(items: NoteCardNote[], cardWidth: number) {

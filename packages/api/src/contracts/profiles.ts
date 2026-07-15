@@ -86,7 +86,7 @@ export type ProfilesOutputs = {
 		liked: HydratedContentNote[];
 	};
 	meProfile: ProfileUser;
-	meFeed: HydratedContentNote[];
+	meFeed: Array<HydratedContentNote & { viewCount: number | null }>;
 	updateProfile: UserRow | undefined;
 	toggleFollow: { following: boolean; followerCount: number };
 	blockedUsers: {

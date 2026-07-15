@@ -13,11 +13,13 @@ import {
 import { Image } from "react-native";
 
 import { useSocialActions } from "@/lib/social/use-social-actions";
+import { formatCount } from "@/utils/format";
 
 const DEFAULT_IMAGE_ASPECT_RATIO = 1;
 
 export type NoteCardNote = HydratedContentNote & {
 	feedContext?: NotesOutputs["feed"]["items"][number]["feedContext"];
+	viewCount?: number | null;
 };
 
 type NoteCardProps = {
@@ -26,6 +28,7 @@ type NoteCardProps = {
 	onLongPress?: (note: NoteCardNote) => void;
 	onOpenDiscoverActions?: (note: NoteCardNote) => void;
 	onRecordDiscoverEvent?: (note: NoteCardNote, type: "like" | "open") => void;
+	showViewCount?: boolean;
 };
 
 export function NoteCard({
@@ -34,6 +37,7 @@ export function NoteCard({
 	onLongPress,
 	onOpenDiscoverActions,
 	onRecordDiscoverEvent,
+	showViewCount = false,
 }: NoteCardProps) {
 	const socialActions = useSocialActions();
 	const mutedColor = useThemeColor("muted");
@@ -126,6 +130,9 @@ export function NoteCard({
 					)}
 				</PressableFeedback>
 				<NoteStatusChip status={note.status} />
+				{showViewCount ? (
+					<NoteViewCountChip value={note.viewCount ?? 0} />
+				) : null}
 			</Card.Header>
 
 			<Card.Body className={compact ? "gap-1.5 px-2.5 pt-2 pb-3" : "gap-2 p-3"}>
@@ -199,6 +206,21 @@ export function NoteCard({
 				</Card.Footer>
 			</Card.Body>
 		</Card>
+	);
+}
+
+function NoteViewCountChip({ value }: { value: number }) {
+	return (
+		<Chip
+			pointerEvents="none"
+			size="sm"
+			variant="primary"
+			color="default"
+			className="absolute bottom-2 left-2 z-10 bg-black/60"
+		>
+			<Ionicons name="eye-outline" size={12} color="#ffffff" />
+			<Chip.Label className="text-white">{formatCount(value)}</Chip.Label>
+		</Chip>
 	);
 }
 

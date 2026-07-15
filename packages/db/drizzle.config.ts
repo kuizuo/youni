@@ -26,6 +26,7 @@ export default defineConfig({
 		"note_not_interested",
 		"note_like",
 		"note_topic",
+		"note_view_count_state",
 		"note_view_history",
 		"notification",
 		"notification_push_token",

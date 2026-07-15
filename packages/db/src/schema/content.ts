@@ -114,6 +114,7 @@ export const note = sqliteTable(
 		moderatedAt: timestampColumn("moderated_at"),
 		publishedAt: timestampColumn("published_at"),
 		draftSavedAt: timestampColumn("draft_saved_at"),
+		viewCount: integer("view_count").default(0).notNull(),
 		createdAt: timestampColumn("created_at").defaultNow().notNull(),
 		updatedAt: timestampColumn("updated_at")
 			.defaultNow()
@@ -260,3 +261,21 @@ export const noteViewHistory = sqliteTable(
 );
 
 export type NoteViewHistoryRow = typeof noteViewHistory.$inferSelect;
+
+export const noteViewCountState = sqliteTable(
+	"note_view_count_state",
+	{
+		noteId: text("note_id")
+			.notNull()
+			.references(() => note.id, { onDelete: "cascade" }),
+		viewerKey: text("viewer_key").notNull(),
+		lastCountedDay: text("last_counted_day").notNull(),
+		updatedAt: timestampColumn("updated_at").defaultNow().notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.noteId, table.viewerKey] }),
+		index("note_view_count_state_viewer_idx").on(table.viewerKey),
+	],
+);
+
+export type NoteViewCountStateRow = typeof noteViewCountState.$inferSelect;

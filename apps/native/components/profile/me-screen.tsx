@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ProfileConnectionType } from "@youni/api/contracts/profiles";
 import { Image } from "expo-image";
 import type { Href } from "expo-router";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
 	BottomSheet,
 	Button,
@@ -12,7 +12,7 @@ import {
 	Typography,
 	useThemeColor,
 } from "heroui-native";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ListDivider } from "@/components/create/create-ui";
@@ -73,6 +73,7 @@ export default function MeScreen() {
 	const [isChangingCover, setIsChangingCover] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [selectedNote, setSelectedNote] = useState<NoteCardNote | null>(null);
+	const hasFocusedRef = useRef(false);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
 		...orpc.profiles.meProfile.queryOptions(),
@@ -102,6 +103,16 @@ export default function MeScreen() {
 		}),
 		enabled: isAuthenticated && activeTab === "comments",
 	});
+	const refetchNotesFeed = notesFeed.refetch;
+	useFocusEffect(
+		useCallback(() => {
+			if (!hasFocusedRef.current) {
+				hasFocusedRef.current = true;
+				return;
+			}
+			if (isAuthenticated) void refetchNotesFeed();
+		}, [isAuthenticated, refetchNotesFeed]),
+	);
 	const tabQueries = {
 		collections: collectionsFeed,
 		comments: commentsFeed,
@@ -408,6 +419,7 @@ export default function MeScreen() {
 								onLongPressNote={
 									tab.key === "notes" ? openNoteActions : undefined
 								}
+								showViewCount={tab.key === "notes"}
 								width={contentWidth}
 								onRetry={() => {
 									void refreshTab(tab.key, { showRefreshControl: false });

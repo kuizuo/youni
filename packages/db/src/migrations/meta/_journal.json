@@ -64,6 +64,13 @@
 			"when": 1784084711654,
 			"tag": "0008_friendly_professor_monster",
 			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "6",
+			"when": 1784118934713,
+			"tag": "0009_serious_lila_cheney",
+			"breakpoints": true
 		}
 	]
 }
