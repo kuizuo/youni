@@ -3,6 +3,7 @@ import type { NotesOutputs } from "@youni/api/contracts/notes";
 import type { HydratedContentNote } from "@youni/api/contracts/shared";
 import {
 	Card,
+	Chip,
 	Avatar as HeroAvatar,
 	PressableFeedback,
 	Surface,
@@ -22,6 +23,7 @@ export type NoteCardNote = HydratedContentNote & {
 type NoteCardProps = {
 	compact?: boolean;
 	note: NoteCardNote;
+	onLongPress?: (note: NoteCardNote) => void;
 	onOpenDiscoverActions?: (note: NoteCardNote) => void;
 	onRecordDiscoverEvent?: (note: NoteCardNote, type: "like" | "open") => void;
 };
@@ -29,6 +31,7 @@ type NoteCardProps = {
 export function NoteCard({
 	compact = false,
 	note,
+	onLongPress,
 	onOpenDiscoverActions,
 	onRecordDiscoverEvent,
 }: NoteCardProps) {
@@ -63,8 +66,8 @@ export function NoteCard({
 		socialActions.goTo({ type: "user", id: note.author.id });
 	};
 
-	const openDiscoverActions = () => {
-		onOpenDiscoverActions?.(note);
+	const openActions = () => {
+		(onLongPress ?? onOpenDiscoverActions)?.(note);
 	};
 
 	const toggleLike = () => {
@@ -89,9 +92,12 @@ export function NoteCard({
 					: "overflow-hidden rounded-xl p-0 shadow-none"
 			}
 		>
-			<Card.Header className="p-0">
+			<Card.Header className="relative p-0">
 				<PressableFeedback
-					onLongPress={onOpenDiscoverActions ? openDiscoverActions : undefined}
+					delayLongPress={onLongPress ? 350 : undefined}
+					onLongPress={
+						onLongPress || onOpenDiscoverActions ? openActions : undefined
+					}
 					onPress={openDetail}
 					className="bg-content2"
 				>
@@ -119,11 +125,15 @@ export function NoteCard({
 						</Surface>
 					)}
 				</PressableFeedback>
+				<NoteStatusChip status={note.status} />
 			</Card.Header>
 
 			<Card.Body className={compact ? "gap-1.5 px-2.5 pt-2 pb-3" : "gap-2 p-3"}>
 				<PressableFeedback
-					onLongPress={onOpenDiscoverActions ? openDiscoverActions : undefined}
+					delayLongPress={onLongPress ? 350 : undefined}
+					onLongPress={
+						onLongPress || onOpenDiscoverActions ? openActions : undefined
+					}
 					onPress={openDetail}
 				>
 					<Card.Title
@@ -189,5 +199,21 @@ export function NoteCard({
 				</Card.Footer>
 			</Card.Body>
 		</Card>
+	);
+}
+
+function NoteStatusChip({ status }: { status: NoteCardNote["status"] }) {
+	if (status !== "audit" && status !== "rejected") return null;
+
+	return (
+		<Chip
+			pointerEvents="none"
+			size="sm"
+			variant="soft"
+			color={status === "rejected" ? "danger" : "warning"}
+			className="absolute top-2 left-2 z-10"
+		>
+			<Chip.Label>{status === "rejected" ? "已拒绝" : "审核中"}</Chip.Label>
+		</Chip>
 	);
 }

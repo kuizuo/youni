@@ -4,10 +4,19 @@ import type { ProfileConnectionType } from "@youni/api/contracts/profiles";
 import { Image } from "expo-image";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { Button, Spinner, Typography, useThemeColor } from "heroui-native";
+import {
+	BottomSheet,
+	Button,
+	ListGroup,
+	Spinner,
+	Typography,
+	useThemeColor,
+} from "heroui-native";
 import { useMemo, useState } from "react";
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ListDivider } from "@/components/create/create-ui";
+import type { NoteCardNote } from "@/components/note-card";
 import { MeEditProfileSheetHost } from "@/components/profile/me/edit-profile-sheet-host";
 import { MeTabEmptyState } from "@/components/profile/me/empty-state";
 import { MeStickyChrome } from "@/components/profile/me/sticky-chrome";
@@ -29,6 +38,7 @@ import {
 	PROFILE_TABS,
 	type ProfileTabKey,
 } from "@/components/profile/profile-tabs";
+import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
 import { authClient } from "@/lib/auth-client";
 import {
 	pickAndUploadAvatar,
@@ -36,6 +46,7 @@ import {
 } from "@/lib/avatar-upload";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
+import { confirmAction } from "@/utils/confirm-action";
 import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
@@ -61,6 +72,7 @@ export default function MeScreen() {
 	const [isChangingAvatar, setIsChangingAvatar] = useState(false);
 	const [isChangingCover, setIsChangingCover] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const [selectedNote, setSelectedNote] = useState<NoteCardNote | null>(null);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
 		...orpc.profiles.meProfile.queryOptions(),
@@ -107,6 +119,20 @@ export default function MeScreen() {
 	const avatarInitial = displayName.slice(0, 1);
 	const updateProfile = useMutation(
 		orpc.profiles.updateProfile.mutationOptions(),
+	);
+	const deleteNote = useMutation(
+		orpc.notes.deleteMyNote.mutationOptions({
+			onError: (error) => {
+				toast.show({
+					variant: "danger",
+					label: error instanceof Error ? error.message : "删除失败",
+				});
+			},
+			onSuccess: async () => {
+				setSelectedNote(null);
+				await notesFeed.refetch();
+			},
+		}),
 	);
 
 	const feedItemsByTab = useMemo(
@@ -252,6 +278,36 @@ export default function MeScreen() {
 		} as unknown as Href);
 	};
 
+	const openNoteActions = (note: NoteCardNote) => {
+		fireHaptic();
+		setSelectedNote(note);
+	};
+
+	const editSelectedNote = () => {
+		if (!selectedNote) return;
+		fireHaptic();
+		const noteId = selectedNote.id;
+		setSelectedNote(null);
+		router.push({
+			pathname: "/publish",
+			params: { noteId },
+		} as unknown as Href);
+	};
+
+	const confirmDeleteSelectedNote = () => {
+		if (!selectedNote || deleteNote.isPending) return;
+		fireHaptic();
+		const noteId = selectedNote.id;
+		setSelectedNote(null);
+		confirmAction({
+			cancelText: "取消",
+			confirmText: "删除",
+			message: "删除后这篇笔记将不再对任何人可见。",
+			title: "删除笔记",
+			onConfirm: () => deleteNote.mutate({ id: noteId }),
+		});
+	};
+
 	return (
 		<View className="flex-1" style={{ backgroundColor }}>
 			<ProfileCollapsibleTabs
@@ -349,6 +405,9 @@ export default function MeScreen() {
 								feedItems={feedItemsByTab[tab.key]}
 								isError={tabQueries[tab.key].isError || profileQuery.isError}
 								isLoading={tabQueries[tab.key].isLoading}
+								onLongPressNote={
+									tab.key === "notes" ? openNoteActions : undefined
+								}
 								width={contentWidth}
 								onRetry={() => {
 									void refreshTab(tab.key, { showRefreshControl: false });
@@ -403,7 +462,90 @@ export default function MeScreen() {
 					setIsEditOpen(false);
 				}}
 			/>
+
+			<MeNoteActionsSheet
+				note={selectedNote}
+				onDelete={confirmDeleteSelectedNote}
+				onEdit={editSelectedNote}
+				onOpenChange={(isOpen) => {
+					if (!isOpen) setSelectedNote(null);
+				}}
+			/>
 		</View>
+	);
+}
+
+function MeNoteActionsSheet({
+	note,
+	onDelete,
+	onEdit,
+	onOpenChange,
+}: {
+	note: NoteCardNote | null;
+	onDelete: () => void;
+	onEdit: () => void;
+	onOpenChange: (isOpen: boolean) => void;
+}) {
+	const foregroundColor = useThemeColor("foreground");
+	const dangerColor = useThemeColor("danger");
+
+	return (
+		<BottomSheet isOpen={Boolean(note)} onOpenChange={onOpenChange}>
+			<BottomSheet.Portal disableFullWindowOverlay>
+				<BottomSheet.Overlay />
+				<AppBottomSheetContent enableOverDrag={false}>
+					<View className="gap-3">
+						<BottomSheet.Title numberOfLines={1}>
+							{note?.title || "笔记操作"}
+						</BottomSheet.Title>
+						<ListGroup
+							variant="secondary"
+							className="overflow-hidden rounded-xl"
+						>
+							<ListGroup.Item
+								accessibilityLabel="编辑笔记"
+								accessibilityRole="button"
+								disabled={!note}
+								onPress={onEdit}
+								className="gap-2.5 px-3.5 py-3"
+							>
+								<ListGroup.ItemPrefix>
+									<Ionicons
+										name="create-outline"
+										size={21}
+										color={foregroundColor}
+									/>
+								</ListGroup.ItemPrefix>
+								<ListGroup.ItemContent>
+									<ListGroup.ItemTitle>编辑</ListGroup.ItemTitle>
+								</ListGroup.ItemContent>
+							</ListGroup.Item>
+							<ListDivider />
+							<ListGroup.Item
+								accessibilityLabel="删除笔记"
+								accessibilityRole="button"
+								disabled={!note}
+								onPress={onDelete}
+								className="gap-2.5 px-3.5 py-3"
+							>
+								<ListGroup.ItemPrefix>
+									<Ionicons
+										name="trash-outline"
+										size={21}
+										color={dangerColor}
+									/>
+								</ListGroup.ItemPrefix>
+								<ListGroup.ItemContent>
+									<ListGroup.ItemTitle style={{ color: dangerColor }}>
+										删除
+									</ListGroup.ItemTitle>
+								</ListGroup.ItemContent>
+							</ListGroup.Item>
+						</ListGroup>
+					</View>
+				</AppBottomSheetContent>
+			</BottomSheet.Portal>
+		</BottomSheet>
 	);
 }
 

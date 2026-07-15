@@ -122,6 +122,7 @@ export function ProfileTabPage({
 	feedItems,
 	isError,
 	isLoading,
+	onLongPressNote,
 	onRetry,
 	width,
 }: {
@@ -129,6 +130,7 @@ export function ProfileTabPage({
 	feedItems: NoteCardNote[];
 	isError: boolean;
 	isLoading: boolean;
+	onLongPressNote?: (note: NoteCardNote) => void;
 	onRetry: () => void;
 	width: number;
 }) {
@@ -161,7 +163,11 @@ export function ProfileTabPage({
 								className="flex-1 gap-3"
 							>
 								{column.map((item) => (
-									<FeedCell key={item.id} item={item} />
+									<FeedCell
+										key={item.id}
+										item={item}
+										onLongPress={onLongPressNote}
+									/>
 								))}
 							</View>
 						))}
@@ -174,8 +180,14 @@ export function ProfileTabPage({
 	);
 }
 
-function FeedCell({ item }: { item: NoteCardNote }) {
-	return <NoteCard compact note={item} />;
+function FeedCell({
+	item,
+	onLongPress,
+}: {
+	item: NoteCardNote;
+	onLongPress?: (note: NoteCardNote) => void;
+}) {
+	return <NoteCard compact note={item} onLongPress={onLongPress} />;
 }
 
 function createMasonryColumns(items: NoteCardNote[], cardWidth: number) {
