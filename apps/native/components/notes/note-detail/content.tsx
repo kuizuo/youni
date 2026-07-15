@@ -217,6 +217,10 @@ export function ContentModerationNotice({
 	}
 
 	const isRejected = status === "rejected";
+	const rejectionDescription =
+		rejectionReason && rejectionReason !== "内容未通过审核"
+			? rejectionReason
+			: "文字或图片触发了内容安全规则，请修改后重新提交";
 	return (
 		<View className="mx-4 my-3 flex-row gap-3 rounded-xl bg-content2 px-4 py-3">
 			<Ionicons
@@ -230,7 +234,7 @@ export function ContentModerationNotice({
 				</Typography.Paragraph>
 				<Typography.Paragraph type="body-sm" color="muted">
 					{isRejected
-						? rejectionReason || "请修改内容后重新提交"
+						? rejectionDescription
 						: "通过后会自动发布，暂时只有你能看到"}
 				</Typography.Paragraph>
 			</View>

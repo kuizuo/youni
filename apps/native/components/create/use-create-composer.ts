@@ -9,6 +9,8 @@ import { InteractionManager } from "react-native";
 import type { PublishSubmitMode } from "@/components/create/create-types";
 import { reorderImages } from "@/components/media/image-order";
 import { isRegisteredUser } from "@/lib/anonymous-session";
+import { apiBaseUrl } from "@/lib/api-url";
+import { resolveStoredNoteImageUrl } from "@/lib/api-url-resolver";
 import { authClient } from "@/lib/auth-client";
 import {
 	createDraftCoverThumbnail,
@@ -242,15 +244,15 @@ export function useCreateComposer({
 	);
 	const updateNoteMutation = useMutation(
 		orpc.notes.updateNote.mutationOptions({
-			onSuccess: (result) => {
+			onSuccess: async (result) => {
 				pendingUploadedKeysRef.current = [];
 				toast.show({
 					label: "修改已提交审核，通过后会自动发布",
 					variant: "success",
 				});
+				await queryClient.invalidateQueries();
 				router.replace(`/note/${result.id}` as Href);
 				InteractionManager.runAfterInteractions(resetForm);
-				void queryClient.invalidateQueries();
 			},
 			onError: async (error) => {
 				if (isRequestTimeoutError(error)) return;
@@ -345,12 +347,13 @@ export function useCreateComposer({
 				const meta = (editableNote.imageMetas ?? []).find(
 					(item) => item.url === url,
 				);
+				const previewUrl = resolveStoredNoteImageUrl(url, apiBaseUrl);
 				return {
 					height: meta?.height,
 					id: url,
 					originalUri: url,
 					remoteUrl: url,
-					uri: url,
+					uri: previewUrl,
 					width: meta?.width,
 				};
 			}),

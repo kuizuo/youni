@@ -28,6 +28,22 @@ const NOTE_IMAGE_CONTENT_TYPES = new Map([
 	["webp", "image/webp"],
 ]);
 
+const imageRejectionReasonLabels = {
+	sexual: "色情或裸露内容",
+	graphic_violence: "血腥暴力内容",
+	self_harm: "自残相关内容",
+	weapons: "武器相关内容",
+	drugs: "毒品相关内容",
+	gambling: "赌博相关内容",
+	fraud: "诈骗相关内容",
+	extremism: "极端主义相关内容",
+	political: "政治相关内容",
+	privacy: "隐私信息",
+	qr_or_contact: "站外联系方式",
+	dense_text: "大量文字",
+	other: "其他违规内容",
+} satisfies Record<ImageModerationResult["categories"][number], string>;
+
 const contentReviewJobSchema = z
 	.object({
 		contentId: z.string().min(1).optional(),
@@ -170,6 +186,29 @@ export function createTextModerationDetails(
 		source: "text",
 		terms: match.terms,
 	}));
+}
+
+export function createContentRejectionReason(
+	textMatches: ContentTextModerationMatch[],
+	results: ImageModerationResult[],
+) {
+	const terms = Array.from(
+		new Set(textMatches.flatMap((match) => match.terms)),
+	);
+	const imageReasons = Array.from(
+		new Set(
+			results
+				.filter((result) => result.decision === "block")
+				.flatMap((result) => result.categories)
+				.map((category) => imageRejectionReasonLabels[category]),
+		),
+	);
+	const reasons = [
+		terms.length > 0 ? `文字内容包含违禁词：${terms.join("、")}` : null,
+		imageReasons.length > 0 ? `图片可能包含${imageReasons.join("、")}` : null,
+	].filter((reason): reason is string => Boolean(reason));
+
+	return reasons.join("；") || GENERIC_REJECTION_REASON;
 }
 
 function imageListsMatch(left: string[], right: string[]) {
@@ -343,7 +382,10 @@ export async function processContentReviewJob(body: unknown) {
 					moderationReason,
 				),
 				publishedAt: decision === "pass" ? new Date() : null,
-				rejectionReason: decision === "block" ? GENERIC_REJECTION_REASON : null,
+				rejectionReason:
+					decision === "block"
+						? createContentRejectionReason(textMatches, results)
+						: null,
 				status: decision === "pass" ? "published" : "rejected",
 			})
 			.where(

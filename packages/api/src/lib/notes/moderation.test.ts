@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type { ImageModerationResult } from "../moderation/image";
 import {
 	combineContentModerationDecision,
+	createContentRejectionReason,
 	createTextModerationDetails,
 	deriveContentModerationReason,
 	deriveContentModerationStatus,
@@ -117,5 +118,20 @@ describe("note image review adapter", () => {
 				terms: ["兼职刷单", "代办假证"],
 			},
 		]);
+	});
+
+	test("describes why automatic moderation rejected the content", () => {
+		expect(
+			createContentRejectionReason(
+				[{ field: "title", terms: ["兼职刷单"] }],
+				[result("pass")],
+			),
+		).toBe("文字内容包含违禁词：兼职刷单");
+		expect(
+			createContentRejectionReason(
+				[],
+				[{ ...result("block"), categories: ["weapons"] }],
+			),
+		).toBe("图片可能包含武器相关内容");
 	});
 });
