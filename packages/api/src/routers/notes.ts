@@ -32,7 +32,6 @@ import {
 import { recordNoteView } from "../lib/notes/views";
 import { notifyNoteOwner } from "../lib/notifications";
 import { getBlockedUserIds, isUserBlockedBy } from "../lib/users/blocks";
-import { listRootComments } from "./comments";
 import { getSearchNoteWhereClause } from "./topics";
 import { toNumber, toPage } from "./utils";
 
@@ -147,12 +146,6 @@ export const notesRouter = {
 		if (!item) {
 			throw new ORPCError("INTERNAL_SERVER_ERROR");
 		}
-		const comments = await listRootComments({
-			noteId: input.id,
-			limit: 20,
-			offset: 0,
-			viewerId: context.session?.user.id,
-		});
 		if (context.session?.user.id) {
 			try {
 				await recordNoteView(input.id, context.session.user.id);
@@ -164,11 +157,7 @@ export const notesRouter = {
 			}
 		}
 
-		return {
-			...item,
-			comments: comments.items,
-			commentsNextOffset: comments.nextOffset,
-		};
+		return item;
 	}),
 
 	editById: protectedProcedure.notes.editById.handler(

@@ -117,3 +117,28 @@
 		}
 	}
 }
+
+@media (prefers-reduced-motion: no-preference) {
+	@keyframes note-detail-enter {
+		from {
+			opacity: 0;
+			transform: scale(0.985);
+		}
+
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	::view-transition-group(*) {
+		animation-duration: 260ms;
+		animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-group(*) {
+		animation-duration: 0.01ms;
+	}
+}

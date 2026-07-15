@@ -1,12 +1,7 @@
 import { noteVisibilities } from "@youni/db/schema/content-values";
 import z from "zod";
-import type { CommentListRow } from "./comments";
 import { output, procedure } from "./procedure";
-import type {
-	ContentNoteRow,
-	HydratedContentNote,
-	NoteVisibility,
-} from "./shared";
+import type { HydratedContentNote, NoteVisibility } from "./shared";
 import { idInput, listInput, paginatedListInput } from "./shared";
 
 // ====== Input ======
@@ -118,21 +113,7 @@ export type NotesOutputs = {
 		hasMore: boolean;
 		nextOffset: number | null;
 	};
-	byId: ContentNoteRow & {
-		topics: string[];
-		likedCount: number;
-		collectedCount: number;
-		commentCount: number;
-		liked: boolean;
-		collected: boolean;
-		author: {
-			id: string;
-			name: string;
-			image: string | null;
-			handle: string | null;
-			isFollowing: boolean;
-		};
-	} & { comments: CommentListRow[]; commentsNextOffset: number | null };
+	byId: HydratedContentNote;
 	editById: HydratedContentNote | undefined;
 	updateNote: { id: string; status: "audit" };
 	updateNoteVisibility: {

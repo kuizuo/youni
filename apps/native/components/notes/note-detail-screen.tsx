@@ -3,10 +3,13 @@ import type {
 	CommentSort,
 	CommentListRow as NoteComment,
 } from "@youni/api/contracts/comments";
-import type { NoteVisibility } from "@youni/api/contracts/shared";
+import type {
+	HydratedContentNote,
+	NoteVisibility,
+} from "@youni/api/contracts/shared";
 import * as Network from "expo-network";
 import type { Href } from "expo-router";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import {
 	Button,
 	PressableFeedback,
@@ -26,12 +29,20 @@ import {
 	type TextInput,
 	useWindowDimensions,
 	View,
+	type ViewStyle,
 } from "react-native";
+import Animated, { ReduceMotion, ZoomIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { EmojiType } from "rn-emoji-keyboard";
 
 import { AppSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
+import {
+	getNoteTransitionStyle,
+	NOTE_TRANSITION_DURATION,
+	startNoteViewTransition,
+	supportsNoteViewTransition,
+} from "@/lib/note-view-transition";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import type { TextSelection } from "@/lib/types/text-input";
@@ -95,6 +106,7 @@ export default function NoteDetailScreen() {
 		? `${id}:${targetCommentId}`
 		: null;
 	const router = useRouter();
+	const pathname = usePathname();
 	const socialActions = useSocialActions();
 	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
@@ -106,6 +118,7 @@ export default function NoteDetailScreen() {
 	const imageHeight = Math.min(620, Math.max(380, pageWidth * 1.08));
 	const topBarHeight = insets.top + 64;
 	const commentListRef = useRef<FlatList<NoteComment>>(null);
+	const displayedContentRef = useRef<HydratedContentNote | null>(null);
 	const recordedViewerIdRef = useRef<string | null>(null);
 	const recordingViewerIdRef = useRef<string | null>(null);
 	const commentScrollOffsetRef = useRef(0);
@@ -159,7 +172,56 @@ export default function NoteDetailScreen() {
 		enabled: Boolean(id),
 		refetchInterval: (query) =>
 			query.state.data?.status === "audit" ? 4_000 : false,
+		retry: (failureCount, error) =>
+			isNotFoundError(error) ? false : failureCount < 2,
 	});
+	if (displayedContentRef.current?.id !== id) {
+		displayedContentRef.current = note.data?.id === id ? note.data : null;
+	}
+	if (!displayedContentRef.current && note.data?.id === id) {
+		displayedContentRef.current = note.data;
+	}
+	const displayNote = displayedContentRef.current
+		? {
+				...displayedContentRef.current,
+				collected:
+					note.data?.collected ?? displayedContentRef.current.collected,
+				collectedCount:
+					note.data?.collectedCount ??
+					displayedContentRef.current.collectedCount,
+				commentCount:
+					note.data?.commentCount ?? displayedContentRef.current.commentCount,
+				liked: note.data?.liked ?? displayedContentRef.current.liked,
+				likedCount:
+					note.data?.likedCount ?? displayedContentRef.current.likedCount,
+				rejectionReason:
+					note.data?.rejectionReason ??
+					displayedContentRef.current.rejectionReason,
+				status: note.data?.status ?? displayedContentRef.current.status,
+			}
+		: note.data;
+	const transitionStyle = pathname.startsWith("/note/")
+		? getNoteTransitionStyle(id)
+		: undefined;
+	const supportsAppleZoom =
+		process.env.EXPO_OS === "ios" && Number(Platform.Version) >= 18;
+	const supportsWebViewTransition = supportsNoteViewTransition();
+	const shouldUseFallbackTransition =
+		!supportsAppleZoom && !supportsWebViewTransition;
+	const detailEnteringAnimation =
+		process.env.EXPO_OS !== "web" && shouldUseFallbackTransition
+			? ZoomIn.duration(NOTE_TRANSITION_DURATION)
+					.withInitialValues({
+						transform: [{ scale: 0.985 }],
+					})
+					.reduceMotion(ReduceMotion.System)
+			: undefined;
+	const webFallbackStyle =
+		process.env.EXPO_OS === "web" && shouldUseFallbackTransition
+			? ({
+					animation: `note-detail-enter ${NOTE_TRANSITION_DURATION}ms cubic-bezier(0.2, 0.8, 0.2, 1)`,
+				} as ViewStyle)
+			: undefined;
 	const viewerId = socialActions.session.data?.user?.id;
 	const recordCurrentView = useCallback(async () => {
 		if (
@@ -206,12 +268,12 @@ export default function NoteDetailScreen() {
 			networkSubscription.remove();
 		};
 	}, [recordCurrentView]);
-	const authorId = note.data?.author.id ?? "";
+	const authorId = displayNote?.author.id ?? "";
 	const authorProfile = useQuery({
 		...orpc.profiles.profile.queryOptions({ input: { userId: authorId } }),
 		enabled: Boolean(authorId),
 	});
-	const commentsEnabled = note.data?.advancedOptions.allowComment ?? true;
+	const commentsEnabled = displayNote?.advancedOptions.allowComment ?? true;
 	const commentsQueryKey = useMemo(
 		() => nativeQueryKeys.note.comments(id, commentSort),
 		[id, commentSort],
@@ -267,7 +329,10 @@ export default function NoteDetailScreen() {
 		}),
 	);
 
-	const images = useMemo(() => note.data?.images ?? [], [note.data?.images]);
+	const images = useMemo(
+		() => displayNote?.images ?? [],
+		[displayNote?.images],
+	);
 	const rootComments = useMemo(
 		() => comments.data?.pages.flatMap((page) => page.items) ?? [],
 		[comments.data?.pages],
@@ -653,11 +718,15 @@ export default function NoteDetailScreen() {
 	};
 
 	const goBack = () => {
-		if (router.canGoBack()) {
-			router.back();
-			return;
-		}
-		router.replace("/" as Href);
+		const navigateBack = () => {
+			if (router.canGoBack()) {
+				router.back();
+				return;
+			}
+			router.replace("/" as Href);
+		};
+
+		if (!startNoteViewTransition(navigateBack)) navigateBack();
 	};
 
 	const openMissing = (kind: "topic" | "user", value: string) => {
@@ -873,7 +942,7 @@ export default function NoteDetailScreen() {
 		);
 	};
 
-	if (note.isLoading) {
+	if (note.isLoading && !displayNote) {
 		return (
 			<NoteDetailSkeleton
 				imageHeight={imageHeight}
@@ -883,7 +952,7 @@ export default function NoteDetailScreen() {
 		);
 	}
 
-	if (note.isError || !note.data) {
+	if ((note.isError && isNotFoundError(note.error)) || !displayNote) {
 		return (
 			<View className="flex-1 bg-background">
 				<SimpleTopBar onBack={goBack} />
@@ -896,12 +965,13 @@ export default function NoteDetailScreen() {
 		);
 	}
 
-	return (
+	const content = (
 		<KeyboardAvoidingView
 			behavior={
 				Platform.OS === "ios" && !isEmojiKeyboardOpen ? "padding" : undefined
 			}
 			className="flex-1 bg-background"
+			style={[webFallbackStyle, transitionStyle]}
 		>
 			<View
 				pointerEvents="box-none"
@@ -914,7 +984,7 @@ export default function NoteDetailScreen() {
 				}}
 			>
 				<AuthorTopBar
-					author={note.data.author}
+					author={displayNote.author}
 					isFollowing={isFollowing}
 					isMenuVisible={isActionMenuVisible}
 					isSelf={isSelf}
@@ -960,8 +1030,8 @@ export default function NoteDetailScreen() {
 					<View>
 						{isSelf ? (
 							<ContentModerationNotice
-								rejectionReason={note.data.rejectionReason}
-								status={note.data.status}
+								rejectionReason={displayNote.rejectionReason}
+								status={displayNote.status}
 							/>
 						) : null}
 						<ImageCarousel
@@ -973,15 +1043,15 @@ export default function NoteDetailScreen() {
 							onIndexChange={setActiveImageIndex}
 						/>
 						<NoteBody
-							content={note.data.content}
-							createdAt={note.data.publishedAt ?? note.data.createdAt}
-							title={note.data.title}
-							topics={note.data.topics}
+							content={displayNote.content}
+							createdAt={displayNote.publishedAt ?? displayNote.createdAt}
+							title={displayNote.title}
+							topics={displayNote.topics}
 							onMentionPress={openMention}
 							onTopicPress={openTopic}
 						/>
 						<CommentSectionHeader
-							commentCount={note.data.commentCount}
+							commentCount={displayNote.commentCount}
 							commentsEnabled={commentsEnabled}
 							sort={commentSort}
 							onSortChange={setCommentSort}
@@ -1076,7 +1146,7 @@ export default function NoteDetailScreen() {
 							<BottomIconAction
 								active={likeState.active}
 								activeColor={dangerColor}
-								count={likeState.count ?? note.data.likedCount}
+								count={likeState.count ?? displayNote.likedCount}
 								icon={likeState.active ? "heart" : "heart-outline"}
 								label={likeState.active ? "取消点赞" : "点赞"}
 								onPress={toggleLike}
@@ -1084,7 +1154,7 @@ export default function NoteDetailScreen() {
 							<BottomIconAction
 								active={collectState.active}
 								activeColor={accentColor}
-								count={collectState.count ?? note.data.collectedCount}
+								count={collectState.count ?? displayNote.collectedCount}
 								icon={collectState.active ? "star" : "star-outline"}
 								label={collectState.active ? "取消收藏" : "收藏"}
 								onPress={toggleCollect}
@@ -1106,7 +1176,7 @@ export default function NoteDetailScreen() {
 						<BottomIconAction
 							active={likeState.active}
 							activeColor={dangerColor}
-							count={likeState.count ?? note.data.likedCount}
+							count={likeState.count ?? displayNote.likedCount}
 							icon={likeState.active ? "heart" : "heart-outline"}
 							label={likeState.active ? "取消点赞" : "点赞"}
 							onPress={toggleLike}
@@ -1114,7 +1184,7 @@ export default function NoteDetailScreen() {
 						<BottomIconAction
 							active={collectState.active}
 							activeColor={accentColor}
-							count={collectState.count ?? note.data.collectedCount}
+							count={collectState.count ?? displayNote.collectedCount}
 							icon={collectState.active ? "star" : "star-outline"}
 							label={collectState.active ? "取消收藏" : "收藏"}
 							onPress={toggleCollect}
@@ -1151,10 +1221,18 @@ export default function NoteDetailScreen() {
 			<NoteVisibilitySheet
 				isOpen={isVisibilitySheetOpen}
 				isSaving={updateVisibilityMutation.isPending}
-				value={note.data.visibility}
+				value={displayNote.visibility}
 				onOpenChange={setIsVisibilitySheetOpen}
 				onSelect={updateVisibility}
 			/>
 		</KeyboardAvoidingView>
+	);
+
+	return detailEnteringAnimation ? (
+		<Animated.View entering={detailEnteringAnimation} style={{ flex: 1 }}>
+			{content}
+		</Animated.View>
+	) : (
+		content
 	);
 }

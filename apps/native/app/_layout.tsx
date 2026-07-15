@@ -87,7 +87,12 @@ function AppContent() {
 				<AnonymousSessionBridge />
 				<PushNotificationBridge />
 				<AppLayout>
-					<Stack screenOptions={{ headerShown: false }} />
+					<Stack screenOptions={{ headerShown: false }}>
+						<Stack.Screen
+							name="note/[id]"
+							options={{ animation: "fade", animationDuration: 260 }}
+						/>
+					</Stack>
 				</AppLayout>
 			</HeroUINativeProvider>
 		</KeyboardProvider>
@@ -108,7 +113,6 @@ export default function Layout() {
 			SplashScreen.hideAsync().catch((): void => {});
 		}
 	}, [fontsLoaded, fontError]);
-
 	if (!fontsLoaded && fontError === null) {
 		return null;
 	}
