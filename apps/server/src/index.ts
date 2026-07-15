@@ -7,6 +7,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@youni/api/context";
 import { cleanupExpiredAnalytics } from "@youni/api/lib/analytics/retention";
+import { restoreBuiltinProhibitedTerms } from "@youni/api/lib/moderation/prohibited-terms";
 import {
 	type ContentReviewJob,
 	processContentReviewJob,
@@ -556,8 +557,12 @@ const worker: ExportedHandler<Env, ContentReviewJob> = {
 	fetch(request, workerEnv, executionContext) {
 		return app.fetch(request, workerEnv, executionContext);
 	},
-	scheduled(_controller, _workerEnv, executionContext) {
-		executionContext.waitUntil(cleanupExpiredAnalytics());
+	scheduled(controller, _workerEnv, executionContext) {
+		const task =
+			controller.cron === "0 */12 * * *"
+				? restoreBuiltinProhibitedTerms()
+				: cleanupExpiredAnalytics();
+		executionContext.waitUntil(task);
 	},
 	async queue(batch) {
 		await Promise.all(

@@ -48,6 +48,11 @@ import {
 	normalizeSearchKeyword,
 } from "../lib/analytics/search";
 import {
+	addProhibitedTerm,
+	deleteProhibitedTerm,
+	listProhibitedTerms,
+} from "../lib/moderation/prohibited-terms";
+import {
 	deleteContentNote,
 	getAdminContentNoteDetail,
 	listAdminContentNotes,
@@ -581,6 +586,20 @@ export const adminRouter = {
 	}).moderationQueue.handler(async ({ input }) => {
 		return listAdminModerationQueue(input);
 	}),
+
+	prohibitedTerms: adminPermissionProcedure({
+		note: ["audit"],
+	}).prohibitedTerms.handler(() => listProhibitedTerms()),
+
+	addProhibitedTerm: adminPermissionProcedure({
+		note: ["audit"],
+	}).addProhibitedTerm.handler(({ input }) => addProhibitedTerm(input.term)),
+
+	deleteProhibitedTerm: adminPermissionProcedure({
+		note: ["audit"],
+	}).deleteProhibitedTerm.handler(({ input }) =>
+		deleteProhibitedTerm(input.term),
+	),
 
 	noteDetail: adminPermissionProcedure({ note: ["detail"] }).noteDetail.handler(
 		async ({ input }) => {

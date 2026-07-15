@@ -236,7 +236,7 @@ export const server = await Worker("server", {
 		YOUNI_BUCKET: youniBucket,
 		...localD1HttpBindings,
 	},
-	crons: ["0 17 * * *"],
+	crons: ["0 17 * * *", "0 */12 * * *"],
 	eventSources: [
 		{
 			queue: contentReviewQueue,

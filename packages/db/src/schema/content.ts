@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
 	index,
+	integer,
 	primaryKey,
 	sqliteTable,
 	text,
@@ -44,6 +45,16 @@ export type ContentModerationDetail = {
 	source?: "image" | "text";
 	terms?: string[];
 };
+
+export const prohibitedTerm = sqliteTable("prohibited_term", {
+	term: text("term").primaryKey(),
+	isBuiltin: integer("is_builtin", { mode: "boolean" })
+		.default(false)
+		.notNull(),
+	createdAt: timestampColumn("created_at").defaultNow().notNull(),
+});
+
+export type ProhibitedTermRow = typeof prohibitedTerm.$inferSelect;
 
 export const note = sqliteTable(
 	"note",

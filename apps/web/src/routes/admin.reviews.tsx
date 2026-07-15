@@ -21,6 +21,7 @@ import {
 	parseAdminListSearch,
 	parseAdminSearchOption,
 } from "@/lib/admin-list-search";
+import { ProhibitedTermsSettings } from "@/routes/-admin-reviews/prohibited-terms-settings";
 import { ReviewQueue } from "@/routes/-admin-reviews/review-queue";
 import { client, orpc, queryClient } from "@/utils/orpc";
 
@@ -322,6 +323,7 @@ function AdminReviewsRoute() {
 		<AdminPage
 			title="审核队列"
 			description="查看自动审核结果和判断原因，处理需要人工复核的图文。"
+			actions={<ProhibitedTermsSettings />}
 		>
 			<ReviewQueue
 				bucket={search.bucket}

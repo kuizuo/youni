@@ -1,5 +1,9 @@
 import type { UserRow } from "@youni/db/schema/auth";
-import type { NoteRow, TopicRow } from "@youni/db/schema/content";
+import type {
+	NoteRow,
+	ProhibitedTermRow,
+	TopicRow,
+} from "@youni/db/schema/content";
 import { noteStatuses } from "@youni/db/schema/content-values";
 import z from "zod";
 import {
@@ -147,6 +151,10 @@ export const adminSearchKeywordControlInput = z.object({
 	keyword: z.string().trim().min(1).max(50),
 });
 
+export const adminProhibitedTermInput = z.object({
+	term: z.string().trim().min(1).max(50),
+});
+
 // ====== Output ======
 
 export type AdminUserListItem = Pick<
@@ -274,6 +282,9 @@ export type AdminOutputs = {
 		};
 		total: number;
 	};
+	prohibitedTerms: ProhibitedTermRow[];
+	addProhibitedTerm: { created: boolean };
+	deleteProhibitedTerm: { deleted: boolean };
 	noteDetail: AdminContentNoteDetail;
 	updateNoteStatus: NoteRow | undefined;
 	deleteNote: { ok: boolean };
@@ -324,6 +335,13 @@ export const adminContract = {
 	moderationQueue: procedure
 		.input(adminModerationQueueInput)
 		.output(output<AdminOutputs["moderationQueue"]>()),
+	prohibitedTerms: procedure.output(output<AdminOutputs["prohibitedTerms"]>()),
+	addProhibitedTerm: procedure
+		.input(adminProhibitedTermInput)
+		.output(output<AdminOutputs["addProhibitedTerm"]>()),
+	deleteProhibitedTerm: procedure
+		.input(adminProhibitedTermInput)
+		.output(output<AdminOutputs["deleteProhibitedTerm"]>()),
 	noteDetail: procedure
 		.input(adminIdInput)
 		.output(output<AdminOutputs["noteDetail"]>()),

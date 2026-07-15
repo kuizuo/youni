@@ -13,6 +13,7 @@ import {
 	type ImageModerationResult,
 	moderateImage,
 } from "../moderation/image";
+import { listProhibitedTermValues } from "../moderation/prohibited-terms";
 import {
 	type ContentTextModerationMatch,
 	findBlockedContentText,
@@ -231,19 +232,25 @@ export async function processContentReviewJob(body: unknown) {
 	}
 
 	try {
-		const topicRows = await db
-			.select({ name: topic.name })
-			.from(noteTopic)
-			.innerJoin(topic, eq(noteTopic.topicId, topic.id))
-			.where(eq(noteTopic.noteId, job.contentId));
-		const textMatches = findBlockedContentText({
-			advancedOptions: current.advancedOptions,
-			components: current.components,
-			content: current.content,
-			locationName: current.locationName ?? undefined,
-			title: current.title,
-			topics: topicRows.map((row) => row.name),
-		});
+		const [topicRows, blockedTerms] = await Promise.all([
+			db
+				.select({ name: topic.name })
+				.from(noteTopic)
+				.innerJoin(topic, eq(noteTopic.topicId, topic.id))
+				.where(eq(noteTopic.noteId, job.contentId)),
+			listProhibitedTermValues(),
+		]);
+		const textMatches = findBlockedContentText(
+			{
+				advancedOptions: current.advancedOptions,
+				components: current.components,
+				content: current.content,
+				locationName: current.locationName ?? undefined,
+				title: current.title,
+				topics: topicRows.map((row) => row.name),
+			},
+			blockedTerms,
+		);
 		const engine = env.AI as unknown as ImageModerationEngine | undefined;
 		const bucket = env.YOUNI_BUCKET as unknown as ImageBucket | undefined;
 		const canReviewImages = Boolean(

@@ -29,6 +29,7 @@ export default defineConfig({
 		"note_view_history",
 		"notification",
 		"notification_push_token",
+		"prohibited_term",
 		"recommendation_daily_metric",
 		"recommendation_event",
 		"search_keyword_control",
