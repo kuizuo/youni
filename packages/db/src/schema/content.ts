@@ -32,8 +32,17 @@ export type ContentModerationDetail = {
 	categories: string[];
 	confidence: number;
 	decision: "block" | "pass" | "review";
-	image: string;
-	reason: "invalid_response" | "model" | "service_unavailable";
+	field?:
+		| "component"
+		| "content"
+		| "content_disclosure"
+		| "location"
+		| "title"
+		| "topic";
+	image?: string;
+	reason: "invalid_response" | "model" | "service_unavailable" | "text_rule";
+	source?: "image" | "text";
+	terms?: string[];
 };
 
 export const note = sqliteTable(

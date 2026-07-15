@@ -68,7 +68,7 @@ const moderationStatusLabel: Record<ContentModerationStatus, string> = {
 const moderationReasonLabel: Record<ContentModerationReason, string> = {
 	invalid_response: "自动审核没有给出完整结果",
 	low_confidence: "未能自动确认，等待人工复核",
-	policy_violation: "图片命中了内容风险规则",
+	policy_violation: "命中了内容风险规则",
 	queue_unavailable: "任务未能进入自动审核队列",
 	result_write_failed: "自动审核结果未能保存，已转人工处理",
 	service_unavailable: "自动审核服务暂时不可用",
@@ -78,7 +78,7 @@ const moderationReasonDescription: Record<ContentModerationReason, string> = {
 	invalid_response:
 		"自动审核没有返回完整的判断，本次不能自动发布，请人工查看后决定。",
 	low_confidence: "自动审核无法确认是否可以直接处理，请人工查看图片后决定。",
-	policy_violation: "图片中发现了明确的风险内容，已自动拦截。",
+	policy_violation: "文字或图片中发现了明确的风险内容，已自动拦截。",
 	queue_unavailable: "这条内容未能进入自动审核，已保留在队列中，请人工处理。",
 	result_write_failed: "自动审核已经完成，但结果没有保存成功，已转为人工处理。",
 	service_unavailable:
@@ -95,11 +95,40 @@ const categoryLabel: Record<string, string> = {
 	other: "其他风险",
 	political: "政治与公共事件",
 	privacy: "隐私信息",
+	prohibited_text: "违禁词",
 	qr_or_contact: "二维码或联系方式",
 	self_harm: "自伤",
 	sexual: "色情裸露",
 	weapons: "武器",
 };
+
+const textFieldLabel: Record<
+	NonNullable<ReviewNote["moderationDetails"][number]["field"]>,
+	string
+> = {
+	component: "互动组件",
+	content: "正文",
+	content_disclosure: "内容声明",
+	location: "位置",
+	title: "标题",
+	topic: "话题",
+};
+
+function isTextModerationDetail(
+	detail: ReviewNote["moderationDetails"][number],
+) {
+	return detail.source === "text";
+}
+
+function matchedTextTerms(note: ReviewNote) {
+	return Array.from(
+		new Set(
+			note.moderationDetails.flatMap((detail) =>
+				isTextModerationDetail(detail) ? (detail.terms ?? []) : [],
+			),
+		),
+	);
+}
 
 function moderationDetailScoreLabel(
 	detail: ReviewNote["moderationDetails"][number],
@@ -117,7 +146,7 @@ function emptyCategoryLabel(detail: ReviewNote["moderationDetails"][number]) {
 function moderationReasonText(note: ReviewNote) {
 	if (!note.moderationReason) {
 		return note.moderationStatus === "passed"
-			? "图片未发现风险，已自动通过并发布"
+			? "文字与图片均未发现风险，已自动通过并发布"
 			: "暂无额外说明";
 	}
 
@@ -132,6 +161,66 @@ function moderationReasonText(note: ReviewNote) {
 
 	return (
 		moderationReasonDescription[note.moderationReason] ?? note.moderationReason
+	);
+}
+
+function ModerationDetails({ note }: { note: ReviewNote }) {
+	const textDetails = note.moderationDetails.filter(isTextModerationDetail);
+	const imageDetails = note.moderationDetails.filter(
+		(detail) => !isTextModerationDetail(detail),
+	);
+
+	if (textDetails.length === 0 && imageDetails.length === 0) return null;
+
+	return (
+		<div className="grid gap-2">
+			{textDetails.map((detail) => (
+				<div
+					key={`${detail.field ?? "text"}:${(detail.terms ?? []).join(",")}`}
+					className="grid gap-2 rounded-xl bg-danger-soft p-3 text-danger-soft-foreground ring-1 ring-danger/20"
+				>
+					<div className="flex items-center justify-between gap-3 text-sm">
+						<span>
+							文字内容 · {detail.field ? textFieldLabel[detail.field] : "其他"}
+						</span>
+						<span className="text-xs opacity-70">已命中违禁词</span>
+					</div>
+					<div className="flex flex-wrap gap-1.5">
+						{(detail.terms ?? []).map((term) => (
+							<Chip key={term} color="danger" size="sm" variant="soft">
+								{term}
+							</Chip>
+						))}
+					</div>
+				</div>
+			))}
+			{imageDetails.map((detail, index) => (
+				<div
+					key={detail.image ?? `image-${index}`}
+					className="grid gap-2 rounded-xl bg-background p-3 ring-1 ring-border"
+				>
+					<div className="flex items-center justify-between gap-3 text-sm">
+						<span>图片 {index + 1}</span>
+						<span className="text-muted tabular-nums">
+							{moderationDetailScoreLabel(detail)}
+						</span>
+					</div>
+					<div className="flex flex-wrap gap-1.5">
+						{detail.categories.length > 0 ? (
+							detail.categories.map((category) => (
+								<Chip key={category} color="warning" size="sm" variant="soft">
+									{categoryLabel[category] ?? category}
+								</Chip>
+							))
+						) : (
+							<Chip color="success" size="sm" variant="soft">
+								{emptyCategoryLabel(detail)}
+							</Chip>
+						)}
+					</div>
+				</div>
+			))}
+		</div>
 	);
 }
 
@@ -394,6 +483,8 @@ function ReviewQueueItem({
 	note: ReviewNote;
 	onSelect: () => void;
 }) {
+	const matchedTerms = matchedTextTerms(note);
+
 	return (
 		<button
 			type="button"
@@ -424,7 +515,11 @@ function ReviewQueueItem({
 				<p className="mt-2 truncate text-muted text-xs">
 					{note.authorName} · {new Date(note.createdAt).toLocaleString()}
 				</p>
-				{note.moderationReason ? (
+				{matchedTerms.length > 0 ? (
+					<p className="mt-1 line-clamp-1 text-danger text-xs">
+						命中违禁词：{matchedTerms.join("、")}
+					</p>
+				) : note.moderationReason ? (
 					<p className="mt-1 line-clamp-1 text-warning text-xs">
 						{moderationReasonLabel[note.moderationReason] ??
 							note.moderationReason}
@@ -519,41 +614,7 @@ function ReviewDetail({
 						<div className="text-muted text-xs">原因</div>
 						<div className="mt-1">{moderationReasonText(note)}</div>
 					</div>
-					{note.moderationDetails.length > 0 ? (
-						<div className="grid gap-2">
-							{note.moderationDetails.map((detail, index) => (
-								<div
-									key={detail.image}
-									className="grid gap-2 rounded-xl bg-background p-3 ring-1 ring-border"
-								>
-									<div className="flex items-center justify-between gap-3 text-sm">
-										<span>图片 {index + 1}</span>
-										<span className="text-muted tabular-nums">
-											{moderationDetailScoreLabel(detail)}
-										</span>
-									</div>
-									<div className="flex flex-wrap gap-1.5">
-										{detail.categories.length > 0 ? (
-											detail.categories.map((category) => (
-												<Chip
-													key={category}
-													color="warning"
-													size="sm"
-													variant="soft"
-												>
-													{categoryLabel[category] ?? category}
-												</Chip>
-											))
-										) : (
-											<Chip color="success" size="sm" variant="soft">
-												{emptyCategoryLabel(detail)}
-											</Chip>
-										)}
-									</div>
-								</div>
-							))}
-						</div>
-					) : null}
+					<ModerationDetails note={note} />
 				</section>
 
 				<section className="grid gap-3 border-border border-t pt-5">
@@ -733,6 +794,7 @@ function ReviewNoteDetailDrawer({
 										<div className="text-muted text-xs">判断原因</div>
 										<div className="mt-1">{moderationReasonText(note)}</div>
 									</div>
+									<ModerationDetails note={note} />
 									{note.rejectionReason ? (
 										<div className="rounded-xl bg-danger-soft p-3 text-danger-soft-foreground text-sm">
 											<div className="text-xs opacity-70">人工拒绝理由</div>

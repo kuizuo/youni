@@ -1,6 +1,7 @@
 import { createDb } from "@youni/db";
+import type { ContentModerationDetail } from "@youni/db/schema/content";
 import type { ContentModerationReason } from "@youni/db/schema/content-values";
-import { note } from "@youni/db/schema/index";
+import { note, noteTopic, topic } from "@youni/db/schema/index";
 import { env } from "@youni/env/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
@@ -12,6 +13,10 @@ import {
 	type ImageModerationResult,
 	moderateImage,
 } from "../moderation/image";
+import {
+	type ContentTextModerationMatch,
+	findBlockedContentText,
+} from "../moderation/text";
 
 const GENERIC_REJECTION_REASON = "内容未通过审核";
 const NOTE_IMAGE_PREFIX = "note-images/";
@@ -145,6 +150,27 @@ export function deriveContentModerationStatus(
 		: ("failed" as const);
 }
 
+export function combineContentModerationDecision(
+	imageDecision: ImageModerationDecision,
+	textMatches: ContentTextModerationMatch[],
+): ImageModerationDecision {
+	return textMatches.length > 0 ? "block" : imageDecision;
+}
+
+export function createTextModerationDetails(
+	matches: ContentTextModerationMatch[],
+): ContentModerationDetail[] {
+	return matches.map((match) => ({
+		categories: ["prohibited_text"],
+		confidence: 1,
+		decision: "block",
+		field: match.field,
+		reason: "text_rule",
+		source: "text",
+		terms: match.terms,
+	}));
+}
+
 function imageListsMatch(left: string[], right: string[]) {
 	return (
 		left.length === right.length &&
@@ -164,9 +190,14 @@ export async function processContentReviewJob(body: unknown) {
 	const db = createDb();
 	const [current] = await db
 		.select({
+			advancedOptions: note.advancedOptions,
+			components: note.components,
+			content: note.content,
 			images: note.images,
+			locationName: note.locationName,
 			moderationStatus: note.moderationStatus,
 			status: note.status,
+			title: note.title,
 		})
 		.from(note)
 		.where(and(eq(note.id, job.contentId), eq(note.userId, job.userId)))
@@ -200,20 +231,39 @@ export async function processContentReviewJob(body: unknown) {
 	}
 
 	try {
+		const topicRows = await db
+			.select({ name: topic.name })
+			.from(noteTopic)
+			.innerJoin(topic, eq(noteTopic.topicId, topic.id))
+			.where(eq(noteTopic.noteId, job.contentId));
+		const textMatches = findBlockedContentText({
+			advancedOptions: current.advancedOptions,
+			components: current.components,
+			content: current.content,
+			locationName: current.locationName ?? undefined,
+			title: current.title,
+			topics: topicRows.map((row) => row.name),
+		});
 		const engine = env.AI as unknown as ImageModerationEngine | undefined;
 		const bucket = env.YOUNI_BUCKET as unknown as ImageBucket | undefined;
-		if (!engine || typeof engine.run !== "function" || !bucket) {
+		const canReviewImages = Boolean(
+			engine && typeof engine.run === "function" && bucket,
+		);
+		if (!canReviewImages) {
 			console.error("content review dependency unavailable", {
 				contentId: job.contentId,
 				hasBucket: Boolean(bucket),
 				hasEngine: Boolean(engine && typeof engine.run === "function"),
 			});
-			await markContentReviewFailed(job, "service_unavailable");
-			return "review" as const;
 		}
 
 		const results: ImageModerationResult[] = [];
 		for (const [imageIndex, image] of job.images.entries()) {
+			if (!canReviewImages || !bucket || !engine) {
+				results.push(createImageModerationReview("service_unavailable"));
+				continue;
+			}
+
 			let imageInput: string;
 			try {
 				imageInput = await prepareNoteImageForReview(image, job.userId, bucket);
@@ -238,11 +288,19 @@ export async function processContentReviewJob(body: unknown) {
 			);
 		}
 
-		const decision = combineImageModerationResults(results);
-		const moderationDetails = results.map((result, index) => ({
-			...result,
-			image: job.images[index] ?? "",
-		}));
+		const imageDecision = combineImageModerationResults(results);
+		const decision = combineContentModerationDecision(
+			imageDecision,
+			textMatches,
+		);
+		const moderationDetails: ContentModerationDetail[] = [
+			...createTextModerationDetails(textMatches),
+			...results.map((result, index) => ({
+				...result,
+				image: job.images[index] ?? "",
+				source: "image" as const,
+			})),
+		];
 		const moderationReason = deriveContentModerationReason(decision, results);
 		if (decision === "review") {
 			await db

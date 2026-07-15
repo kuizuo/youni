@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import type { ImageModerationResult } from "../moderation/image";
 import {
+	combineContentModerationDecision,
+	createTextModerationDetails,
 	deriveContentModerationReason,
 	deriveContentModerationStatus,
 	isOwnedNoteImageUrl,
@@ -78,5 +80,42 @@ describe("note image review adapter", () => {
 			"failed",
 		);
 		expect(deriveContentModerationStatus("pass", null)).toBe("passed");
+	});
+
+	test("blocks content when text matches even if every image passes", () => {
+		expect(combineContentModerationDecision("pass", [])).toBe("pass");
+		expect(
+			combineContentModerationDecision("pass", [
+				{ field: "title", terms: ["出售枪支"] },
+			]),
+		).toBe("block");
+	});
+
+	test("stores the matched terms and their visible text locations", () => {
+		expect(
+			createTextModerationDetails([
+				{ field: "title", terms: ["出售枪支"] },
+				{ field: "content", terms: ["兼职刷单", "代办假证"] },
+			]),
+		).toEqual([
+			{
+				categories: ["prohibited_text"],
+				confidence: 1,
+				decision: "block",
+				field: "title",
+				reason: "text_rule",
+				source: "text",
+				terms: ["出售枪支"],
+			},
+			{
+				categories: ["prohibited_text"],
+				confidence: 1,
+				decision: "block",
+				field: "content",
+				reason: "text_rule",
+				source: "text",
+				terms: ["兼职刷单", "代办假证"],
+			},
+		]);
 	});
 });

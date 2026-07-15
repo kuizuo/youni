@@ -22,7 +22,6 @@ import type {
 	HydratedContentNote,
 	NoteVisibility,
 } from "../../contracts/shared";
-import { hasBlockedContentText } from "../moderation/text";
 import { containsInsensitive } from "../search";
 import { enqueueContentReview, isOwnedNoteImageUrl } from "./moderation";
 import { getMissingPublishItems } from "./publish-validation";
@@ -166,12 +165,6 @@ function assertPublishReady(input: ContentNoteMutationInput) {
 	if (missingItems.length > 0) {
 		throw new ORPCError("BAD_REQUEST", {
 			message: `还差：${missingItems.join("、")}`,
-		});
-	}
-
-	if (hasBlockedContentText(input)) {
-		throw new ORPCError("BAD_REQUEST", {
-			message: "内容包含不适合发布的信息，请修改后重试",
 		});
 	}
 }

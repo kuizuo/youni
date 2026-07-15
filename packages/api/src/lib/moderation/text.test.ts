@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { hasBlockedContentText } from "./text";
+import { findBlockedContentText, hasBlockedContentText } from "./text";
 
 function noteInput(
 	overrides: Partial<Parameters<typeof hasBlockedContentText>[0]> = {},
@@ -49,5 +49,36 @@ describe("hasBlockedContentText", () => {
 				noteInput({ content: "整理常见网络诈骗手法，提醒大家不要转账。" }),
 			),
 		).toBe(false);
+	});
+});
+
+describe("findBlockedContentText", () => {
+	test("reports the prohibited phrase used by the review queue example", () => {
+		expect(findBlockedContentText(noteInput({ title: "你妈的xxx" }))).toEqual([
+			{ field: "title", terms: ["你妈的"] },
+		]);
+	});
+
+	test("returns every matched term grouped by its visible text location", () => {
+		expect(
+			findBlockedContentText(
+				noteInput({
+					components: [
+						{
+							options: ["普通选项", "裸聊服务"],
+							title: "投票",
+						},
+					],
+					content: "提供兼 职-刷_单和代-办-假-证",
+					title: "出售枪支",
+					topics: ["日常", "网赌代理"],
+				}),
+			),
+		).toEqual([
+			{ field: "title", terms: ["出售枪支"] },
+			{ field: "content", terms: ["兼职刷单", "代办假证"] },
+			{ field: "topic", terms: ["网赌代理"] },
+			{ field: "component", terms: ["裸聊服务"] },
+		]);
 	});
 });

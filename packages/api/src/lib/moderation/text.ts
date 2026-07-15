@@ -1,3 +1,4 @@
+import type { ContentModerationDetail } from "@youni/db/schema/content";
 import SensitiveWordTool from "sensitive-word-tool";
 
 const BLOCKED_CONTENT_TERMS = [
@@ -37,6 +38,7 @@ const BLOCKED_CONTENT_TERMS = [
 	"恐怖袭击教程",
 	"操你妈",
 	"草你妈",
+	"你妈的",
 	"你妈死了",
 	"傻逼",
 	"煞笔",
@@ -61,25 +63,58 @@ type ContentTextModerationInput = {
 	topics: string[];
 };
 
-function contentTextParts(input: ContentTextModerationInput) {
+export type ContentTextModerationField = NonNullable<
+	ContentModerationDetail["field"]
+>;
+
+export type ContentTextModerationMatch = {
+	field: ContentTextModerationField;
+	terms: string[];
+};
+
+function contentTextParts(
+	input: ContentTextModerationInput,
+): Array<{ field: ContentTextModerationField; value: string }> {
 	const componentParts = input.components.flatMap((component) => [
-		component.title,
-		component.value ?? "",
-		...(component.options ?? []),
+		{ field: "component" as const, value: component.title },
+		{ field: "component" as const, value: component.value ?? "" },
+		...(component.options ?? []).map((value) => ({
+			field: "component" as const,
+			value,
+		})),
 	]);
 
 	return [
-		input.title,
-		input.content,
-		...input.topics,
-		input.locationName ?? "",
-		input.advancedOptions.contentDisclosure ?? "",
+		{ field: "title", value: input.title },
+		{ field: "content", value: input.content },
+		...input.topics.map((value) => ({ field: "topic" as const, value })),
+		{ field: "location", value: input.locationName ?? "" },
+		{
+			field: "content_disclosure",
+			value: input.advancedOptions.contentDisclosure ?? "",
+		},
 		...componentParts,
 	];
 }
 
+export function findBlockedContentText(
+	input: ContentTextModerationInput,
+): ContentTextModerationMatch[] {
+	const termsByField = new Map<ContentTextModerationField, Set<string>>();
+	for (const { field, value } of contentTextParts(input)) {
+		const terms = blockedContentText.match(value.normalize("NFKC"));
+		if (terms.length === 0) continue;
+		const fieldTerms = termsByField.get(field) ?? new Set<string>();
+		for (const term of terms) fieldTerms.add(term);
+		termsByField.set(field, fieldTerms);
+	}
+
+	return Array.from(termsByField, ([field, terms]) => ({
+		field,
+		terms: Array.from(terms),
+	}));
+}
+
 export function hasBlockedContentText(input: ContentTextModerationInput) {
-	return contentTextParts(input).some((part) =>
-		blockedContentText.verify(part.normalize("NFKC")),
-	);
+	return findBlockedContentText(input).length > 0;
 }
