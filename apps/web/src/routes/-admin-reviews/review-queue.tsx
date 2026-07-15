@@ -310,16 +310,16 @@ export function ReviewQueue({
 
 	return (
 		<div className="grid gap-4">
-			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+			<div className="grid gap-1 rounded-2xl bg-surface p-2 shadow-surface sm:grid-cols-2 xl:grid-cols-5">
 				{queueFilters.map((filter) => (
 					<button
 						key={filter.key}
 						type="button"
 						aria-pressed={bucket === filter.key}
-						className={`rounded-2xl border p-4 text-left transition-colors ${
+						className={`rounded-xl p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
 							bucket === filter.key
-								? "border-accent bg-accent-soft"
-								: "border-border bg-surface hover:bg-surface-secondary"
+								? "bg-accent-soft"
+								: "hover:bg-surface-secondary"
 						}`}
 						onClick={() => onBucketChange(filter.key)}
 					>
@@ -388,10 +388,10 @@ export function ReviewQueue({
 			) : (
 				<div className="grid min-h-[620px] gap-3 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
 					<Card className="overflow-hidden">
-						<Card.Header className="border-border border-b px-4 py-3">
+						<Card.Header className="px-4 pt-4 pb-2">
 							<Card.Title className="text-base">审核记录</Card.Title>
 						</Card.Header>
-						<Card.Content className="grid content-start gap-0 p-0">
+						<Card.Content className="grid content-start gap-1 p-2">
 							{items.map((note) => (
 								<ReviewQueueItem
 									key={note.id}
@@ -401,7 +401,7 @@ export function ReviewQueue({
 								/>
 							))}
 						</Card.Content>
-						<Card.Footer className="flex items-center justify-between border-border border-t px-4 py-3">
+						<Card.Footer className="flex items-center justify-between bg-surface-secondary/60 px-4 py-3">
 							<span className="text-muted text-sm tabular-nums">
 								第 {page + 1} / {pageCount} 页
 							</span>
@@ -470,7 +470,7 @@ function ReviewQueueItem({
 		<button
 			type="button"
 			aria-current={isSelected ? "true" : undefined}
-			className={`grid grid-cols-[72px_minmax(0,1fr)] gap-3 border-border border-b p-4 text-left transition-colors last:border-b-0 ${
+			className={`grid grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-xl p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
 				isSelected ? "bg-accent-soft" : "hover:bg-surface-secondary"
 			}`}
 			onClick={onSelect}
@@ -534,7 +534,7 @@ function ReviewDetail({
 
 	return (
 		<Card className="h-fit xl:sticky xl:top-4">
-			<Card.Header className="flex-row items-start justify-between gap-3 border-border border-b px-5 py-4">
+			<Card.Header className="flex-row items-start justify-between gap-3 px-5 pt-5 pb-2">
 				<div className="min-w-0">
 					<Card.Title className="line-clamp-1">{note.title}</Card.Title>
 					<Card.Description className="mt-1">
@@ -598,7 +598,7 @@ function ReviewDetail({
 					<ModerationDetails note={note} />
 				</section>
 
-				<section className="grid gap-3 border-border border-t pt-5">
+				<section className="grid gap-3 pt-1">
 					<div>
 						<h3 className="font-medium">人工处理</h3>
 						<p className="mt-1 text-muted text-sm">
@@ -905,15 +905,12 @@ function ReviewQueueLoading() {
 			</div>
 			<div className="grid min-h-[620px] gap-3 xl:grid-cols-[minmax(360px,0.85fr)_minmax(520px,1.4fr)]">
 				<Card className="relative overflow-hidden">
-					<Card.Header className="border-border border-b px-4 py-4">
+					<Card.Header className="px-4 pt-4 pb-2">
 						<Skeleton className="h-5 w-24 rounded-lg" />
 					</Card.Header>
-					<Card.Content className="grid content-start p-0">
+					<Card.Content className="grid content-start gap-1 p-2">
 						{["first", "second", "third", "fourth", "fifth"].map((item) => (
-							<div
-								key={item}
-								className="flex gap-3 border-border border-b p-4 last:border-b-0"
-							>
+							<div key={item} className="flex gap-3 rounded-xl p-3">
 								<Skeleton className="size-[72px] shrink-0 rounded-xl" />
 								<div className="grid flex-1 content-center gap-2.5">
 									<div className="flex items-center justify-between gap-3">
@@ -926,7 +923,7 @@ function ReviewQueueLoading() {
 							</div>
 						))}
 					</Card.Content>
-					<Card.Footer className="flex items-center justify-between border-border border-t px-4 py-4">
+					<Card.Footer className="flex items-center justify-between bg-surface-secondary/60 px-4 py-4">
 						<Skeleton className="h-4 w-20 rounded-md" />
 						<div className="flex gap-2">
 							<Skeleton className="h-8 w-16 rounded-lg" />
@@ -936,7 +933,7 @@ function ReviewQueueLoading() {
 				</Card>
 
 				<Card className="relative h-fit overflow-hidden">
-					<Card.Header className="flex-row items-start justify-between gap-4 border-border border-b px-5 py-4">
+					<Card.Header className="flex-row items-start justify-between gap-4 px-5 pt-5 pb-2">
 						<div className="grid flex-1 gap-2">
 							<Skeleton className="h-5 w-2/5 rounded-md" />
 							<Skeleton className="h-3 w-1/3 rounded-md" />
@@ -971,7 +968,7 @@ function ReviewQueueLoading() {
 							</div>
 							<Skeleton className="h-20 rounded-xl" />
 						</section>
-						<section className="grid gap-3 border-border border-t pt-5">
+						<section className="grid gap-3 pt-1">
 							<Skeleton className="h-4 w-24 rounded-md" />
 							<Skeleton className="h-20 rounded-xl" />
 							<div className="flex justify-end gap-2">

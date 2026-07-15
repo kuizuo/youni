@@ -90,7 +90,6 @@ export function AdminTablePagination<TData>({
 						? `显示 ${start}-${end}，共 ${total} ${itemLabel}`
 						: emptyText}
 				</Pagination.Summary>
-				<span className="hidden h-4 w-px bg-border sm:block" />
 				<span className="tabular-nums">
 					第 {currentPage} / {pageCount} 页
 				</span>
@@ -160,11 +159,11 @@ function PaginationButton({
 			aria-label={ariaLabel}
 			disabled={isDisabled}
 			className={[
-				"inline-flex h-8 items-center justify-center rounded-md border font-medium text-sm transition",
+				"inline-flex h-8 items-center justify-center rounded-md font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
 				isIconOnly ? "w-8 px-0" : "min-w-16 px-3",
 				isActive
-					? "border-accent bg-accent text-accent-foreground"
-					: "border-border bg-surface text-foreground hover:bg-surface-secondary",
+					? "bg-accent text-accent-foreground"
+					: "bg-transparent text-foreground hover:bg-default",
 				"disabled:cursor-not-allowed disabled:opacity-50",
 			].join(" ")}
 			onClick={onClick}
@@ -176,7 +175,7 @@ function PaginationButton({
 
 function TableFooter({ children }: { children: ReactNode }) {
 	return (
-		<div className="flex flex-col gap-3 border-border border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+		<div className="flex flex-col gap-3 bg-surface-secondary/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 			{children}
 		</div>
 	);

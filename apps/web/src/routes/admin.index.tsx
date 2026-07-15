@@ -159,8 +159,8 @@ function AdminOverviewRoute() {
 							<Card.Header>
 								<Card.Title>运营提示</Card.Title>
 							</Card.Header>
-							<Card.Content className="grid divide-y divide-separator py-0">
-								<div className="py-4 first:pt-0">
+							<Card.Content className="grid content-start gap-6 pt-2">
+								<div>
 									<div className="flex items-center gap-2 font-medium">
 										<ChartColumn className="size-4 text-accent" />
 										审核队列
@@ -171,7 +171,7 @@ function AdminOverviewRoute() {
 											: "当前没有待审核图文。"}
 									</p>
 								</div>
-								<div className="py-4 last:pb-0">
+								<div>
 									<div className="flex items-center gap-2 font-medium">
 										<Comment className="size-4 text-accent" />
 										互动反馈

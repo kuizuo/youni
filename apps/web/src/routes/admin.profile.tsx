@@ -60,7 +60,7 @@ function AdminProfileRoute() {
 		>
 			<div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
 				<Card className="overflow-hidden p-0">
-					<div className="border-separator border-b bg-surface-secondary px-5 py-5">
+					<div className="bg-surface-secondary px-5 py-5">
 						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 							<div className="flex min-w-0 items-center gap-4">
 								<AppAvatar
@@ -86,7 +86,7 @@ function AdminProfileRoute() {
 					</div>
 
 					<Card.Content className="grid gap-5 p-5">
-						<div className="rounded-2xl border border-border bg-background p-4">
+						<div className="rounded-2xl bg-surface-secondary p-4">
 							<div className="mb-2 flex items-center gap-2 font-medium text-sm">
 								<Persons className="size-4 text-accent" />
 								公开资料
@@ -120,9 +120,9 @@ function AdminProfileRoute() {
 							<ProfileField label="状态">
 								<UserStatusBadge status={status} />
 							</ProfileField>
-							<div className="flex items-start gap-3 rounded-2xl border border-border bg-background p-3">
+							<div className="flex items-start gap-3 rounded-2xl bg-success-soft p-3">
 								<ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />
-								<p className="text-muted text-sm leading-6">
+								<p className="text-sm text-success-soft-foreground leading-6">
 									{role === "admin"
 										? "你可以管理内容、话题、用户和后台账号。"
 										: "你可以处理内容、话题和普通用户，不能调整管理员账号。"}
@@ -159,7 +159,7 @@ function ProfileField({
 	value?: string;
 }) {
 	return (
-		<div className="min-w-0 rounded-2xl border border-border bg-background p-3">
+		<div className="min-w-0 rounded-2xl bg-surface-secondary p-3">
 			<div className="text-muted text-xs">{label}</div>
 			<div className="mt-2 truncate font-medium text-foreground text-sm">
 				{children ?? value}

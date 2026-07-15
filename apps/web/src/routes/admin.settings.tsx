@@ -280,8 +280,6 @@ function AdminSettingsRoute() {
 							) : null}
 						</SettingsRow>
 
-						<Separator />
-
 						<SettingsRow
 							description="这里展示当前账号的后台权限。角色和状态需要在用户管理里由其他管理员处理。"
 							label="后台权限"
@@ -296,17 +294,15 @@ function AdminSettingsRoute() {
 								<InfoTile label="创建时间" value={createdAt} />
 								<InfoTile label="更新时间" value={updatedAt} />
 							</div>
-							<div className="flex items-start gap-3 rounded-xl border border-border bg-surface p-3">
+							<div className="flex items-start gap-3 rounded-xl bg-success-soft p-3">
 								<ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />
-								<p className="text-muted text-sm leading-6">
+								<p className="text-sm text-success-soft-foreground leading-6">
 									{role === "admin"
 										? "你可以管理内容、话题、用户和后台账号。"
 										: "你可以处理内容、话题和普通用户，不能调整管理员账号。"}
 								</p>
 							</div>
 						</SettingsRow>
-
-						<Separator />
 
 						<footer className="flex items-center justify-end gap-2 pt-2">
 							<Button
@@ -356,10 +352,6 @@ function SettingsRow({
 	);
 }
 
-function Separator() {
-	return <div className="h-px bg-separator" />;
-}
-
 function InfoTile({
 	children,
 	label,
@@ -370,7 +362,7 @@ function InfoTile({
 	value?: string;
 }) {
 	return (
-		<div className="min-w-0 rounded-xl border border-border bg-surface p-3">
+		<div className="min-w-0 rounded-xl bg-surface-secondary p-3">
 			<div className="text-muted text-xs">{label}</div>
 			<div className="mt-2 truncate font-medium text-foreground text-sm">
 				{children ?? value}

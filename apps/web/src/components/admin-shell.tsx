@@ -408,7 +408,7 @@ function DashboardNavbar({
 
 	return (
 		<>
-			<header className="h-16 shrink-0 border-separator border-b bg-background">
+			<header className="h-16 shrink-0 bg-surface">
 				<nav
 					aria-label="后台工具栏"
 					className="flex h-full w-full items-center gap-4 px-4 sm:px-6 lg:px-8"
@@ -454,7 +454,7 @@ function DashboardNavbar({
 							overview={overview}
 							role={user.role}
 						/>
-						<div className="border-separator border-l pl-2">
+						<div className="pl-1">
 							<UserMenu user={user} />
 						</div>
 					</div>
@@ -480,7 +480,7 @@ function DashboardSidebar({
 	pathname: string;
 }) {
 	return (
-		<aside className="flex h-full w-60 shrink-0 flex-col border-separator border-r bg-background">
+		<aside className="flex h-full w-60 shrink-0 flex-col bg-surface">
 			<SidebarContents
 				items={items}
 				pathname={pathname}

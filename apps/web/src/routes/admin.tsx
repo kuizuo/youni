@@ -77,7 +77,7 @@ function AdminLayoutRoute() {
 function AdminLoadingScreen() {
 	return (
 		<main className="grid min-h-svh bg-background lg:grid-cols-[240px_minmax(0,1fr)]">
-			<aside className="hidden border-separator border-r bg-surface px-3 py-4 lg:flex lg:flex-col">
+			<aside className="hidden bg-surface px-3 py-4 lg:flex lg:flex-col">
 				<div className="flex items-center gap-3 px-1 py-1">
 					<Skeleton className="size-9 rounded-2xl" />
 					<div className="grid flex-1 gap-2">
@@ -98,7 +98,7 @@ function AdminLoadingScreen() {
 				</div>
 			</aside>
 			<section className="flex min-w-0 flex-col">
-				<header className="flex h-16 items-center gap-3 border-separator border-b px-5">
+				<header className="flex h-16 items-center gap-3 bg-surface px-5">
 					<Skeleton className="size-7 rounded-lg lg:hidden" />
 					<Skeleton className="h-6 w-24 rounded-lg" />
 					<div className="ml-auto flex items-center gap-2">

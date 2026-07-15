@@ -23,15 +23,12 @@ export function AdminMetricGroup({
 	readonly metrics: readonly AdminMetric[];
 }) {
 	return (
-		<dl className="grid min-h-28 grid-cols-2 overflow-hidden rounded-2xl bg-surface shadow-surface md:grid-cols-3 xl:grid-cols-6">
+		<dl className="grid min-h-28 grid-cols-2 gap-x-4 gap-y-6 rounded-2xl bg-surface p-4 shadow-surface md:grid-cols-3 xl:grid-cols-6">
 			{metrics.map((metric) => {
 				const Icon = metric.icon;
 
 				return (
-					<div
-						className="relative flex min-w-0 flex-col p-4 before:absolute before:inset-y-4 before:left-0 before:w-px before:bg-separator first:before:hidden"
-						key={metric.label}
-					>
+					<div className="flex min-w-0 flex-col" key={metric.label}>
 						<div className="mb-1 flex min-w-0 items-center gap-2">
 							<span
 								className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${statusClassName[metric.status]}`}
