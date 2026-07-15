@@ -114,7 +114,3 @@ export function findBlockedContentText(
 		terms: Array.from(terms),
 	}));
 }
-
-export function hasBlockedContentText(input: ContentTextModerationInput) {
-	return findBlockedContentText(input).length > 0;
-}

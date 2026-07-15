@@ -713,9 +713,10 @@ export async function listAdminContentNotes(input: {
 	}
 
 	const whereClause = conditions.length ? and(...conditions) : undefined;
-	const [totalRow] = whereClause
-		? await db.select({ value: count() }).from(note).where(whereClause)
-		: await db.select({ value: count() }).from(note);
+	const [totalRow] = await db
+		.select({ value: count() })
+		.from(note)
+		.where(whereClause);
 	const noteStatusOrder = sql<number>`case ${note.status}
 		when 'draft' then 0
 		when 'audit' then 1
@@ -732,22 +733,14 @@ export async function listAdminContentNotes(input: {
 					? noteStatusOrder
 					: note.createdAt;
 	const order = input.sortDirection === "asc" ? asc : desc;
-	const rows = whereClause
-		? await db
-				.select(adminContentNoteRowFields)
-				.from(note)
-				.innerJoin(user, eq(note.userId, user.id))
-				.where(whereClause)
-				.orderBy(order(sortExpression), order(note.id))
-				.limit(input.limit)
-				.offset(input.offset)
-		: await db
-				.select(adminContentNoteRowFields)
-				.from(note)
-				.innerJoin(user, eq(note.userId, user.id))
-				.orderBy(order(sortExpression), order(note.id))
-				.limit(input.limit)
-				.offset(input.offset);
+	const rows = await db
+		.select(adminContentNoteRowFields)
+		.from(note)
+		.innerJoin(user, eq(note.userId, user.id))
+		.where(whereClause)
+		.orderBy(order(sortExpression), order(note.id))
+		.limit(input.limit)
+		.offset(input.offset);
 
 	return {
 		items: await hydrateAdminContentNotes(rows),

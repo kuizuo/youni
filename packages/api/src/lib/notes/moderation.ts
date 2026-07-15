@@ -352,7 +352,7 @@ export async function processContentReviewJob(body: unknown) {
 
 		return updated ? decision : ("stale" as const);
 	} catch {
-		await markContentReviewFailed(job, "result_write_failed");
+		await markContentReviewWriteFailed(job);
 		return "review" as const;
 	}
 }
@@ -373,19 +373,13 @@ export async function enqueueContentReview(job: ContentReviewJob) {
 	}
 }
 
-async function markContentReviewFailed(
-	job: ContentReviewJob,
-	reason: Extract<
-		ContentModerationReason,
-		"result_write_failed" | "service_unavailable"
-	>,
-) {
+async function markContentReviewWriteFailed(job: ContentReviewJob) {
 	await createDb()
 		.update(note)
 		.set({
 			moderatedAt: new Date(),
 			moderationDetails: [],
-			moderationReason: reason,
+			moderationReason: "result_write_failed",
 			moderationStatus: "failed",
 		})
 		.where(

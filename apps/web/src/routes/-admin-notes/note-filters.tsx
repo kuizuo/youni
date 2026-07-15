@@ -1,7 +1,8 @@
-import { Funnel, Magnifier, Xmark } from "@gravity-ui/icons";
-import { Button, Dropdown, Label, SearchField } from "@heroui/react";
+import { Funnel, Xmark } from "@gravity-ui/icons";
+import { Button, Dropdown, Label } from "@heroui/react";
 import type { ContentNoteStatus } from "@youni/api/contracts/shared";
 
+import { AdminSearchField } from "@/components/admin-search-field";
 import { noteStatusLabel } from "@/components/admin-status";
 
 import { noteStatusOptions } from "./types";
@@ -27,33 +28,15 @@ export function NoteFilters({
 
 	return (
 		<div className="flex flex-wrap items-center gap-2">
-			<div className="flex w-full gap-2 sm:w-auto">
-				<SearchField
-					aria-label="搜索图文"
-					className="min-w-0 flex-1 sm:w-80"
-					name="notes-search"
-					value={keyword}
-					variant="secondary"
-					onChange={onKeywordChange}
-					onClear={onClearKeyword}
-					onSubmit={onKeywordSubmit}
-				>
-					<SearchField.Group className="md:h-8">
-						<SearchField.SearchIcon>
-							<Magnifier className="size-4" />
-						</SearchField.SearchIcon>
-						<SearchField.Input placeholder="搜索图文..." />
-						<SearchField.ClearButton />
-					</SearchField.Group>
-				</SearchField>
-				<Button
-					size="sm"
-					variant="secondary"
-					onPress={() => onKeywordSubmit(keyword)}
-				>
-					搜索
-				</Button>
-			</div>
+			<AdminSearchField
+				ariaLabel="搜索图文"
+				keyword={keyword}
+				name="notes-search"
+				placeholder="搜索图文..."
+				onChange={onKeywordChange}
+				onClear={onClearKeyword}
+				onSubmit={onKeywordSubmit}
+			/>
 
 			<Dropdown>
 				<Button size="sm" variant="secondary">

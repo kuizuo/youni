@@ -1,5 +1,4 @@
 import { TrashBin } from "@gravity-ui/icons";
-import type { SortDescriptor } from "@heroui/react";
 import { Button, Chip, Popover, Table } from "@heroui/react";
 import {
 	createColumnHelper,
@@ -20,6 +19,10 @@ import {
 	AdminTablePagination,
 	normalizeTablePaginationUpdater,
 } from "@/components/admin-table-pagination";
+import {
+	sortDescriptorToState,
+	sortingStateToDescriptor,
+} from "@/components/admin-table-sorting";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
 
 import { toNoteStatus } from "./types";
@@ -43,24 +46,6 @@ const columnClassName: Record<string, string> = {
 	createdAt: "w-36 whitespace-nowrap",
 	actions: "w-20 whitespace-nowrap text-end",
 };
-
-function toSortDescriptor(sorting: SortingState): SortDescriptor | undefined {
-	const first = sorting[0];
-	if (!first) return undefined;
-	return {
-		column: first.id,
-		direction: first.desc ? "descending" : "ascending",
-	};
-}
-
-function toSortingState(descriptor: SortDescriptor): SortingState {
-	return [
-		{
-			desc: descriptor.direction === "descending",
-			id: String(descriptor.column),
-		},
-	];
-}
 
 export function NoteTable({
 	isDeletePending,
@@ -210,7 +195,7 @@ export function NoteTable({
 		pageCount: Math.max(Math.ceil(totalItems / currentPagination.pageSize), 1),
 		state: { pagination: currentPagination, sorting },
 	});
-	const sortDescriptor = useMemo(() => toSortDescriptor(sorting), [sorting]);
+	const sortDescriptor = sortingStateToDescriptor(sorting);
 
 	return (
 		<Table>
@@ -220,7 +205,7 @@ export function NoteTable({
 					className="min-w-[940px] table-fixed"
 					sortDescriptor={sortDescriptor}
 					onSortChange={(descriptor) =>
-						handleSortingChange(toSortingState(descriptor))
+						handleSortingChange(sortDescriptorToState(descriptor))
 					}
 				>
 					<Table.Header>

@@ -1,5 +1,5 @@
 import type { PaginationState, SortingState } from "@tanstack/react-table";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { AdminListSearch, AdminSort } from "@/lib/admin-list-search";
 import {
@@ -36,84 +36,65 @@ export function useAdminListWorkflow<TSearch extends AdminListSearch<string>>(
 		setKeyword(search.q);
 	}, [search.q]);
 
-	const updateSearch = useCallback(
-		(
-			patch: Partial<TSearch>,
-			options: { replace?: boolean; resetPage?: boolean } = {},
-		) => {
-			void navigate({
-				to: ".",
-				replace: options.replace,
-				resetScroll: false,
-				search: (current) => ({
-					...current,
-					...patch,
-					...(options.resetPage ? { page: 1 } : {}),
-				}),
-			});
-		},
-		[navigate],
-	);
+	const updateSearch = (
+		patch: Partial<TSearch>,
+		options: { replace?: boolean; resetPage?: boolean } = {},
+	) => {
+		void navigate({
+			to: ".",
+			replace: options.replace,
+			resetScroll: false,
+			search: (current) => ({
+				...current,
+				...patch,
+				...(options.resetPage ? { page: 1 } : {}),
+			}),
+		});
+	};
 
-	const updateKeyword = useCallback((value: string) => {
-		setKeyword(value);
-	}, []);
+	const submitKeyword = (value = keyword) => {
+		const normalized = value.trim();
+		setKeyword(normalized);
+		if (normalized === search.q) return;
+		updateSearch({ q: normalized } as Partial<TSearch>, {
+			replace: true,
+			resetPage: true,
+		});
+	};
 
-	const submitKeyword = useCallback(
-		(value = keyword) => {
-			const normalized = value.trim();
-			setKeyword(normalized);
-			if (normalized === search.q) return;
-			updateSearch({ q: normalized } as Partial<TSearch>, {
-				replace: true,
-				resetPage: true,
-			});
-		},
-		[keyword, search.q, updateSearch],
-	);
-
-	const clearKeyword = useCallback(() => {
+	const clearKeyword = () => {
 		setKeyword("");
 		if (!search.q) return;
 		updateSearch({ q: "" } as Partial<TSearch>, {
 			replace: true,
 			resetPage: true,
 		});
-	}, [search.q, updateSearch]);
+	};
 
-	const pagination = useMemo<PaginationState>(
-		() => ({ pageIndex: search.page - 1, pageSize: search.pageSize }),
-		[search.page, search.pageSize],
-	);
-	const sorting = useMemo<SortingState>(() => adminSortToState(sort), [sort]);
+	const pagination: PaginationState = {
+		pageIndex: search.page - 1,
+		pageSize: search.pageSize,
+	};
+	const sorting = adminSortToState(sort);
 
-	const setPagination = useCallback(
-		(next: PaginationState) => {
-			updateSearch({
-				page: next.pageIndex + 1,
-				pageSize: next.pageSize,
-			} as Partial<TSearch>);
-		},
-		[updateSearch],
-	);
+	const setPagination = (next: PaginationState) => {
+		updateSearch({
+			page: next.pageIndex + 1,
+			pageSize: next.pageSize,
+		} as Partial<TSearch>);
+	};
 
-	const correctPageIndex = useCallback(
-		(pageIndex: number) => {
-			updateSearch({ page: pageIndex + 1 } as Partial<TSearch>, {
-				replace: true,
-			});
-		},
-		[updateSearch],
-	);
+	const correctPageIndex = (pageIndex: number) => {
+		updateSearch({ page: pageIndex + 1 } as Partial<TSearch>, {
+			replace: true,
+		});
+	};
 
-	const setSorting = useCallback(
-		(next: SortingState) => {
-			const nextSort = adminSortingStateToSort<SearchSortField<TSearch>>(next);
-			if (!nextSort || nextSort === search.sort) return;
-			updateSearch({ sort: nextSort } as Partial<TSearch>, { resetPage: true });
-		},
-		[search.sort, updateSearch],
-	);
+	const setSorting = (next: SortingState) => {
+		const nextSort = adminSortingStateToSort<SearchSortField<TSearch>>(next);
+		if (!nextSort || nextSort === search.sort) return;
+		updateSearch({ sort: nextSort } as Partial<TSearch>, { resetPage: true });
+	};
 
 	const paginationInput = useMemo(
 		() => ({
@@ -137,7 +118,7 @@ export function useAdminListWorkflow<TSearch extends AdminListSearch<string>>(
 		setSorting,
 		sorting,
 		submitKeyword,
-		updateKeyword,
+		updateKeyword: setKeyword,
 		updateSearch,
 	};
 }

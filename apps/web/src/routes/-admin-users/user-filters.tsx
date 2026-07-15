@@ -1,7 +1,8 @@
 import { Funnel, Plus, Xmark } from "@gravity-ui/icons";
-import { Button, Dropdown, Label, SearchField } from "@heroui/react";
+import { Button, Dropdown, Label } from "@heroui/react";
 import type { AdminUserStatus } from "@youni/api/admin-user-governance";
 
+import { AdminSearchField } from "@/components/admin-search-field";
 import { userStatusLabel } from "@/components/admin-status";
 import {
 	accountTypeLabel,
@@ -43,31 +44,15 @@ export function UserFilters({
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-2">
 			<div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-				<div className="flex w-full gap-2 sm:w-auto">
-					<SearchField
-						aria-label="搜索用户"
-						className="min-w-0 flex-1 sm:w-80"
-						name="users-search"
-						value={keyword}
-						variant="secondary"
-						onChange={onKeywordChange}
-						onClear={onClearKeyword}
-						onSubmit={onKeywordSubmit}
-					>
-						<SearchField.Group className="md:h-8">
-							<SearchField.SearchIcon />
-							<SearchField.Input placeholder="搜索用户..." />
-							<SearchField.ClearButton />
-						</SearchField.Group>
-					</SearchField>
-					<Button
-						size="sm"
-						variant="secondary"
-						onPress={() => onKeywordSubmit(keyword)}
-					>
-						搜索
-					</Button>
-				</div>
+				<AdminSearchField
+					ariaLabel="搜索用户"
+					keyword={keyword}
+					name="users-search"
+					placeholder="搜索用户..."
+					onChange={onKeywordChange}
+					onClear={onClearKeyword}
+					onSubmit={onKeywordSubmit}
+				/>
 
 				<Dropdown>
 					<Button size="sm" variant="secondary">

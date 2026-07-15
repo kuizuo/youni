@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { findBlockedContentText, hasBlockedContentText } from "./text";
+import { findBlockedContentText } from "./text";
 
 function noteInput(
-	overrides: Partial<Parameters<typeof hasBlockedContentText>[0]> = {},
-): Parameters<typeof hasBlockedContentText>[0] {
+	overrides: Partial<Parameters<typeof findBlockedContentText>[0]> = {},
+): Parameters<typeof findBlockedContentText>[0] {
 	return {
 		advancedOptions: {},
 		components: [],
@@ -14,45 +14,43 @@ function noteInput(
 	};
 }
 
-describe("hasBlockedContentText", () => {
+describe("findBlockedContentText", () => {
 	test("allows ordinary note text", () => {
-		expect(hasBlockedContentText(noteInput())).toBe(false);
+		expect(findBlockedContentText(noteInput())).toEqual([]);
 	});
 
 	test("blocks a clear prohibited phrase in the title", () => {
 		expect(
-			hasBlockedContentText(noteInput({ title: "提供兼职刷单，高额返利" })),
-		).toBe(true);
+			findBlockedContentText(noteInput({ title: "提供兼职刷单，高额返利" })),
+		).not.toEqual([]);
 	});
 
 	test("ignores punctuation and full-width spaces used to evade matching", () => {
 		expect(
-			hasBlockedContentText(
+			findBlockedContentText(
 				noteInput({ content: "可提供兼　职-刷_单，私信联系。" }),
 			),
-		).toBe(true);
+		).not.toEqual([]);
 	});
 
 	test("checks topics and other visible text fields", () => {
 		expect(
-			hasBlockedContentText(
+			findBlockedContentText(
 				noteInput({
 					components: [{ title: "代-办-假-证" }],
 				}),
 			),
-		).toBe(true);
+		).not.toEqual([]);
 	});
 
 	test("does not block general anti-fraud education", () => {
 		expect(
-			hasBlockedContentText(
+			findBlockedContentText(
 				noteInput({ content: "整理常见网络诈骗手法，提醒大家不要转账。" }),
 			),
-		).toBe(false);
+		).toEqual([]);
 	});
-});
 
-describe("findBlockedContentText", () => {
 	test("reports the prohibited phrase used by the review queue example", () => {
 		expect(findBlockedContentText(noteInput({ title: "你妈的xxx" }))).toEqual([
 			{ field: "title", terms: ["你妈的"] },

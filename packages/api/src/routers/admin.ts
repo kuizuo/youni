@@ -606,9 +606,10 @@ export const adminRouter = {
 			const whereClause = input.keyword
 				? containsInsensitive(topic.name, input.keyword)
 				: undefined;
-			const [totalRow] = whereClause
-				? await db.select({ value: count() }).from(topic).where(whereClause)
-				: await db.select({ value: count() }).from(topic);
+			const [totalRow] = await db
+				.select({ value: count() })
+				.from(topic)
+				.where(whereClause);
 			const topicNoteCount = count(noteTopic.noteId);
 			const sortExpression =
 				input.sortBy === "name"
@@ -617,34 +618,20 @@ export const adminRouter = {
 						? topicNoteCount
 						: topic.createdAt;
 			const order = input.sortDirection === "asc" ? asc : desc;
-			const rows = whereClause
-				? await db
-						.select({
-							id: topic.id,
-							name: topic.name,
-							createdAt: topic.createdAt,
-							noteCount: topicNoteCount,
-						})
-						.from(topic)
-						.leftJoin(noteTopic, eq(topic.id, noteTopic.topicId))
-						.where(whereClause)
-						.groupBy(topic.id)
-						.orderBy(order(sortExpression), order(topic.id))
-						.limit(input.limit)
-						.offset(input.offset)
-				: await db
-						.select({
-							id: topic.id,
-							name: topic.name,
-							createdAt: topic.createdAt,
-							noteCount: topicNoteCount,
-						})
-						.from(topic)
-						.leftJoin(noteTopic, eq(topic.id, noteTopic.topicId))
-						.groupBy(topic.id)
-						.orderBy(order(sortExpression), order(topic.id))
-						.limit(input.limit)
-						.offset(input.offset);
+			const rows = await db
+				.select({
+					id: topic.id,
+					name: topic.name,
+					createdAt: topic.createdAt,
+					noteCount: topicNoteCount,
+				})
+				.from(topic)
+				.leftJoin(noteTopic, eq(topic.id, noteTopic.topicId))
+				.where(whereClause)
+				.groupBy(topic.id)
+				.orderBy(order(sortExpression), order(topic.id))
+				.limit(input.limit)
+				.offset(input.offset);
 
 			return {
 				items: rows.map((row) => ({
@@ -744,9 +731,10 @@ export const adminRouter = {
 					: undefined,
 			].filter(Boolean);
 			const whereClause = conditions.length ? and(...conditions) : undefined;
-			const [totalRow] = whereClause
-				? await db.select({ value: count() }).from(user).where(whereClause)
-				: await db.select({ value: count() }).from(user);
+			const [totalRow] = await db
+				.select({ value: count() })
+				.from(user)
+				.where(whereClause);
 			const userRoleOrder = sql<number>`case ${user.role}
 				when 'admin' then 0
 				when 'operator' then 1
@@ -766,46 +754,26 @@ export const adminRouter = {
 							? userStatusOrder
 							: user.createdAt;
 			const order = input.sortDirection === "asc" ? asc : desc;
-			const rows = whereClause
-				? await db
-						.select({
-							id: user.id,
-							name: user.name,
-							email: user.email,
-							image: user.image,
-							handle: user.handle,
-							bio: user.bio,
-							gender: user.gender,
-							isAnonymous: user.isAnonymous,
-							role: user.role,
-							status: user.status,
-							createdAt: user.createdAt,
-							updatedAt: user.updatedAt,
-						})
-						.from(user)
-						.where(whereClause)
-						.orderBy(order(sortExpression), order(user.id))
-						.limit(input.limit)
-						.offset(input.offset)
-				: await db
-						.select({
-							id: user.id,
-							name: user.name,
-							email: user.email,
-							image: user.image,
-							handle: user.handle,
-							bio: user.bio,
-							gender: user.gender,
-							isAnonymous: user.isAnonymous,
-							role: user.role,
-							status: user.status,
-							createdAt: user.createdAt,
-							updatedAt: user.updatedAt,
-						})
-						.from(user)
-						.orderBy(order(sortExpression), order(user.id))
-						.limit(input.limit)
-						.offset(input.offset);
+			const rows = await db
+				.select({
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					image: user.image,
+					handle: user.handle,
+					bio: user.bio,
+					gender: user.gender,
+					isAnonymous: user.isAnonymous,
+					role: user.role,
+					status: user.status,
+					createdAt: user.createdAt,
+					updatedAt: user.updatedAt,
+				})
+				.from(user)
+				.where(whereClause)
+				.orderBy(order(sortExpression), order(user.id))
+				.limit(input.limit)
+				.offset(input.offset);
 
 			if (rows.length === 0) {
 				return { items: [], total: toNumber(totalRow?.value) };

@@ -1,5 +1,4 @@
 import { Pencil, TrashBin } from "@gravity-ui/icons";
-import type { SortDescriptor } from "@heroui/react";
 import { Button, Popover, Table } from "@heroui/react";
 import {
 	createColumnHelper,
@@ -17,6 +16,10 @@ import {
 	AdminTablePagination,
 	normalizeTablePaginationUpdater,
 } from "@/components/admin-table-pagination";
+import {
+	sortDescriptorToState,
+	sortingStateToDescriptor,
+} from "@/components/admin-table-sorting";
 import { AdminTableEmptyState } from "@/components/admin-table-state";
 
 const columnHelper = createColumnHelper<AdminTopicListItem>();
@@ -34,24 +37,6 @@ const columnClassName: Record<string, string> = {
 	createdAt: "w-40 whitespace-nowrap",
 	actions: "w-28 whitespace-nowrap text-end",
 };
-
-function toSortDescriptor(sorting: SortingState): SortDescriptor | undefined {
-	const first = sorting[0];
-	if (!first) return undefined;
-	return {
-		column: first.id,
-		direction: first.desc ? "descending" : "ascending",
-	};
-}
-
-function toSortingState(descriptor: SortDescriptor): SortingState {
-	return [
-		{
-			desc: descriptor.direction === "descending",
-			id: String(descriptor.column),
-		},
-	];
-}
 
 export function TopicTable({
 	isDeletePending,
@@ -143,7 +128,7 @@ export function TopicTable({
 		pageCount: Math.max(Math.ceil(total / pagination.pageSize), 1),
 		state: { pagination, sorting },
 	});
-	const sortDescriptor = useMemo(() => toSortDescriptor(sorting), [sorting]);
+	const sortDescriptor = sortingStateToDescriptor(sorting);
 
 	return (
 		<Table>
@@ -153,7 +138,7 @@ export function TopicTable({
 					className="min-w-[680px] table-fixed"
 					sortDescriptor={sortDescriptor}
 					onSortChange={(descriptor) =>
-						onSortingChange(toSortingState(descriptor))
+						onSortingChange(sortDescriptorToState(descriptor))
 					}
 				>
 					<Table.Header>
