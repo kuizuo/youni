@@ -1,3 +1,4 @@
+import { NOTE_IMAGE_MAX_COUNT } from "@youni/api/lib/notes/image-identity";
 import { Spinner, useThemeColor } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -309,8 +310,11 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	};
 	const openMediaPicker = () => {
 		finishInput();
-		if (composer.images.length >= 9) {
-			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
+		if (composer.images.length >= NOTE_IMAGE_MAX_COUNT) {
+			toast.show({
+				variant: "warning",
+				label: `最多只能选择 ${NOTE_IMAGE_MAX_COUNT} 张图片`,
+			});
 			return;
 		}
 		if (Platform.OS === "web") {

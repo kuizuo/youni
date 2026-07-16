@@ -24,7 +24,8 @@ import type {
 } from "../../contracts/shared";
 import { manualReviewModerationStatuses } from "../../contracts/shared";
 import { containsInsensitive } from "../search";
-import { enqueueContentReview, isOwnedNoteImageUrl } from "./moderation";
+import { isOwnedNoteImage } from "./image-identity";
+import { enqueueContentReview } from "./moderation";
 import { getMissingPublishItems } from "./publish-validation";
 import { contentReviewSubmissionState } from "./review-lifecycle";
 
@@ -184,7 +185,7 @@ export function assertNoteImageOwnership({
 		images.some(
 			(image) =>
 				!allowedExisting.has(image) &&
-				!isOwnedNoteImageUrl(image, userId, requestOrigin),
+				!isOwnedNoteImage(image, userId, requestOrigin),
 		)
 	) {
 		throw new ORPCError("BAD_REQUEST", {

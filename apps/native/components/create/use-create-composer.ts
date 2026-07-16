@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { NoteVisibility } from "@youni/api/contracts/shared";
+import { NOTE_IMAGE_MAX_COUNT } from "@youni/api/lib/notes/image-identity";
 import type * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
@@ -538,9 +539,12 @@ export function useCreateComposer({
 	const addImageAssets = async (assets: ImagePicker.ImagePickerAsset[]) => {
 		if (isAddingImages) return false;
 
-		const remaining = Math.max(0, 9 - images.length);
+		const remaining = Math.max(0, NOTE_IMAGE_MAX_COUNT - images.length);
 		if (remaining === 0) {
-			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
+			toast.show({
+				variant: "warning",
+				label: `最多只能选择 ${NOTE_IMAGE_MAX_COUNT} 张图片`,
+			});
 			return false;
 		}
 		if (assets.length === 0) return false;
@@ -551,7 +555,9 @@ export function useCreateComposer({
 				assets.slice(0, remaining).map((asset) => prepareMediaImage(asset)),
 			);
 
-			setImages((current) => [...current, ...selectedImages].slice(0, 9));
+			setImages((current) =>
+				[...current, ...selectedImages].slice(0, NOTE_IMAGE_MAX_COUNT),
+			);
 			return true;
 		} catch {
 			toast.show({
@@ -567,9 +573,12 @@ export function useCreateComposer({
 	const pickImagesFromSystem = async () => {
 		if (isAddingImages) return;
 		fireHaptic();
-		const remaining = Math.max(0, 9 - images.length);
+		const remaining = Math.max(0, NOTE_IMAGE_MAX_COUNT - images.length);
 		if (remaining === 0) {
-			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
+			toast.show({
+				variant: "warning",
+				label: `最多只能选择 ${NOTE_IMAGE_MAX_COUNT} 张图片`,
+			});
 			return;
 		}
 

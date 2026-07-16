@@ -1,3 +1,7 @@
+import {
+	NOTE_IMAGE_MAX_COUNT,
+	prepareNoteImageSource,
+} from "@youni/api/lib/notes/image-identity";
 import { fromByteArray, toByteArray } from "base64-js";
 import * as FileSystem from "expo-file-system/legacy";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
@@ -8,43 +12,8 @@ import type {
 } from "@/lib/local-drafts/types";
 import type { MediaImage } from "@/lib/media/types";
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const THUMBNAIL_WIDTH = 480;
 const MATERIALIZED_DIRECTORY = `${FileSystem.cacheDirectory ?? ""}local-draft-images/`;
-
-const MIME_EXTENSIONS = new Map([
-	["image/gif", "gif"],
-	["image/jpeg", "jpg"],
-	["image/jpg", "jpg"],
-	["image/png", "png"],
-	["image/webp", "webp"],
-]);
-
-function extensionFromName(value?: null | string) {
-	return value
-		?.split(/[?#]/)[0]
-		?.match(/\.([a-z0-9]+)$/i)?.[1]
-		?.toLowerCase();
-}
-
-function mimeTypeForImage(image: MediaImage) {
-	if (image.mimeType && MIME_EXTENSIONS.has(image.mimeType.toLowerCase())) {
-		return image.mimeType.toLowerCase();
-	}
-	const extension =
-		extensionFromName(image.fileName) ?? extensionFromName(image.uri);
-	if (extension === "gif") return "image/gif";
-	if (extension === "png") return "image/png";
-	if (extension === "webp") return "image/webp";
-	return "image/jpeg";
-}
-
-function fileNameForImage(image: MediaImage, mimeType: string) {
-	const extension = MIME_EXTENSIONS.get(mimeType) ?? "jpg";
-	const rawName = image.fileName?.trim() || `draft-image.${extension}`;
-	const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, "-");
-	return extensionFromName(safeName) ? safeName : `${safeName}.${extension}`;
-}
 
 async function bytesFromUri(uri: string) {
 	if (
@@ -70,20 +39,24 @@ async function imageData(image: MediaImage) {
 }
 
 export async function serializeComposerImages(images: MediaImage[]) {
-	if (images.length > 9) throw new Error("最多只能选择 9 张图片");
+	if (images.length > NOTE_IMAGE_MAX_COUNT) {
+		throw new Error(`最多只能选择 ${NOTE_IMAGE_MAX_COUNT} 张图片`);
+	}
 	const serialized: LocalDraftImageInput[] = [];
 	for (const image of images) {
 		const data = await imageData(image);
-		if (data.byteLength > MAX_IMAGE_BYTES) {
-			throw new Error("单张图片不能超过 8MB");
-		}
-		const mimeType = mimeTypeForImage(image);
+		const { contentType, fileName } = prepareNoteImageSource({
+			fileName: image.fileName,
+			fileSize: data.byteLength,
+			mimeType: image.mimeType,
+			uri: image.uri,
+		});
 		serialized.push({
 			data,
-			fileName: fileNameForImage(image, mimeType),
+			fileName,
 			height: image.height,
 			id: image.id,
-			mimeType,
+			mimeType: contentType,
 			width: image.width,
 		});
 	}
@@ -152,7 +125,12 @@ export async function materializeLocalDraftImage(
 	}
 
 	await ensureMaterializedDirectory();
-	const extension = MIME_EXTENSIONS.get(image.mimeType) ?? "jpg";
+	const prepared = prepareNoteImageSource({
+		fileName: image.fileName,
+		mimeType: image.mimeType,
+		uri: image.fileName,
+	});
+	const extension = prepared.fileName.split(".").pop() ?? "jpg";
 	const safeDraftId = draftId.replace(/[^a-zA-Z0-9_-]/g, "-");
 	const uri = `${MATERIALIZED_DIRECTORY}${safeDraftId}-${image.position}.${extension}`;
 	await FileSystem.writeAsStringAsync(uri, fromByteArray(image.data), {

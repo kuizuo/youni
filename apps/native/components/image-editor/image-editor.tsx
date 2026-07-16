@@ -3,6 +3,7 @@ import {
 	type SkImage,
 	useCanvasRef,
 } from "@shopify/react-native-skia";
+import { NOTE_IMAGE_MAX_SIZE_BYTES } from "@youni/api/lib/notes/image-identity";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Alert,
@@ -43,7 +44,6 @@ import {
 	getCropDragMode,
 	initialTransform,
 	loadEditorImage,
-	MAX_EXPORTED_BYTES,
 	makeCenteredCropRect,
 	makeExportSize,
 	makeInitialSnapshot,
@@ -938,7 +938,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 
 			while (
 				exported.fileSize &&
-				exported.fileSize > MAX_EXPORTED_BYTES &&
+				exported.fileSize > NOTE_IMAGE_MAX_SIZE_BYTES &&
 				quality > 60
 			) {
 				await deleteLocalFile(exported.uri);
@@ -947,7 +947,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 				exported = await writeJpegBase64(encoded, quality);
 			}
 
-			if (exported.fileSize && exported.fileSize > MAX_EXPORTED_BYTES) {
+			if (exported.fileSize && exported.fileSize > NOTE_IMAGE_MAX_SIZE_BYTES) {
 				await deleteLocalFile(exported.uri);
 				throw new Error("编辑后的图片仍超过 8MB");
 			}

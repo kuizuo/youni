@@ -1,5 +1,6 @@
 import { noteVisibilities } from "@youni/db/schema/content-values";
 import z from "zod";
+import { NOTE_IMAGE_MAX_COUNT } from "../lib/notes/image-identity";
 import { output, procedure } from "./procedure";
 import type {
 	ContentNoteStatus,
@@ -13,7 +14,10 @@ import { idInput, listInput, paginatedListInput } from "./shared";
 const noteMutationInput = z.object({
 	title: z.string().trim().max(100).default(""),
 	content: z.string().trim().max(5000).default(""),
-	images: z.array(z.string().trim().url()).max(9).default([]),
+	images: z
+		.array(z.string().trim().url())
+		.max(NOTE_IMAGE_MAX_COUNT)
+		.default([]),
 	imageMetas: z
 		.array(
 			z.object({
@@ -22,7 +26,7 @@ const noteMutationInput = z.object({
 				height: z.number().int().positive(),
 			}),
 		)
-		.max(9)
+		.max(NOTE_IMAGE_MAX_COUNT)
 		.default([]),
 	topics: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
 	locationName: z.string().trim().min(1).max(80).optional(),

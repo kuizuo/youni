@@ -1,6 +1,6 @@
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 
-export { resolveStoredNoteImageUrl } from "@youni/api/lib/notes/image-url";
+export { resolveStoredNoteImageUrl } from "@youni/api/lib/notes/image-identity";
 
 type ResolveApiBaseUrlOptions = {
 	configuredUrl: string;

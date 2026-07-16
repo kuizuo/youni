@@ -1,3 +1,7 @@
+import {
+	NOTE_IMAGE_MAX_COUNT,
+	prepareNoteImageSource,
+} from "@youni/api/lib/notes/image-identity";
 import type * as ImagePicker from "expo-image-picker";
 import { Platform } from "react-native";
 
@@ -8,14 +12,6 @@ import { appendUploadFile } from "@/lib/media/upload-form-data";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
 const NOTE_IMAGE_UPLOAD_TIMEOUT_MS = 60_000;
-const MAX_NOTE_IMAGE_SIZE = 8 * 1024 * 1024;
-const NOTE_IMAGE_MIME_EXTENSIONS = new Map([
-	["image/jpeg", "jpg"],
-	["image/jpg", "jpg"],
-	["image/png", "png"],
-	["image/webp", "webp"],
-	["image/gif", "gif"],
-]);
 
 export type NoteImageUploadAsset = {
 	file?: ImagePicker.ImagePickerAsset["file"];
@@ -24,48 +20,6 @@ export type NoteImageUploadAsset = {
 	mimeType?: null | string;
 	uri: string;
 };
-
-function extensionFromName(value?: null | string) {
-	const cleanValue = value?.split("?")[0]?.split("#")[0];
-	const match = cleanValue?.match(/\.([a-z0-9]+)$/i);
-	return match?.[1]?.toLowerCase();
-}
-
-function mimeTypeFromAsset(asset: NoteImageUploadAsset) {
-	const explicitType = asset.mimeType?.toLowerCase();
-	if (explicitType) {
-		if (NOTE_IMAGE_MIME_EXTENSIONS.has(explicitType)) {
-			return explicitType;
-		}
-		throw new Error("图片仅支持 JPG、PNG、WebP 或 GIF");
-	}
-
-	const extension =
-		extensionFromName(asset.fileName) ?? extensionFromName(asset.uri);
-	const detectedType = extension
-		? Array.from(NOTE_IMAGE_MIME_EXTENSIONS.entries()).find(
-				([, value]) =>
-					value === extension || (extension === "jpeg" && value === "jpg"),
-			)?.[0]
-		: undefined;
-
-	return detectedType ?? "image/jpeg";
-}
-
-function fileNameFromAsset(asset: NoteImageUploadAsset, mimeType: string) {
-	const extension = NOTE_IMAGE_MIME_EXTENSIONS.get(mimeType) ?? "jpg";
-	const rawName =
-		asset.fileName?.trim() ||
-		asset.uri.split("/").pop()?.split("?")[0]?.split("#")[0] ||
-		`note-image.${extension}`;
-	const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, "-");
-
-	if (extensionFromName(safeName)) {
-		return safeName;
-	}
-
-	return `${safeName}.${extension}`;
-}
 
 async function parseUploadResponse(response: Response) {
 	const payload = (await response.json().catch(() => null)) as {
@@ -102,16 +56,19 @@ export async function uploadNoteImages(assets: NoteImageUploadAsset[]) {
 	if (assets.length === 0) {
 		return [];
 	}
+	if (assets.length > NOTE_IMAGE_MAX_COUNT) {
+		throw new Error(`最多只能上传 ${NOTE_IMAGE_MAX_COUNT} 张图片`);
+	}
 
 	const formData = new FormData();
 
 	for (const [index, asset] of assets.entries()) {
-		if (asset.fileSize && asset.fileSize > MAX_NOTE_IMAGE_SIZE) {
-			throw new Error("单张图片不能超过 8MB");
-		}
-
-		const mimeType = mimeTypeFromAsset(asset);
-		const fileName = fileNameFromAsset(asset, mimeType);
+		const { fileName } = prepareNoteImageSource({
+			fileName: asset.fileName,
+			fileSize: asset.fileSize,
+			mimeType: asset.mimeType,
+			uri: asset.uri,
+		});
 
 		appendUploadFile({
 			fieldName: `image${index}`,

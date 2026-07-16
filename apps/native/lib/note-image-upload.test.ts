@@ -34,8 +34,8 @@ const fetchWithTimeout = mock(
 			JSON.stringify({
 				items: [
 					{
-						key: "note-images/user/photo.jpg",
-						url: "https://example.com/photo.jpg",
+						key: "note-images/user/123e4567-e89b-12d3-a456-426614174000.jpg",
+						url: "https://api.example.com/uploads/note-images/user/123e4567-e89b-12d3-a456-426614174000.jpg",
 					},
 				],
 			}),
@@ -77,8 +77,8 @@ describe("uploadNoteImages", () => {
 
 		expect(uploaded).toEqual([
 			{
-				key: "note-images/user/photo.jpg",
-				url: "https://example.com/photo.jpg",
+				key: "note-images/user/123e4567-e89b-12d3-a456-426614174000.jpg",
+				url: "https://api.example.com/uploads/note-images/user/123e4567-e89b-12d3-a456-426614174000.jpg",
 			},
 		]);
 		expect(fetchWithTimeout).toHaveBeenCalledTimes(1);

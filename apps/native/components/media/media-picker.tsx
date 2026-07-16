@@ -1,3 +1,4 @@
+import { NOTE_IMAGE_MAX_COUNT } from "@youni/api/lib/notes/image-identity";
 import {
 	type CameraCapturedPicture,
 	type CameraView,
@@ -352,7 +353,10 @@ export function MediaPicker({
 		fireHaptic();
 		const alreadySelected = selectedIds.includes(item.id);
 		if (!alreadySelected && selectedIds.length >= maxSelection) {
-			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
+			toast.show({
+				variant: "warning",
+				label: `最多只能选择 ${NOTE_IMAGE_MAX_COUNT} 张图片`,
+			});
 			return;
 		}
 		setSelectedIds((current) =>
@@ -422,7 +426,10 @@ export function MediaPicker({
 	const useCapturedPicture = () => {
 		if (!capturedPicture) return;
 		if (selectedIds.length >= maxSelection) {
-			toast.show({ variant: "warning", label: "最多只能选择 9 张图片" });
+			toast.show({
+				variant: "warning",
+				label: `最多只能选择 ${NOTE_IMAGE_MAX_COUNT} 张图片`,
+			});
 			return;
 		}
 		fireHaptic();

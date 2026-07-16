@@ -15,7 +15,6 @@ import type {
 	TransformModel,
 } from "./types";
 
-export const MAX_EXPORTED_BYTES = 8 * 1024 * 1024;
 export const MAX_EXPORT_LONG_EDGE = 2048;
 export const EDIT_EXPORT_DIR = "youni-image-edits";
 export const TEXT_COLORS = [

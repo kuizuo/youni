@@ -25,7 +25,7 @@ import type {
 	ContentModerationStatus,
 } from "@youni/api/contracts/shared";
 import { isPendingManualReview } from "@youni/api/contracts/shared";
-import { resolveStoredNoteImageUrl } from "@youni/api/lib/notes/image-url";
+import { resolveStoredNoteImageUrl } from "@youni/api/lib/notes/image-identity";
 import { env } from "@youni/env/web";
 import { useEffect, useMemo, useState } from "react";
 

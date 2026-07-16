@@ -6,7 +6,6 @@ import {
 	createTextModerationDetails,
 	deriveContentModerationReason,
 	deriveContentModerationStatus,
-	isOwnedNoteImageUrl,
 	prepareNoteImageForReview,
 } from "./moderation";
 import {
@@ -80,21 +79,6 @@ describe("note image review adapter", () => {
 				type: "automated",
 			}),
 		).toEqual({ moderationStatus: "processing", status: "audit" });
-	});
-
-	test("accepts only images uploaded by the note author", () => {
-		const image =
-			"https://api.example.com/uploads/note-images/user-1/123e4567-e89b-12d3-a456-426614174000.jpg";
-
-		expect(
-			isOwnedNoteImageUrl(image, "user-1", "https://api.example.com"),
-		).toBe(true);
-		expect(
-			isOwnedNoteImageUrl(image, "user-2", "https://api.example.com"),
-		).toBe(false);
-		expect(
-			isOwnedNoteImageUrl(image, "user-1", "https://other.example.com"),
-		).toBe(false);
 	});
 
 	test("loads an uploaded image from note storage", async () => {

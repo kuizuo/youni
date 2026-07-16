@@ -9,6 +9,12 @@ import { createContext } from "@youni/api/context";
 import { cleanupExpiredAnalytics } from "@youni/api/lib/analytics/retention";
 import { restoreBuiltinProhibitedTerms } from "@youni/api/lib/moderation/prohibited-terms";
 import {
+	createNoteImageIdentity,
+	NOTE_IMAGE_MAX_COUNT,
+	parseNoteImageIdentity,
+	prepareNoteImageSource,
+} from "@youni/api/lib/notes/image-identity";
+import {
 	type ContentReviewJob,
 	processContentReviewJob,
 } from "@youni/api/lib/notes/moderation";
@@ -46,9 +52,6 @@ const avatarPrefix = "avatar/";
 const avatarMaxSize = 2 * 1024 * 1024;
 const profileCoverPrefix = "profile-covers/";
 const profileCoverMaxSize = 5 * 1024 * 1024;
-const noteImagePrefix = "note-images/";
-const noteImageMaxSize = 8 * 1024 * 1024;
-const noteImageMaxCount = 9;
 const avatarContentTypes = new Map([
 	["image/jpeg", "jpg"],
 	["image/jpg", "jpg"],
@@ -56,7 +59,6 @@ const avatarContentTypes = new Map([
 	["image/webp", "webp"],
 	["image/gif", "gif"],
 ]);
-const noteImageContentTypes = avatarContentTypes;
 
 function getProcedureErrorStatus(error: unknown) {
 	if (error instanceof ORPCError) {
@@ -270,44 +272,54 @@ async function uploadNoteImagesFromRequest(c: HonoContext, userId: string) {
 		return c.json({ message: "请选择图片文件" }, 400);
 	}
 
-	if (files.length > noteImageMaxCount) {
-		return c.json({ message: `最多只能上传 ${noteImageMaxCount} 张图片` }, 400);
+	if (files.length > NOTE_IMAGE_MAX_COUNT) {
+		return c.json(
+			{ message: `最多只能上传 ${NOTE_IMAGE_MAX_COUNT} 张图片` },
+			400,
+		);
 	}
 
-	const preparedFiles = files.map((file) => {
-		const extension = noteImageContentTypes.get(file.type);
-		if (!extension) {
-			return null;
-		}
-		return { extension, file };
-	});
-	if (preparedFiles.some((item) => item === null)) {
-		return c.json({ message: "图片仅支持 JPG、PNG、WebP 或 GIF" }, 400);
-	}
-	if (files.some((file) => file.size > noteImageMaxSize)) {
-		return c.json({ message: "单张图片不能超过 8MB" }, 400);
+	let preparedFiles: Array<{
+		contentType: string;
+		file: File;
+	}>;
+	try {
+		preparedFiles = files.map((file) => ({
+			file,
+			...prepareNoteImageSource({
+				fileName: file.name,
+				fileSize: file.size,
+				mimeType: file.type,
+				uri: file.name,
+			}),
+		}));
+	} catch (error) {
+		return c.json(
+			{ message: error instanceof Error ? error.message : "图片无效" },
+			400,
+		);
 	}
 
 	const uploaded: Array<{ key: string; url: string }> = [];
 	try {
 		for (const item of preparedFiles) {
-			if (!item) continue;
-			const fileName = `${crypto.randomUUID()}.${item.extension}`;
-			const key = `${noteImagePrefix}${userId}/${fileName}`;
+			const identity = createNoteImageIdentity({
+				baseUrl: c.req.url,
+				fileId: crypto.randomUUID(),
+				mimeType: item.contentType,
+				userId,
+			});
 
-			await env.YOUNI_BUCKET.put(key, item.file.stream(), {
+			await env.YOUNI_BUCKET.put(identity.key, item.file.stream(), {
 				httpMetadata: {
 					cacheControl: "public, max-age=31536000, immutable",
-					contentType: item.file.type,
+					contentType: identity.contentType,
 				},
 			});
 
 			uploaded.push({
-				key,
-				url: new URL(
-					`/uploads/note-images/${userId}/${fileName}`,
-					c.req.url,
-				).toString(),
+				key: identity.key,
+				url: identity.url,
 			});
 		}
 	} catch (error) {
@@ -369,16 +381,15 @@ app.post("/uploads/note-images/cleanup", async (c) => {
 	if (
 		!body ||
 		!Array.isArray(body.keys) ||
-		body.keys.length > noteImageMaxCount
+		body.keys.length > NOTE_IMAGE_MAX_COUNT
 	) {
 		return c.json({ message: "图片清理请求无效" }, 400);
 	}
-	const keyPattern = new RegExp(
-		`^${noteImagePrefix}${account.id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/[a-f0-9-]{36}\\.(?:jpg|png|webp|gif)$`,
-	);
-	const keys = body.keys.filter(
-		(key): key is string => typeof key === "string" && keyPattern.test(key),
-	);
+	const keys = body.keys.filter((key): key is string => {
+		if (typeof key !== "string") return false;
+		const identity = parseNoteImageIdentity(key);
+		return identity?.origin === null && identity.userId === account.id;
+	});
 	if (keys.length !== body.keys.length) {
 		return c.json({ message: "图片清理请求无效" }, 400);
 	}
@@ -438,12 +449,10 @@ app.get("/uploads/note-images/:fileName", async (c) => {
 		return c.notFound();
 	}
 
-	const fileName = c.req.param("fileName");
-	if (!/^[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(fileName)) {
-		return c.notFound();
-	}
+	const identity = parseNoteImageIdentity(c.req.url);
+	if (!identity || identity.userId !== null) return c.notFound();
 
-	const object = await env.YOUNI_BUCKET.get(`${noteImagePrefix}${fileName}`);
+	const object = await env.YOUNI_BUCKET.get(identity.key);
 	if (!object) {
 		return c.notFound();
 	}
@@ -461,19 +470,10 @@ app.get("/uploads/note-images/:userId/:fileName", async (c) => {
 		return c.notFound();
 	}
 
-	const userId = c.req.param("userId");
-	const fileName = c.req.param("fileName");
-	if (
-		!userId ||
-		userId.includes("/") ||
-		!/^[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(fileName)
-	) {
-		return c.notFound();
-	}
+	const identity = parseNoteImageIdentity(c.req.url);
+	if (!identity?.userId) return c.notFound();
 
-	const object = await env.YOUNI_BUCKET.get(
-		`${noteImagePrefix}${userId}/${fileName}`,
-	);
+	const object = await env.YOUNI_BUCKET.get(identity.key);
 	if (!object) {
 		return c.notFound();
 	}

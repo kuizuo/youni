@@ -18,18 +18,16 @@ import {
 	type ContentTextModerationMatch,
 	findBlockedContentText,
 } from "../moderation/text";
+import {
+	NOTE_IMAGE_MAX_COUNT,
+	parseNoteImageIdentity,
+	prepareNoteImageSource,
+} from "./image-identity";
 import { transitionContentReview } from "./review-lifecycle";
 
 export { deriveContentModerationStatus } from "./review-lifecycle";
 
 const GENERIC_REJECTION_REASON = "内容未通过审核";
-const NOTE_IMAGE_PREFIX = "note-images/";
-const NOTE_IMAGE_CONTENT_TYPES = new Map([
-	["gif", "image/gif"],
-	["jpg", "image/jpeg"],
-	["png", "image/png"],
-	["webp", "image/webp"],
-]);
 
 const imageRejectionReasonLabels = {
 	sexual: "色情或裸露内容",
@@ -50,7 +48,7 @@ const imageRejectionReasonLabels = {
 const contentReviewJobSchema = z
 	.object({
 		contentId: z.string().min(1).optional(),
-		images: z.array(z.string().url()).min(1).max(9),
+		images: z.array(z.string().url()).min(1).max(NOTE_IMAGE_MAX_COUNT),
 		noteId: z.string().min(1).optional(),
 		userId: z.string().min(1),
 	})
@@ -72,44 +70,6 @@ type ImageBucket = {
 	get: (key: string) => Promise<StoredImageObject | null>;
 };
 
-export function isOwnedNoteImageUrl(
-	image: string,
-	userId: string,
-	serverUrl: string,
-) {
-	try {
-		const actual = new URL(image);
-		const expectedOrigin = new URL(serverUrl).origin;
-		const expectedPrefix = `/uploads/note-images/${encodeURIComponent(userId)}/`;
-		const fileName = actual.pathname.slice(expectedPrefix.length);
-
-		return (
-			actual.origin === expectedOrigin &&
-			actual.pathname.startsWith(expectedPrefix) &&
-			/^[a-f0-9-]{36}\.(?:jpg|png|webp|gif)$/.test(fileName)
-		);
-	} catch {
-		return false;
-	}
-}
-
-function getNoteImageStorageLocation(image: string, userId: string) {
-	const url = new URL(image);
-	const publicPrefix = `/uploads/note-images/${encodeURIComponent(userId)}/`;
-	if (!url.pathname.startsWith(publicPrefix)) {
-		throw new Error("Note image path does not belong to the author");
-	}
-
-	const fileName = url.pathname.slice(publicPrefix.length);
-	const match = fileName.match(/^[a-f0-9-]{36}\.(jpg|png|webp|gif)$/);
-	if (!match?.[1]) throw new Error("Note image path is invalid");
-
-	return {
-		contentType: NOTE_IMAGE_CONTENT_TYPES.get(match[1]) ?? "image/jpeg",
-		key: `${NOTE_IMAGE_PREFIX}${userId}/${fileName}`,
-	};
-}
-
 function encodeBase64(bytes: Uint8Array) {
 	let binary = "";
 	const chunkSize = 32_768;
@@ -126,18 +86,27 @@ export async function prepareNoteImageForReview(
 	userId: string,
 	bucket: ImageBucket,
 ) {
-	const location = getNoteImageStorageLocation(image, userId);
+	const location = parseNoteImageIdentity(image);
+	if (!location || location.userId !== userId) {
+		throw new Error("Note image path does not belong to the author");
+	}
 	const object = await bucket.get(location.key);
 	if (!object?.body) throw new Error("Note image is missing from storage");
 
 	const headers = new Headers();
 	object.writeHttpMetadata(headers);
 	const storedContentType = headers.get("content-type")?.toLowerCase();
-	const contentType =
-		storedContentType &&
-		Array.from(NOTE_IMAGE_CONTENT_TYPES.values()).includes(storedContentType)
-			? storedContentType
-			: location.contentType;
+	let contentType = location.contentType;
+	if (storedContentType) {
+		try {
+			contentType = prepareNoteImageSource({
+				mimeType: storedContentType,
+				uri: location.fileName,
+			}).contentType;
+		} catch {
+			// Keep the type encoded in the canonical image path.
+		}
+	}
 	const bytes = new Uint8Array(await new Response(object.body).arrayBuffer());
 	if (bytes.length === 0) throw new Error("Note image is empty");
 
