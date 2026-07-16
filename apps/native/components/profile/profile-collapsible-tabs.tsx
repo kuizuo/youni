@@ -66,6 +66,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	renderStickyHeader: (
 		style: StyleProp<ViewStyle>,
 		miniProfileStyle: StyleProp<ViewStyle>,
+		isSticky: boolean,
 	) => ReactNode;
 	renderTabBar: (options: {
 		elevated: boolean;
@@ -304,6 +305,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 			{renderStickyHeader(
 				topChromeStyle as StyleProp<ViewStyle>,
 				miniProfileStyle as StyleProp<ViewStyle>,
+				isSticky,
 			)}
 			{refreshing ? (
 				<View

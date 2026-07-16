@@ -3,6 +3,7 @@ import type {
 	ProfileConnectionType,
 	ProfileUser,
 } from "@youni/api/contracts/profiles";
+import { Image } from "expo-image";
 import {
 	Avatar,
 	Button,
@@ -10,12 +11,19 @@ import {
 	Skeleton,
 	Spinner,
 	Typography,
+	useThemeColor,
 } from "heroui-native";
 import { View } from "react-native";
+import Animated, {
+	type SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 
+import {
+	PROFILE_COVER_FALLBACK_COLOR,
+	PROFILE_COVER_GRADIENT,
+} from "@/components/profile/profile-tabs";
 import { FollowButton } from "@/components/users/follow-button";
-
-import { PROFILE_HEADER_HEIGHT, PROFILE_HERO_COLOR } from "./constants";
 
 export function UserProfileHero({
 	displayHandle,
@@ -28,9 +36,11 @@ export function UserProfileHero({
 	onOpenConnections,
 	onOpenMe,
 	onToggleFollow,
+	onMeasuredHeight,
 	profile,
+	headerHeight,
+	scrollY,
 	topChromeHeight,
-	topInset,
 }: {
 	displayHandle: string;
 	displayName: string;
@@ -42,35 +52,77 @@ export function UserProfileHero({
 	onOpenConnections: (type: ProfileConnectionType) => void;
 	onOpenMe: () => void;
 	onToggleFollow: () => void;
+	onMeasuredHeight: (height: number) => void;
 	profile?: ProfileUser;
+	headerHeight: number;
+	scrollY: SharedValue<number>;
 	topChromeHeight: number;
-	topInset: number;
 }) {
+	const backgroundColor = useThemeColor("background");
+	const foregroundColor = useThemeColor("foreground");
+	const coverHeight = topChromeHeight + 48;
+	const coverStretchStyle = useAnimatedStyle(() => {
+		const pullDistance = Math.max(0, -scrollY.value);
+
+		return {
+			transform: [
+				{ translateY: -pullDistance / 2 },
+				{ scale: 1 + pullDistance / coverHeight },
+			],
+		};
+	}, [coverHeight]);
+
 	return (
 		<View
-			className="overflow-hidden"
-			style={{
-				backgroundColor: PROFILE_HERO_COLOR,
-				minHeight: PROFILE_HEADER_HEIGHT + topInset,
-				paddingTop: topChromeHeight,
-			}}
+			pointerEvents="box-none"
+			style={{ backgroundColor, height: headerHeight }}
 		>
-			<View className="mx-auto w-full max-w-xl gap-5 px-4 pb-8">
-				<View className="flex-row items-center gap-4">
-					<View className="size-24 items-center justify-center overflow-hidden rounded-full border border-white/50 bg-black/20">
-						{isLoading || !profile ? (
-							<Skeleton className="size-24 rounded-full" />
-						) : (
-							<Avatar size="lg" alt={displayName} className="size-24">
-								{profile.image ? (
-									<Avatar.Image source={{ uri: profile.image }} />
-								) : null}
-								<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
-							</Avatar>
-						)}
+			<View
+				className="mx-auto w-full max-w-xl"
+				onLayout={(event) => {
+					onMeasuredHeight(Math.ceil(event.nativeEvent.layout.height));
+				}}
+			>
+				<Animated.View
+					className="overflow-hidden"
+					style={[
+						{
+							backgroundColor: PROFILE_COVER_FALLBACK_COLOR,
+							experimental_backgroundImage: profile?.coverImage
+								? undefined
+								: PROFILE_COVER_GRADIENT,
+							height: coverHeight,
+						},
+						coverStretchStyle,
+					]}
+				>
+					{profile?.coverImage ? (
+						<Image
+							accessibilityLabel={`${displayName}的个人资料背景图`}
+							contentFit="cover"
+							source={{ uri: profile.coverImage }}
+							style={{ height: "100%", width: "100%" }}
+						/>
+					) : null}
+				</Animated.View>
+
+				<View className="gap-2 px-4 pb-3" style={{ backgroundColor }}>
+					<View style={{ marginTop: -36 }}>
+						<View className="size-18 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-content2">
+							{isLoading || !profile ? (
+								<Skeleton className="size-18 rounded-full" />
+							) : (
+								<Avatar size="lg" alt={displayName} className="size-18">
+									{profile.image ? (
+										<Avatar.Image source={{ uri: profile.image }} />
+									) : null}
+									<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
+								</Avatar>
+							)}
+						</View>
 					</View>
 
-					<View className="min-w-0 flex-1 gap-2">
+					<View className="min-w-0 gap-0.5">
 						{isLoading || !profile ? (
 							<>
 								<Skeleton className="h-6 w-24 rounded-full" />
@@ -81,97 +133,109 @@ export function UserProfileHero({
 								<Typography.Paragraph
 									weight="bold"
 									numberOfLines={1}
-									style={{ color: "#ffffff", fontSize: 26 }}
+									className="text-foreground"
+									style={{ fontSize: 24, lineHeight: 30 }}
 								>
 									{displayName}
 								</Typography.Paragraph>
 								<Typography.Paragraph
 									type="body-sm"
 									numberOfLines={1}
-									style={{ color: "rgba(255, 255, 255, 0.7)" }}
+									className="text-muted"
 								>
 									{displayHandle}
 								</Typography.Paragraph>
 							</>
 						)}
 					</View>
-				</View>
 
-				<View className="flex-row items-center gap-6">
-					<HeroStat
-						isLoading={isLoading}
-						label="关注"
-						value={profile?.followingCount}
-						onPress={() => onOpenConnections("following")}
-					/>
-					<HeroStat
-						isLoading={isLoading}
-						label="粉丝"
-						value={profile?.followerCount}
-						onPress={() => onOpenConnections("followers")}
-					/>
-					<HeroStat
-						isLoading={isLoading}
-						label="获赞与收藏"
-						value={profile?.likedCount}
-					/>
-				</View>
-
-				{profile?.bio ? (
-					<Typography.Paragraph
-						className="leading-6"
-						style={{ color: "rgba(255, 255, 255, 0.82)" }}
-					>
-						{profile.bio}
-					</Typography.Paragraph>
-				) : isLoading ? (
-					<View className="gap-2">
-						<Skeleton className="h-3 w-4/5 rounded-full" />
-						<Skeleton className="h-3 w-2/3 rounded-full" />
-					</View>
-				) : null}
-
-				<View className="flex-row gap-2">
-					{isSelf ? (
-						<Button
-							variant="secondary"
-							className="flex-1 rounded-full bg-white/15"
-							feedbackVariant="scale-ripple"
-							onPress={onOpenMe}
+					{profile?.bio ? (
+						<Typography.Paragraph
+							className="text-foreground leading-5"
+							numberOfLines={2}
 						>
-							<Ionicons name="person-outline" size={16} color="#ffffff" />
-							<Button.Label className="text-white">回到我的主页</Button.Label>
-						</Button>
+							{profile.bio}
+						</Typography.Paragraph>
+					) : isLoading ? (
+						<View className="gap-2">
+							<Skeleton className="h-3 w-4/5 rounded-full" />
+							<Skeleton className="h-3 w-2/3 rounded-full" />
+						</View>
 					) : (
-						<>
-							<FollowButton
-								className="h-12 flex-1 rounded-full"
-								isFollowing={isFollowing}
-								showIcon
-								size="md"
-								tone="hero"
-								onPress={onToggleFollow}
-							/>
-							<Button
-								variant="secondary"
-								className="flex-1 rounded-full bg-white/15"
-								feedbackVariant="scale-ripple"
-								isDisabled={isStartChatPending}
-								onPress={onOpenChat}
-							>
-								{isStartChatPending ? (
-									<Spinner size="sm" />
-								) : (
-									<Ionicons
-										name="chatbubble-ellipses-outline"
-										size={16}
-										color="#ffffff"
-									/>
-								)}
-								<Button.Label className="text-white">发私信</Button.Label>
-							</Button>
-						</>
+						<Typography.Paragraph className="text-muted leading-5">
+							这位用户还没有填写简介
+						</Typography.Paragraph>
 					)}
+
+					<View className="flex-row items-center gap-6">
+						<HeroStat
+							isLoading={isLoading}
+							label="关注"
+							value={profile?.followingCount}
+							onPress={() => onOpenConnections("following")}
+						/>
+						<HeroStat
+							isLoading={isLoading}
+							label="粉丝"
+							value={profile?.followerCount}
+							onPress={() => onOpenConnections("followers")}
+						/>
+						<HeroStat
+							isLoading={isLoading}
+							label="获赞"
+							value={profile?.likedCount}
+						/>
+					</View>
+
+					<View className="flex-row gap-2 pt-1">
+						{isSelf ? (
+							<Button
+								variant="outline"
+								className="h-11 flex-1 rounded-full"
+								feedbackVariant="scale-ripple"
+								isDisabled={isLoading}
+								onPress={onOpenMe}
+							>
+								<Ionicons
+									name="person-outline"
+									size={16}
+									color={foregroundColor}
+								/>
+								<Button.Label>我的主页</Button.Label>
+							</Button>
+						) : (
+							<>
+								<FollowButton
+									className="h-11 flex-1 rounded-full"
+									iconColor={isFollowing ? undefined : "#ffffff"}
+									isDisabled={isLoading}
+									isFollowing={isFollowing}
+									labelClassName={isFollowing ? undefined : "text-white"}
+									showIcon
+									size="md"
+									onPress={onToggleFollow}
+								/>
+								<Button
+									variant="outline"
+									className="h-11 flex-1 rounded-full"
+									feedbackVariant="scale-ripple"
+									isDisabled={isLoading || isStartChatPending}
+									onPress={onOpenChat}
+								>
+									{isStartChatPending ? (
+										<Spinner size="sm" />
+									) : (
+										<Ionicons
+											name="chatbubble-ellipses-outline"
+											size={16}
+											color={foregroundColor}
+										/>
+									)}
+									<Button.Label>私信</Button.Label>
+								</Button>
+							</>
+						)}
+					</View>
 				</View>
 			</View>
 		</View>
@@ -196,15 +260,13 @@ function HeroStat({
 			) : (
 				<Typography.Paragraph
 					weight="bold"
-					style={{ color: "#ffffff", fontVariant: ["tabular-nums"] }}
+					className="text-foreground"
+					style={{ fontVariant: ["tabular-nums"] }}
 				>
 					{value ?? 0}
 				</Typography.Paragraph>
 			)}
-			<Typography.Paragraph
-				type="body-sm"
-				style={{ color: "rgba(255, 255, 255, 0.78)" }}
-			>
+			<Typography.Paragraph type="body-sm" className="text-muted">
 				{label}
 			</Typography.Paragraph>
 		</View>

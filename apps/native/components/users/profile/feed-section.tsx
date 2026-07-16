@@ -3,6 +3,7 @@ import { Typography, useThemeColor } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 
 import { NoteCard, type NoteCardNote } from "@/components/note-card";
+import { PROFILE_TAB_BAR_HEIGHT } from "@/components/profile/profile-tabs";
 import { EmptyState, FeedSkeleton } from "@/components/social-states";
 
 const FEED_MAX_WIDTH = 576;
@@ -18,7 +19,6 @@ export function UserProfileFeedSection({
 	isLoading: boolean;
 	notes: NoteCardNote[];
 }) {
-	const mutedColor = useThemeColor("muted");
 	const dimensions = useWindowDimensions();
 	const feedWidth = Math.min(dimensions.width, FEED_MAX_WIDTH);
 	const cardWidth = Math.max(
@@ -28,42 +28,58 @@ export function UserProfileFeedSection({
 	const masonryColumns = createMasonryColumns(notes, cardWidth);
 
 	return (
-		<>
-			<View className="-mt-5 overflow-hidden rounded-t-3xl bg-background pt-0">
-				<View className="mx-auto h-16 w-full max-w-xl flex-row items-center justify-between px-4">
-					<Typography.Paragraph weight="semibold" className="text-foreground">
-						公开图文
+		<View className="mx-auto w-full max-w-xl pt-1">
+			{isLoading ? (
+				<FeedSkeleton />
+			) : notes.length > 0 ? (
+				<View className="flex-row items-start gap-3 px-3">
+					{masonryColumns.map((column, index) => (
+						<View
+							key={index === 0 ? "left-column" : "right-column"}
+							className="flex-1 gap-3"
+						>
+							{column.map((item) => (
+								<FeedCell key={item.id} item={item} />
+							))}
+						</View>
+					))}
+				</View>
+			) : (
+				<EmptyState icon="images-outline" title="这位用户还没分享公开图文" />
+			)}
+		</View>
+	);
+}
+
+export function UserProfileFeedHeader({
+	elevated,
+	noteCount,
+}: {
+	elevated: boolean;
+	noteCount: number;
+}) {
+	const mutedColor = useThemeColor("muted");
+
+	return (
+		<View
+			className="bg-background"
+			style={{
+				boxShadow: elevated ? "0 1px 0 rgba(0, 0, 0, 0.04)" : undefined,
+				height: PROFILE_TAB_BAR_HEIGHT,
+			}}
+		>
+			<View className="mx-auto h-full w-full max-w-xl flex-row items-center justify-between px-4">
+				<Typography.Paragraph weight="semibold" className="text-foreground">
+					公开图文
+				</Typography.Paragraph>
+				<View className="flex-row items-center gap-1">
+					<Ionicons name="images-outline" size={15} color={mutedColor} />
+					<Typography.Paragraph type="body-xs" color="muted">
+						{noteCount} 篇
 					</Typography.Paragraph>
-					<View className="flex-row items-center gap-1">
-						<Ionicons name="images-outline" size={15} color={mutedColor} />
-						<Typography.Paragraph type="body-xs" color="muted">
-							{notes.length} 篇
-						</Typography.Paragraph>
-					</View>
 				</View>
 			</View>
-
-			<View className="mx-auto w-full max-w-xl pt-3">
-				{isLoading ? (
-					<FeedSkeleton />
-				) : notes.length > 0 ? (
-					<View className="flex-row items-start gap-3 px-3">
-						{masonryColumns.map((column, index) => (
-							<View
-								key={index === 0 ? "left-column" : "right-column"}
-								className="flex-1 gap-3"
-							>
-								{column.map((item) => (
-									<FeedCell key={item.id} item={item} />
-								))}
-							</View>
-						))}
-					</View>
-				) : (
-					<EmptyState icon="images-outline" title="这位用户还没分享公开图文" />
-				)}
-			</View>
-		</>
+		</View>
 	);
 }
 

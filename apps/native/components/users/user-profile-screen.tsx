@@ -4,28 +4,54 @@ import type {
 	ProfileUser,
 } from "@youni/api/contracts/profiles";
 import type { HydratedContentNote } from "@youni/api/contracts/shared";
+import * as Clipboard from "expo-clipboard";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { RefreshControl, View } from "react-native";
-import Animated from "react-native-reanimated";
+import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ProfileCollapsibleTabs } from "@/components/profile/profile-collapsible-tabs";
+import {
+	MAX_PROFILE_WIDTH,
+	PROFILE_HEADER_FALLBACK_HEIGHT,
+	PROFILE_HERO_COLOR,
+	PROFILE_TAB_BAR_HEIGHT,
+} from "@/components/profile/profile-tabs";
 import { EmptyState, ErrorState } from "@/components/social-states";
-import { UserProfileFeedSection } from "@/components/users/profile/feed-section";
+import { UserProfileActionsSheet } from "@/components/users/profile/actions-sheet";
+import {
+	UserProfileFeedHeader,
+	UserProfileFeedSection,
+} from "@/components/users/profile/feed-section";
 import { UserProfileHero } from "@/components/users/profile/hero";
+import { UserProfileStickyChrome } from "@/components/users/profile/sticky-chrome";
 import { ProfileTopBar } from "@/components/users/profile/top-bar";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
+import { useAppToast } from "@/utils/app-toast";
+import { confirmAction } from "@/utils/confirm-action";
 import { orpc } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
+
+const USER_PROFILE_TABS = [{ key: "notes" }] as const;
+const PUBLIC_PROFILE_BASE_URL = "https://youni.kuizuo.me/user";
 
 export default function UserProfileScreen() {
 	const params = useLocalSearchParams<{ id?: string | string[] }>();
 	const id = getRouteParam(params.id) ?? "";
 	const router = useRouter();
+	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
+	const dimensions = useWindowDimensions();
+	const backgroundColor = useThemeColor("background");
+	const foregroundColor = useThemeColor("foreground");
 	const socialActions = useSocialActions();
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const [isMoreOpen, setIsMoreOpen] = useState(false);
+	const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState<
+		null | number
+	>(null);
 
 	const profile = useQuery({
 		...orpc.profiles.profile.queryOptions({
@@ -33,9 +59,18 @@ export default function UserProfileScreen() {
 		}),
 		enabled: Boolean(id),
 	});
-	const unblock = useMutation(
+	const setBlocked = useMutation(
 		orpc.profiles.setBlocked.mutationOptions({
-			onSuccess: () => {
+			onError: (error) => {
+				toast.show({
+					label: error instanceof Error ? error.message : "操作失败，请重试",
+					variant: "danger",
+				});
+			},
+			onSuccess: (result) => {
+				if (result.blocked) {
+					toast.show({ label: "已拉黑该用户", variant: "success" });
+				}
 				void profile.refetch();
 			},
 		}),
@@ -59,7 +94,17 @@ export default function UserProfileScreen() {
 				followerCount: followState.count ?? profileData.followerCount,
 			}
 		: undefined;
-	const topChromeHeight = insets.top + 72;
+	const topChromeHeight = insets.top + 64;
+	const contentWidth = Math.max(
+		1,
+		Math.min(dimensions.width, MAX_PROFILE_WIDTH),
+	);
+	const headerHeight =
+		measuredHeaderHeight ?? PROFILE_HEADER_FALLBACK_HEIGHT + insets.top;
+	const minTabContentHeight = Math.max(
+		360,
+		dimensions.height - topChromeHeight - PROFILE_TAB_BAR_HEIGHT,
+	);
 
 	const toggleFollow = () => {
 		if (!id || isSelf) return;
@@ -78,6 +123,33 @@ export default function UserProfileScreen() {
 	const openChat = () => {
 		if (!id || isSelf) return;
 		socialActions.startChat({ userId: id }, { redirectTo: `/user/${id}` });
+	};
+	const openMore = () => {
+		fireHaptic();
+		setIsMoreOpen(true);
+	};
+	const copyProfileLink = async () => {
+		try {
+			await Clipboard.setStringAsync(`${PUBLIC_PROFILE_BASE_URL}/${id}`);
+			toast.show({ label: "链接已复制", variant: "success" });
+		} catch {
+			toast.show({ label: "复制失败，请重试", variant: "danger" });
+		} finally {
+			setIsMoreOpen(false);
+		}
+	};
+	const confirmBlock = () => {
+		setIsMoreOpen(false);
+		confirmAction({
+			cancelText: "取消",
+			confirmText: "确认拉黑",
+			message: "拉黑后将不再看到对方，双方也不能继续私信。可在设置中解除。",
+			onConfirm: () => {
+				if (!id || setBlocked.isPending) return;
+				setBlocked.mutate({ blocked: true, userId: id });
+			},
+			title: `拉黑 ${displayName}`,
+		});
 	};
 
 	const openConnections = (type: ProfileConnectionType) => {
@@ -100,7 +172,10 @@ export default function UserProfileScreen() {
 	if (profile.isError) {
 		return (
 			<View className="flex-1 bg-background pt-6">
-				<ProfileTopBar onBack={() => router.back()} />
+				<ProfileTopBar
+					iconColor={foregroundColor}
+					onBack={() => router.back()}
+				/>
 				<ErrorState
 					title="主页未能成功打开"
 					description="用户可能已不存在，请重试。"
@@ -113,16 +188,19 @@ export default function UserProfileScreen() {
 	if (profile.data?.isBlocked) {
 		return (
 			<View className="flex-1 bg-background pt-6">
-				<ProfileTopBar onBack={() => router.back()} />
+				<ProfileTopBar
+					iconColor={foregroundColor}
+					onBack={() => router.back()}
+				/>
 				<EmptyState
 					icon="ban-outline"
 					title="你已拉黑该用户"
 					description="解除后可以重新查看对方的公开主页和内容。"
-					actionLabel={unblock.isPending ? "正在解除" : "解除拉黑"}
+					actionLabel={setBlocked.isPending ? "正在解除" : "解除拉黑"}
 					onAction={() => {
-						if (unblock.isPending) return;
+						if (setBlocked.isPending) return;
 						fireHaptic();
-						unblock.mutate({ blocked: false, userId: id });
+						setBlocked.mutate({ blocked: false, userId: id });
 					}}
 				/>
 			</View>
@@ -130,50 +208,81 @@ export default function UserProfileScreen() {
 	}
 
 	return (
-		<View className="flex-1 bg-background">
-			<Animated.ScrollView
-				className="flex-1"
-				contentContainerClassName="bg-background pb-32"
-				contentInsetAdjustmentBehavior="never"
-				refreshControl={
-					<RefreshControl
-						progressViewOffset={topChromeHeight}
-						refreshing={isManuallyRefreshing}
-						onRefresh={refreshProfile}
+		<View className="flex-1" style={{ backgroundColor }}>
+			<ProfileCollapsibleTabs
+				activeTab="notes"
+				backgroundColor={backgroundColor}
+				contentWidth={contentWidth}
+				headerColor={PROFILE_HERO_COLOR}
+				headerHeight={headerHeight}
+				minTabContentHeight={minTabContentHeight}
+				refreshColor={foregroundColor}
+				refreshing={isManuallyRefreshing}
+				tabBarHeight={PROFILE_TAB_BAR_HEIGHT}
+				tabs={USER_PROFILE_TABS}
+				topChromeHeight={topChromeHeight}
+				onRefresh={refreshProfile}
+				onTabChange={() => {}}
+				renderHeader={(scrollY) => (
+					<UserProfileHero
+						displayHandle={displayHandle}
+						displayName={displayName}
+						headerHeight={headerHeight}
+						isFollowing={followState.active}
+						isLoading={profile.isLoading}
+						isSelf={isSelf}
+						isStartChatPending={socialActions.mutations.startChat.isPending}
+						profile={displayedProfile}
+						scrollY={scrollY}
+						topChromeHeight={topChromeHeight}
+						onOpenChat={openChat}
+						onOpenConnections={openConnections}
+						onOpenMe={() => router.push("/me" as Href)}
+						onToggleFollow={toggleFollow}
+						onMeasuredHeight={(height) => {
+							setMeasuredHeaderHeight((current) =>
+								current === height ? current : height,
+							);
+						}}
 					/>
-				}
-				showsVerticalScrollIndicator={false}
+				)}
+				renderStickyHeader={(style, miniProfileStyle, isSticky) => (
+					<UserProfileStickyChrome
+						displayName={displayName}
+						image={profileData?.image}
+						isFollowing={followState.active}
+						isLoading={profile.isLoading}
+						isSelf={isSelf}
+						isSticky={isSticky}
+						miniProfileStyle={miniProfileStyle}
+						style={style}
+						topChromeHeight={topChromeHeight}
+						onBack={() => router.back()}
+						onMore={openMore}
+						onOpenMe={() => router.push("/me" as Href)}
+						onToggleFollow={toggleFollow}
+					/>
+				)}
+				renderTabBar={({ elevated }) => (
+					<UserProfileFeedHeader elevated={elevated} noteCount={notes.length} />
+				)}
 			>
-				<UserProfileHero
-					displayHandle={displayHandle}
-					displayName={displayName}
-					isFollowing={followState.active}
-					isLoading={profile.isLoading}
-					isSelf={isSelf}
-					isStartChatPending={socialActions.mutations.startChat.isPending}
-					profile={displayedProfile}
-					topChromeHeight={topChromeHeight}
-					topInset={insets.top}
-					onOpenChat={openChat}
-					onOpenConnections={openConnections}
-					onOpenMe={() => router.push("/me" as Href)}
-					onToggleFollow={toggleFollow}
-				/>
-
 				<UserProfileFeedSection isLoading={profile.isLoading} notes={notes} />
-			</Animated.ScrollView>
-
-			<View
-				className="absolute top-0 right-0 left-0"
-				pointerEvents="box-none"
-				style={{
-					paddingTop: insets.top + 10,
+			</ProfileCollapsibleTabs>
+			<UserProfileActionsSheet
+				isBlockPending={setBlocked.isPending}
+				isOpen={isMoreOpen}
+				isSelf={isSelf}
+				onBlock={confirmBlock}
+				onCopyLink={() => {
+					void copyProfileLink();
 				}}
-			>
-				<View className="mx-auto w-full max-w-xl flex-row items-center justify-between px-4">
-					<ProfileTopBar onBack={() => router.back()} />
-				</View>
-			</View>
+				onMessage={() => {
+					setIsMoreOpen(false);
+					openChat();
+				}}
+				onOpenChange={setIsMoreOpen}
+			/>
 		</View>
 	);
 }

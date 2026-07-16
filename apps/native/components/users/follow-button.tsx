@@ -4,8 +4,10 @@ import type { ComponentProps } from "react";
 
 type FollowButtonProps = {
 	className?: string;
+	iconColor?: string;
 	isDisabled?: boolean;
 	isFollowing: boolean;
+	labelClassName?: string;
 	onPress: () => void;
 	showIcon?: boolean;
 	size?: ComponentProps<typeof Button>["size"];
@@ -14,8 +16,10 @@ type FollowButtonProps = {
 
 export function FollowButton({
 	className,
+	iconColor,
 	isDisabled,
 	isFollowing,
+	labelClassName,
 	onPress,
 	showIcon = false,
 	size = "sm",
@@ -23,12 +27,15 @@ export function FollowButton({
 }: FollowButtonProps) {
 	const accentForegroundColor = useThemeColor("accent-foreground");
 	const foregroundColor = useThemeColor("foreground");
+	const isHero = tone === "hero";
 	const isHeroFollowing = tone === "hero" && isFollowing;
-	const iconColor = isHeroFollowing
-		? "#ffffff"
-		: isFollowing
-			? foregroundColor
-			: accentForegroundColor;
+	const resolvedIconColor =
+		iconColor ??
+		(isHero
+			? "#ffffff"
+			: isFollowing
+				? foregroundColor
+				: accentForegroundColor);
 
 	return (
 		<Button
@@ -46,10 +53,12 @@ export function FollowButton({
 				<Ionicons
 					name={isFollowing ? "checkmark-outline" : "person-add-outline"}
 					size={16}
-					color={iconColor}
+					color={resolvedIconColor}
 				/>
 			) : null}
-			<Button.Label className={isHeroFollowing ? "text-white" : undefined}>
+			<Button.Label
+				className={cn(isHero ? "text-white" : null, labelClassName)}
+			>
 				{isFollowing ? "已关注" : "关注"}
 			</Button.Label>
 		</Button>
