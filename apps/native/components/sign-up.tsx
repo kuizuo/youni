@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 import z from "zod";
+import { runAccountAuthentication } from "@/lib/account-authentication";
 import { prepareForAccountAuthentication } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
@@ -28,6 +29,10 @@ const signUpSchema = z.object({
 
 type SignUpProps = {
 	onAuthenticated?: () => Promise<void> | void;
+};
+
+type EmailAuthenticationError = {
+	message?: string;
 };
 
 export function SignUp({ onAuthenticated }: SignUpProps) {
@@ -54,31 +59,29 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 		setIsSubmitting(true);
 		try {
 			await prepareForAccountAuthentication();
-			await authClient.signUp.email(
-				{
-					name: parsed.data.name.trim(),
-					email: parsed.data.email.trim(),
-					password: parsed.data.password,
-				},
-				{
-					onError(error) {
-						const message = error.error?.message || "注册失败，请稍后重试";
-						setErrorMessage(message);
-						toast.show({
-							variant: "danger",
-							label: message,
-						});
-					},
-					onSuccess() {
+			const authenticationError =
+				await runAccountAuthentication<EmailAuthenticationError>({
+					authenticate: () =>
+						authClient.signUp.email({
+							name: parsed.data.name.trim(),
+							email: parsed.data.email.trim(),
+							password: parsed.data.password,
+						}),
+					onAuthenticated: async () => {
 						setName("");
 						setEmail("");
 						setPassword("");
 						authClient.$store.notify("$sessionSignal");
-						onAuthenticated?.();
+						await onAuthenticated?.();
 						queryClient.refetchQueries();
 					},
-				},
-			);
+				});
+
+			if (authenticationError) {
+				const message = authenticationError.message || "注册失败，请稍后重试";
+				setErrorMessage(message);
+				toast.show({ variant: "danger", label: message });
+			}
 		} catch (error) {
 			if (isRequestTimeoutError(error)) {
 				setErrorMessage(REQUEST_TIMEOUT_MESSAGE);

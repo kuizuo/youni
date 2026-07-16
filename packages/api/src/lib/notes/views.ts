@@ -15,6 +15,7 @@ import { isUserBlockedBy } from "../users/blocks";
 import { hydrateContentNotes, selectContentNoteRows } from "./content";
 
 const encoder = new TextEncoder();
+const NOTE_VIEW_HISTORY_INSERT_BATCH_SIZE = 20;
 
 async function createViewIdentityKey(userId: string) {
 	const digest = await crypto.subtle.digest("SHA-256", encoder.encode(userId));
@@ -125,6 +126,35 @@ export function mergeAnonymousViewHistory(
 	);
 }
 
+export async function replaceLinkedNoteViewHistory(
+	db: ReturnType<typeof createDb>,
+	userIds: [string, string],
+	mergedRows: NoteViewHistoryRow[],
+) {
+	const insertQueries = [];
+	for (
+		let index = 0;
+		index < mergedRows.length;
+		index += NOTE_VIEW_HISTORY_INSERT_BATCH_SIZE
+	) {
+		insertQueries.push(
+			db
+				.insert(noteViewHistory)
+				.values(
+					mergedRows.slice(index, index + NOTE_VIEW_HISTORY_INSERT_BATCH_SIZE),
+				),
+		);
+	}
+	const [firstInsert, ...remainingInserts] = insertQueries;
+	if (!firstInsert) return;
+
+	await db.batch([
+		db.delete(noteViewHistory).where(inArray(noteViewHistory.userId, userIds)),
+		firstInsert,
+		...remainingInserts,
+	]);
+}
+
 async function linkAnonymousViewCountState(
 	anonymousUserId: string,
 	newUserId: string,
@@ -231,7 +261,7 @@ export async function linkAnonymousNoteViews({
 	if (anonymousUserId === newUserId) return;
 
 	const db = createDb();
-	const userIds = [anonymousUserId, newUserId];
+	const userIds: [string, string] = [anonymousUserId, newUserId];
 	const rows = await db
 		.select({
 			createdAt: noteViewHistory.createdAt,
@@ -244,12 +274,7 @@ export async function linkAnonymousNoteViews({
 		.where(inArray(noteViewHistory.userId, userIds));
 	const mergedRows = mergeAnonymousViewHistory(rows, newUserId);
 	if (mergedRows.length > 0) {
-		await db.batch([
-			db
-				.delete(noteViewHistory)
-				.where(inArray(noteViewHistory.userId, userIds)),
-			db.insert(noteViewHistory).values(mergedRows),
-		]);
+		await replaceLinkedNoteViewHistory(db, userIds, mergedRows);
 	}
 	await linkAnonymousViewCountState(anonymousUserId, newUserId);
 }

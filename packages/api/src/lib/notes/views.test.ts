@@ -1,5 +1,35 @@
 import { describe, expect, test } from "bun:test";
-import { mergeAnonymousViewHistory } from "./views";
+import { createDb } from "@youni/db";
+import {
+	mergeAnonymousViewHistory,
+	replaceLinkedNoteViewHistory,
+} from "./views";
+
+type BoundStatement = D1PreparedStatement & { boundValues: unknown[] };
+
+function createParameterLimitedDatabase(maxParameters: number) {
+	return {
+		prepare() {
+			return {
+				boundValues: [],
+				bind(...values: unknown[]) {
+					this.boundValues = values;
+					return this;
+				},
+			} as unknown as BoundStatement;
+		},
+		async batch(statements: BoundStatement[]) {
+			if (
+				statements.some(
+					(statement) => statement.boundValues.length > maxParameters,
+				)
+			) {
+				throw new Error("too many SQL variables: SQLITE_ERROR");
+			}
+			return statements.map(() => ({ results: [], success: true }));
+		},
+	} as unknown as D1Database;
+}
 
 describe("note viewing", () => {
 	test("moves anonymous history and keeps the latest duplicate view", () => {
@@ -43,5 +73,32 @@ describe("note viewing", () => {
 			viewedAt: newerView,
 		});
 		expect(result[1]?.userId).toBe("registered-user");
+	});
+
+	test("links more view-history rows than one D1 query can bind", async () => {
+		const now = new Date("2026-01-01T00:00:00.000Z");
+		const rows = Array.from({ length: 21 }, (_, index) => ({
+			createdAt: now,
+			noteId: `note-${index}`,
+			updatedAt: now,
+			userId: "registered-user",
+			viewedAt: now,
+		}));
+
+		await expect(
+			replaceLinkedNoteViewHistory(
+				createDb(createParameterLimitedDatabase(100)),
+				["anonymous-user", "registered-user"],
+				rows.slice(0, 20),
+			),
+		).resolves.toBeUndefined();
+
+		await expect(
+			replaceLinkedNoteViewHistory(
+				createDb(createParameterLimitedDatabase(100)),
+				["anonymous-user", "registered-user"],
+				rows,
+			),
+		).resolves.toBeUndefined();
 	});
 });

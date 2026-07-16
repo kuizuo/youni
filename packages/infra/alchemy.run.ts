@@ -12,10 +12,13 @@ import {
 } from "alchemy/cloudflare";
 import { config } from "dotenv";
 
+const appEnvFile =
+	process.env.NODE_ENV === "production" ? ".env.production" : ".env";
+
 config({ path: "./.env" });
-config({ path: "../../apps/native/.env" });
+config({ path: `../../apps/native/${appEnvFile}` });
 config({ path: "../../apps/web/.env" });
-config({ path: "../../apps/server/.env" });
+config({ path: `../../apps/server/${appEnvFile}` });
 
 const app = await alchemy("youni");
 

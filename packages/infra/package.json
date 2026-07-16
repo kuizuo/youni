@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "alchemy dev",
-		"deploy": "alchemy deploy",
+		"deploy": "NODE_ENV=production alchemy deploy",
 		"destroy": "alchemy destroy"
 	},
 	"dependencies": {

@@ -5,7 +5,7 @@
 	"build": {
 		"production": {
 			"autoIncrement": true,
-			"channel": "preview",
+			"channel": "production",
 			"env": {
 				"EAS_BUILD_NO_EXPO_GO_WARNING": "true",
 				"EXPO_PUBLIC_SERVER_URL": "https://youni-api.kuizuo.me"
@@ -13,6 +13,7 @@
 		},
 		"preview": {
 			"extends": "production",
+			"channel": "preview",
 			"distribution": "internal",
 			"environment": "production",
 			"android": {

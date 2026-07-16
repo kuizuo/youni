@@ -180,7 +180,7 @@ export function MeProfileHeader({
 						</View>
 					) : (
 						<Typography.Paragraph className="text-muted leading-5">
-							点击编辑，填写简介
+							写点什么，让大家认识你
 						</Typography.Paragraph>
 					)}
 
