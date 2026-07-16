@@ -1,13 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { mergeAnonymousViewHistory } from "./anonymous-linking";
+import { mergeAnonymousViewHistory } from "./views";
 
-describe("mergeAnonymousViewHistory", () => {
-	test("moves unique history and keeps the latest duplicate view", () => {
+describe("note viewing", () => {
+	test("moves anonymous history and keeps the latest duplicate view", () => {
 		const firstCreatedAt = new Date("2026-01-01T00:00:00.000Z");
 		const olderView = new Date("2026-01-02T00:00:00.000Z");
 		const newerView = new Date("2026-01-03T00:00:00.000Z");
 		const latestUpdate = new Date("2026-01-04T00:00:00.000Z");
-
 		const result = mergeAnonymousViewHistory(
 			[
 				{

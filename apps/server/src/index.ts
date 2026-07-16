@@ -12,7 +12,7 @@ import {
 	type ContentReviewJob,
 	processContentReviewJob,
 } from "@youni/api/lib/notes/moderation";
-import { linkAnonymousUserActivity } from "@youni/api/lib/users/anonymous-linking";
+import { linkAnonymousNoteViews } from "@youni/api/lib/notes/views";
 import { appRouter } from "@youni/api/routers/index";
 import { createAuth } from "@youni/auth";
 import { hasAdminPermission } from "@youni/auth/permissions";
@@ -111,7 +111,7 @@ app.use("/api/auth/admin/*", async (c, next) => {
 });
 
 app.on(["POST", "GET"], "/api/auth/*", (c) =>
-	createAuth({ onLinkAnonymousAccount: linkAnonymousUserActivity }).handler(
+	createAuth({ onLinkAnonymousAccount: linkAnonymousNoteViews }).handler(
 		c.req.raw,
 	),
 );

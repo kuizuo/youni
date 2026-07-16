@@ -8,7 +8,7 @@ import {
 	noteLike,
 	noteViewHistory,
 } from "@youni/db/schema/index";
-import { and, count, eq, inArray, ne, notInArray, or } from "drizzle-orm";
+import { and, count, eq, inArray, notInArray, or } from "drizzle-orm";
 import {
 	activeUserProcedure,
 	protectedProcedure,
@@ -29,30 +29,11 @@ import {
 	recordNoteFeedEvents,
 	setNoteNotInterested,
 } from "../lib/notes/feed";
-import { recordNoteView } from "../lib/notes/views";
+import { getNoteDetail, recordNoteView } from "../lib/notes/views";
 import { notifyNoteOwner } from "../lib/notifications";
-import { getBlockedUserIds, isUserBlockedBy } from "../lib/users/blocks";
+import { getBlockedUserIds } from "../lib/users/blocks";
 import { getSearchNoteWhereClause } from "./topics";
 import { toNumber, toPage } from "./utils";
-
-async function canViewNoteDetail(
-	row: Awaited<ReturnType<typeof selectContentNoteRows>>[number],
-	viewerId?: string,
-) {
-	if (viewerId && row.userId === viewerId) return true;
-	if (row.status !== "published") return false;
-	if (row.visibility === "public") return true;
-	if (row.visibility !== "followers" || !viewerId) return false;
-
-	const [followingRow] = await createDb()
-		.select({ followingId: follow.followingId })
-		.from(follow)
-		.where(
-			and(eq(follow.followerId, viewerId), eq(follow.followingId, row.userId)),
-		)
-		.limit(1);
-	return Boolean(followingRow);
-}
 
 export const notesRouter = {
 	feed: publicProcedure.notes.feed.handler(async ({ input, context }) => {
@@ -129,36 +110,16 @@ export const notesRouter = {
 	),
 
 	byId: publicProcedure.notes.byId.handler(async ({ input, context }) => {
-		const [row] = await selectContentNoteRows(
-			and(eq(note.id, input.id), ne(note.status, "hidden")),
-		);
-
-		if (
-			!row ||
-			!(await canViewNoteDetail(row, context.session?.user.id)) ||
-			(context.session?.user.id &&
-				(await isUserBlockedBy(context.session.user.id, row.userId)))
-		) {
-			throw new ORPCError("NOT_FOUND");
-		}
-
-		const [item] = await hydrateContentNotes([row], context.session?.user.id);
-		if (!item) {
-			throw new ORPCError("INTERNAL_SERVER_ERROR");
-		}
-		if (context.session?.user.id) {
-			try {
-				await recordNoteView(input.id, context.session.user.id);
-			} catch (error) {
-				console.error("Failed to record note view", {
-					error,
-					noteId: input.id,
-				});
-			}
-		}
-
-		return item;
+		return getNoteDetail(input.id, context.session?.user.id);
 	}),
+
+	recordView: publicProcedure.notes.recordView.handler(
+		async ({ input, context }) => {
+			const viewerId = context.session?.user.id;
+			if (!viewerId) throw new ORPCError("UNAUTHORIZED");
+			return recordNoteView(input.id, viewerId);
+		},
+	),
 
 	editById: protectedProcedure.notes.editById.handler(
 		async ({ input, context }) => {

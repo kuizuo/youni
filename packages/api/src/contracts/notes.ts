@@ -114,6 +114,7 @@ export type NotesOutputs = {
 		nextOffset: number | null;
 	};
 	byId: HydratedContentNote;
+	recordView: { recorded: true };
 	editById: HydratedContentNote | undefined;
 	updateNote: { id: string; status: "audit" };
 	updateNoteVisibility: {
@@ -156,6 +157,9 @@ export const notesContract = {
 		.input(paginatedListInput)
 		.output(output<NotesOutputs["searchNotes"]>()),
 	byId: procedure.input(idInput).output(output<NotesOutputs["byId"]>()),
+	recordView: procedure
+		.input(idInput)
+		.output(output<NotesOutputs["recordView"]>()),
 	editById: procedure.input(idInput).output(output<NotesOutputs["editById"]>()),
 	updateNote: procedure
 		.input(noteEditInput)

@@ -7,7 +7,6 @@ import type {
 	HydratedContentNote,
 	NoteVisibility,
 } from "@youni/api/contracts/shared";
-import * as Network from "expo-network";
 import type { Href } from "expo-router";
 import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import {
@@ -20,7 +19,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Alert,
-	AppState,
 	FlatList,
 	Keyboard,
 	KeyboardAvoidingView,
@@ -46,6 +44,7 @@ import {
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import type { TextSelection } from "@/lib/types/text-input";
+import { useNoteViewRecorder } from "@/lib/use-note-view-recorder";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { client, orpc, queryClient } from "@/utils/orpc";
@@ -119,8 +118,6 @@ export default function NoteDetailScreen() {
 	const topBarHeight = insets.top + 64;
 	const commentListRef = useRef<FlatList<NoteComment>>(null);
 	const displayedContentRef = useRef<HydratedContentNote | null>(null);
-	const recordedViewerIdRef = useRef<string | null>(null);
-	const recordingViewerIdRef = useRef<string | null>(null);
 	const commentScrollOffsetRef = useRef(0);
 	const pendingTargetScrollKeyRef = useRef<null | string>(null);
 	const targetCommentRef = useRef<View | null>(null);
@@ -223,51 +220,7 @@ export default function NoteDetailScreen() {
 				} as ViewStyle)
 			: undefined;
 	const viewerId = socialActions.session.data?.user?.id;
-	const recordCurrentView = useCallback(async () => {
-		if (
-			!viewerId ||
-			!note.data ||
-			recordedViewerIdRef.current === viewerId ||
-			recordingViewerIdRef.current === viewerId
-		) {
-			return;
-		}
-
-		recordingViewerIdRef.current = viewerId;
-		try {
-			const result = await note.refetch();
-			if (!result.isError) {
-				recordedViewerIdRef.current = viewerId;
-			}
-		} finally {
-			if (recordingViewerIdRef.current === viewerId) {
-				recordingViewerIdRef.current = null;
-			}
-		}
-	}, [note.data, note.refetch, viewerId]);
-	useEffect(() => {
-		void recordCurrentView();
-	}, [recordCurrentView]);
-	useEffect(() => {
-		const appStateSubscription = AppState.addEventListener(
-			"change",
-			(state) => {
-				if (state === "active") {
-					void recordCurrentView();
-				}
-			},
-		);
-		const networkSubscription = Network.addNetworkStateListener((state) => {
-			if (state.isConnected && state.isInternetReachable !== false) {
-				void recordCurrentView();
-			}
-		});
-
-		return () => {
-			appStateSubscription.remove();
-			networkSubscription.remove();
-		};
-	}, [recordCurrentView]);
+	useNoteViewRecorder({ noteId: note.data?.id, viewerId });
 	const authorId = displayNote?.author.id ?? "";
 	const authorProfile = useQuery({
 		...orpc.profiles.profile.queryOptions({ input: { userId: authorId } }),

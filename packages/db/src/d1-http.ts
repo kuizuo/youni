@@ -173,12 +173,14 @@ export function createD1HttpDatabase(
 ): D1Database {
 	return {
 		async batch(statements: D1PreparedStatement[]) {
-			const queries = statements.map(
-				(statement) =>
-					(statement as D1HttpPreparedStatement).__youniD1HttpQuery,
-			);
-			const results = await queryD1(credentials, queries);
-			return results.map(resultToD1Response);
+			const results: D1Result[] = [];
+			// ponytail: HTTP fallback preserves order but not atomicity; use a D1 binding for transactional batches.
+			for (const statement of statements) {
+				const query = (statement as D1HttpPreparedStatement).__youniD1HttpQuery;
+				const [result] = await queryD1(credentials, query);
+				results.push(resultToD1Response(result ?? { success: true }));
+			}
+			return results;
 		},
 		dump() {
 			throw new Error("D1 HTTP dump is not supported by this adapter");
