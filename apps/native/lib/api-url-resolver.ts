@@ -1,5 +1,7 @@
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 
+export { resolveStoredNoteImageUrl } from "@youni/api/lib/notes/image-url";
+
 type ResolveApiBaseUrlOptions = {
 	configuredUrl: string;
 	devServerHost?: string;
@@ -50,23 +52,4 @@ export function resolveApiBaseUrl({
 	}
 
 	return normalizeBaseUrl(url.toString());
-}
-
-export function resolveStoredNoteImageUrl(
-	imageUrl: string,
-	apiBaseUrl: string,
-) {
-	try {
-		const image = new URL(imageUrl);
-		if (!image.pathname.startsWith("/uploads/note-images/")) {
-			return imageUrl;
-		}
-
-		const api = new URL(apiBaseUrl);
-		image.protocol = api.protocol;
-		image.host = api.host;
-		return image.toString();
-	} catch {
-		return imageUrl;
-	}
 }

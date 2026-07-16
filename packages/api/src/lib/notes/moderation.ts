@@ -1,10 +1,12 @@
+import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import type { ContentModerationDetail } from "@youni/db/schema/content";
 import type { ContentModerationReason } from "@youni/db/schema/content-values";
 import { note, noteTopic, topic } from "@youni/db/schema/index";
 import { env } from "@youni/env/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import z from "zod";
+import { manualReviewModerationStatuses } from "../../contracts/shared";
 import {
 	combineImageModerationResults,
 	createImageModerationReview,
@@ -209,6 +211,47 @@ export function createContentRejectionReason(
 	].filter((reason): reason is string => Boolean(reason));
 
 	return reasons.join("；") || GENERIC_REJECTION_REASON;
+}
+
+export async function reviewContentNote(
+	input:
+		| {
+				decision: "approve";
+				expectedUpdatedAt: string;
+				id: string;
+		  }
+		| {
+				decision: "reject";
+				expectedUpdatedAt: string;
+				id: string;
+				rejectionReason: string;
+		  },
+) {
+	const approved = input.decision === "approve";
+	const [updated] = await createDb()
+		.update(note)
+		.set({
+			publishedAt: approved ? new Date() : null,
+			rejectionReason: approved ? null : input.rejectionReason,
+			status: approved ? "published" : "rejected",
+		})
+		.where(
+			and(
+				eq(note.id, input.id),
+				eq(note.status, "audit"),
+				eq(note.updatedAt, new Date(input.expectedUpdatedAt)),
+				inArray(note.moderationStatus, [...manualReviewModerationStatuses]),
+			),
+		)
+		.returning();
+
+	if (!updated) {
+		throw new ORPCError("CONFLICT", {
+			message: "内容状态已变化，请刷新后重试",
+		});
+	}
+
+	return updated;
 }
 
 function imageListsMatch(left: string[], right: string[]) {

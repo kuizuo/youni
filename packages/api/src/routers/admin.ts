@@ -59,8 +59,8 @@ import {
 	listAdminContentNotesByTopic,
 	listAdminContentNotesByUser,
 	listAdminModerationQueue,
-	updateContentNoteStatus,
 } from "../lib/notes/content";
+import { reviewContentNote } from "../lib/notes/moderation";
 import { containsInsensitive } from "../lib/search";
 
 const adminProcedure = protectedProcedure.admin.use(
@@ -607,10 +607,10 @@ export const adminRouter = {
 		},
 	),
 
-	updateNoteStatus: adminPermissionProcedure({
+	reviewNote: adminPermissionProcedure({
 		note: ["audit"],
-	}).updateNoteStatus.handler(async ({ input }) => {
-		return updateContentNoteStatus(input);
+	}).reviewNote.handler(async ({ input }) => {
+		return reviewContentNote(input);
 	}),
 
 	deleteNote: adminPermissionProcedure({ note: ["delete"] }).deleteNote.handler(

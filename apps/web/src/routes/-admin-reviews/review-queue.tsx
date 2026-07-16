@@ -23,8 +23,10 @@ import type {
 	AdminHydratedContentNote,
 	ContentModerationReason,
 	ContentModerationStatus,
-	ContentNoteStatus,
 } from "@youni/api/contracts/shared";
+import { isPendingManualReview } from "@youni/api/contracts/shared";
+import { resolveStoredNoteImageUrl } from "@youni/api/lib/notes/image-url";
+import { env } from "@youni/env/web";
 import { useEffect, useMemo, useState } from "react";
 
 import { AdminSearchField } from "@/components/admin-search-field";
@@ -263,7 +265,7 @@ export function ReviewQueue({
 	onRetry: () => Promise<void>;
 	onReview: (
 		note: ReviewNote,
-		status: Extract<ContentNoteStatus, "published" | "rejected">,
+		decision: "approve" | "reject",
 		reason?: string,
 	) => Promise<void>;
 	page: number;
@@ -480,7 +482,7 @@ function ReviewQueueItem({
 					alt=""
 					className="aspect-square size-[72px] rounded-xl object-cover ring-1 ring-border"
 					loading="lazy"
-					src={note.cover}
+					src={resolveStoredNoteImageUrl(note.cover, env.VITE_SERVER_URL)}
 				/>
 			) : (
 				<div className="flex aspect-square size-[72px] items-center justify-center rounded-xl bg-surface-secondary text-muted text-xs ring-1 ring-border">
@@ -525,12 +527,13 @@ function ReviewDetail({
 	onReasonChange: (value: string) => void;
 	onReview: (
 		note: ReviewNote,
-		status: Extract<ContentNoteStatus, "published" | "rejected">,
+		decision: "approve" | "reject",
 		reason?: string,
 	) => Promise<void>;
 	rejectionReason: string;
 }) {
 	const reason = rejectionReason.trim();
+	const canReview = isPendingManualReview(note);
 
 	return (
 		<Card className="h-fit xl:sticky xl:top-4">
@@ -565,7 +568,7 @@ function ReviewDetail({
 									alt="待审核图片"
 									className="aspect-[4/3] w-full rounded-xl object-cover ring-1 ring-border"
 									loading="lazy"
-									src={image}
+									src={resolveStoredNoteImageUrl(image, env.VITE_SERVER_URL)}
 								/>
 							))}
 						</div>
@@ -598,47 +601,53 @@ function ReviewDetail({
 					<ModerationDetails note={note} />
 				</section>
 
-				<section className="grid gap-3 pt-1">
-					<div>
-						<h3 className="font-medium">人工处理</h3>
-						<p className="mt-1 text-muted text-sm">
-							拒绝时必须填写明确理由，用户会在笔记状态中看到这段说明。
-						</p>
-					</div>
-					<TextField className="flex flex-col gap-2" name="rejection-reason">
-						<Label>拒绝理由</Label>
-						<TextArea
-							className="min-h-24 resize-y"
-							fullWidth
-							maxLength={200}
-							placeholder="例如：图片中包含清晰的联系方式，请移除后重新发布"
-							value={rejectionReason}
-							onChange={(event) => onReasonChange(event.target.value)}
-						/>
-						<div className="text-right text-muted text-xs tabular-nums">
-							{rejectionReason.length}/200
+				{canReview ? (
+					<section className="grid gap-3 pt-1">
+						<div>
+							<h3 className="font-medium">人工处理</h3>
+							<p className="mt-1 text-muted text-sm">
+								拒绝时必须填写明确理由，用户会在笔记状态中看到这段说明。
+							</p>
 						</div>
-					</TextField>
-					<div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-						<Button
-							variant="danger"
-							isDisabled={!reason || isMutating}
-							isPending={isMutating}
-							onPress={() => onReview(note, "rejected", reason)}
-						>
-							<Xmark className="size-4" />
-							拒绝并记录理由
-						</Button>
-						<Button
-							isDisabled={isMutating}
-							isPending={isMutating}
-							onPress={() => onReview(note, "published")}
-						>
-							<Check className="size-4" />
-							人工通过
-						</Button>
-					</div>
-				</section>
+						<TextField className="flex flex-col gap-2" name="rejection-reason">
+							<Label>拒绝理由</Label>
+							<TextArea
+								className="min-h-24 resize-y"
+								fullWidth
+								maxLength={200}
+								placeholder="例如：图片中包含清晰的联系方式，请移除后重新发布"
+								value={rejectionReason}
+								onChange={(event) => onReasonChange(event.target.value)}
+							/>
+							<div className="text-right text-muted text-xs tabular-nums">
+								{rejectionReason.length}/200
+							</div>
+						</TextField>
+						<div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+							<Button
+								variant="danger"
+								isDisabled={!reason || isMutating}
+								isPending={isMutating}
+								onPress={() => onReview(note, "reject", reason)}
+							>
+								<Xmark className="size-4" />
+								拒绝并记录理由
+							</Button>
+							<Button
+								isDisabled={isMutating}
+								isPending={isMutating}
+								onPress={() => onReview(note, "approve")}
+							>
+								<Check className="size-4" />
+								人工通过
+							</Button>
+						</div>
+					</section>
+				) : (
+					<section className="rounded-2xl bg-surface-secondary p-4 text-muted text-sm">
+						这条内容已经处理，无需再次人工审核。
+					</section>
+				)}
 			</Card.Content>
 		</Card>
 	);
@@ -722,7 +731,10 @@ function ReviewNoteDetailDrawer({
 													alt={`图文图片 ${index + 1}`}
 													className="aspect-[4/3] w-full rounded-xl object-cover ring-1 ring-border"
 													loading="lazy"
-													src={image}
+													src={resolveStoredNoteImageUrl(
+														image,
+														env.VITE_SERVER_URL,
+													)}
 												/>
 											))}
 										</div>

@@ -58,11 +58,22 @@ export const adminModerationQueueInput = z.object({
 
 export const adminIdInput = z.object({ id: z.string().min(1) });
 
-export const adminNoteStatusInput = z.object({
+const adminReviewTargetInput = {
+	expectedUpdatedAt: z.string().datetime({ offset: true }),
 	id: z.string().min(1),
-	status: z.enum(["audit", "published", "rejected", "hidden"]),
-	rejectionReason: z.string().trim().max(200).optional(),
-});
+};
+
+export const adminReviewDecisionInput = z.discriminatedUnion("decision", [
+	z.object({
+		...adminReviewTargetInput,
+		decision: z.literal("approve"),
+	}),
+	z.object({
+		...adminReviewTargetInput,
+		decision: z.literal("reject"),
+		rejectionReason: z.string().trim().min(1, "拒绝时必须填写理由").max(200),
+	}),
+]);
 
 export const adminTopicInput = z.object({
 	id: z.string().min(1).optional(),
@@ -286,7 +297,7 @@ export type AdminOutputs = {
 	addProhibitedTerm: { created: boolean };
 	deleteProhibitedTerm: { deleted: boolean };
 	noteDetail: AdminContentNoteDetail;
-	updateNoteStatus: NoteRow | undefined;
+	reviewNote: NoteRow;
 	deleteNote: { ok: boolean };
 	topics: {
 		items: AdminTopicListItem[];
@@ -345,9 +356,9 @@ export const adminContract = {
 	noteDetail: procedure
 		.input(adminIdInput)
 		.output(output<AdminOutputs["noteDetail"]>()),
-	updateNoteStatus: procedure
-		.input(adminNoteStatusInput)
-		.output(output<AdminOutputs["updateNoteStatus"]>()),
+	reviewNote: procedure
+		.input(adminReviewDecisionInput)
+		.output(output<AdminOutputs["reviewNote"]>()),
 	deleteNote: procedure
 		.input(adminIdInput)
 		.output(output<AdminOutputs["deleteNote"]>()),

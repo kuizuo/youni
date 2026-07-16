@@ -16,6 +16,25 @@ export {
 export type { UserGender };
 export { userGenders };
 
+export const manualReviewModerationStatuses = [
+	"not_started",
+	"pending",
+	"processing",
+	"needs_review",
+	"failed",
+] as const;
+
+export function isPendingManualReview(
+	content: Pick<NoteRow, "moderationStatus" | "status">,
+) {
+	return (
+		content.status === "audit" &&
+		manualReviewModerationStatuses.includes(
+			content.moderationStatus as (typeof manualReviewModerationStatuses)[number],
+		)
+	);
+}
+
 export const idInput = z.object({ id: z.string().min(1) });
 
 export const listInput = z.object({
@@ -58,7 +77,7 @@ export type HydratedContentNote = ContentNoteRow & {
 	};
 };
 
-export type AdminContentNoteRow = Omit<NoteRow, "updatedAt" | "viewCount"> & {
+export type AdminContentNoteRow = Omit<NoteRow, "viewCount"> & {
 	authorName: string;
 	authorEmail: string;
 };
@@ -82,7 +101,6 @@ export type AdminUserReference = Pick<
 
 export type AdminContentNoteDetail = AdminHydratedContentNote<
 	AdminContentNoteRow & {
-		updatedAt: Date;
 		authorImage: string | null;
 		authorHandle: string | null;
 	}

@@ -22,6 +22,7 @@ import type {
 	HydratedContentNote,
 	NoteVisibility,
 } from "../../contracts/shared";
+import { manualReviewModerationStatuses } from "../../contracts/shared";
 import { containsInsensitive } from "../search";
 import { enqueueContentReview, isOwnedNoteImageUrl } from "./moderation";
 import { getMissingPublishItems } from "./publish-validation";
@@ -100,6 +101,7 @@ const adminContentNoteRowFields = {
 	moderationDetails: note.moderationDetails,
 	moderatedAt: note.moderatedAt,
 	createdAt: note.createdAt,
+	updatedAt: note.updatedAt,
 	publishedAt: note.publishedAt,
 	draftSavedAt: note.draftSavedAt,
 	userId: note.userId,
@@ -107,15 +109,8 @@ const adminContentNoteRowFields = {
 	authorEmail: user.email,
 };
 
-const attentionModerationStatuses = [
-	"not_started",
-	"pending",
-	"processing",
-	"needs_review",
-	"failed",
-] as const satisfies readonly ContentModerationStatus[];
 const attentionModerationStatusSet = new Set<ContentModerationStatus>(
-	attentionModerationStatuses,
+	manualReviewModerationStatuses,
 );
 
 function toNumber(value: unknown) {
@@ -752,7 +747,7 @@ function moderationBucketCondition(bucket: ModerationQueueBucket) {
 	if (bucket === "attention") {
 		return and(
 			eq(note.status, "audit"),
-			inArray(note.moderationStatus, [...attentionModerationStatuses]),
+			inArray(note.moderationStatus, [...manualReviewModerationStatuses]),
 		);
 	}
 	if (bucket === "passed") return eq(note.moderationStatus, "passed");
@@ -837,7 +832,6 @@ export async function getAdminContentNoteDetail(id: string) {
 	const [row] = await db
 		.select({
 			...adminContentNoteRowFields,
-			updatedAt: note.updatedAt,
 			authorImage: user.image,
 			authorHandle: user.handle,
 		})
@@ -929,26 +923,6 @@ export async function listAdminContentNotesByUser(userId: string) {
 		.limit(100);
 
 	return hydrateAdminContentNotes(rows);
-}
-
-export async function updateContentNoteStatus(input: {
-	id: string;
-	status: ContentNoteStatus;
-	rejectionReason?: string;
-}) {
-	const [updated] = await createDb()
-		.update(note)
-		.set({
-			status: input.status,
-			rejectionReason:
-				input.status === "rejected"
-					? input.rejectionReason || "内容未通过审核"
-					: null,
-			publishedAt: input.status === "published" ? new Date() : null,
-		})
-		.where(eq(note.id, input.id))
-		.returning();
-	return updated;
 }
 
 export async function deleteContentNote(id: string) {

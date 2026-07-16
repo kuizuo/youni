@@ -44,6 +44,7 @@ function createNote(
 		title,
 		topicDetails: [],
 		topics: [],
+		updatedAt: createdAt,
 		userId: `user-${id}`,
 		visibility: "public",
 	};

@@ -1,10 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { moderationQueueBuckets } from "@youni/api/contracts/admin";
-import type {
-	AdminHydratedContentNote,
-	ContentNoteStatus,
-} from "@youni/api/contracts/shared";
+import type { AdminHydratedContentNote } from "@youni/api/contracts/shared";
 import { useEffect, useState } from "react";
 import z from "zod";
 
@@ -67,9 +64,7 @@ function AdminReviewsRoute() {
 		keyword: search.q,
 		page: search.page,
 	});
-	const reviewMutation = useMutation(
-		orpc.admin.updateNoteStatus.mutationOptions(),
-	);
+	const reviewMutation = useMutation(orpc.admin.reviewNote.mutationOptions());
 	useEffect(() => {
 		if (!queue.pageCorrection) return;
 		void navigate({
@@ -139,18 +134,24 @@ function AdminReviewsRoute() {
 
 	const reviewNote = async (
 		note: AdminHydratedContentNote,
-		status: Extract<ContentNoteStatus, "published" | "rejected">,
+		decision: "approve" | "reject",
 		reason?: string,
 	) => {
 		clearMessages();
 		try {
-			await reviewMutation.mutateAsync({
-				id: note.id,
-				rejectionReason: status === "rejected" ? reason : undefined,
-				status,
-			});
+			const expectedUpdatedAt = new Date(note.updatedAt).toISOString();
+			await reviewMutation.mutateAsync(
+				decision === "approve"
+					? { decision, expectedUpdatedAt, id: note.id }
+					: {
+							decision,
+							expectedUpdatedAt,
+							id: note.id,
+							rejectionReason: reason ?? "",
+						},
+			);
 			setSuccessMessage(
-				status === "published"
+				decision === "approve"
 					? `已通过「${note.title}」`
 					: `已拒绝「${note.title}」并保存理由`,
 			);
