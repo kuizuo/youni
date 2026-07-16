@@ -9,15 +9,26 @@ import {
 	Typography,
 	useThemeColor,
 } from "heroui-native";
-import { useState } from "react";
-import type { TextStyle } from "react-native";
-import { Text as NativeText, TextInput, View } from "react-native";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+	Keyboard,
+	type KeyboardEvent,
+	Text as NativeText,
+	Platform,
+	TextInput,
+	type TextStyle,
+	View,
+} from "react-native";
 import { EmojiKeyboard, type EmojiType } from "rn-emoji-keyboard";
 
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import type { TextSelection } from "@/lib/types/text-input";
 import { client } from "@/utils/orpc";
-
+import {
+	type CommentReplyTarget,
+	createCommentComposerSessionState,
+	transitionCommentComposerSession,
+} from "./comment-composer-session";
 import type { CommentInputRef, MentionTrigger } from "./types";
 import { clampCursor } from "./utils";
 
@@ -31,6 +42,170 @@ const COMMENT_INPUT_STYLE: TextStyle = {
 const COMMENT_INPUT_LINE_HEIGHT = 22;
 const COMMENT_INPUT_MIN_HEIGHT = COMMENT_INPUT_LINE_HEIGHT * 2;
 const COMMENT_INPUT_MAX_HEIGHT = COMMENT_INPUT_LINE_HEIGHT * 4;
+
+export function useCommentComposerSession({
+	bottomInset,
+	canComment,
+	isSending,
+	onSubmit,
+}: {
+	bottomInset: number;
+	canComment: boolean;
+	isSending: boolean;
+	onSubmit: (input: { content: string; parentId?: string }) => Promise<boolean>;
+}) {
+	const mutedColor = useThemeColor("muted");
+	const inputRef = useRef<TextInput>(null);
+	const [state, dispatch] = useReducer(
+		transitionCommentComposerSession,
+		createCommentComposerSessionState(),
+	);
+	const stateRef = useRef(state);
+	stateRef.current = state;
+
+	const apply = useCallback(
+		(event: Parameters<typeof transitionCommentComposerSession>[1]) => {
+			stateRef.current = transitionCommentComposerSession(
+				stateRef.current,
+				event,
+			);
+			dispatch(event);
+		},
+		[],
+	);
+	const focusInput = useCallback(() => {
+		setTimeout(() => inputRef.current?.focus(), 80);
+	}, []);
+	const open = useCallback(
+		(replyTarget?: CommentReplyTarget | null) => {
+			apply({ replyTarget, type: "open" });
+			focusInput();
+		},
+		[apply, focusInput],
+	);
+
+	useEffect(() => {
+		const showSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+			(event) => {
+				if (Platform.OS === "ios") Keyboard.scheduleLayoutAnimation(event);
+				apply({ height: event.endCoordinates.height, type: "keyboardShown" });
+			},
+		);
+		const hideSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+			(event?: KeyboardEvent) => {
+				if (Platform.OS === "ios" && event) {
+					Keyboard.scheduleLayoutAnimation(event);
+				}
+				apply({ type: "keyboardHidden" });
+			},
+		);
+
+		return () => {
+			showSubscription.remove();
+			hideSubscription.remove();
+		};
+	}, [apply]);
+
+	const send = async () => {
+		const current = stateRef.current;
+		const content = current.text.trim();
+		if (
+			!canComment ||
+			isSending ||
+			current.isSubmitting ||
+			content.length === 0
+		) {
+			return;
+		}
+
+		const draft = { content, replyTarget: current.replyTarget };
+		apply({ type: "submissionStarted" });
+		inputRef.current?.blur();
+		Keyboard.dismiss();
+
+		let succeeded = false;
+		try {
+			succeeded = await onSubmit({
+				content,
+				...(draft.replyTarget ? { parentId: draft.replyTarget.id } : {}),
+			});
+		} catch {
+			succeeded = false;
+		}
+
+		if (succeeded) {
+			apply({ type: "submissionSucceeded" });
+			return;
+		}
+		apply({ draft, type: "submissionFailed" });
+		focusInput();
+	};
+
+	const canSend =
+		canComment &&
+		!isSending &&
+		!state.isSubmitting &&
+		state.text.trim().length > 0;
+	const hasVisibleKeyboard =
+		state.isEmojiKeyboardOpen || state.isSystemKeyboardVisible;
+
+	return {
+		bottomPadding: state.isOpen
+			? hasVisibleKeyboard
+				? 8
+				: Math.max(bottomInset, 2)
+			: bottomInset + 10,
+		closeKeyboardFromContent: () => apply({ type: "closeEmoji" }),
+		isOpen: state.isOpen,
+		keyboardAvoidingBehavior:
+			Platform.OS === "ios" && !state.isEmojiKeyboardOpen
+				? ("padding" as const)
+				: undefined,
+		open,
+		panelProps: {
+			canSend,
+			emojiPanelHeight: state.emojiPanelHeight,
+			inputRef,
+			isEmojiInputLocked: state.isEmojiInputLocked,
+			isEmojiPickerOpen: state.isEmojiKeyboardOpen,
+			mentionTrigger: state.mentionTrigger,
+			mutedColor,
+			onChangeText: (text: string) => apply({ text, type: "textChanged" }),
+			onEmojiPress: () => {
+				const wasOpen = stateRef.current.isEmojiKeyboardOpen;
+				apply({ type: "toggleEmoji" });
+				if (wasOpen) {
+					focusInput();
+					return;
+				}
+				inputRef.current?.blur();
+				Keyboard.dismiss();
+			},
+			onEmojiSelect: (emoji: EmojiType) => {
+				apply({ text: emoji.emoji, type: "insertText" });
+				focusInput();
+			},
+			onFocusInput: () => apply({ type: "inputFocused" }),
+			onMentionPress: () => {
+				apply({ type: "openMention" });
+				focusInput();
+			},
+			onMentionSelect: (handle: string) => {
+				apply({ handle, type: "insertMention" });
+				focusInput();
+			},
+			onSelectionChange: (selection: TextSelection) =>
+				apply({ selection, type: "selectionChanged" }),
+			onSend: () => void send(),
+			placeholder: state.replyTarget
+				? `回复 @${state.replyTarget.authorName}`
+				: "说点什么...",
+			value: state.text,
+		},
+	};
+}
 
 export function CommentComposerPanel({
 	canSend,

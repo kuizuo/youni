@@ -20,18 +20,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Alert,
 	FlatList,
-	Keyboard,
 	KeyboardAvoidingView,
-	type KeyboardEvent,
 	Platform,
-	type TextInput,
 	useWindowDimensions,
 	View,
 	type ViewStyle,
 } from "react-native";
 import Animated, { ReduceMotion, ZoomIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { EmojiType } from "rn-emoji-keyboard";
 
 import { AppSeparator } from "@/components/shared/app-separator";
 import { EmptyState, ErrorState } from "@/components/social-states";
@@ -43,7 +39,6 @@ import {
 } from "@/lib/note-view-transition";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialActions } from "@/lib/social/use-social-actions";
-import type { TextSelection } from "@/lib/types/text-input";
 import { useNoteViewRecorder } from "@/lib/use-note-view-recorder";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
@@ -51,7 +46,10 @@ import { client, orpc, queryClient } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
 import { NoteActionMenu, NoteVisibilitySheet } from "./note-detail/action-menu";
 import { BottomIconAction } from "./note-detail/bottom-actions";
-import { CommentComposerPanel } from "./note-detail/comment-composer";
+import {
+	CommentComposerPanel,
+	useCommentComposerSession,
+} from "./note-detail/comment-composer";
 import {
 	CommentFooter,
 	CommentItem,
@@ -65,12 +63,8 @@ import {
 	SimpleTopBar,
 } from "./note-detail/content";
 import { NoteDetailSkeleton } from "./note-detail/skeleton";
-import type { MentionTrigger } from "./note-detail/types";
-import { clampCursor, findMentionTrigger } from "./note-detail/utils";
 
 const COMMENTS_PAGE_SIZE = 20;
-const DEFAULT_EMOJI_PANEL_HEIGHT = 304;
-const INPUT_ACCESSORY_GAP = 8;
 
 function commentTreeContains(comment: NoteComment, commentId: string): boolean {
 	if (comment.id === commentId) return true;
@@ -121,23 +115,8 @@ export default function NoteDetailScreen() {
 	const commentScrollOffsetRef = useRef(0);
 	const pendingTargetScrollKeyRef = useRef<null | string>(null);
 	const targetCommentRef = useRef<View | null>(null);
-	const commentInputRef = useRef<TextInput>(null);
-	const commentTextRef = useRef("");
-	const isCommentComposerOpenRef = useRef(false);
-	const isEmojiKeyboardOpenRef = useRef(false);
-	const isEmojiInputLockedRef = useRef(false);
-	const isSystemKeyboardVisibleRef = useRef(false);
-	const isSwitchingToSystemKeyboardRef = useRef(false);
-	const keyboardHeightRef = useRef(DEFAULT_EMOJI_PANEL_HEIGHT);
-	const [commentText, setCommentText] = useState("");
 	const [commentSort, setCommentSort] = useState<CommentSort>("hot");
 	const [activeImageIndex, setActiveImageIndex] = useState(0);
-	const [emojiPanelHeight, setEmojiPanelHeight] = useState(
-		DEFAULT_EMOJI_PANEL_HEIGHT,
-	);
-	const [isCommentComposerOpen, setIsCommentComposerOpen] = useState(false);
-	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
-	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
 	const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
 	const [isVisibilitySheetOpen, setIsVisibilitySheetOpen] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
@@ -146,23 +125,6 @@ export default function NoteDetailScreen() {
 	>(null);
 	const [handledMissingTargetCommentKey, setHandledMissingTargetCommentKey] =
 		useState<null | string>(null);
-	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
-	const [commentSelection, setCommentSelection] = useState<TextSelection>({
-		end: 0,
-		start: 0,
-	});
-	const [mentionTrigger, setMentionTrigger] = useState<MentionTrigger | null>(
-		null,
-	);
-	const [replyTarget, setReplyTarget] = useState<null | {
-		authorName: string;
-		id: string;
-	}>(null);
-	commentTextRef.current = commentText;
-	isCommentComposerOpenRef.current = isCommentComposerOpen;
-	isEmojiInputLockedRef.current = isEmojiInputLocked;
-	isEmojiKeyboardOpenRef.current = isEmojiKeyboardOpen;
-	isSystemKeyboardVisibleRef.current = isSystemKeyboardVisible;
 
 	const note = useQuery({
 		...orpc.notes.byId.queryOptions({ input: { id: id || "missing" } }),
@@ -227,6 +189,16 @@ export default function NoteDetailScreen() {
 		enabled: Boolean(authorId),
 	});
 	const commentsEnabled = displayNote?.advancedOptions.allowComment ?? true;
+	const commentComposer = useCommentComposerSession({
+		bottomInset: insets.bottom,
+		canComment: commentsEnabled,
+		isSending: socialActions.mutations.comment.isPending,
+		onSubmit: (input) =>
+			socialActions.addComment(
+				{ ...input, noteId: id },
+				{ redirectTo: `/note/${id}` },
+			),
+	});
 	const commentsQueryKey = useMemo(
 		() => nativeQueryKeys.note.comments(id, commentSort),
 		[id, commentSort],
@@ -320,7 +292,6 @@ export default function NoteDetailScreen() {
 		Boolean(note.data?.collected),
 		note.data?.collectedCount ?? 0,
 	);
-	const canSendComment = commentsEnabled && commentText.trim().length > 0;
 	const hasScrolledToTargetComment =
 		targetCommentScrollKey !== null &&
 		scrolledTargetCommentKey === targetCommentScrollKey;
@@ -384,82 +355,6 @@ export default function NoteDetailScreen() {
 		},
 		[insets.top],
 	);
-	const closeCommentComposer = useCallback(
-		({ dismissKeyboard = false }: { dismissKeyboard?: boolean } = {}) => {
-			isEmojiKeyboardOpenRef.current = false;
-			isCommentComposerOpenRef.current = false;
-			isEmojiInputLockedRef.current = false;
-			isSwitchingToSystemKeyboardRef.current = false;
-			setIsEmojiInputLocked(false);
-			setIsEmojiKeyboardOpen(false);
-			setIsCommentComposerOpen(false);
-			setReplyTarget(null);
-			setMentionTrigger(null);
-
-			if (dismissKeyboard) {
-				commentInputRef.current?.blur();
-				Keyboard.dismiss();
-			}
-		},
-		[],
-	);
-
-	const closeEmojiKeyboard = useCallback(() => {
-		isSwitchingToSystemKeyboardRef.current = false;
-		isEmojiInputLockedRef.current = false;
-		setIsEmojiInputLocked(false);
-		if (!isEmojiKeyboardOpenRef.current) return;
-		isEmojiKeyboardOpenRef.current = false;
-		setIsEmojiKeyboardOpen(false);
-	}, []);
-
-	useEffect(() => {
-		const updateKeyboardHeight = (event: KeyboardEvent) => {
-			const height = Math.round(event.endCoordinates.height);
-			if (height > 0) {
-				const nextHeight = Math.max(260, height);
-				keyboardHeightRef.current = nextHeight;
-				setEmojiPanelHeight(nextHeight);
-			}
-		};
-		const showSubscription = Keyboard.addListener(
-			Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-			(event) => {
-				if (Platform.OS === "ios") {
-					Keyboard.scheduleLayoutAnimation(event);
-				}
-				isSystemKeyboardVisibleRef.current = true;
-				setIsSystemKeyboardVisible(true);
-				updateKeyboardHeight(event);
-				if (isSwitchingToSystemKeyboardRef.current) {
-					isSwitchingToSystemKeyboardRef.current = false;
-					isEmojiKeyboardOpenRef.current = false;
-					setIsEmojiKeyboardOpen(false);
-				}
-			},
-		);
-		const handleKeyboardHide = (event?: KeyboardEvent) => {
-			if (Platform.OS === "ios" && event) {
-				Keyboard.scheduleLayoutAnimation(event);
-			}
-			isSystemKeyboardVisibleRef.current = false;
-			setIsSystemKeyboardVisible(false);
-			isSwitchingToSystemKeyboardRef.current = false;
-			if (isEmojiKeyboardOpenRef.current) return;
-			if (!isCommentComposerOpenRef.current) return;
-			closeCommentComposer();
-		};
-		const hideSubscription = Keyboard.addListener(
-			Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-			handleKeyboardHide,
-		);
-
-		return () => {
-			showSubscription.remove();
-			hideSubscription.remove();
-		};
-	}, [closeCommentComposer]);
-
 	useEffect(() => {
 		if (
 			!targetCommentId ||
@@ -541,16 +436,6 @@ export default function NoteDetailScreen() {
 		toast.show,
 	]);
 
-	const focusCommentInput = () => {
-		setTimeout(() => {
-			commentInputRef.current?.focus();
-		}, 80);
-	};
-
-	const updateMentionTrigger = (value: string, cursor: number) => {
-		setMentionTrigger(findMentionTrigger(value, cursor));
-	};
-
 	const openCommentComposer = (
 		target?: null | { authorName: string; id: string },
 	) => {
@@ -559,115 +444,7 @@ export default function NoteDetailScreen() {
 			return;
 		}
 		if (!commentsEnabled) return;
-		if (target !== undefined) {
-			setReplyTarget(target);
-		}
-		setIsCommentComposerOpen(true);
-		focusCommentInput();
-	};
-
-	const handleCommentTextChange = (value: string) => {
-		const previousValue = commentTextRef.current;
-		const cursor = clampCursor(
-			commentSelection.start + value.length - previousValue.length,
-			value.length,
-		);
-		commentTextRef.current = value;
-		setCommentText(value);
-		setCommentSelection({ start: cursor, end: cursor });
-		updateMentionTrigger(value, cursor);
-	};
-
-	const handleCommentSelectionChange = (selection: TextSelection) => {
-		setCommentSelection(selection);
-		if (selection.start !== selection.end) {
-			setMentionTrigger(null);
-			return;
-		}
-		updateMentionTrigger(commentTextRef.current, selection.start);
-	};
-
-	const insertCommentText = (value: string) => {
-		if (!value) return;
-		const currentValue = commentTextRef.current;
-		const start = Math.min(commentSelection.start, commentSelection.end);
-		const end = Math.max(commentSelection.start, commentSelection.end);
-		const nextValue = `${currentValue.slice(0, start)}${value}${currentValue.slice(end)}`;
-		const cursor = start + value.length;
-
-		commentTextRef.current = nextValue;
-		setCommentText(nextValue);
-		setCommentSelection({ start: cursor, end: cursor });
-		updateMentionTrigger(nextValue, cursor);
-		focusCommentInput();
-	};
-
-	const insertMention = (handle: string) => {
-		const cleanHandle = handle.trim().replace(/^@/, "");
-		if (!cleanHandle) return;
-		const currentValue = commentTextRef.current;
-		const trigger = mentionTrigger;
-		const start = trigger?.start ?? commentSelection.start;
-		const end = trigger?.end ?? commentSelection.end;
-		const token = `@${cleanHandle} `;
-		const nextValue = `${currentValue.slice(0, start)}${token}${currentValue
-			.slice(end)
-			.replace(/^\s+/, "")}`;
-		const cursor = start + token.length;
-
-		commentTextRef.current = nextValue;
-		setCommentText(nextValue);
-		setCommentSelection({ start: cursor, end: cursor });
-		setMentionTrigger(null);
-		focusCommentInput();
-	};
-
-	const openMentionInput = () => {
-		if (!isCommentComposerOpen) {
-			openCommentComposer();
-			return;
-		}
-		closeEmojiKeyboard();
-		const cursor = commentSelection.start;
-		const currentValue = commentTextRef.current;
-		const previousChar = cursor > 0 ? currentValue[cursor - 1] : "";
-		const needsSpace = Boolean(previousChar && !/\s/.test(previousChar));
-		insertCommentText(`${needsSpace ? " " : ""}@`);
-	};
-
-	const handleEmojiSelected = (emoji: EmojiType) => {
-		insertCommentText(emoji.emoji);
-	};
-
-	const openEmojiKeyboard = () => {
-		const nextValue = !isEmojiKeyboardOpenRef.current;
-		if (!nextValue) {
-			isSwitchingToSystemKeyboardRef.current = true;
-			isEmojiInputLockedRef.current = false;
-			setIsEmojiInputLocked(false);
-			focusCommentInput();
-			return;
-		}
-		isSwitchingToSystemKeyboardRef.current = false;
-		isEmojiInputLockedRef.current = true;
-		isEmojiKeyboardOpenRef.current = true;
-		setEmojiPanelHeight(keyboardHeightRef.current);
-		setIsEmojiInputLocked(true);
-		setIsEmojiKeyboardOpen(true);
-		commentInputRef.current?.blur();
-		Keyboard.dismiss();
-	};
-
-	const closeEmojiKeyboardFromContent = () => {
-		closeEmojiKeyboard();
-	};
-
-	const handleCommentInputFocus = () => {
-		if (isEmojiInputLockedRef.current) return;
-		isSystemKeyboardVisibleRef.current = true;
-		setIsSystemKeyboardVisible(true);
-		if (isSwitchingToSystemKeyboardRef.current) return;
-		closeEmojiKeyboard();
+		commentComposer.open(target);
 	};
 
 	const goBack = () => {
@@ -855,46 +632,6 @@ export default function NoteDetailScreen() {
 		]);
 	};
 
-	const sendComment = () => {
-		if (
-			!note.data ||
-			!canSendComment ||
-			socialActions.mutations.comment.isPending
-		) {
-			return;
-		}
-		const content = commentText.trim();
-		const target = replyTarget;
-		const parentId = target?.id;
-		closeCommentComposer({ dismissKeyboard: true });
-		socialActions.addComment(
-			{
-				noteId: note.data.id,
-				content,
-				parentId,
-			},
-			{
-				onError: () => {
-					commentTextRef.current = content;
-					setCommentText(content);
-					setReplyTarget(target);
-					setIsCommentComposerOpen(true);
-					focusCommentInput();
-				},
-				onSuccess: async () => {
-					commentTextRef.current = "";
-					setCommentText("");
-					setReplyTarget(null);
-					setMentionTrigger(null);
-					setCommentSelection({ start: 0, end: 0 });
-					setIsEmojiKeyboardOpen(false);
-					setIsCommentComposerOpen(false);
-				},
-				redirectTo: `/note/${id}`,
-			},
-		);
-	};
-
 	if (note.isLoading && !displayNote) {
 		return (
 			<NoteDetailSkeleton
@@ -920,9 +657,7 @@ export default function NoteDetailScreen() {
 
 	const content = (
 		<KeyboardAvoidingView
-			behavior={
-				Platform.OS === "ios" && !isEmojiKeyboardOpen ? "padding" : undefined
-			}
+			behavior={commentComposer.keyboardAvoidingBehavior}
 			className="flex-1 bg-background"
 			style={[webFallbackStyle, transitionStyle]}
 		>
@@ -966,9 +701,9 @@ export default function NoteDetailScreen() {
 				onScroll={(event) => {
 					commentScrollOffsetRef.current = event.nativeEvent.contentOffset.y;
 				}}
-				onScrollBeginDrag={closeEmojiKeyboardFromContent}
+				onScrollBeginDrag={commentComposer.closeKeyboardFromContent}
 				onScrollToIndexFailed={handleScrollToCommentIndexFailed}
-				onTouchStart={closeEmojiKeyboardFromContent}
+				onTouchStart={commentComposer.closeKeyboardFromContent}
 				onEndReached={() => {
 					if (
 						comments.hasNextPage &&
@@ -1063,37 +798,11 @@ export default function NoteDetailScreen() {
 			<AppSeparator />
 			<View
 				className="bg-background px-4 pt-2"
-				style={{
-					paddingBottom: isCommentComposerOpen
-						? isEmojiKeyboardOpen || isSystemKeyboardVisible
-							? INPUT_ACCESSORY_GAP
-							: Math.max(insets.bottom, 2)
-						: insets.bottom + 10,
-				}}
+				style={{ paddingBottom: commentComposer.bottomPadding }}
 			>
 				{socialActions.currentUserId && commentsEnabled ? (
-					isCommentComposerOpen ? (
-						<CommentComposerPanel
-							canSend={canSendComment}
-							emojiPanelHeight={emojiPanelHeight}
-							inputRef={commentInputRef}
-							isEmojiInputLocked={isEmojiInputLocked}
-							isEmojiPickerOpen={isEmojiKeyboardOpen}
-							mentionTrigger={mentionTrigger}
-							mutedColor={mutedColor}
-							placeholder={
-								replyTarget ? `回复 @${replyTarget.authorName}` : "说点什么..."
-							}
-							value={commentText}
-							onChangeText={handleCommentTextChange}
-							onEmojiPress={openEmojiKeyboard}
-							onEmojiSelect={handleEmojiSelected}
-							onFocusInput={handleCommentInputFocus}
-							onMentionPress={openMentionInput}
-							onMentionSelect={insertMention}
-							onSelectionChange={handleCommentSelectionChange}
-							onSend={sendComment}
-						/>
+					commentComposer.isOpen ? (
+						<CommentComposerPanel {...commentComposer.panelProps} />
 					) : (
 						<View className="mx-auto w-full max-w-xl flex-row items-center gap-2">
 							<BottomIconAction

@@ -223,7 +223,7 @@ export function useSocialActions() {
 		return true;
 	};
 
-	const addComment = (
+	const addComment = async (
 		input: { content: string; noteId: string; parentId?: string },
 		options: SocialActionOptions<
 			NonNullable<CommentsOutputs["addComment"]>
@@ -231,21 +231,19 @@ export function useSocialActions() {
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
 
-		commentMutation.mutate(input, {
-			onError: (error) => {
-				const actionError = getError(error);
-				options.onError?.(actionError);
-				showErrorToast(actionError);
-			},
-			onSettled: () => {
-				options.onSettled?.();
-			},
-			onSuccess: async (result) => {
-				if (!result) return;
-				await options.onSuccess?.(result);
-			},
-		});
-		return true;
+		try {
+			const result = await commentMutation.mutateAsync(input);
+			if (!result) return false;
+			await options.onSuccess?.(result);
+			return true;
+		} catch (error) {
+			const actionError = getError(error);
+			options.onError?.(actionError);
+			showErrorToast(actionError);
+			return false;
+		} finally {
+			options.onSettled?.();
+		}
 	};
 
 	const toggleCommentLike = (
