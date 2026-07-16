@@ -31,6 +31,7 @@ import {
 	deleteUploadedNoteImages,
 	uploadNoteImages,
 } from "@/lib/note-image-upload";
+import { NotePublishAttempt } from "@/lib/note-publish-attempt";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { confirmAction } from "@/utils/confirm-action";
@@ -41,6 +42,37 @@ const DEFAULT_ADVANCED_OPTIONS: LocalDraftAdvancedOptions = {
 	allowComment: true,
 	allowShare: true,
 };
+
+type NotePublishPayload = {
+	advancedOptions: LocalDraftAdvancedOptions;
+	components: [];
+	content: string;
+	imageMetas: Array<{ height: number; url: string; width: number }>;
+	images: string[];
+	locationName: undefined;
+	publishAttemptId: string;
+	title: string;
+	topics: string[];
+	visibility: NoteVisibility;
+};
+
+const DEFINITIVE_PUBLISH_ERROR_CODES = new Set([
+	"BAD_REQUEST",
+	"CONFLICT",
+	"FORBIDDEN",
+	"NOT_FOUND",
+	"UNAUTHORIZED",
+]);
+
+function isUnknownPublishResult(error: unknown) {
+	if (isRequestTimeoutError(error)) return true;
+	return !(
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		DEFINITIVE_PUBLISH_ERROR_CODES.has(String(error.code))
+	);
+}
 
 function composerSignature(composer: {
 	advancedOptions: LocalDraftAdvancedOptions;
@@ -123,8 +155,11 @@ export function useCreateComposer({
 	const [hydratedNoteId, setHydratedNoteId] = useState<null | string>(null);
 	const draftBaselineRef = useRef<null | string>(null);
 	const draftSaveInFlightRef = useRef(false);
-	const pendingUploadedKeysRef = useRef<string[]>([]);
 	const materializedDraftUrisRef = useRef<string[]>([]);
+	const publishAttemptRef =
+		useRef<NotePublishAttempt<NotePublishPayload> | null>(null);
+	publishAttemptRef.current ??= new NotePublishAttempt<NotePublishPayload>();
+	const publishAttempt = publishAttemptRef.current;
 	const rawDraftId = params.draftId;
 	const rawNoteId = params.noteId;
 	const draftId = Array.isArray(rawDraftId) ? rawDraftId[0] : rawDraftId;
@@ -191,6 +226,7 @@ export function useCreateComposer({
 		enabled: Boolean(isEditingNote && noteId && isAuthenticated),
 	});
 	const resetForm = () => {
+		publishAttempt.reset();
 		const materializedUris = materializedDraftUrisRef.current;
 		materializedDraftUrisRef.current = [];
 		if (materializedUris.length > 0) {
@@ -207,67 +243,9 @@ export function useCreateComposer({
 		draftBaselineRef.current = null;
 	};
 
-	const createMutation = useMutation(
-		orpc.notes.create.mutationOptions({
-			onSuccess: (result) => {
-				pendingUploadedKeysRef.current = [];
-				if (draftId && userId) {
-					void deleteLocalDraft(userId, draftId).catch(() => {
-						toast.show({
-							label: "发布成功，本地草稿未能自动删除",
-							variant: "warning",
-						});
-					});
-				}
-				toast.show({
-					label: "已提交审核，通过后会自动发布",
-					variant: "success",
-				});
-				router.replace(`/note/${result.id}` as Href);
-				InteractionManager.runAfterInteractions(resetForm);
-				void queryClient.invalidateQueries();
-			},
-			onError: async (error) => {
-				if (isRequestTimeoutError(error)) return;
-				const keys = pendingUploadedKeysRef.current;
-				pendingUploadedKeysRef.current = [];
-				await deleteUploadedNoteImages(keys).catch(() => undefined);
-				toast.show({
-					variant: "danger",
-					label: error.message,
-				});
-			},
-			onSettled: () => {
-				setPendingSubmitMode(null);
-			},
-		}),
-	);
+	const createMutation = useMutation(orpc.notes.create.mutationOptions());
 	const updateNoteMutation = useMutation(
-		orpc.notes.updateNote.mutationOptions({
-			onSuccess: async (result) => {
-				pendingUploadedKeysRef.current = [];
-				toast.show({
-					label: "修改已提交审核，通过后会自动发布",
-					variant: "success",
-				});
-				await queryClient.invalidateQueries();
-				router.replace(`/note/${result.id}` as Href);
-				InteractionManager.runAfterInteractions(resetForm);
-			},
-			onError: async (error) => {
-				if (isRequestTimeoutError(error)) return;
-				const keys = pendingUploadedKeysRef.current;
-				pendingUploadedKeysRef.current = [];
-				await deleteUploadedNoteImages(keys).catch(() => undefined);
-				toast.show({
-					variant: "danger",
-					label: error.message,
-				});
-			},
-			onSettled: () => {
-				setPendingSubmitMode(null);
-			},
-		}),
+		orpc.notes.updateNote.mutationOptions(),
 	);
 
 	// draftLoadAttempt is an explicit retry token for the same local draft id.
@@ -426,7 +404,7 @@ export function useCreateComposer({
 		}
 	};
 
-	const buildPayload = async () => {
+	const buildPayload = async (publishAttemptId: string) => {
 		const source = {
 			advancedOptions,
 			content,
@@ -435,16 +413,22 @@ export function useCreateComposer({
 			topics,
 			visibility,
 		};
-		const uploadedImages = await uploadLocalImages(source.images);
+		const { uploadedKeys, ...uploadedImages } = await uploadLocalImages(
+			source.images,
+		);
 		return {
-			title: source.title.trim(),
-			content: source.content.trim(),
-			...uploadedImages,
-			topics: source.topics,
-			locationName: undefined,
-			visibility: source.visibility,
-			components: [],
-			advancedOptions: source.advancedOptions,
+			payload: {
+				advancedOptions: source.advancedOptions,
+				components: [] as [],
+				content: source.content.trim(),
+				...uploadedImages,
+				locationName: undefined,
+				publishAttemptId,
+				title: source.title.trim(),
+				topics: source.topics,
+				visibility: source.visibility,
+			},
+			uploadedKeys,
 		};
 	};
 	const isSubmitting =
@@ -456,31 +440,46 @@ export function useCreateComposer({
 
 	const submitNote = async () => {
 		try {
-			const { uploadedKeys, ...payload } = await buildPayload();
-			pendingUploadedKeysRef.current = uploadedKeys;
-			if (isEditingNote && noteId) {
-				updateNoteMutation.mutate({
-					id: noteId,
-					title: payload.title,
-					content: payload.content,
-					images: payload.images,
-					imageMetas: payload.imageMetas,
-					topics: payload.topics,
-					locationName: payload.locationName,
-					visibility: payload.visibility,
-					components: payload.components,
-					advancedOptions: payload.advancedOptions,
+			const result = await publishAttempt.run({
+				cleanup: deleteUploadedNoteImages,
+				isUnknownResult: isUnknownPublishResult,
+				key: `${isEditingNote ? `edit:${noteId}` : "create"}:${currentComposerSignature}`,
+				prepare: buildPayload,
+				submit: async ({ publishAttemptId, ...payload }) => {
+					if (isEditingNote && noteId) {
+						return updateNoteMutation.mutateAsync({ id: noteId, ...payload });
+					}
+					return createMutation.mutateAsync({
+						publishAttemptId,
+						...payload,
+					});
+				},
+			});
+			if (!isEditingNote && draftId && userId) {
+				await deleteLocalDraft(userId, draftId).catch(() => {
+					toast.show({
+						label: "发布成功，本地草稿未能自动删除",
+						variant: "warning",
+					});
 				});
-				return;
 			}
-			createMutation.mutate(payload);
+			toast.show({
+				label: isEditingNote
+					? "修改已提交审核，通过后会自动发布"
+					: "已提交审核，通过后会自动发布",
+				variant: "success",
+			});
+			await queryClient.invalidateQueries();
+			router.replace(`/note/${result.id}` as Href);
+			InteractionManager.runAfterInteractions(resetForm);
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
-			setPendingSubmitMode(null);
 			toast.show({
 				variant: "danger",
 				label: error instanceof Error ? error.message : "图片上传失败",
 			});
+		} finally {
+			setPendingSubmitMode(null);
 		}
 	};
 

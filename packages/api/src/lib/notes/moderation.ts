@@ -1,12 +1,10 @@
-import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import type { ContentModerationDetail } from "@youni/db/schema/content";
 import type { ContentModerationReason } from "@youni/db/schema/content-values";
 import { note, noteTopic, topic } from "@youni/db/schema/index";
 import { env } from "@youni/env/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import z from "zod";
-import { manualReviewModerationStatuses } from "../../contracts/shared";
 import {
 	combineImageModerationResults,
 	createImageModerationReview,
@@ -20,6 +18,9 @@ import {
 	type ContentTextModerationMatch,
 	findBlockedContentText,
 } from "../moderation/text";
+import { transitionContentReview } from "./review-lifecycle";
+
+export { deriveContentModerationStatus } from "./review-lifecycle";
 
 const GENERIC_REJECTION_REASON = "内容未通过审核";
 const NOTE_IMAGE_PREFIX = "note-images/";
@@ -158,17 +159,6 @@ export function deriveContentModerationReason(
 	return "low_confidence";
 }
 
-export function deriveContentModerationStatus(
-	decision: ImageModerationDecision,
-	reason: ContentModerationReason | null,
-) {
-	if (decision === "pass") return "passed" as const;
-	if (decision === "block") return "blocked" as const;
-	return reason === "low_confidence"
-		? ("needs_review" as const)
-		: ("failed" as const);
-}
-
 export function combineContentModerationDecision(
 	imageDecision: ImageModerationDecision,
 	textMatches: ContentTextModerationMatch[],
@@ -211,47 +201,6 @@ export function createContentRejectionReason(
 	].filter((reason): reason is string => Boolean(reason));
 
 	return reasons.join("；") || GENERIC_REJECTION_REASON;
-}
-
-export async function reviewContentNote(
-	input:
-		| {
-				decision: "approve";
-				expectedUpdatedAt: string;
-				id: string;
-		  }
-		| {
-				decision: "reject";
-				expectedUpdatedAt: string;
-				id: string;
-				rejectionReason: string;
-		  },
-) {
-	const approved = input.decision === "approve";
-	const [updated] = await createDb()
-		.update(note)
-		.set({
-			publishedAt: approved ? new Date() : null,
-			rejectionReason: approved ? null : input.rejectionReason,
-			status: approved ? "published" : "rejected",
-		})
-		.where(
-			and(
-				eq(note.id, input.id),
-				eq(note.status, "audit"),
-				eq(note.updatedAt, new Date(input.expectedUpdatedAt)),
-				inArray(note.moderationStatus, [...manualReviewModerationStatuses]),
-			),
-		)
-		.returning();
-
-	if (!updated) {
-		throw new ORPCError("CONFLICT", {
-			message: "内容状态已变化，请刷新后重试",
-		});
-	}
-
-	return updated;
 }
 
 function imageListsMatch(left: string[], right: string[]) {
@@ -297,19 +246,10 @@ export async function processContentReviewJob(body: unknown) {
 	}
 
 	if (current.moderationStatus === "pending") {
-		const [claimed] = await db
-			.update(note)
-			.set({ moderationReason: null, moderationStatus: "processing" })
-			.where(
-				and(
-					eq(note.id, job.contentId),
-					eq(note.userId, job.userId),
-					eq(note.status, "audit"),
-					eq(note.moderationStatus, "pending"),
-					eq(note.images, job.images),
-				),
-			)
-			.returning({ id: note.id });
+		const claimed = await transitionContentReview({
+			target: job,
+			transition: { type: "claimed" },
+		});
 		if (!claimed) return "stale" as const;
 	}
 
@@ -391,61 +331,24 @@ export async function processContentReviewJob(body: unknown) {
 			})),
 		];
 		const moderationReason = deriveContentModerationReason(decision, results);
-		if (decision === "review") {
-			await db
-				.update(note)
-				.set({
-					moderatedAt: new Date(),
-					moderationDetails,
-					moderationReason,
-					moderationStatus: deriveContentModerationStatus(
-						decision,
-						moderationReason,
-					),
-				})
-				.where(
-					and(
-						eq(note.id, job.contentId),
-						eq(note.userId, job.userId),
-						eq(note.status, "audit"),
-						eq(note.moderationStatus, "processing"),
-					),
-				);
-			return "review" as const;
-		}
-
-		const [updated] = await db
-			.update(note)
-			.set({
-				moderatedAt: new Date(),
+		const transitioned = await transitionContentReview({
+			target: job,
+			transition: {
+				decision,
 				moderationDetails,
 				moderationReason,
-				moderationStatus: deriveContentModerationStatus(
-					decision,
-					moderationReason,
-				),
-				publishedAt: decision === "pass" ? new Date() : null,
 				rejectionReason:
 					decision === "block"
 						? createContentRejectionReason(textMatches, results)
 						: null,
-				status: decision === "pass" ? "published" : "rejected",
-			})
-			.where(
-				and(
-					eq(note.id, job.contentId),
-					eq(note.userId, job.userId),
-					eq(note.status, "audit"),
-					eq(note.moderationStatus, "processing"),
-					eq(note.images, job.images),
-				),
-			)
-			.returning({ id: note.id });
+				type: "automated",
+			},
+		});
 
-		return updated ? decision : ("stale" as const);
+		return transitioned ? decision : ("stale" as const);
 	} catch {
-		await markContentReviewWriteFailed(job);
-		return "review" as const;
+		const failed = await markContentReviewWriteFailed(job);
+		return failed ? ("review" as const) : ("stale" as const);
 	}
 }
 
@@ -466,43 +369,18 @@ export async function enqueueContentReview(job: ContentReviewJob) {
 }
 
 async function markContentReviewWriteFailed(job: ContentReviewJob) {
-	await createDb()
-		.update(note)
-		.set({
-			moderatedAt: new Date(),
-			moderationDetails: [],
-			moderationReason: "result_write_failed",
-			moderationStatus: "failed",
-		})
-		.where(
-			and(
-				eq(note.id, job.contentId),
-				eq(note.userId, job.userId),
-				eq(note.status, "audit"),
-				eq(note.moderationStatus, "processing"),
-				eq(note.images, job.images),
-			),
-		);
+	return transitionContentReview({
+		target: job,
+		transition: { reason: "result_write_failed", type: "failed" },
+	});
 }
 
 async function markContentReviewQueueUnavailable(job: ContentReviewJob) {
 	try {
-		await createDb()
-			.update(note)
-			.set({
-				moderatedAt: new Date(),
-				moderationReason: "queue_unavailable",
-				moderationStatus: "failed",
-			})
-			.where(
-				and(
-					eq(note.id, job.contentId),
-					eq(note.userId, job.userId),
-					eq(note.status, "audit"),
-					eq(note.moderationStatus, "pending"),
-					eq(note.images, job.images),
-				),
-			);
+		await transitionContentReview({
+			target: job,
+			transition: { reason: "queue_unavailable", type: "failed" },
+		});
 	} catch {
 		// Publishing should still succeed and leave the content available for review.
 	}

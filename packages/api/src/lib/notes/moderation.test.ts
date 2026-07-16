@@ -9,6 +9,11 @@ import {
 	isOwnedNoteImageUrl,
 	prepareNoteImageForReview,
 } from "./moderation";
+import {
+	contentReviewSubmissionState,
+	contentReviewTransitionGuard,
+	contentReviewTransitionState,
+} from "./review-lifecycle";
 
 function result(
 	decision: ImageModerationResult["decision"],
@@ -22,6 +27,61 @@ function result(
 }
 
 describe("note image review adapter", () => {
+	test("keeps every review lifecycle transition internally consistent", () => {
+		const now = new Date("2026-07-16T00:00:00.000Z");
+		expect(contentReviewSubmissionState()).toMatchObject({
+			moderationStatus: "pending",
+			publishedAt: null,
+			status: "audit",
+		});
+		expect(contentReviewTransitionState({ type: "claimed" }, now)).toEqual({
+			moderationReason: null,
+			moderationStatus: "processing",
+		});
+		expect(
+			contentReviewTransitionState(
+				{
+					decision: "pass",
+					moderationDetails: [],
+					moderationReason: null,
+					rejectionReason: null,
+					type: "automated",
+				},
+				now,
+			),
+		).toMatchObject({
+			moderationStatus: "passed",
+			publishedAt: now,
+			status: "published",
+		});
+		expect(
+			contentReviewTransitionState(
+				{
+					decision: "review",
+					moderationDetails: [],
+					moderationReason: "service_unavailable",
+					rejectionReason: null,
+					type: "automated",
+				},
+				now,
+			),
+		).toEqual({
+			moderatedAt: now,
+			moderationDetails: [],
+			moderationReason: "service_unavailable",
+			moderationStatus: "failed",
+		});
+		expect(
+			contentReviewTransitionGuard({
+				decision: "pass",
+				moderationDetails: [],
+				moderationReason: null,
+				rejectionReason: null,
+				type: "automated",
+			}),
+		).toEqual({ moderationStatus: "processing", status: "audit" });
+	});
+
 	test("accepts only images uploaded by the note author", () => {
 		const image =
 			"https://api.example.com/uploads/note-images/user-1/123e4567-e89b-12d3-a456-426614174000.jpg";

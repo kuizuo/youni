@@ -26,6 +26,7 @@ import { manualReviewModerationStatuses } from "../../contracts/shared";
 import { containsInsensitive } from "../search";
 import { enqueueContentReview, isOwnedNoteImageUrl } from "./moderation";
 import { getMissingPublishItems } from "./publish-validation";
+import { contentReviewSubmissionState } from "./review-lifecycle";
 
 export type {
 	AdminHydratedContentNote,
@@ -55,6 +56,9 @@ export type ContentNoteMutationInput = {
 		contentDisclosure?: string | null;
 		isOriginal: boolean;
 	};
+};
+export type ContentNoteCreateInput = ContentNoteMutationInput & {
+	publishAttemptId: string;
 };
 export type ContentNoteEditInput = ContentNoteMutationInput & {
 	id: string;
@@ -480,6 +484,7 @@ export async function updateEditableContentNote({
 	await db
 		.update(note)
 		.set({
+			...contentReviewSubmissionState(),
 			title: input.title.trim(),
 			content: input.content.trim(),
 			images: input.images,
@@ -489,14 +494,6 @@ export async function updateEditableContentNote({
 			visibility: input.visibility,
 			components: input.components,
 			advancedOptions: input.advancedOptions,
-			status: "audit",
-			rejectionReason: null,
-			moderationStatus: "pending",
-			moderationReason: null,
-			moderationDetails: [],
-			moderatedAt: null,
-			publishedAt: null,
-			draftSavedAt: null,
 		})
 		.where(
 			and(
@@ -526,7 +523,7 @@ export async function createContentNote({
 	requestOrigin,
 	userId,
 }: {
-	input: ContentNoteMutationInput;
+	input: ContentNoteCreateInput;
 	requestOrigin: string;
 	userId: string;
 }) {
@@ -536,13 +533,14 @@ export async function createContentNote({
 	const imageMetas = normalizeImageMetas(input);
 	const title = input.title.trim();
 	const content = input.content.trim();
-	const status = "audit" as const;
 	assertPublishReady(input);
 	assertNoteImageOwnership({ images: input.images, requestOrigin, userId });
 
 	const [createdNote] = await db
 		.insert(note)
 		.values({
+			...contentReviewSubmissionState(),
+			id: input.publishAttemptId,
 			title,
 			content,
 			images: input.images,
@@ -552,14 +550,39 @@ export async function createContentNote({
 			visibility: input.visibility,
 			components: input.components,
 			advancedOptions: input.advancedOptions,
-			status,
-			moderationStatus: "pending",
-			draftSavedAt: null,
 			userId,
 		})
+		.onConflictDoNothing({ target: note.id })
 		.returning({ id: note.id });
 	if (!createdNote) {
-		throw new ORPCError("INTERNAL_SERVER_ERROR");
+		const [existing] = await db
+			.select({
+				id: note.id,
+				images: note.images,
+				moderationStatus: note.moderationStatus,
+				status: note.status,
+				userId: note.userId,
+			})
+			.from(note)
+			.where(eq(note.id, input.publishAttemptId))
+			.limit(1);
+		if (!existing || existing.userId !== userId) {
+			throw new ORPCError("CONFLICT", {
+				message: "发布标识已被使用，请重新发布",
+			});
+		}
+		await syncNoteTopics({ db, noteId: existing.id, topicNames });
+		if (
+			existing.status === "audit" &&
+			existing.moderationStatus === "pending"
+		) {
+			await enqueueContentReview({
+				contentId: existing.id,
+				images: existing.images,
+				userId,
+			});
+		}
+		return { id: existing.id, status: existing.status };
 	}
 
 	await syncNoteTopics({ db, noteId: createdNote.id, topicNames });
@@ -569,7 +592,7 @@ export async function createContentNote({
 		userId,
 	});
 
-	return { id: createdNote.id, status };
+	return { id: createdNote.id, status: "audit" as const };
 }
 
 export async function updateContentNoteVisibility({

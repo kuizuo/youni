@@ -60,7 +60,7 @@ import {
 	listAdminContentNotesByUser,
 	listAdminModerationQueue,
 } from "../lib/notes/content";
-import { reviewContentNote } from "../lib/notes/moderation";
+import { reviewContentNote } from "../lib/notes/review-lifecycle";
 import { containsInsensitive } from "../lib/search";
 
 const adminProcedure = protectedProcedure.admin.use(

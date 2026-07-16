@@ -1,12 +1,16 @@
 import { noteVisibilities } from "@youni/db/schema/content-values";
 import z from "zod";
 import { output, procedure } from "./procedure";
-import type { HydratedContentNote, NoteVisibility } from "./shared";
+import type {
+	ContentNoteStatus,
+	HydratedContentNote,
+	NoteVisibility,
+} from "./shared";
 import { idInput, listInput, paginatedListInput } from "./shared";
 
 // ====== Input ======
 
-export const noteCreateInput = z.object({
+const noteMutationInput = z.object({
 	title: z.string().trim().max(100).default(""),
 	content: z.string().trim().max(5000).default(""),
 	images: z.array(z.string().trim().url()).max(9).default([]),
@@ -48,7 +52,18 @@ export const noteCreateInput = z.object({
 		}),
 });
 
-export const noteEditInput = noteCreateInput.extend({ id: z.string().min(1) });
+export const noteCreateInput = noteMutationInput.extend({
+	publishAttemptId: z
+		.string()
+		.trim()
+		.min(16)
+		.max(100)
+		.regex(/^publish_[a-zA-Z0-9_-]+$/),
+});
+
+export const noteEditInput = noteMutationInput.extend({
+	id: z.string().min(1),
+});
 
 export const noteVisibilityUpdateInput = z.object({
 	id: z.string().min(1),
@@ -135,7 +150,7 @@ export type NotesOutputs = {
 	viewHistory: { note: HydratedContentNote; viewedAt: Date }[];
 	deleteViewHistory: { ok: boolean };
 	clearViewHistory: { ok: boolean };
-	create: { id: string; status: "audit" };
+	create: { id: string; status: ContentNoteStatus };
 	toggleLike: { liked: boolean; likedCount: number };
 	toggleCollect: { collected: boolean; collectedCount: number };
 };
