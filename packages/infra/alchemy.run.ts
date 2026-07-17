@@ -80,6 +80,11 @@ const apiDomain = "youni-api.kuizuo.me";
 const deployedNativeUrl = `https://${nativeDomain}`;
 const deployedAdminUrl = `https://${adminDomain}`;
 const deployedApiUrl = `https://${apiDomain}`;
+const storageName = app.local ? "youni-local" : "youni-production";
+const googleWebClientId = requiredEnv(
+	alchemy.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+	"EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
+);
 
 const publicServerUrl = app.local
 	? requiredEnv(alchemy.env.VITE_SERVER_URL, "VITE_SERVER_URL")
@@ -126,6 +131,7 @@ export const native = await Website("native", {
 	build: {
 		command: "bun expo export --platform web",
 		env: {
+			EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: googleWebClientId,
 			EXPO_PUBLIC_SERVER_URL: publicServerUrl,
 		},
 	},
@@ -165,15 +171,12 @@ export const web = await Vite("web", {
 
 export const youniBucket = await R2Bucket("youni", {
 	adopt: true,
-	name: "youni",
+	name: storageName,
 });
 
 export const youniDatabase = await D1Database("youni-db", {
 	adopt: true,
-	dev: {
-		remote: true,
-	},
-	name: "youni",
+	name: storageName,
 	primaryLocationHint: "apac",
 	readReplication: {
 		mode: "disabled",
@@ -188,26 +191,6 @@ const searchRateLimit = RateLimit({
 		period: 60,
 	},
 });
-const localD1HttpBindings: Record<string, Binding> = app.local
-	? {
-			CLOUDFLARE_ACCOUNT_ID: requiredEnv(
-				alchemy.env.CLOUDFLARE_ACCOUNT_ID,
-				"CLOUDFLARE_ACCOUNT_ID",
-			),
-			CLOUDFLARE_API_TOKEN: requiredEnv(
-				process.env.CLOUDFLARE_D1_API_TOKEN
-					? alchemy.secret.env.CLOUDFLARE_D1_API_TOKEN
-					: alchemy.secret.env.CLOUDFLARE_API_TOKEN,
-				"CLOUDFLARE_D1_API_TOKEN",
-			),
-			CLOUDFLARE_D1_DATABASE_ID: requiredEnv(
-				alchemy.env.CLOUDFLARE_D1_DATABASE_ID,
-				"CLOUDFLARE_D1_DATABASE_ID",
-			),
-			YOUNI_D1_HTTP_DIRECT: "true",
-		}
-	: {};
-// Keep the deployed resource identity stable so pending jobs survive this rename.
 export const contentReviewQueue =
 	await Queue<ContentReviewJob>("note-moderation");
 const workersAi = Ai<YouniAiModels>();
@@ -237,7 +220,6 @@ export const server = await Worker("server", {
 		SEARCH_RATE_LIMIT: searchRateLimit,
 		CONTENT_REVIEW_QUEUE: contentReviewQueue,
 		YOUNI_BUCKET: youniBucket,
-		...localD1HttpBindings,
 	},
 	crons: ["0 17 * * *", "0 */12 * * *"],
 	eventSources: [

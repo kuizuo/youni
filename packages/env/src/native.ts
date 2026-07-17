@@ -11,7 +11,10 @@ export const env = createEnv({
 		EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: z.string().min(1).optional(),
 	},
 	runtimeEnv: {
-		...process.env,
+		EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID:
+			process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+		EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID:
+			process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 		EXPO_PUBLIC_SERVER_URL:
 			process.env.EXPO_PUBLIC_SERVER_URL ??
 			(process.env.NODE_ENV === "production" ? productionServerUrl : undefined),
