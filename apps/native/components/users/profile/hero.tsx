@@ -24,10 +24,14 @@ import {
 } from "@/components/profile/profile-tabs";
 import { FollowButton } from "@/components/users/follow-button";
 
+type UserProfileHeroData = Pick<ProfileUser, "bio" | "coverImage" | "image"> &
+	Partial<Pick<ProfileUser, "followerCount" | "followingCount" | "likedCount">>;
+
 export function UserProfileHero({
 	displayHandle,
 	displayName,
 	isFollowing,
+	isIdentityLoading,
 	isLoading,
 	isSelf,
 	onOpenChat,
@@ -43,6 +47,7 @@ export function UserProfileHero({
 	displayHandle: string;
 	displayName: string;
 	isFollowing: boolean;
+	isIdentityLoading: boolean;
 	isLoading: boolean;
 	isSelf: boolean;
 	onOpenChat: () => void;
@@ -50,7 +55,7 @@ export function UserProfileHero({
 	onOpenMe: () => void;
 	onToggleFollow: () => void;
 	onMeasuredHeight: (height: number) => void;
-	profile?: ProfileUser;
+	profile?: UserProfileHeroData;
 	headerHeight: number;
 	scrollY: SharedValue<number>;
 	topChromeHeight: number;
@@ -106,7 +111,7 @@ export function UserProfileHero({
 				<View className="gap-2 px-4 pb-3" style={{ backgroundColor }}>
 					<View style={{ marginTop: -36 }}>
 						<View className="size-18 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-content2">
-							{isLoading || !profile ? (
+							{isIdentityLoading || !profile ? (
 								<Skeleton className="size-18 rounded-full" />
 							) : (
 								<Avatar size="lg" alt={displayName} className="size-18">
@@ -120,7 +125,7 @@ export function UserProfileHero({
 					</View>
 
 					<View className="min-w-0 gap-0.5">
-						{isLoading || !profile ? (
+						{isIdentityLoading || !profile ? (
 							<>
 								<Skeleton className="h-6 w-24 rounded-full" />
 								<Skeleton className="h-4 w-36 rounded-full" />
@@ -153,7 +158,7 @@ export function UserProfileHero({
 						>
 							{profile.bio}
 						</Typography.Paragraph>
-					) : isLoading ? (
+					) : isIdentityLoading ? (
 						<View className="gap-2">
 							<Skeleton className="h-3 w-4/5 rounded-full" />
 							<Skeleton className="h-3 w-2/3 rounded-full" />
@@ -247,18 +252,20 @@ function HeroStat({
 	value?: number;
 }) {
 	const content = (
-		<View className="flex-row items-baseline gap-1">
-			{isLoading ? (
-				<Skeleton className="h-5 w-8 rounded-full" />
-			) : (
-				<Typography.Paragraph
-					weight="bold"
-					className="text-foreground"
-					style={{ fontVariant: ["tabular-nums"] }}
-				>
-					{value ?? 0}
-				</Typography.Paragraph>
-			)}
+		<View className="flex-row items-center gap-1">
+			<View className="h-6 min-w-8 items-center justify-center">
+				{isLoading ? (
+					<Skeleton className="h-4 w-7 rounded-full" />
+				) : (
+					<Typography.Paragraph
+						weight="bold"
+						className="text-foreground"
+						style={{ fontVariant: ["tabular-nums"] }}
+					>
+						{value ?? 0}
+					</Typography.Paragraph>
+				)}
+			</View>
 			<Typography.Paragraph type="body-sm" className="text-muted">
 				{label}
 			</Typography.Paragraph>

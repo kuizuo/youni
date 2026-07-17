@@ -38,8 +38,24 @@ const USER_PROFILE_TABS = [{ key: "notes" }] as const;
 const PUBLIC_PROFILE_BASE_URL = "https://youni.kuizuo.me/user";
 
 export default function UserProfileScreen() {
-	const params = useLocalSearchParams<{ id?: string | string[] }>();
+	const params = useLocalSearchParams<{
+		bio?: string | string[];
+		handle?: string | string[];
+		id?: string | string[];
+		image?: string | string[];
+		name?: string | string[];
+	}>();
 	const id = getRouteParam(params.id) ?? "";
+	const previewName = getRouteParam(params.name);
+	const previewHandle = getRouteParam(params.handle);
+	const previewImage = getRouteParam(params.image);
+	const previewProfile = previewName
+		? {
+				bio: getRouteParam(params.bio) ?? null,
+				coverImage: null,
+				image: previewImage ?? null,
+			}
+		: undefined;
 	const router = useRouter();
 	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
@@ -79,10 +95,14 @@ export default function UserProfileScreen() {
 	const profileData: ProfileUser | undefined = profile.data?.profile;
 	const notes: HydratedContentNote[] = profile.data?.notes ?? [];
 	const isSelf = socialActions.currentUserId === id;
-	const displayName = profileData?.name ?? "用户";
-	const displayHandle = profileData?.handle
-		? `@${profileData.handle}`
-		: (profileData?.email ?? "Youni 用户");
+	const displayName = profileData?.name ?? previewName ?? "用户";
+	const displayHandle = profileData
+		? profileData.handle
+			? `@${profileData.handle}`
+			: profileData.email
+		: previewHandle
+			? `@${previewHandle}`
+			: "Youni 用户";
 	const followState = socialActions.optimistic.follow(
 		id,
 		Boolean(profileData?.isFollowing),
@@ -94,6 +114,7 @@ export default function UserProfileScreen() {
 				followerCount: followState.count ?? profileData.followerCount,
 			}
 		: undefined;
+	const heroProfile = displayedProfile ?? previewProfile;
 	const topChromeHeight = insets.top + 64;
 	const contentWidth = Math.max(
 		1,
@@ -124,8 +145,8 @@ export default function UserProfileScreen() {
 		if (!id || isSelf) return;
 		socialActions.startChat(
 			{
-				handle: profileData?.handle ?? undefined,
-				image: profileData?.image ?? undefined,
+				handle: profileData?.handle ?? previewHandle ?? undefined,
+				image: profileData?.image ?? previewImage ?? undefined,
 				name: displayName,
 				userId: id,
 			},
@@ -237,9 +258,10 @@ export default function UserProfileScreen() {
 						displayName={displayName}
 						headerHeight={headerHeight}
 						isFollowing={followState.active}
+						isIdentityLoading={!heroProfile}
 						isLoading={profile.isLoading}
 						isSelf={isSelf}
-						profile={displayedProfile}
+						profile={heroProfile}
 						scrollY={scrollY}
 						topChromeHeight={topChromeHeight}
 						onOpenChat={openChat}
@@ -256,7 +278,7 @@ export default function UserProfileScreen() {
 				renderStickyHeader={(style, miniProfileStyle, isSticky) => (
 					<UserProfileStickyChrome
 						displayName={displayName}
-						image={profileData?.image}
+						image={profileData?.image ?? previewImage}
 						isFollowing={followState.active}
 						isLoading={profile.isLoading}
 						isSelf={isSelf}

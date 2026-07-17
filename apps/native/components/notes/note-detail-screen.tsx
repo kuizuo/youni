@@ -38,6 +38,7 @@ import {
 	supportsNoteViewTransition,
 } from "@/lib/note-view-transition";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
+import { getUserProfileIntent } from "@/lib/social/navigation-intents";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { useNoteViewRecorder } from "@/lib/use-note-view-recorder";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
@@ -680,7 +681,7 @@ export default function NoteDetailScreen() {
 					onFollow={toggleFollow}
 					onOpenMenu={openActionMenu}
 					onOpenAuthor={() =>
-						socialActions.goTo({ type: "user", id: authorId })
+						socialActions.goTo(getUserProfileIntent(displayNote.author))
 					}
 				/>
 			</View>

@@ -31,7 +31,14 @@ export type SocialNavigationIntent =
 			userId: string;
 			view: ProfileConnectionType;
 	  }
-	| { type: "user"; id: string };
+	| {
+			bio?: string;
+			handle?: string;
+			id: string;
+			image?: string;
+			name?: string;
+			type: "user";
+	  };
 
 export type NotificationData = {
 	noteId?: unknown;
@@ -95,7 +102,13 @@ export function toSocialHref(intent: SocialNavigationIntent): Href {
 		case "user":
 			return {
 				pathname: "/user/[id]",
-				params: { id: intent.id },
+				params: {
+					id: intent.id,
+					...(intent.name ? { name: intent.name } : {}),
+					...(intent.image ? { image: intent.image } : {}),
+					...(intent.handle ? { handle: intent.handle } : {}),
+					...(intent.bio ? { bio: intent.bio } : {}),
+				},
 			} as unknown as Href;
 		case "userConnections":
 			return {
@@ -107,6 +120,23 @@ export function toSocialHref(intent: SocialNavigationIntent): Href {
 				},
 			} as unknown as Href;
 	}
+}
+
+export function getUserProfileIntent(user: {
+	bio?: null | string;
+	handle?: null | string;
+	id: string;
+	image?: null | string;
+	name: string;
+}): SocialNavigationIntent {
+	return {
+		type: "user",
+		id: user.id,
+		name: user.name,
+		...(user.image ? { image: user.image } : {}),
+		...(user.handle ? { handle: user.handle } : {}),
+		...(user.bio ? { bio: user.bio } : {}),
+	};
 }
 
 export function getNotificationIntent(

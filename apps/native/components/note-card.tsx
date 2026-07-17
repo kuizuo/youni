@@ -18,7 +18,10 @@ import {
 	getNoteTransitionStyle,
 	startNoteViewTransition,
 } from "@/lib/note-view-transition";
-import { toSocialHref } from "@/lib/social/navigation-intents";
+import {
+	getUserProfileIntent,
+	toSocialHref,
+} from "@/lib/social/navigation-intents";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { formatCount } from "@/utils/format";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -91,7 +94,7 @@ export function NoteCard({
 	};
 
 	const openAuthor = () => {
-		socialActions.goTo({ type: "user", id: note.author.id });
+		socialActions.goTo(getUserProfileIntent(note.author));
 	};
 
 	const openActions = () => {

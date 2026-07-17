@@ -56,6 +56,7 @@ export type ContentNoteRow = Omit<
 	| "moderationStatus"
 	| "viewCount"
 > & {
+	authorBio: string | null;
 	authorName: string;
 	authorImage: string | null;
 	authorHandle: string | null;
@@ -71,6 +72,7 @@ export type HydratedContentNote = ContentNoteRow & {
 	author: {
 		id: string;
 		name: string;
+		bio: string | null;
 		image: string | null;
 		handle: string | null;
 		isFollowing: boolean;

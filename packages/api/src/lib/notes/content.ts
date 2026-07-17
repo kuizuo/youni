@@ -83,6 +83,7 @@ const contentNoteRowFields = {
 	createdAt: note.createdAt,
 	updatedAt: note.updatedAt,
 	userId: note.userId,
+	authorBio: user.bio,
 	authorName: user.name,
 	authorImage: user.image,
 	authorHandle: user.handle,
@@ -354,6 +355,7 @@ export async function hydrateContentNotes(
 		author: {
 			id: row.userId,
 			name: row.authorName,
+			bio: row.authorBio,
 			image: row.authorImage,
 			handle: row.authorHandle,
 			isFollowing: followingSet.has(row.userId),

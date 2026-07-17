@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { toSocialHref } from "./navigation-intents";
+import { getUserProfileIntent, toSocialHref } from "./navigation-intents";
 
 describe("chat settings navigation", () => {
 	test("supports chats before and after the first message", () => {
@@ -17,5 +17,28 @@ describe("chat settings navigation", () => {
 			pathname: "/chat-settings/[id]",
 			params: { id: "conversation-1" },
 		});
+	});
+});
+
+test("carries note author preview into the profile route", () => {
+	expect(
+		toSocialHref(
+			getUserProfileIntent({
+				bio: "热爱记录生活",
+				handle: "ash",
+				id: "user-1",
+				image: "https://example.com/avatar.png",
+				name: "阿树",
+			}),
+		),
+	).toEqual({
+		pathname: "/user/[id]",
+		params: {
+			bio: "热爱记录生活",
+			handle: "ash",
+			id: "user-1",
+			image: "https://example.com/avatar.png",
+			name: "阿树",
+		},
 	});
 });
