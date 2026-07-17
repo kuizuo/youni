@@ -253,19 +253,17 @@ function HeroStat({
 }) {
 	const content = (
 		<View className="flex-row items-center gap-1">
-			<View className="h-6 min-w-8 items-center justify-center">
-				{isLoading ? (
-					<Skeleton className="h-4 w-7 rounded-full" />
-				) : (
-					<Typography.Paragraph
-						weight="bold"
-						className="text-foreground"
-						style={{ fontVariant: ["tabular-nums"] }}
-					>
-						{value ?? 0}
-					</Typography.Paragraph>
-				)}
-			</View>
+			{isLoading ? (
+				<Skeleton className="h-4 w-5 rounded-full" />
+			) : (
+				<Typography.Paragraph
+					weight="bold"
+					className="text-foreground"
+					style={{ fontVariant: ["tabular-nums"] }}
+				>
+					{value ?? 0}
+				</Typography.Paragraph>
+			)}
 			<Typography.Paragraph type="body-sm" className="text-muted">
 				{label}
 			</Typography.Paragraph>
