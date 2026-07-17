@@ -3,6 +3,7 @@ import { Alert, Platform } from "react-native";
 type ConfirmActionOptions = {
 	cancelText: string;
 	confirmText: string;
+	isDestructive?: boolean;
 	message: string;
 	onConfirm: () => void;
 	title: string;
@@ -11,6 +12,7 @@ type ConfirmActionOptions = {
 export function confirmAction({
 	cancelText,
 	confirmText,
+	isDestructive = true,
 	message,
 	onConfirm,
 	title,
@@ -24,7 +26,7 @@ export function confirmAction({
 		{ style: "cancel", text: cancelText },
 		{
 			onPress: onConfirm,
-			style: "destructive",
+			style: isDestructive ? "destructive" : "default",
 			text: confirmText,
 		},
 	]);

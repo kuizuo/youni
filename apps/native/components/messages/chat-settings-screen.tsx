@@ -9,7 +9,7 @@ import {
 	Typography,
 	useThemeColor,
 } from "heroui-native";
-import { Alert, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProfilePageHeader } from "@/components/profile/profile-page-header";
@@ -21,6 +21,7 @@ import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { useSocialActions } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
+import { confirmAction } from "@/utils/confirm-action";
 import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 import { getRouteParam } from "@/utils/route-params";
@@ -33,28 +34,40 @@ const SWITCH_THUMB_ANIMATION = {
 };
 
 export default function ChatSettingsScreen() {
-	const params = useLocalSearchParams<{ id?: string | string[] }>();
-	const conversationId = getRouteParam(params.id) ?? "";
+	const params = useLocalSearchParams<{
+		id?: string | string[];
+		userId?: string | string[];
+	}>();
+	const routeId = getRouteParam(params.id) ?? "";
+	const userId = getRouteParam(params.userId) ?? "";
+	const conversationId = userId ? "" : routeId;
 	const insets = useSafeAreaInsets();
 	const foregroundColor = useThemeColor("foreground");
 	const dangerColor = useThemeColor("danger");
 	const { toast } = useAppToast();
 	const socialActions = useSocialActions();
+	const isAuthenticated = isRegisteredUser(socialActions.session.data?.user);
 
 	const settings = useQuery({
 		...orpc.messages.settings.queryOptions({
 			input: { conversationId: conversationId || "missing" },
 		}),
-		enabled: Boolean(
-			conversationId && isRegisteredUser(socialActions.session.data?.user),
-		),
+		enabled: Boolean(conversationId && isAuthenticated),
 	});
-	const data = settings.data;
+	const openedChat = useQuery({
+		...orpc.messages.open.queryOptions({
+			input: { userId: userId || "missing" },
+		}),
+		enabled: Boolean(userId && isAuthenticated),
+		staleTime: 30_000,
+	});
+	const peer = settings.data?.peer ?? openedChat.data?.peer;
 	const isFollowing = socialActions.optimistic.follow(
-		data?.peer.id ?? "",
-		data?.isFollowing ?? false,
+		peer?.id ?? "",
+		settings.data?.isFollowing ?? openedChat.data?.isFollowing ?? false,
 	).active;
-	const isBlocked = data?.hasBlockedPeer ?? false;
+	const isBlocked =
+		settings.data?.hasBlockedPeer ?? openedChat.data?.hasBlockedPeer ?? false;
 
 	const blockMutation = useMutation(
 		orpc.messages.setBlocked.mutationOptions({
@@ -74,40 +87,59 @@ export default function ChatSettingsScreen() {
 			onSuccess: refreshActiveQueries,
 		}),
 	);
+	const profileBlockMutation = useMutation(
+		orpc.profiles.setBlocked.mutationOptions({
+			onError: (error) => {
+				if (isRequestTimeoutError(error)) return;
+				toast.show({ variant: "danger", label: error.message });
+			},
+			onSuccess: refreshActiveQueries,
+		}),
+	);
+	const activeBlockMutation = conversationId
+		? blockMutation
+		: profileBlockMutation;
 
 	const toggleFollow = () => {
-		if (!data?.peer.id) return;
+		if (!peer?.id) return;
 		fireHaptic();
 		socialActions.toggleFollow(
-			{ active: isFollowing, userId: data.peer.id },
+			{ active: isFollowing, userId: peer.id },
 			{
-				redirectTo: `/chat-settings/${conversationId}`,
+				redirectTo: `/chat-settings/${routeId}`,
 			},
 		);
 	};
 
 	const setBlocked = (blocked: boolean) => {
-		if (!conversationId || blockMutation.isPending) return;
+		if ((!conversationId && !userId) || activeBlockMutation.isPending) return;
 		fireHaptic();
-		blockMutation.mutate({ conversationId, blocked });
+		if (conversationId) {
+			blockMutation.mutate({ conversationId, blocked });
+			return;
+		}
+		profileBlockMutation.mutate({ userId, blocked });
 	};
 
 	const confirmClear = () => {
 		if (!conversationId || clearMutation.isPending) return;
 		fireHaptic();
-		Alert.alert("清空聊天记录", "只会清空你看到的聊天记录，对方不受影响。", [
-			{ text: "取消", style: "cancel" },
-			{
-				text: "清空",
-				style: "destructive",
-				onPress: () => clearMutation.mutate({ conversationId }),
-			},
-		]);
+		confirmAction({
+			cancelText: "取消",
+			confirmText: "清空",
+			message: "只会清空你看到的聊天记录，对方不受影响。",
+			onConfirm: () => clearMutation.mutate({ conversationId }),
+			title: "清空聊天记录",
+		});
 	};
 
-	const displayedBlockState = blockMutation.isPending
-		? (blockMutation.variables?.blocked ?? isBlocked)
+	const displayedBlockState = activeBlockMutation.isPending
+		? (activeBlockMutation.variables?.blocked ?? isBlocked)
 		: isBlocked;
+	const isLoading = conversationId ? settings.isLoading : openedChat.isLoading;
+	const isError = conversationId ? settings.isError : openedChat.isError;
+	const retry = () =>
+		conversationId ? settings.refetch() : openedChat.refetch();
 
 	return (
 		<View className="flex-1 bg-background">
@@ -117,27 +149,27 @@ export default function ChatSettingsScreen() {
 				contentContainerClassName="px-4 pt-6"
 				contentContainerStyle={{ paddingBottom: insets.bottom + 28 }}
 			>
-				{settings.isLoading ? (
+				{isLoading ? (
 					<View className="items-center justify-center py-24">
 						<Spinner />
 					</View>
-				) : settings.isError || !data ? (
-					<ErrorState onRetry={() => settings.refetch()} />
+				) : isError || !peer ? (
+					<ErrorState onRetry={retry} />
 				) : (
 					<View className="gap-7">
 						<View className="items-center gap-3">
-							<Avatar size="lg" alt={data.peer.name} className="size-24">
-								{data.peer.image ? (
-									<Avatar.Image source={{ uri: data.peer.image }} />
+							<Avatar size="lg" alt={peer.name} className="size-24">
+								{peer.image ? (
+									<Avatar.Image source={{ uri: peer.image }} />
 								) : null}
-								<Avatar.Fallback>{data.peer.name.slice(0, 1)}</Avatar.Fallback>
+								<Avatar.Fallback>{peer.name.slice(0, 1)}</Avatar.Fallback>
 							</Avatar>
 							<View className="items-center gap-1">
 								<Typography.Paragraph weight="bold" className="text-center">
-									{data.peer.name}
+									{peer.name}
 								</Typography.Paragraph>
 								<Typography.Paragraph type="body-xs" color="muted">
-									{data.peer.handle ? `@${data.peer.handle}` : data.peer.email}
+									{peer.handle ? `@${peer.handle}` : peer.email}
 								</Typography.Paragraph>
 							</View>
 							<FollowButton
@@ -184,26 +216,30 @@ export default function ChatSettingsScreen() {
 									</Switch>
 								</ListGroup.ItemSuffix>
 							</ListGroup.Item>
-							<AppSeparator className="opacity-60" />
-							<ListGroup.Item
-								accessibilityLabel="清空聊天记录"
-								accessibilityRole="button"
-								className="px-3.5 py-3"
-								onPress={confirmClear}
-							>
-								<ListGroup.ItemPrefix>
-									<Ionicons
-										name="trash-outline"
-										size={21}
-										color={dangerColor}
-									/>
-								</ListGroup.ItemPrefix>
-								<ListGroup.ItemContent>
-									<ListGroup.ItemTitle className="text-danger text-sm">
-										清空聊天记录
-									</ListGroup.ItemTitle>
-								</ListGroup.ItemContent>
-							</ListGroup.Item>
+							{conversationId ? (
+								<>
+									<AppSeparator className="opacity-60" />
+									<ListGroup.Item
+										accessibilityLabel="清空聊天记录"
+										accessibilityRole="button"
+										className="px-3.5 py-3"
+										onPress={confirmClear}
+									>
+										<ListGroup.ItemPrefix>
+											<Ionicons
+												name="trash-outline"
+												size={21}
+												color={dangerColor}
+											/>
+										</ListGroup.ItemPrefix>
+										<ListGroup.ItemContent>
+											<ListGroup.ItemTitle className="text-danger text-sm">
+												清空聊天记录
+											</ListGroup.ItemTitle>
+										</ListGroup.ItemContent>
+									</ListGroup.Item>
+								</>
+							) : null}
 						</ListGroup>
 					</View>
 				)}

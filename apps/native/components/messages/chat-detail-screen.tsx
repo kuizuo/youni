@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ChatMessage } from "@youni/api/contracts/messages";
+import type { ChatMessage, ChatPeer } from "@youni/api/contracts/messages";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -15,11 +15,16 @@ import type { EmojiType } from "rn-emoji-keyboard";
 import { ChatHeader } from "@/components/messages/chat/header";
 import { ChatInputBar } from "@/components/messages/chat/input-bar";
 import { ChatMessageList } from "@/components/messages/chat/message-list";
+import {
+	type ChatListMessage,
+	mergeChatMessages,
+} from "@/components/messages/chat/message-state";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
+import { confirmAction } from "@/utils/confirm-action";
 import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 import { getRouteParam } from "@/utils/route-params";
@@ -27,8 +32,15 @@ import { getRouteParam } from "@/utils/route-params";
 const DEFAULT_EMOJI_PANEL_HEIGHT = 304;
 
 export default function ChatDetailScreen() {
-	const params = useLocalSearchParams<{ id?: string | string[] }>();
-	const conversationId = getRouteParam(params.id) ?? "";
+	const params = useLocalSearchParams<{
+		handle?: string | string[];
+		id?: string | string[];
+		image?: string | string[];
+		name?: string | string[];
+		userId?: string | string[];
+	}>();
+	const routeConversationId = getRouteParam(params.id) ?? "";
+	const draftUserId = getRouteParam(params.userId) ?? "";
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const session = authClient.useSession();
@@ -36,6 +48,7 @@ export default function ChatDetailScreen() {
 	const { toast } = useAppToast();
 	const inputRef = useRef<TextInput>(null);
 	const contentRef = useRef("");
+	const messageSequenceRef = useRef(0);
 	const isEmojiKeyboardOpenRef = useRef(false);
 	const isEmojiInputLockedRef = useRef(false);
 	const isSystemKeyboardVisibleRef = useRef(false);
@@ -47,11 +60,37 @@ export default function ChatDetailScreen() {
 	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
 	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
+	const [startedConversationId, setStartedConversationId] = useState("");
+	const [outgoingMessages, setOutgoingMessages] = useState<ChatListMessage[]>(
+		[],
+	);
 	const [selection, setSelection] = useState({ end: 0, start: 0 });
 	const isAuthenticated = isRegisteredUser(session.data?.user);
 	contentRef.current = content;
 	isEmojiInputLockedRef.current = isEmojiInputLocked;
 	isEmojiKeyboardOpenRef.current = isEmojiKeyboardOpen;
+	const previewPeer: ChatPeer | undefined = draftUserId
+		? {
+				bio: null,
+				email: "",
+				handle: getRouteParam(params.handle) ?? null,
+				id: draftUserId,
+				image: getRouteParam(params.image) ?? null,
+				name: getRouteParam(params.name) ?? "用户",
+			}
+		: undefined;
+	const openedChat = useQuery({
+		...orpc.messages.open.queryOptions({
+			input: { userId: draftUserId || "missing" },
+		}),
+		enabled: Boolean(draftUserId && isAuthenticated),
+		staleTime: 30_000,
+	});
+	const conversationId =
+		routeConversationId ||
+		startedConversationId ||
+		openedChat.data?.conversationId ||
+		"";
 	const chat = useQuery({
 		...orpc.messages.byId.queryOptions({
 			input: { conversationId: conversationId || "missing", limit: 80 },
@@ -59,23 +98,26 @@ export default function ChatDetailScreen() {
 		enabled: Boolean(conversationId && isAuthenticated),
 		refetchInterval: 2500,
 	});
-	const sendMutation = useMutation(
-		orpc.messages.send.mutationOptions({
-			onError: (error, variables) => {
-				contentRef.current = variables.content;
-				setContent(variables.content);
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger", label: error.message });
-			},
-			onSuccess: refreshActiveQueries,
-		}),
-	);
-	const messages: ChatMessage[] = chat.data?.messages ?? [];
-	const peer = chat.data?.peer;
-	const disabledReason = chat.data?.isBlockedByPeer
+	const sendMutation = useMutation(orpc.messages.send.mutationOptions());
+	const serverMessages: ChatMessage[] = chat.data?.messages ?? [];
+	const messages = mergeChatMessages(serverMessages, outgoingMessages);
+	const peer = chat.data?.peer ?? openedChat.data?.peer ?? previewPeer;
+	const hasBlockedPeer =
+		chat.data?.hasBlockedPeer ?? openedChat.data?.hasBlockedPeer;
+	const isBlockedByPeer =
+		chat.data?.isBlockedByPeer ?? openedChat.data?.isBlockedByPeer;
+	const disabledReason = isBlockedByPeer
 		? "对方已将你加入黑名单，暂时不能发送私信"
-		: undefined;
-	const canSend = !disabledReason && content.trim().length > 0;
+		: hasBlockedPeer
+			? "你已将对方加入黑名单，解除后才能发送私信"
+			: undefined;
+	const canSend = Boolean(
+		(conversationId || draftUserId) &&
+			isAuthenticated &&
+			!disabledReason &&
+			!sendMutation.isPending &&
+			content.trim().length > 0,
+	);
 
 	useEffect(() => {
 		const updateKeyboardHeight = (event: KeyboardEvent) => {
@@ -188,14 +230,92 @@ export default function ChatDetailScreen() {
 		closeEmojiKeyboard();
 	};
 
+	const updateOutgoingMessage = (
+		id: string,
+		update: (message: ChatListMessage) => ChatListMessage,
+	) => {
+		setOutgoingMessages((current) =>
+			current.map((message) => (message.id === id ? update(message) : message)),
+		);
+	};
+
+	const sendOutgoingMessage = (message: ChatListMessage) => {
+		const callbacks = {
+			onError: (error: Error) => {
+				updateOutgoingMessage(message.id, (current) => ({
+					...current,
+					deliveryStatus: "failed",
+				}));
+				if (isRequestTimeoutError(error)) return;
+				toast.show({ variant: "danger" as const, label: error.message });
+			},
+			onSuccess: (result: { conversationId: string; message: ChatMessage }) => {
+				updateOutgoingMessage(message.id, () => result.message);
+				setStartedConversationId(result.conversationId);
+				void refreshActiveQueries();
+			},
+		};
+
+		sendMutation.mutate(
+			conversationId
+				? {
+						clientMessageId: message.id,
+						conversationId,
+						content: message.content,
+					}
+				: {
+						clientMessageId: message.id,
+						userId: draftUserId,
+						content: message.content,
+					},
+			callbacks,
+		);
+	};
+
 	const send = () => {
 		const nextContent = content.trim();
-		if (!nextContent || !conversationId || sendMutation.isPending) return;
+		const senderId = session.data?.user?.id;
+		if (
+			!nextContent ||
+			!senderId ||
+			!isAuthenticated ||
+			(!conversationId && !draftUserId) ||
+			sendMutation.isPending
+		)
+			return;
 		closeEmojiKeyboard();
 		Keyboard.dismiss();
 		contentRef.current = "";
 		setContent("");
-		sendMutation.mutate({ conversationId, content: nextContent });
+		messageSequenceRef.current += 1;
+		const message: ChatListMessage = {
+			content: nextContent,
+			createdAt: new Date(),
+			deliveryStatus: "pending",
+			id: `local-${senderId}-${Date.now().toString(36)}-${messageSequenceRef.current.toString(36)}`,
+			senderId,
+		};
+		setOutgoingMessages((current) => [...current, message]);
+		sendOutgoingMessage(message);
+	};
+
+	const confirmRetryMessage = (message: ChatListMessage) => {
+		confirmAction({
+			cancelText: "取消",
+			confirmText: "重新发送",
+			isDestructive: false,
+			message: "确认后会再次发送这条私信。",
+			onConfirm: () => {
+				if (sendMutation.isPending) return;
+				const pendingMessage: ChatListMessage = {
+					...message,
+					deliveryStatus: "pending",
+				};
+				updateOutgoingMessage(message.id, () => pendingMessage);
+				sendOutgoingMessage(pendingMessage);
+			},
+			title: "重新发送这条消息？",
+		});
 	};
 
 	return (
@@ -209,18 +329,37 @@ export default function ChatDetailScreen() {
 				peer={peer}
 				topInset={insets.top}
 				onBack={() => router.back()}
-				onOpenSettings={() =>
-					socialNavigation.goTo({ type: "chatSettings", id: conversationId })
+				onOpenProfile={
+					peer
+						? () => socialNavigation.goTo({ type: "user", id: peer.id })
+						: undefined
+				}
+				onOpenSettings={
+					peer
+						? () =>
+								socialNavigation.goTo({
+									type: "chatSettings",
+									...(conversationId
+										? { conversationId }
+										: { userId: peer.id }),
+								})
+						: undefined
 				}
 			/>
 
 			<ChatMessageList
 				currentUserId={isAuthenticated ? session.data?.user?.id : undefined}
-				isError={chat.isError}
-				isLoading={chat.isLoading}
+				isError={openedChat.isError || chat.isError}
+				isLoading={
+					openedChat.isLoading || (Boolean(conversationId) && chat.isLoading)
+				}
 				messages={messages}
 				onDismissInputPanel={dismissInputPanel}
-				onRetry={() => chat.refetch()}
+				onRetry={() => {
+					if (openedChat.isError) void openedChat.refetch();
+					if (chat.isError) void chat.refetch();
+				}}
+				onRetryMessage={confirmRetryMessage}
 			/>
 
 			<ChatInputBar

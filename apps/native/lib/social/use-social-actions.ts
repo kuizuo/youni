@@ -1,6 +1,5 @@
 import { useMutation, useMutationState } from "@tanstack/react-query";
 import type { CommentsOutputs } from "@youni/api/contracts/comments";
-import type { MessagesOutputs } from "@youni/api/contracts/messages";
 import type { NotesOutputs } from "@youni/api/contracts/notes";
 import type { ProfilesOutputs } from "@youni/api/contracts/profiles";
 import { useRouter } from "expo-router";
@@ -99,12 +98,6 @@ export function useSocialActions() {
 			onSuccess: refreshActiveQueries,
 		}),
 	);
-	const startChatMutation = useMutation(
-		orpc.messages.start.mutationOptions({
-			onSuccess: refreshActiveQueries,
-		}),
-	);
-
 	const pendingDeleteCommentIds = useMutationState({
 		filters: {
 			mutationKey: orpc.comments.deleteComment.mutationKey(),
@@ -291,25 +284,16 @@ export function useSocialActions() {
 	};
 
 	const startChat = (
-		input: { userId: string },
-		options: SocialActionOptions<MessagesOutputs["start"]> = {},
+		input: {
+			handle?: string;
+			image?: string;
+			name: string;
+			userId: string;
+		},
+		options: Pick<SocialActionOptions, "redirectTo"> = {},
 	) => {
 		if (!navigation.requireLogin(options.redirectTo)) return false;
-
-		startChatMutation.mutate(input, {
-			onError: (error) => {
-				const actionError = getError(error);
-				options.onError?.(actionError);
-				showErrorToast(actionError);
-			},
-			onSettled: () => {
-				options.onSettled?.();
-			},
-			onSuccess: async (result) => {
-				await options.onSuccess?.(result);
-				navigation.goTo({ type: "chat", id: result.id });
-			},
-		});
+		navigation.goTo({ type: "chatDraft", ...input });
 		return true;
 	};
 
@@ -324,7 +308,6 @@ export function useSocialActions() {
 			deleteComment: deleteCommentMutation,
 			follow: followMutation,
 			like: likeMutation,
-			startChat: startChatMutation,
 		},
 		openPublish: navigation.openPublish,
 		optimistic,

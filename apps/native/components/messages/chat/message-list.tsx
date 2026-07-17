@@ -1,10 +1,11 @@
-import type { ChatMessage } from "@youni/api/contracts/messages";
 import { Spinner, Typography } from "heroui-native";
+import { useRef } from "react";
 import { FlatList, View } from "react-native";
 
 import { ErrorState } from "@/components/social-states";
 
 import { MessageBubble } from "./message-bubble";
+import type { ChatListMessage } from "./message-state";
 
 export function ChatMessageList({
 	currentUserId,
@@ -13,15 +14,19 @@ export function ChatMessageList({
 	messages,
 	onDismissInputPanel,
 	onRetry,
+	onRetryMessage,
 }: {
 	currentUserId?: string;
 	isError: boolean;
 	isLoading: boolean;
-	messages: ChatMessage[];
+	messages: ChatListMessage[];
 	onDismissInputPanel: () => void;
 	onRetry: () => void;
+	onRetryMessage: (message: ChatListMessage) => void;
 }) {
-	if (isError) {
+	const listRef = useRef<FlatList<ChatListMessage>>(null);
+
+	if (isError && messages.length === 0) {
 		return (
 			<View
 				className="flex-1 justify-center"
@@ -34,6 +39,7 @@ export function ChatMessageList({
 
 	return (
 		<FlatList
+			ref={listRef}
 			className="flex-1"
 			data={messages}
 			keyExtractor={(item) => item.id}
@@ -41,8 +47,19 @@ export function ChatMessageList({
 			keyboardDismissMode="on-drag"
 			keyboardShouldPersistTaps="handled"
 			renderItem={({ item }) => (
-				<MessageBubble item={item} isMine={item.senderId === currentUserId} />
+				<MessageBubble
+					item={item}
+					isMine={item.senderId === currentUserId}
+					onRetry={
+						item.deliveryStatus === "failed"
+							? () => onRetryMessage(item)
+							: undefined
+					}
+				/>
 			)}
+			onContentSizeChange={() =>
+				listRef.current?.scrollToEnd({ animated: true })
+			}
 			onScrollBeginDrag={onDismissInputPanel}
 			onTouchStart={onDismissInputPanel}
 			ListEmptyComponent={

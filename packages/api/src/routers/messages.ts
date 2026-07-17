@@ -8,7 +8,7 @@ import {
 	user,
 	userBlock,
 } from "@youni/db/schema/index";
-import { and, count, desc, eq, gt, ne } from "drizzle-orm";
+import { and, count, desc, eq, exists, gt, ne } from "drizzle-orm";
 import { activeUserProcedure, protectedProcedure } from "../index";
 import { notifyMessage } from "../lib/notifications";
 import { hasMessagingBlock, setUserBlocked } from "../lib/users/blocks";
@@ -88,16 +88,22 @@ async function getPeer(conversationId: string, viewerId: string) {
 	return peer;
 }
 
-async function ensureConversation(viewerId: string, peerId: string) {
+async function getPeerByUserId(viewerId: string, peerId: string) {
 	if (viewerId === peerId) {
 		throw new ORPCError("BAD_REQUEST", {
 			message: "不能给自己发私信",
 		});
 	}
 
-	const db = createDb();
-	const [peer] = await db
-		.select({ id: user.id })
+	const [peer] = await createDb()
+		.select({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			image: user.image,
+			handle: user.handle,
+			bio: user.bio,
+		})
 		.from(user)
 		.where(
 			and(
@@ -110,6 +116,18 @@ async function ensureConversation(viewerId: string, peerId: string) {
 
 	if (!peer) {
 		throw new ORPCError("NOT_FOUND");
+	}
+
+	return peer;
+}
+
+async function ensureConversation(viewerId: string, peerId: string) {
+	const db = createDb();
+	const peer = await getPeerByUserId(viewerId, peerId);
+	if (await hasMessagingBlock(viewerId, peer.id)) {
+		throw new ORPCError("FORBIDDEN", {
+			message: "拉黑状态下不能发送私信",
+		});
 	}
 
 	const memberKey = createMemberKey(viewerId, peerId);
@@ -158,13 +176,38 @@ async function ensureConversation(viewerId: string, peerId: string) {
 		])
 		.onConflictDoNothing();
 
-	return conversation.id;
+	return { conversationId: conversation.id, peer };
+}
+
+async function getBlockState(viewerId: string, peerId: string) {
+	const db = createDb();
+	const [hasBlockedPeer, isBlockedByPeer] = await Promise.all([
+		db
+			.select({ blockedId: userBlock.blockedId })
+			.from(userBlock)
+			.where(
+				and(eq(userBlock.blockerId, viewerId), eq(userBlock.blockedId, peerId)),
+			)
+			.limit(1),
+		db
+			.select({ blockerId: userBlock.blockerId })
+			.from(userBlock)
+			.where(
+				and(eq(userBlock.blockerId, peerId), eq(userBlock.blockedId, viewerId)),
+			)
+			.limit(1),
+	]);
+
+	return {
+		hasBlockedPeer: hasBlockedPeer.length > 0,
+		isBlockedByPeer: isBlockedByPeer.length > 0,
+	};
 }
 
 async function getConversationState(conversationId: string, viewerId: string) {
 	const peer = await getPeer(conversationId, viewerId);
 	const db = createDb();
-	const [following, hasBlockedPeer, isBlockedByPeer] = await Promise.all([
+	const [following, blockState] = await Promise.all([
 		db
 			.select({ followingId: follow.followingId })
 			.from(follow)
@@ -172,47 +215,55 @@ async function getConversationState(conversationId: string, viewerId: string) {
 				and(eq(follow.followerId, viewerId), eq(follow.followingId, peer.id)),
 			)
 			.limit(1),
-		db
-			.select({ blockedId: userBlock.blockedId })
-			.from(userBlock)
-			.where(
-				and(
-					eq(userBlock.blockerId, viewerId),
-					eq(userBlock.blockedId, peer.id),
-				),
-			)
-			.limit(1),
-		db
-			.select({ blockerId: userBlock.blockerId })
-			.from(userBlock)
-			.where(
-				and(
-					eq(userBlock.blockerId, peer.id),
-					eq(userBlock.blockedId, viewerId),
-				),
-			)
-			.limit(1),
+		getBlockState(viewerId, peer.id),
 	]);
 
 	return {
 		peer,
-		hasBlockedPeer: hasBlockedPeer.length > 0,
-		isBlockedByPeer: isBlockedByPeer.length > 0,
+		...blockState,
 		isFollowing: following.length > 0,
 	};
 }
 
 export const messagesRouter = {
-	start: protectedProcedure.messages.start.handler(
-		async ({ input, context }) => {
-			const conversationId = await ensureConversation(
-				context.session.user.id,
-				input.userId,
-			);
-			const peer = await getPeer(conversationId, context.session.user.id);
-			return { id: conversationId, peer };
-		},
-	),
+	open: protectedProcedure.messages.open.handler(async ({ input, context }) => {
+		const viewerId = context.session.user.id;
+		const peer = await getPeerByUserId(viewerId, input.userId);
+		const memberKey = createMemberKey(viewerId, peer.id);
+		const db = createDb();
+		const [[conversation], blockState, following] = await Promise.all([
+			db
+				.select({ id: directConversation.id })
+				.from(directConversation)
+				.where(
+					and(
+						eq(directConversation.memberKey, memberKey),
+						exists(
+							db
+								.select({ id: directMessage.id })
+								.from(directMessage)
+								.where(eq(directMessage.conversationId, directConversation.id)),
+						),
+					),
+				)
+				.limit(1),
+			getBlockState(viewerId, peer.id),
+			db
+				.select({ followingId: follow.followingId })
+				.from(follow)
+				.where(
+					and(eq(follow.followerId, viewerId), eq(follow.followingId, peer.id)),
+				)
+				.limit(1),
+		]);
+
+		return {
+			conversationId: conversation?.id ?? null,
+			peer,
+			...blockState,
+			isFollowing: following.length > 0,
+		};
+	}),
 
 	conversations: protectedProcedure.messages.conversations.handler(
 		async ({ context }) => {
@@ -233,7 +284,17 @@ export const messagesRouter = {
 						directConversation.id,
 					),
 				)
-				.where(eq(directConversationParticipant.userId, viewerId))
+				.where(
+					and(
+						eq(directConversationParticipant.userId, viewerId),
+						exists(
+							db
+								.select({ id: directMessage.id })
+								.from(directMessage)
+								.where(eq(directMessage.conversationId, directConversation.id)),
+						),
+					),
+				)
 				.orderBy(desc(directConversation.updatedAt))
 				.limit(60);
 
@@ -382,26 +443,34 @@ export const messagesRouter = {
 	send: activeUserProcedure.messages.send.handler(
 		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
-			await assertParticipant(input.conversationId, viewerId);
-			const peer = await getPeer(input.conversationId, viewerId);
+			let target: Awaited<ReturnType<typeof ensureConversation>>;
+			if ("conversationId" in input) {
+				await assertParticipant(input.conversationId, viewerId);
+				const peer = await getPeer(input.conversationId, viewerId);
+				if (await hasMessagingBlock(viewerId, peer.id)) {
+					throw new ORPCError("FORBIDDEN", {
+						message: "拉黑状态下不能发送私信",
+					});
+				}
+				target = { conversationId: input.conversationId, peer };
+			} else {
+				target = await ensureConversation(viewerId, input.userId);
+			}
+			const { conversationId, peer } = target;
 			const db = createDb();
 
-			if (await hasMessagingBlock(viewerId, peer.id)) {
-				throw new ORPCError("FORBIDDEN", {
-					message: "拉黑状态下不能发送私信",
-				});
-			}
-
 			const now = new Date();
-			const [message] = await db
+			const [createdMessage] = await db
 				.insert(directMessage)
 				.values({
-					conversationId: input.conversationId,
+					id: input.clientMessageId,
+					conversationId,
 					senderId: viewerId,
 					content: input.content,
 					createdAt: now,
 					updatedAt: now,
 				})
+				.onConflictDoNothing()
 				.returning({
 					id: directMessage.id,
 					content: directMessage.content,
@@ -409,36 +478,55 @@ export const messagesRouter = {
 					createdAt: directMessage.createdAt,
 				});
 
+			const message =
+				createdMessage ??
+				(
+					await db
+						.select({
+							id: directMessage.id,
+							content: directMessage.content,
+							senderId: directMessage.senderId,
+							createdAt: directMessage.createdAt,
+						})
+						.from(directMessage)
+						.where(
+							and(
+								eq(directMessage.id, input.clientMessageId),
+								eq(directMessage.conversationId, conversationId),
+								eq(directMessage.senderId, viewerId),
+							),
+						)
+						.limit(1)
+				)[0];
+
 			if (!message) {
 				throw new ORPCError("INTERNAL_SERVER_ERROR");
 			}
+			if (!createdMessage) return { conversationId, message };
 
 			await Promise.all([
 				db
 					.update(directConversation)
 					.set({ updatedAt: now })
-					.where(eq(directConversation.id, input.conversationId)),
+					.where(eq(directConversation.id, conversationId)),
 				db
 					.update(directConversationParticipant)
 					.set({ lastReadAt: now, updatedAt: now })
 					.where(
 						and(
-							eq(
-								directConversationParticipant.conversationId,
-								input.conversationId,
-							),
+							eq(directConversationParticipant.conversationId, conversationId),
 							eq(directConversationParticipant.userId, viewerId),
 						),
 					),
 				notifyMessage({
 					actorId: viewerId,
-					conversationId: input.conversationId,
+					conversationId,
 					preview: input.content,
 					recipientId: peer.id,
 				}),
 			]);
 
-			return message;
+			return { conversationId, message };
 		},
 	),
 };

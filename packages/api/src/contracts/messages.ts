@@ -18,14 +18,29 @@ export const blockInput = conversationActionInput.extend({
 	blocked: z.boolean(),
 });
 
-export const startConversationInput = z.object({
+export const openConversationInput = z.object({
 	userId: z.string().min(1),
 });
 
-export const sendMessageInput = z.object({
-	conversationId: z.string().min(1),
-	content: z.string().trim().min(1).max(1000),
-});
+const messageContent = z.string().trim().min(1).max(1000);
+const clientMessageId = z.string().trim().min(1).max(100);
+
+export const sendMessageInput = z.union([
+	z
+		.object({
+			clientMessageId,
+			conversationId: z.string().min(1),
+			content: messageContent,
+		})
+		.strict(),
+	z
+		.object({
+			clientMessageId,
+			userId: z.string().min(1),
+			content: messageContent,
+		})
+		.strict(),
+]);
 
 // ====== Output ======
 
@@ -48,9 +63,12 @@ export type ConversationItem = {
 };
 
 export type MessagesOutputs = {
-	start: {
-		id: string;
+	open: {
+		conversationId: string | null;
 		peer: ChatPeer;
+		hasBlockedPeer: boolean;
+		isBlockedByPeer: boolean;
+		isFollowing: boolean;
 	};
 	conversations: ConversationItem[];
 	byId: {
@@ -69,15 +87,15 @@ export type MessagesOutputs = {
 	};
 	setBlocked: { blocked: boolean; isBlockedByPeer: boolean };
 	clear: { clearedAt: Date; ok: boolean };
-	send: ChatMessage;
+	send: { conversationId: string; message: ChatMessage };
 };
 
 // ====== Contract ======
 
 export const messagesContract = {
-	start: procedure
-		.input(startConversationInput)
-		.output(output<MessagesOutputs["start"]>()),
+	open: procedure
+		.input(openConversationInput)
+		.output(output<MessagesOutputs["open"]>()),
 	conversations: procedure.output(output<MessagesOutputs["conversations"]>()),
 	byId: procedure
 		.input(conversationInput)

@@ -9,7 +9,6 @@ import {
 	Button,
 	PressableFeedback,
 	Skeleton,
-	Spinner,
 	Typography,
 	useThemeColor,
 } from "heroui-native";
@@ -31,7 +30,6 @@ export function UserProfileHero({
 	isFollowing,
 	isLoading,
 	isSelf,
-	isStartChatPending,
 	onOpenChat,
 	onOpenConnections,
 	onOpenMe,
@@ -47,7 +45,6 @@ export function UserProfileHero({
 	isFollowing: boolean;
 	isLoading: boolean;
 	isSelf: boolean;
-	isStartChatPending: boolean;
 	onOpenChat: () => void;
 	onOpenConnections: (type: ProfileConnectionType) => void;
 	onOpenMe: () => void;
@@ -219,18 +216,14 @@ export function UserProfileHero({
 									variant="outline"
 									className="h-11 flex-1 rounded-full"
 									feedbackVariant="scale-ripple"
-									isDisabled={isLoading || isStartChatPending}
+									isDisabled={isLoading}
 									onPress={onOpenChat}
 								>
-									{isStartChatPending ? (
-										<Spinner size="sm" />
-									) : (
-										<Ionicons
-											name="chatbubble-ellipses-outline"
-											size={16}
-											color={foregroundColor}
-										/>
-									)}
+									<Ionicons
+										name="chatbubble-ellipses-outline"
+										size={16}
+										color={foregroundColor}
+									/>
 									<Button.Label>私信</Button.Label>
 								</Button>
 							</>

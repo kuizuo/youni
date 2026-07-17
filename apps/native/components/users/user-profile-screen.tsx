@@ -122,7 +122,15 @@ export default function UserProfileScreen() {
 
 	const openChat = () => {
 		if (!id || isSelf) return;
-		socialActions.startChat({ userId: id }, { redirectTo: `/user/${id}` });
+		socialActions.startChat(
+			{
+				handle: profileData?.handle ?? undefined,
+				image: profileData?.image ?? undefined,
+				name: displayName,
+				userId: id,
+			},
+			{ redirectTo: `/user/${id}` },
+		);
 	};
 	const openMore = () => {
 		fireHaptic();
@@ -231,7 +239,6 @@ export default function UserProfileScreen() {
 						isFollowing={followState.active}
 						isLoading={profile.isLoading}
 						isSelf={isSelf}
-						isStartChatPending={socialActions.mutations.startChat.isPending}
 						profile={displayedProfile}
 						scrollY={scrollY}
 						topChromeHeight={topChromeHeight}

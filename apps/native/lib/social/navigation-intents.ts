@@ -5,7 +5,15 @@ import { getLoginHref } from "@/lib/auth-navigation";
 
 export type SocialNavigationIntent =
 	| { type: "chat"; id: string }
-	| { type: "chatSettings"; id: string }
+	| {
+			name: string;
+			handle?: string;
+			image?: string;
+			type: "chatDraft";
+			userId: string;
+	  }
+	| { type: "chatSettings"; conversationId: string }
+	| { type: "chatSettings"; userId: string }
 	| { redirectTo?: string; type: "login" }
 	| { type: "messages" }
 	| {
@@ -42,10 +50,23 @@ export function toSocialHref(intent: SocialNavigationIntent): Href {
 				pathname: "/chat/[id]",
 				params: { id: intent.id },
 			} as unknown as Href;
+		case "chatDraft":
+			return {
+				pathname: "/chat/new",
+				params: {
+					userId: intent.userId,
+					name: intent.name,
+					...(intent.handle ? { handle: intent.handle } : {}),
+					...(intent.image ? { image: intent.image } : {}),
+				},
+			} as unknown as Href;
 		case "chatSettings":
 			return {
 				pathname: "/chat-settings/[id]",
-				params: { id: intent.id },
+				params:
+					"conversationId" in intent
+						? { id: intent.conversationId }
+						: { id: intent.userId, userId: intent.userId },
 			} as unknown as Href;
 		case "login":
 			return getLoginHref(intent.redirectTo);
