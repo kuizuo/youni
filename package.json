@@ -44,7 +44,6 @@
 		"db:migrate": "turbo -F @youni/db db:migrate",
 		"deploy": "turbo -F @youni/infra deploy",
 		"release": "bumpp --git-check --commit 'chore(release): v%s' --tag 'v%s' --push",
-		"update:native": "bun scripts/release-native-update.ts",
 		"destroy": "turbo -F @youni/infra destroy",
 		"check": "biome check --write ."
 	},
