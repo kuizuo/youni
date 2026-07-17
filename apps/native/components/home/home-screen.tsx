@@ -1,5 +1,6 @@
-import { FlashList } from "@shopify/flash-list";
+import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Alert,
@@ -18,17 +19,22 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DiscoverNoteActionsSheet } from "@/components/home/discover-note-actions-sheet";
 import { HomeEmptyState } from "@/components/home/empty";
+import { FollowingAuthorFilter } from "@/components/home/following-author-filter";
 import { DiscoverFooter } from "@/components/home/footer";
 import { HomeTopBar } from "@/components/home/top-bar";
 import {
 	DISCOVER_PAGE_SIZE,
+	filterFollowingNotes,
 	getHomeTabAtOffset,
+	getNextFollowingAuthorId,
 	HOME_TABS,
 	type HomeTab,
 } from "@/components/home/types";
 import { NoteCard, type NoteCardNote } from "@/components/note-card";
+import { EmptyState } from "@/components/social-states";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
+import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { client, orpc, queryClient } from "@/utils/orpc";
 import { flattenPages } from "@/utils/pagination";
@@ -43,6 +49,13 @@ export default function HomeScreen() {
 	const [initialPagerOffset] = useState(() => ({ x: pageWidth, y: 0 }));
 	const pagerScrollX = useSharedValue(pageWidth);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
+	const [isFollowingAuthorStripActive, setIsFollowingAuthorStripActive] =
+		useState(false);
+	const [selectedFollowingAuthorId, setSelectedFollowingAuthorId] = useState<
+		string | null
+	>(null);
+	const hasFocusedRef = useRef(false);
+	const followingListRef = useRef<FlashListRef<NoteCardNote>>(null);
 	const [selectedDiscoverNote, setSelectedDiscoverNote] =
 		useState<NoteCardNote | null>(null);
 	const [hiddenNoteIds, setHiddenNoteIds] = useState<Set<string>>(
@@ -87,6 +100,16 @@ export default function HomeScreen() {
 		...orpc.notes.followingFeed.queryOptions({ input }),
 		enabled: Boolean(sessionUserId),
 	});
+	const followingUsersQuery = useQuery({
+		...orpc.profiles.connections.queryOptions({
+			input: {
+				limit: 60,
+				type: "following",
+				userId: sessionUserId ?? "missing",
+			},
+		}),
+		enabled: Boolean(sessionUserId),
+	});
 	const discoverNotes = useMemo(() => {
 		return flattenPages<NoteCardNote>(discoverFeed.data?.pages).filter(
 			(item) =>
@@ -115,6 +138,45 @@ export default function HomeScreen() {
 	const followingNotes = sessionUserId
 		? (followingFeed.data ?? cachedFollowingNotes)
 		: [];
+	const followingUsers = followingUsersQuery.data ?? [];
+	const visibleFollowingNotes = useMemo(
+		() => filterFollowingNotes(followingNotes, selectedFollowingAuthorId),
+		[followingNotes, selectedFollowingAuthorId],
+	);
+	const selectedFollowingAuthorName =
+		followingUsers.find((user) => user.id === selectedFollowingAuthorId)
+			?.name ?? "该作者";
+	useFocusEffect(
+		useCallback(() => {
+			if (!hasFocusedRef.current) {
+				hasFocusedRef.current = true;
+				return;
+			}
+			setSelectedFollowingAuthorId(null);
+			setIsFollowingAuthorStripActive(false);
+		}, []),
+	);
+	useEffect(() => {
+		if (!sessionUserId) {
+			if (selectedFollowingAuthorId) setSelectedFollowingAuthorId(null);
+			return;
+		}
+		if (!selectedFollowingAuthorId || !followingUsersQuery.data) return;
+		if (
+			!followingUsersQuery.data.some(
+				(user) => user.id === selectedFollowingAuthorId,
+			)
+		) {
+			setSelectedFollowingAuthorId(null);
+		}
+	}, [followingUsersQuery.data, selectedFollowingAuthorId, sessionUserId]);
+	const selectFollowingAuthor = useCallback((userId: string) => {
+		fireHaptic();
+		setSelectedFollowingAuthorId((current) =>
+			getNextFollowingAuthorId(current, userId),
+		);
+		followingListRef.current?.scrollToOffset({ animated: true, offset: 0 });
+	}, []);
 	const selectTab = useCallback(
 		(tab: HomeTab) => {
 			const nextIndex = HOME_TABS.findIndex((item) => item.id === tab);
@@ -139,7 +201,11 @@ export default function HomeScreen() {
 		setIsManuallyRefreshing(true);
 		try {
 			if (tab === "following") {
-				await followingFeed.refetch();
+				if (!sessionUserId) return;
+				await Promise.all([
+					followingFeed.refetch(),
+					followingUsersQuery.refetch(),
+				]);
 				return;
 			}
 			const refreshedPage = await client.notes.feed({
@@ -323,6 +389,7 @@ export default function HomeScreen() {
 				disableIntervalMomentum
 				nestedScrollEnabled
 				pagingEnabled
+				scrollEnabled={!isFollowingAuthorStripActive}
 				scrollEventThrottle={16}
 				showsHorizontalScrollIndicator={false}
 				onMomentumScrollEnd={handlePagerEnd}
@@ -331,17 +398,24 @@ export default function HomeScreen() {
 			>
 				{HOME_TABS.map((tabItem) => {
 					const tab = tabItem.id;
-					const tabNotes = tab === "following" ? followingNotes : discoverNotes;
+					const tabNotes =
+						tab === "following" ? visibleFollowingNotes : discoverNotes;
 					const isLoading =
 						tab === "following"
 							? followingFeed.isLoading
 							: discoverFeed.isLoading;
 					const isError =
 						tab === "following" ? followingFeed.isError : discoverFeed.isError;
+					const isFilteredEmpty =
+						tab === "following" &&
+						Boolean(selectedFollowingAuthorId) &&
+						!isLoading &&
+						!isError;
 
 					return (
 						<View key={tab} className="h-full" style={{ width: pageWidth }}>
 							<FlashList
+								ref={tab === "following" ? followingListRef : undefined}
 								style={{
 									alignSelf: "center",
 									flex: 1,
@@ -394,6 +468,17 @@ export default function HomeScreen() {
 									paddingBottom: Platform.OS === "ios" ? 32 : 128,
 									paddingHorizontal: 4,
 								}}
+								ListHeaderComponent={
+									tab === "following" && sessionUserId ? (
+										<FollowingAuthorFilter
+											isLoading={followingUsersQuery.isLoading}
+											selectedUserId={selectedFollowingAuthorId}
+											users={followingUsers}
+											onInteractionChange={setIsFollowingAuthorStripActive}
+											onSelect={selectFollowingAuthor}
+										/>
+									) : null
+								}
 								ListFooterComponent={
 									tab === "discover" ? (
 										<DiscoverFooter
@@ -404,21 +489,33 @@ export default function HomeScreen() {
 									) : null
 								}
 								ListEmptyComponent={
-									<HomeEmptyState
-										activeTab={tab}
-										isError={isError}
-										isFollowingGuest={tab === "following" && !sessionUserId}
-										isLoading={isLoading}
-										socialNavigation={socialNavigation}
-										onDiscover={() => selectTab("discover")}
-										onRetry={() => {
-											if (tab === "following") {
-												followingFeed.refetch();
-												return;
+									isFilteredEmpty ? (
+										<EmptyState
+											icon="images-outline"
+											title={
+												"暂时没有看到 " +
+												selectedFollowingAuthorName +
+												" 的图文"
 											}
-											discoverFeed.refetch();
-										}}
-									/>
+											description="再次点击头像可恢复全部内容。"
+										/>
+									) : (
+										<HomeEmptyState
+											activeTab={tab}
+											isError={isError}
+											isFollowingGuest={tab === "following" && !sessionUserId}
+											isLoading={isLoading}
+											socialNavigation={socialNavigation}
+											onDiscover={() => selectTab("discover")}
+											onRetry={() => {
+												if (tab === "following") {
+													followingFeed.refetch();
+													return;
+												}
+												discoverFeed.refetch();
+											}}
+										/>
+									)
 								}
 							/>
 						</View>
