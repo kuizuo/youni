@@ -231,7 +231,7 @@ export function SearchResults({
 
 	const userPage = (
 		<FlatList
-			className="mx-auto w-full max-w-xl"
+			className="mx-auto w-full max-w-xl flex-1"
 			data={userResults}
 			keyExtractor={(item) => item.id}
 			showsVerticalScrollIndicator={false}
@@ -300,7 +300,7 @@ export function SearchResults({
 
 	const topicPage = (
 		<FlatList
-			className="mx-auto w-full max-w-xl"
+			className="mx-auto w-full max-w-xl flex-1"
 			data={topicResults}
 			keyExtractor={(item) => item.id}
 			showsVerticalScrollIndicator={false}
@@ -370,8 +370,8 @@ export function SearchResults({
 			{[notePage, userPage, topicPage].map((page, index) => (
 				<View
 					key={SEARCH_TABS[index]?.key}
-					className="flex-1 bg-background"
-					style={{ width: pageWidth }}
+					className="bg-background"
+					style={{ height: "100%", width: pageWidth }}
 				>
 					{page}
 				</View>

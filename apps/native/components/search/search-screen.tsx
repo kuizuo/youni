@@ -78,6 +78,7 @@ export default function SearchScreen() {
 			setKeyword(nextKeyword);
 			setActiveKeyword(nextKeyword);
 			setActiveTab("notes");
+			pagerScrollX.value = 0;
 			updateRecentWords((items) =>
 				uniqueWords([nextKeyword, ...items], SEARCH_HISTORY_LIMIT),
 			);
@@ -85,7 +86,7 @@ export default function SearchScreen() {
 				.record({ keyword: nextKeyword, source })
 				.catch(() => undefined);
 		},
-		[updateRecentWords],
+		[pagerScrollX, updateRecentWords],
 	);
 
 	useEffect(() => {
@@ -130,6 +131,7 @@ export default function SearchScreen() {
 		setKeyword("");
 		setActiveKeyword("");
 		setActiveTab("notes");
+		pagerScrollX.value = 0;
 	};
 
 	const startEditingHistory = () => {
