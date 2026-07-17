@@ -18,7 +18,7 @@ import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { HeroUINativeProvider, useThemeColor } from "heroui-native";
 import { type ReactNode, useCallback, useEffect, useMemo } from "react";
-import { LogBox } from "react-native";
+import { Appearance, LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
 	KeyboardAvoidingView,
@@ -77,10 +77,11 @@ function AppContent() {
 	}, [backgroundColor, theme]);
 	const toastInsets = getAppToastInsets(safeAreaInsets);
 	useEffect(() => {
+		Appearance.setColorScheme(theme === "dark" ? "dark" : "light");
 		SystemUI.setBackgroundColorAsync(systemBackgroundColor).catch(
 			(): void => {},
 		);
-	}, [systemBackgroundColor]);
+	}, [systemBackgroundColor, theme]);
 	const toastContentWrapper = useCallback(
 		(children: ReactNode) => (
 			<KeyboardAvoidingView

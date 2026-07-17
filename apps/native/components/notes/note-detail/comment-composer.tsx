@@ -342,7 +342,7 @@ function CommentComposerInput({
 
 	return (
 		<View
-			className="relative rounded-3xl bg-content2 px-4 py-3"
+			className="relative rounded-2xl bg-content2 px-4 py-3"
 			style={{ minHeight: COMMENT_INPUT_MIN_HEIGHT + 24 }}
 		>
 			<View
