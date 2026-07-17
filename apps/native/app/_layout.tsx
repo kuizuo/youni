@@ -9,9 +9,15 @@ import {
 } from "@expo-google-fonts/nunito";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import {
+	DarkTheme,
+	DefaultTheme,
+	ThemeProvider,
+} from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
-import { HeroUINativeProvider } from "heroui-native";
-import { type ReactNode, useCallback, useEffect } from "react";
+import * as SystemUI from "expo-system-ui";
+import { HeroUINativeProvider, useThemeColor } from "heroui-native";
+import { type ReactNode, useCallback, useEffect, useMemo } from "react";
 import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
@@ -22,6 +28,7 @@ import {
 	SafeAreaProvider,
 	useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { useUniwind } from "uniwind";
 
 import { AppLayout } from "@/components/shared/app-layout";
 import { AnonymousSessionBridge } from "@/lib/anonymous-session-bridge";
@@ -53,7 +60,27 @@ function RequestToastBridge() {
 
 function AppContent() {
 	const safeAreaInsets = useSafeAreaInsets();
+	const backgroundColor = useThemeColor("background");
+	const { theme } = useUniwind();
+	const systemBackgroundColor = theme === "dark" ? "#121216" : "#fafafa";
+	const navigationTheme = useMemo(() => {
+		const baseTheme = theme === "dark" ? DarkTheme : DefaultTheme;
+
+		return {
+			...baseTheme,
+			colors: {
+				...baseTheme.colors,
+				background: backgroundColor,
+				card: backgroundColor,
+			},
+		};
+	}, [backgroundColor, theme]);
 	const toastInsets = getAppToastInsets(safeAreaInsets);
+	useEffect(() => {
+		SystemUI.setBackgroundColorAsync(systemBackgroundColor).catch(
+			(): void => {},
+		);
+	}, [systemBackgroundColor]);
 	const toastContentWrapper = useCallback(
 		(children: ReactNode) => (
 			<KeyboardAvoidingView
@@ -86,14 +113,21 @@ function AppContent() {
 				<RequestToastBridge />
 				<AnonymousSessionBridge />
 				<PushNotificationBridge />
-				<AppLayout>
-					<Stack screenOptions={{ headerShown: false }}>
-						<Stack.Screen
-							name="note/[id]"
-							options={{ animation: "fade", animationDuration: 260 }}
-						/>
-					</Stack>
-				</AppLayout>
+				<ThemeProvider value={navigationTheme}>
+					<AppLayout>
+						<Stack
+							screenOptions={{
+								contentStyle: { backgroundColor },
+								headerShown: false,
+							}}
+						>
+							<Stack.Screen
+								name="note/[id]"
+								options={{ animation: "fade", animationDuration: 260 }}
+							/>
+						</Stack>
+					</AppLayout>
+				</ThemeProvider>
 			</HeroUINativeProvider>
 		</KeyboardProvider>
 	);

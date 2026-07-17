@@ -1,5 +1,9 @@
 import { PressableFeedback, Typography } from "heroui-native";
 import { View } from "react-native";
+import Animated, {
+	type SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 
 import {
 	APP_HEADER_HEIGHT,
@@ -9,20 +13,36 @@ import {
 
 import { HOME_TABS, type HomeTab } from "./types";
 
+const HOME_TAB_WIDTH = 68;
+const HOME_TAB_INDICATOR_WIDTH = 32;
+
 export function HomeTopBar({
 	activeTab,
+	pageWidth,
+	pagerScrollX,
 	topInset,
 	onTabChange,
 }: {
 	activeTab: HomeTab;
+	pageWidth: number;
+	pagerScrollX: SharedValue<number>;
 	topInset: number;
 	onTabChange: (tab: HomeTab) => void;
 }) {
+	const indicatorStyle = useAnimatedStyle(() => ({
+		transform: [
+			{
+				translateX:
+					(pageWidth ? pagerScrollX.value / pageWidth : 0) * HOME_TAB_WIDTH,
+			},
+		],
+	}));
+
 	return (
 		<AppHeader
 			topInset={topInset}
 			center={
-				<View className="flex-row items-center gap-9">
+				<View className="relative flex-row items-center">
 					{HOME_TABS.map((item) => (
 						<HomeTabButton
 							key={item.id}
@@ -31,6 +51,17 @@ export function HomeTopBar({
 							onPress={() => onTabChange(item.id)}
 						/>
 					))}
+					<Animated.View
+						pointerEvents="none"
+						className="absolute bottom-4 left-0 h-1 rounded-full bg-accent"
+						style={[
+							{
+								marginLeft: (HOME_TAB_WIDTH - HOME_TAB_INDICATOR_WIDTH) / 2,
+								width: HOME_TAB_INDICATOR_WIDTH,
+							},
+							indicatorStyle,
+						]}
+					/>
 				</View>
 			}
 		/>
@@ -50,8 +81,8 @@ function HomeTabButton({
 		<PressableFeedback
 			accessibilityRole="tab"
 			accessibilityState={isActive ? { selected: true } : undefined}
-			className="items-center justify-center px-1"
-			style={{ height: APP_HEADER_HEIGHT }}
+			className="items-center justify-center"
+			style={{ height: APP_HEADER_HEIGHT, width: HOME_TAB_WIDTH }}
 			onPress={onPress}
 		>
 			<Typography.Paragraph
@@ -61,13 +92,6 @@ function HomeTabButton({
 			>
 				{label}
 			</Typography.Paragraph>
-			<View
-				className={
-					isActive
-						? "mt-1 h-1 w-8 rounded-full bg-accent"
-						: "mt-1 h-1 w-8 rounded-full bg-transparent"
-				}
-			/>
 		</PressableFeedback>
 	);
 }

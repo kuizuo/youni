@@ -24,15 +24,28 @@ export function FeedSkeleton() {
 							className="overflow-hidden rounded-xl bg-surface"
 						>
 							<Skeleton
+								animation={{ exiting: "disabled" }}
 								className="w-full rounded-none"
 								style={{ aspectRatio }}
 							/>
 							<View className="gap-2 p-3">
-								<Skeleton className="h-4 w-full rounded-full" />
-								<Skeleton className="h-4 w-3/4 rounded-full" />
+								<Skeleton
+									animation={{ exiting: "disabled" }}
+									className="h-4 w-full rounded-full"
+								/>
+								<Skeleton
+									animation={{ exiting: "disabled" }}
+									className="h-4 w-3/4 rounded-full"
+								/>
 								<View className="mt-1 flex-row items-center gap-2">
-									<Skeleton className="size-6 rounded-full" />
-									<Skeleton className="h-3 flex-1 rounded-full" />
+									<Skeleton
+										animation={{ exiting: "disabled" }}
+										className="size-6 rounded-full"
+									/>
+									<Skeleton
+										animation={{ exiting: "disabled" }}
+										className="h-3 flex-1 rounded-full"
+									/>
 								</View>
 							</View>
 						</View>

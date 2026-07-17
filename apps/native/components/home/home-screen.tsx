@@ -1,13 +1,31 @@
 import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Platform, View, type ViewToken } from "react-native";
+import {
+	Alert,
+	type NativeScrollEvent,
+	type NativeSyntheticEvent,
+	Platform,
+	type ScrollView,
+	useWindowDimensions,
+	View,
+	type ViewToken,
+} from "react-native";
+import Animated, {
+	useAnimatedScrollHandler,
+	useSharedValue,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DiscoverNoteActionsSheet } from "@/components/home/discover-note-actions-sheet";
 import { HomeEmptyState } from "@/components/home/empty";
 import { DiscoverFooter } from "@/components/home/footer";
 import { HomeTopBar } from "@/components/home/top-bar";
-import { DISCOVER_PAGE_SIZE, type HomeTab } from "@/components/home/types";
+import {
+	DISCOVER_PAGE_SIZE,
+	getHomeTabAtOffset,
+	HOME_TABS,
+	type HomeTab,
+} from "@/components/home/types";
 import { NoteCard, type NoteCardNote } from "@/components/note-card";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
@@ -19,7 +37,11 @@ export default function HomeScreen() {
 	const socialNavigation = useSocialNavigation();
 	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
+	const { width: pageWidth } = useWindowDimensions();
 	const [activeTab, setActiveTab] = useState<HomeTab>("discover");
+	const pagerRef = useRef<ScrollView>(null);
+	const [initialPagerOffset] = useState(() => ({ x: pageWidth, y: 0 }));
+	const pagerScrollX = useSharedValue(pageWidth);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [selectedDiscoverNote, setSelectedDiscoverNote] =
 		useState<NoteCardNote | null>(null);
@@ -63,7 +85,7 @@ export default function HomeScreen() {
 	const setBlocked = useMutation(orpc.profiles.setBlocked.mutationOptions());
 	const followingFeed = useQuery({
 		...orpc.notes.followingFeed.queryOptions({ input }),
-		enabled: activeTab === "following" && Boolean(sessionUserId),
+		enabled: Boolean(sessionUserId),
 	});
 	const discoverNotes = useMemo(() => {
 		return flattenPages<NoteCardNote>(discoverFeed.data?.pages).filter(
@@ -93,18 +115,30 @@ export default function HomeScreen() {
 	const followingNotes = sessionUserId
 		? (followingFeed.data ?? cachedFollowingNotes)
 		: [];
-	const notes = activeTab === "following" ? followingNotes : discoverNotes;
-	const isActiveLoading =
-		activeTab === "following"
-			? followingFeed.isLoading
-			: discoverFeed.isLoading;
-	const isActiveError =
-		activeTab === "following" ? followingFeed.isError : discoverFeed.isError;
-	const isFollowingGuest = activeTab === "following" && !sessionUserId;
-	const refreshActiveFeed = async () => {
+	const selectTab = useCallback(
+		(tab: HomeTab) => {
+			const nextIndex = HOME_TABS.findIndex((item) => item.id === tab);
+			if (nextIndex < 0) return;
+			setActiveTab(tab);
+			pagerRef.current?.scrollTo({
+				animated: true,
+				x: nextIndex * pageWidth,
+			});
+		},
+		[pageWidth],
+	);
+	const onPagerScroll = useAnimatedScrollHandler((event) => {
+		pagerScrollX.value = event.contentOffset.x;
+	});
+	const handlePagerEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+		setActiveTab(
+			getHomeTabAtOffset(event.nativeEvent.contentOffset.x, pageWidth),
+		);
+	};
+	const refreshFeed = async (tab: HomeTab) => {
 		setIsManuallyRefreshing(true);
 		try {
-			if (activeTab === "following") {
+			if (tab === "following") {
 				await followingFeed.refetch();
 				return;
 			}
@@ -273,82 +307,124 @@ export default function HomeScreen() {
 		<View className="flex-1 bg-background">
 			<HomeTopBar
 				activeTab={activeTab}
+				pageWidth={pageWidth}
+				pagerScrollX={pagerScrollX}
 				topInset={insets.top}
-				onTabChange={setActiveTab}
+				onTabChange={selectTab}
 			/>
-			<FlashList
-				style={{ alignSelf: "center", flex: 1, width: "100%", maxWidth: 576 }}
-				data={notes}
-				keyExtractor={(item) => item.id}
-				numColumns={2}
-				masonry
-				optimizeItemArrangement={false}
-				renderItem={({ item }) => (
-					<View className="px-1 pb-2">
-						<NoteCard
-							compact
-							note={item}
-							onOpenDiscoverActions={
-								activeTab === "discover" ? setSelectedDiscoverNote : undefined
-							}
-							onRecordDiscoverEvent={recordDiscoverEvent}
-						/>
-					</View>
-				)}
-				onViewableItemsChanged={onViewableItemsChanged}
-				viewabilityConfig={{
-					itemVisiblePercentThreshold: 50,
-					minimumViewTime: 1_000,
-				}}
-				contentInsetAdjustmentBehavior="automatic"
-				showsVerticalScrollIndicator={false}
-				refreshing={isManuallyRefreshing}
-				onRefresh={() => {
-					void refreshActiveFeed();
-				}}
-				onEndReached={() => {
-					if (
-						activeTab === "discover" &&
-						discoverFeed.hasNextPage &&
-						!discoverFeed.isFetchingNextPage &&
-						!discoverFeed.isFetching
-					) {
-						void discoverFeed.fetchNextPage();
-					}
-				}}
-				onEndReachedThreshold={0.4}
-				contentContainerStyle={{
-					paddingTop: 8,
-					paddingBottom: Platform.OS === "ios" ? 32 : 128,
-					paddingHorizontal: 4,
-				}}
-				ListFooterComponent={
-					activeTab === "discover" ? (
-						<DiscoverFooter
-							hasItems={discoverNotes.length > 0}
-							hasMore={Boolean(discoverFeed.hasNextPage)}
-							isLoading={discoverFeed.isFetchingNextPage}
-						/>
-					) : null
-				}
-				ListEmptyComponent={
-					<HomeEmptyState
-						activeTab={activeTab}
-						isError={isActiveError}
-						isFollowingGuest={isFollowingGuest}
-						isLoading={isActiveLoading}
-						socialNavigation={socialNavigation}
-						onDiscover={() => setActiveTab("discover")}
-						onRetry={() => {
-							if (activeTab === "following") {
-								followingFeed.refetch();
-								return;
-							}
-							discoverFeed.refetch();
-						}}
-					/>
-				}
-			/>
+			<Animated.ScrollView
+				ref={pagerRef}
+				horizontal
+				bounces={false}
+				className="flex-1"
+				contentOffset={initialPagerOffset}
+				decelerationRate="fast"
+				directionalLockEnabled
+				disableIntervalMomentum
+				nestedScrollEnabled
+				pagingEnabled
+				scrollEventThrottle={16}
+				showsHorizontalScrollIndicator={false}
+				onMomentumScrollEnd={handlePagerEnd}
+				onScroll={onPagerScroll}
+				onScrollEndDrag={handlePagerEnd}
+			>
+				{HOME_TABS.map((tabItem) => {
+					const tab = tabItem.id;
+					const tabNotes = tab === "following" ? followingNotes : discoverNotes;
+					const isLoading =
+						tab === "following"
+							? followingFeed.isLoading
+							: discoverFeed.isLoading;
+					const isError =
+						tab === "following" ? followingFeed.isError : discoverFeed.isError;
+
+					return (
+						<View key={tab} className="h-full" style={{ width: pageWidth }}>
+							<FlashList
+								style={{
+									alignSelf: "center",
+									flex: 1,
+									maxWidth: 576,
+									width: "100%",
+								}}
+								data={tabNotes}
+								keyExtractor={(item) => item.id}
+								numColumns={2}
+								masonry
+								optimizeItemArrangement={false}
+								renderItem={({ item }) => (
+									<View className="px-1 pb-2">
+										<NoteCard
+											compact
+											note={item}
+											onOpenDiscoverActions={
+												tab === "discover" ? setSelectedDiscoverNote : undefined
+											}
+											onRecordDiscoverEvent={recordDiscoverEvent}
+										/>
+									</View>
+								)}
+								onViewableItemsChanged={
+									tab === "discover" ? onViewableItemsChanged : undefined
+								}
+								viewabilityConfig={{
+									itemVisiblePercentThreshold: 50,
+									minimumViewTime: 1_000,
+								}}
+								contentInsetAdjustmentBehavior="automatic"
+								showsVerticalScrollIndicator={false}
+								refreshing={isManuallyRefreshing && activeTab === tab}
+								onRefresh={() => {
+									void refreshFeed(tab);
+								}}
+								onEndReached={() => {
+									if (
+										tab === "discover" &&
+										discoverFeed.hasNextPage &&
+										!discoverFeed.isFetchingNextPage &&
+										!discoverFeed.isFetching
+									) {
+										void discoverFeed.fetchNextPage();
+									}
+								}}
+								onEndReachedThreshold={0.4}
+								contentContainerStyle={{
+									paddingTop: 8,
+									paddingBottom: Platform.OS === "ios" ? 32 : 128,
+									paddingHorizontal: 4,
+								}}
+								ListFooterComponent={
+									tab === "discover" ? (
+										<DiscoverFooter
+											hasItems={discoverNotes.length > 0}
+											hasMore={Boolean(discoverFeed.hasNextPage)}
+											isLoading={discoverFeed.isFetchingNextPage}
+										/>
+									) : null
+								}
+								ListEmptyComponent={
+									<HomeEmptyState
+										activeTab={tab}
+										isError={isError}
+										isFollowingGuest={tab === "following" && !sessionUserId}
+										isLoading={isLoading}
+										socialNavigation={socialNavigation}
+										onDiscover={() => selectTab("discover")}
+										onRetry={() => {
+											if (tab === "following") {
+												followingFeed.refetch();
+												return;
+											}
+											discoverFeed.refetch();
+										}}
+									/>
+								}
+							/>
+						</View>
+					);
+				})}
+			</Animated.ScrollView>
 			<DiscoverNoteActionsSheet
 				isOpen={Boolean(selectedDiscoverNote)}
 				note={selectedDiscoverNote}
