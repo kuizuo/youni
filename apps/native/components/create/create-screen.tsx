@@ -27,6 +27,7 @@ import type { InlineTrigger } from "@/components/create/create-types";
 import { findInlineTrigger } from "@/components/create/inline-trigger";
 import { PublishingOptions } from "@/components/create/publishing-options";
 import { SubmitBar } from "@/components/create/submit-bar";
+import { TextImageSheet } from "@/components/create/text-image-sheet";
 import { ImageEditor } from "@/components/image-editor/image-editor";
 import { MediaPicker } from "@/components/media/media-picker";
 import { SortableMediaStrip } from "@/components/media/sortable-media-strip";
@@ -71,6 +72,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const [emojiPanelHeight, setEmojiPanelHeight] = useState(300);
 	const [editingImageId, setEditingImageId] = useState<null | string>(null);
 	const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+	const [isTextImageSheetOpen, setIsTextImageSheetOpen] = useState(false);
 	const [titleSelection, setTitleSelection] = useState<TextSelection>({
 		end: 0,
 		start: 0,
@@ -324,6 +326,11 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 		fireHaptic();
 		setIsMediaPickerOpen(true);
 	};
+	const openTextImageSheet = () => {
+		finishInput();
+		fireHaptic();
+		setIsTextImageSheetOpen(true);
+	};
 	const editingImage =
 		composer.images.find((image) => image.id === editingImageId) ?? null;
 
@@ -362,8 +369,12 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 				<CreateHeader
 					mutedColor={mutedColor}
 					onBack={composer.goBack}
+					onCreateTextImage={openTextImageSheet}
 					onOpenDrafts={composer.openDrafts}
 					showDrafts={!composer.isEditingDraft && !composer.isEditingNote}
+					showTextImage={
+						composer.images.length === 0 && !composer.isAddingImages
+					}
 				/>
 
 				<ScrollView
@@ -462,6 +473,12 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					allowShare={composer.advancedOptions.allowShare}
 					onAllowCommentChange={composer.setAllowComment}
 					onAllowShareChange={composer.setAllowShare}
+				/>
+				<TextImageSheet
+					initialText={composer.title.trim() || composer.content.trim()}
+					isOpen={isTextImageSheetOpen}
+					onComplete={(asset) => composer.addImageAssets([asset])}
+					onOpenChange={setIsTextImageSheetOpen}
 				/>
 				{editingImage ? (
 					<ImageEditor

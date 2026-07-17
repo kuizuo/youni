@@ -706,6 +706,13 @@ export function useCreateComposer({
 			});
 			return;
 		}
+		if (images.length === 0) {
+			toast.show({
+				variant: "warning",
+				label: "请添加图片，或使用「文字图」生成",
+			});
+			return;
+		}
 
 		if (!canPublish) {
 			toast.show({

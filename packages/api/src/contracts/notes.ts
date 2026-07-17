@@ -16,8 +16,8 @@ const noteMutationInput = z.object({
 	content: z.string().trim().max(5000).default(""),
 	images: z
 		.array(z.string().trim().url())
-		.max(NOTE_IMAGE_MAX_COUNT)
-		.default([]),
+		.min(1, "发布笔记至少需要一张图片")
+		.max(NOTE_IMAGE_MAX_COUNT),
 	imageMetas: z
 		.array(
 			z.object({

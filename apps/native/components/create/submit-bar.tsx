@@ -54,7 +54,6 @@ export function SubmitBar({
 							: "h-12 flex-1 rounded-full"
 					}
 				>
-					{pendingSubmitMode === "publish" ? <Spinner size="sm" /> : null}
 					<Button.Label>{publishLabel}</Button.Label>
 				</Button>
 			</View>
