@@ -54,7 +54,6 @@ export function SimpleTopBar({ onBack }: { onBack: () => void }) {
 export function AuthorTopBar({
 	author,
 	isFollowing,
-	isMenuVisible,
 	isSelf,
 	onBack,
 	onFollow,
@@ -63,7 +62,6 @@ export function AuthorTopBar({
 }: {
 	author: HydratedContentNote["author"];
 	isFollowing: boolean;
-	isMenuVisible: boolean;
 	isSelf: boolean;
 	onBack: () => void;
 	onFollow: () => void;
@@ -109,18 +107,33 @@ export function AuthorTopBar({
 				</PressableFeedback>
 				{isSelf ? (
 					<AppHeaderIconButton
-						variant={isMenuVisible ? "secondary" : "ghost"}
+						variant="ghost"
+						className="bg-transparent"
+						style={{ backgroundColor: "transparent" }}
 						accessibilityLabel="更多操作"
 						color={foregroundColor}
 						icon="ellipsis-horizontal"
 						onPress={onOpenMenu}
 					/>
 				) : (
-					<FollowButton
-						size="sm"
-						isFollowing={isFollowing}
-						onPress={onFollow}
-					/>
+					<View className="flex-row items-center gap-2">
+						<FollowButton
+							size="sm"
+							className="h-8 self-center"
+							isFollowing={isFollowing}
+							labelClassName={isFollowing ? undefined : "text-white"}
+							onPress={onFollow}
+						/>
+						<AppHeaderIconButton
+							variant="ghost"
+							className="bg-transparent"
+							style={{ backgroundColor: "transparent" }}
+							accessibilityLabel="更多操作"
+							color={foregroundColor}
+							icon="ellipsis-horizontal"
+							onPress={onOpenMenu}
+						/>
+					</View>
 				)}
 			</View>
 		</View>

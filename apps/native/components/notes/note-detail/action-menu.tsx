@@ -1,13 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { NoteVisibility } from "@youni/api/contracts/shared";
-import {
-	BottomSheet,
-	Button,
-	ListGroup,
-	Surface,
-	useThemeColor,
-} from "heroui-native";
-import { Modal, Pressable, View } from "react-native";
+import { BottomSheet, ListGroup, useThemeColor } from "heroui-native";
+import { View } from "react-native";
 
 import { ListDivider } from "@/components/create/create-ui";
 import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
@@ -21,60 +15,6 @@ const VISIBILITY_OPTIONS: Array<{
 	{ icon: "people-outline", label: "仅关注者可见", value: "followers" },
 	{ icon: "lock-closed-outline", label: "仅自己可见", value: "private" },
 ];
-
-export function NoteActionMenu({
-	isVisible,
-	onClose,
-	onDelete,
-	onEdit,
-	onOpenVisibility,
-	topInset,
-}: {
-	isVisible: boolean;
-	onClose: () => void;
-	onDelete: () => void;
-	onEdit: () => void;
-	onOpenVisibility: () => void;
-	topInset: number;
-}) {
-	return (
-		<Modal
-			transparent
-			animationType="fade"
-			visible={isVisible}
-			onRequestClose={onClose}
-		>
-			<View className="flex-1 bg-overlay-backdrop">
-				<Pressable
-					accessibilityLabel="关闭菜单"
-					accessibilityRole="button"
-					className="absolute inset-0"
-					onPress={onClose}
-				/>
-				<View
-					pointerEvents="box-none"
-					className="mx-auto w-full max-w-xl items-end px-4"
-					style={{ paddingTop: topInset + 58 }}
-				>
-					<Surface className="w-44 gap-1 rounded-2xl p-2">
-						<ActionButton icon="create-outline" label="编辑" onPress={onEdit} />
-						<ActionButton
-							icon="lock-open-outline"
-							label="权限设置"
-							onPress={onOpenVisibility}
-						/>
-						<ActionButton
-							danger
-							icon="trash-outline"
-							label="删除"
-							onPress={onDelete}
-						/>
-					</Surface>
-				</View>
-			</View>
-		</Modal>
-	);
-}
 
 export function NoteVisibilitySheet({
 	isOpen,
@@ -150,36 +90,5 @@ export function NoteVisibilitySheet({
 				</AppBottomSheetContent>
 			</BottomSheet.Portal>
 		</BottomSheet>
-	);
-}
-
-function ActionButton({
-	danger,
-	icon,
-	label,
-	onPress,
-}: {
-	danger?: boolean;
-	icon: keyof typeof Ionicons.glyphMap;
-	label: string;
-	onPress: () => void;
-}) {
-	const mutedColor = useThemeColor("muted");
-	const dangerColor = useThemeColor("danger");
-
-	return (
-		<Button
-			variant="ghost"
-			className="h-12 justify-start rounded-xl px-3"
-			feedbackVariant="scale-ripple"
-			onPress={onPress}
-		>
-			<Ionicons
-				name={icon}
-				size={20}
-				color={danger ? dangerColor : mutedColor}
-			/>
-			<Button.Label>{label}</Button.Label>
-		</Button>
 	);
 }

@@ -34,6 +34,7 @@
 		"plugins": [
 			"expo-router",
 			"expo-image",
+			"expo-sharing",
 			"expo-sqlite",
 			"expo-status-bar",
 			[
@@ -84,7 +85,7 @@
 				"expo-media-library",
 				{
 					"photosPermission": "允许 Youni 访问照片，用于发布笔记和选择头像。",
-					"savePhotosPermission": false,
+					"savePhotosPermission": "允许 Youni 将图文图片和分享图保存到相册。",
 					"preventAutomaticLimitedAccessAlert": true,
 					"granularPermissions": ["photo"]
 				}

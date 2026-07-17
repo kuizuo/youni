@@ -45,7 +45,7 @@ import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { client, orpc, queryClient } from "@/utils/orpc";
 import { getRouteParam } from "@/utils/route-params";
-import { NoteActionMenu, NoteVisibilitySheet } from "./note-detail/action-menu";
+import { NoteVisibilitySheet } from "./note-detail/action-menu";
 import { BottomIconAction } from "./note-detail/bottom-actions";
 import {
 	CommentComposerPanel,
@@ -63,6 +63,7 @@ import {
 	NoteBody,
 	SimpleTopBar,
 } from "./note-detail/content";
+import { NoteShareSheets } from "./note-detail/share-sheets";
 import { NoteDetailSkeleton } from "./note-detail/skeleton";
 
 const COMMENTS_PAGE_SIZE = 20;
@@ -118,7 +119,7 @@ export default function NoteDetailScreen() {
 	const targetCommentRef = useRef<View | null>(null);
 	const [commentSort, setCommentSort] = useState<CommentSort>("hot");
 	const [activeImageIndex, setActiveImageIndex] = useState(0);
-	const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
+	const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
 	const [isVisibilitySheetOpen, setIsVisibilitySheetOpen] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [scrolledTargetCommentKey, setScrolledTargetCommentKey] = useState<
@@ -248,7 +249,6 @@ export default function NoteDetailScreen() {
 				});
 			},
 			onSuccess: async () => {
-				setIsActionMenuVisible(false);
 				await queryClient.invalidateQueries();
 				goBack();
 			},
@@ -584,15 +584,13 @@ export default function NoteDetailScreen() {
 	};
 
 	const openActionMenu = () => {
-		if (!isSelf) return;
 		fireHaptic();
-		setIsActionMenuVisible(true);
+		setIsShareSheetOpen(true);
 	};
 
 	const openEditNote = () => {
 		if (!note.data) return;
-		fireHaptic();
-		setIsActionMenuVisible(false);
+		setIsShareSheetOpen(false);
 		router.push({
 			pathname: "/publish",
 			params: { noteId: note.data.id },
@@ -601,8 +599,7 @@ export default function NoteDetailScreen() {
 
 	const openVisibilitySettings = () => {
 		if (!note.data) return;
-		fireHaptic();
-		setIsActionMenuVisible(false);
+		setIsShareSheetOpen(false);
 		setIsVisibilitySheetOpen(true);
 	};
 
@@ -618,8 +615,7 @@ export default function NoteDetailScreen() {
 
 	const confirmDeleteNote = () => {
 		if (!note.data || deleteNoteMutation.isPending) return;
-		fireHaptic();
-		setIsActionMenuVisible(false);
+		setIsShareSheetOpen(false);
 		Alert.alert("删除图文", "删除后这篇图文将不再对任何人可见。", [
 			{ text: "取消", style: "cancel" },
 			{
@@ -675,7 +671,6 @@ export default function NoteDetailScreen() {
 				<AuthorTopBar
 					author={displayNote.author}
 					isFollowing={isFollowing}
-					isMenuVisible={isActionMenuVisible}
 					isSelf={isSelf}
 					onBack={goBack}
 					onFollow={toggleFollow}
@@ -873,20 +868,22 @@ export default function NoteDetailScreen() {
 					</View>
 				)}
 			</View>
-			<NoteActionMenu
-				isVisible={isActionMenuVisible}
-				topInset={insets.top}
-				onClose={() => setIsActionMenuVisible(false)}
-				onDelete={confirmDeleteNote}
-				onEdit={openEditNote}
-				onOpenVisibility={openVisibilitySettings}
-			/>
 			<NoteVisibilitySheet
 				isOpen={isVisibilitySheetOpen}
 				isSaving={updateVisibilityMutation.isPending}
 				value={displayNote.visibility}
 				onOpenChange={setIsVisibilitySheetOpen}
 				onSelect={updateVisibility}
+			/>
+			<NoteShareSheets
+				isOpen={isShareSheetOpen}
+				isSelf={isSelf}
+				note={displayNote}
+				redirectTo={`/note/${id}`}
+				onDelete={confirmDeleteNote}
+				onEdit={openEditNote}
+				onOpenChange={setIsShareSheetOpen}
+				onOpenVisibility={openVisibilitySettings}
 			/>
 		</KeyboardAvoidingView>
 	);
