@@ -27,7 +27,6 @@ export function UserResultRow({
 }) {
 	const router = useRouter();
 	const socialNavigation = useSocialNavigation();
-	const mutedColor = useThemeColor("muted");
 	const isSelf = currentUserId === item.id;
 	const secondaryName = item.handle ? `@${item.handle}` : "未设置用户名";
 
@@ -79,12 +78,6 @@ export function UserResultRow({
 					<View className="flex-row flex-wrap items-center gap-x-3 gap-y-1">
 						<UserMetric label="作品" value={item.noteCount} />
 						<UserMetric label="粉丝" value={item.followerCount} />
-						<View className="flex-row items-center gap-1">
-							<Ionicons name="heart-outline" size={14} color={mutedColor} />
-							<Typography.Paragraph type="body-xs" color="muted">
-								{formatCount(item.likedCount)}
-							</Typography.Paragraph>
-						</View>
 					</View>
 				</View>
 			</PressableFeedback>
