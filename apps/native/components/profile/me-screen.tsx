@@ -329,6 +329,7 @@ export default function MeScreen() {
 				headerHeight={headerHeight}
 				minTabContentHeight={minTabContentHeight}
 				refreshColor={foregroundColor}
+				refreshOnTabReselect
 				refreshing={isManuallyRefreshing}
 				tabBarHeight={PROFILE_TAB_BAR_HEIGHT}
 				tabs={PROFILE_TABS}

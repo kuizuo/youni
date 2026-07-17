@@ -5,7 +5,12 @@ import {
 	Typography,
 	useThemeColor,
 } from "heroui-native";
+import { useState } from "react";
 import { Platform, View } from "react-native";
+import Animated, {
+	type SharedValue,
+	useAnimatedStyle,
+} from "react-native-reanimated";
 import {
 	SEARCH_TABS,
 	type SearchTabKey,
@@ -22,6 +27,8 @@ export function SearchHeader({
 	onChangeTab,
 	onClearSearch,
 	onSubmitSearch,
+	pageWidth,
+	pagerScrollX,
 	topInset,
 }: {
 	activeTab: SearchTabKey;
@@ -32,6 +39,8 @@ export function SearchHeader({
 	onChangeTab: (tab: SearchTabKey) => void;
 	onClearSearch: () => void;
 	onSubmitSearch: () => void;
+	pageWidth: number;
+	pagerScrollX: SharedValue<number>;
 	topInset: number;
 }) {
 	const mutedColor = useThemeColor("muted");
@@ -114,7 +123,12 @@ export function SearchHeader({
 			</View>
 
 			{hasActiveSearch ? (
-				<SearchTabs activeTab={activeTab} onChange={onChangeTab} />
+				<SearchTabs
+					activeTab={activeTab}
+					pageWidth={pageWidth}
+					pagerScrollX={pagerScrollX}
+					onChange={onChangeTab}
+				/>
 			) : null}
 		</View>
 	);
@@ -123,12 +137,32 @@ export function SearchHeader({
 function SearchTabs({
 	activeTab,
 	onChange,
+	pageWidth,
+	pagerScrollX,
 }: {
 	activeTab: SearchTabKey;
 	onChange: (tab: SearchTabKey) => void;
+	pageWidth: number;
+	pagerScrollX: SharedValue<number>;
 }) {
+	const [barWidth, setBarWidth] = useState(0);
+	const tabWidth = barWidth / SEARCH_TABS.length;
+	const indicatorWidth = Math.min(56, tabWidth * 0.72);
+	const indicatorStyle = useAnimatedStyle(() => ({
+		transform: [
+			{
+				translateX:
+					(pageWidth ? pagerScrollX.value / pageWidth : 0) * tabWidth +
+					(tabWidth - indicatorWidth) / 2,
+			},
+		],
+	}));
+
 	return (
-		<View className="h-11 flex-row items-end">
+		<View
+			className="relative h-11 flex-row items-center"
+			onLayout={(event) => setBarWidth(event.nativeEvent.layout.width)}
+		>
 			{SEARCH_TABS.map((item) => {
 				const active = item.key === activeTab;
 				return (
@@ -136,7 +170,7 @@ function SearchTabs({
 						key={item.key}
 						accessibilityRole="tab"
 						accessibilityState={active ? { selected: true } : undefined}
-						className="flex-1 items-center justify-end gap-2"
+						className="h-full flex-1 items-center justify-center"
 						onPress={() => {
 							fireHaptic();
 							onChange(item.key);
@@ -148,14 +182,16 @@ function SearchTabs({
 						>
 							{item.label}
 						</Typography.Paragraph>
-						<View
-							className={
-								active ? "h-1 w-14 rounded-full bg-accent" : "h-1 w-14"
-							}
-						/>
 					</PressableFeedback>
 				);
 			})}
+			{barWidth ? (
+				<Animated.View
+					pointerEvents="none"
+					className="absolute bottom-0 left-0 h-1 rounded-full bg-accent"
+					style={[{ width: indicatorWidth }, indicatorStyle]}
+				/>
+			) : null}
 		</View>
 	);
 }

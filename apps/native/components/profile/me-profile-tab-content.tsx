@@ -120,6 +120,7 @@ export function ProfileTabPane({ children }: { children: ReactNode }) {
 export function ProfileTabPage({
 	emptyState,
 	feedItems,
+	footer,
 	isError,
 	isLoading,
 	onLongPressNote,
@@ -129,6 +130,7 @@ export function ProfileTabPage({
 }: {
 	emptyState: ReactNode;
 	feedItems: NoteCardNote[];
+	footer?: ReactNode;
 	isError: boolean;
 	isLoading: boolean;
 	onLongPressNote?: (note: NoteCardNote) => void;
@@ -178,6 +180,7 @@ export function ProfileTabPage({
 				) : (
 					emptyState
 				)}
+				{footer}
 			</View>
 		</View>
 	);

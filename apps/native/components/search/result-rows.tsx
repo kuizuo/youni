@@ -28,7 +28,6 @@ export function UserResultRow({
 	const router = useRouter();
 	const socialNavigation = useSocialNavigation();
 	const isSelf = currentUserId === item.id;
-	const secondaryName = item.handle ? `@${item.handle}` : "未设置用户名";
 
 	const openProfile = () => {
 		socialNavigation.goTo({ type: "user", id: item.id });
@@ -48,22 +47,13 @@ export function UserResultRow({
 				</Avatar>
 
 				<View className="min-w-0 flex-1 gap-1">
-					<View className="gap-0.5">
-						<Typography.Paragraph
-							weight="semibold"
-							numberOfLines={1}
-							className="text-foreground"
-						>
-							{item.name}
-						</Typography.Paragraph>
-						<Typography.Paragraph
-							type="body-sm"
-							color="muted"
-							numberOfLines={1}
-						>
-							{secondaryName}
-						</Typography.Paragraph>
-					</View>
+					<Typography.Paragraph
+						weight="semibold"
+						numberOfLines={1}
+						className="text-foreground"
+					>
+						{item.name}
+					</Typography.Paragraph>
 
 					{item.bio ? (
 						<Typography.Paragraph

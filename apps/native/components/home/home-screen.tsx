@@ -32,6 +32,7 @@ import {
 } from "@/components/home/types";
 import { NoteCard, type NoteCardNote } from "@/components/note-card";
 import { EmptyState } from "@/components/social-states";
+import { useTabReselect } from "@/lib/navigation/use-tab-reselect";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
@@ -55,6 +56,7 @@ export default function HomeScreen() {
 		string | null
 	>(null);
 	const hasFocusedRef = useRef(false);
+	const discoverListRef = useRef<FlashListRef<NoteCardNote>>(null);
 	const followingListRef = useRef<FlashListRef<NoteCardNote>>(null);
 	const [selectedDiscoverNote, setSelectedDiscoverNote] =
 		useState<NoteCardNote | null>(null);
@@ -226,6 +228,12 @@ export default function HomeScreen() {
 			setIsManuallyRefreshing(false);
 		}
 	};
+	useTabReselect(() => {
+		const listRef =
+			activeTab === "following" ? followingListRef : discoverListRef;
+		listRef.current?.scrollToOffset({ animated: true, offset: 0 });
+		if (!isManuallyRefreshing) void refreshFeed(activeTab);
+	});
 
 	const recordDiscoverEvent = useCallback(
 		(
@@ -415,7 +423,7 @@ export default function HomeScreen() {
 					return (
 						<View key={tab} className="h-full" style={{ width: pageWidth }}>
 							<FlashList
-								ref={tab === "following" ? followingListRef : undefined}
+								ref={tab === "following" ? followingListRef : discoverListRef}
 								style={{
 									alignSelf: "center",
 									flex: 1,

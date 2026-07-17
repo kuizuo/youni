@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { SearchSource } from "@youni/api/contracts/search-discovery";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert, useWindowDimensions, View } from "react-native";
+import { useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SearchHeader } from "@/components/search/header";
@@ -27,6 +28,8 @@ export default function SearchScreen() {
 		source?: string | string[];
 	}>();
 	const insets = useSafeAreaInsets();
+	const dimensions = useWindowDimensions();
+	const pagerScrollX = useSharedValue(0);
 	const handledExternalSearch = useRef<string | null>(null);
 	const historyRevision = useRef(0);
 	const [keyword, setKeyword] = useState("");
@@ -167,6 +170,8 @@ export default function SearchScreen() {
 				canSubmitKeyword={canSubmitKeyword}
 				hasActiveSearch={hasActiveSearch}
 				keyword={keyword}
+				pageWidth={dimensions.width}
+				pagerScrollX={pagerScrollX}
 				topInset={insets.top}
 				onChangeKeyword={setKeyword}
 				onChangeTab={setActiveTab}
@@ -179,6 +184,9 @@ export default function SearchScreen() {
 					activeKeyword={activeKeyword}
 					activeTab={activeTab}
 					contentBottomPadding={contentBottomPadding}
+					pageWidth={dimensions.width}
+					pagerScrollX={pagerScrollX}
+					onChangeTab={setActiveTab}
 				/>
 			) : (
 				<SearchHome

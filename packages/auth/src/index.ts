@@ -58,6 +58,7 @@ const zhAuthErrorTranslations = {
 	TOO_MANY_ATTEMPTS: "尝试次数过多，请稍后再试",
 	UNAUTHORIZED: "请先登录",
 	USER_ALREADY_EXISTS: "该邮箱已注册",
+	USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "该邮箱已注册，请使用其他邮箱",
 	USER_NOT_FOUND: "用户不存在",
 } satisfies Record<string, string>;
 

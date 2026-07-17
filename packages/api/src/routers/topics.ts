@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 import { createDb } from "@youni/db";
 import { comment, note, noteTopic, topic } from "@youni/db/schema/index";
 import { and, count, desc, eq, inArray, notInArray, or } from "drizzle-orm";
+import type { TopicSort } from "../contracts/topics";
 import { publicProcedure } from "../index";
 import {
 	hydrateContentNotes,
@@ -10,6 +11,20 @@ import {
 import { containsInsensitive } from "../lib/search";
 import { getBlockedUserIds } from "../lib/users/blocks";
 import { toNumber, toPage } from "./utils";
+
+export function sortTopicNotes<
+	Note extends { createdAt: Date | string; likedCount: number },
+>(notes: Note[], sort: TopicSort) {
+	return notes.toSorted((left, right) => {
+		if (sort === "hot") {
+			const likeDelta = right.likedCount - left.likedCount;
+			if (likeDelta !== 0) return likeDelta;
+		}
+		return (
+			new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+		);
+	});
+}
 
 export async function getTopicNoteIds(keyword: string) {
 	const rows = await createDb()
@@ -255,17 +270,7 @@ export const topicsRouter = {
 				rows,
 				context.session?.user.id,
 			);
-			const sortedRows =
-				input.sort === "hot"
-					? hydratedRows.toSorted((left, right) => {
-							const likeDelta = right.likedCount - left.likedCount;
-							if (likeDelta !== 0) return likeDelta;
-							return (
-								new Date(right.createdAt).getTime() -
-								new Date(left.createdAt).getTime()
-							);
-						})
-					: hydratedRows;
+			const sortedRows = sortTopicNotes(hydratedRows, input.sort);
 			const page = toPage(
 				sortedRows.slice(input.offset, input.offset + input.limit + 1),
 				input.limit,

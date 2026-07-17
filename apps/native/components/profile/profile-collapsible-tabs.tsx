@@ -27,6 +27,7 @@ import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
 } from "react-native-reanimated";
+import { useTabReselect } from "@/lib/navigation/use-tab-reselect";
 
 type CollapsibleTab<Key extends string> = {
 	key: Key;
@@ -41,8 +42,10 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	headerHeight,
 	minTabContentHeight,
 	onRefresh,
+	onEndReached,
 	onTabChange,
 	refreshColor,
+	refreshOnTabReselect = false,
 	refreshing,
 	renderHeader,
 	renderStickyHeader,
@@ -59,8 +62,10 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	headerHeight: number;
 	minTabContentHeight: number;
 	onRefresh: () => void;
+	onEndReached?: () => void;
 	onTabChange: (tab: Key) => void;
 	refreshColor: string;
+	refreshOnTabReselect?: boolean;
 	refreshing: boolean;
 	renderHeader: (scrollY: SharedValue<number>) => ReactNode;
 	renderStickyHeader: (
@@ -79,6 +84,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 	topChromeHeight: number;
 }) {
 	const dimensions = useWindowDimensions();
+	const scrollRef = useRef<ScrollView>(null);
 	const pagerRef = useRef<ScrollView>(null);
 	const pendingProgrammaticTabRef = useRef<null | Key>(null);
 	const pendingProgrammaticTimerRef = useRef<null | ReturnType<
@@ -100,10 +106,27 @@ export function ProfileCollapsibleTabs<Key extends string>({
 		minTabContentHeight,
 		pageHeights[activeTab] ?? 0,
 	);
-
-	const onScroll = useAnimatedScrollHandler((event) => {
-		scrollY.value = event.contentOffset.y;
+	useTabReselect(() => {
+		if (!refreshOnTabReselect) return;
+		scrollRef.current?.scrollTo({ animated: true, y: 0 });
+		if (!refreshing) onRefresh();
 	});
+
+	const onScroll = useAnimatedScrollHandler(
+		(event) => {
+			scrollY.value = event.contentOffset.y;
+			if (
+				onEndReached &&
+				event.contentSize.height -
+					event.layoutMeasurement.height -
+					event.contentOffset.y <
+					240
+			) {
+				runOnJS(onEndReached)();
+			}
+		},
+		[onEndReached],
+	);
 	const onPagerScroll = useAnimatedScrollHandler((event) => {
 		pagerScrollX.value = event.contentOffset.x;
 	});
@@ -221,6 +244,7 @@ export function ProfileCollapsibleTabs<Key extends string>({
 			}}
 		>
 			<Animated.ScrollView
+				ref={scrollRef}
 				className="flex-1"
 				onScroll={onScroll}
 				refreshControl={
