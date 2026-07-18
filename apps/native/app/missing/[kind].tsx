@@ -6,7 +6,6 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppHeader, AppHeaderIconButton } from "@/components/shared/app-header";
-import { AppHeading } from "@/components/shared/app-heading";
 import { getRouteParam } from "@/utils/route-params";
 
 type MissingKind = "topic" | "user";
@@ -70,9 +69,9 @@ export default function MissingTargetScreen() {
 							/>
 						</View>
 						<View className="items-center gap-2">
-							<AppHeading type="h3" align="center">
+							<Typography.Heading type="h3" align="center">
 								{title}
-							</AppHeading>
+							</Typography.Heading>
 							<Typography.Paragraph type="body-sm" color="muted" align="center">
 								{description}
 							</Typography.Paragraph>

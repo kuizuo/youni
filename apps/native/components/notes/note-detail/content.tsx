@@ -18,7 +18,6 @@ import {
 	APP_HEADER_ICON_SIZE,
 	AppHeaderIconButton,
 } from "@/components/shared/app-header";
-import { AppHeading } from "@/components/shared/app-heading";
 import { FollowButton } from "@/components/users/follow-button";
 import { formatRelativeTime } from "@/utils/format";
 
@@ -273,9 +272,9 @@ export function NoteBody({
 	return (
 		<View className="gap-4 px-4 pt-4 pb-5">
 			<View className="gap-3">
-				<AppHeading type="h4" className="text-foreground">
+				<Typography.Heading type="h4" className="text-foreground">
 					{title}
-				</AppHeading>
+				</Typography.Heading>
 				<LinkedText
 					value={content}
 					onMentionPress={onMentionPress}

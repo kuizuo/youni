@@ -2,7 +2,6 @@ import type { TopicSort } from "@youni/api/contracts/topics";
 import { PressableFeedback, Skeleton, Typography } from "heroui-native";
 import { View } from "react-native";
 
-import { AppHeading } from "@/components/shared/app-heading";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { formatCount } from "@/utils/format";
 
@@ -54,14 +53,14 @@ export function TopicHeader({
 							</>
 						) : (
 							<>
-								<AppHeading
+								<Typography.Heading
 									type="h2"
 									weight="bold"
 									numberOfLines={2}
 									className="text-foreground"
 								>
 									# {topicName ?? "话题"}
-								</AppHeading>
+								</Typography.Heading>
 								<Typography.Paragraph type="body-sm" color="muted">
 									{formatCount(noteCount)} 篇图文
 									{discussionCount > 0

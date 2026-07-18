@@ -1,14 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { Href } from "expo-router";
 import { Stack, useRouter } from "expo-router";
-import { Button, useThemeColor } from "heroui-native";
+import { Button, Typography, useThemeColor } from "heroui-native";
 import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { YouniMark } from "@/components/brand/youni-logo";
-import { AppHeading } from "@/components/shared/app-heading";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 
@@ -47,9 +46,13 @@ export default function LoginScreen() {
 					<View className="items-center gap-3">
 						<YouniMark size={50} />
 						<View className="items-center">
-							<AppHeading type="h1" align="center" className="text-foreground">
+							<Typography.Heading
+								type="h1"
+								align="center"
+								className="text-foreground"
+							>
 								登录 Youni
-							</AppHeading>
+							</Typography.Heading>
 						</View>
 					</View>
 

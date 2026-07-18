@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Button } from "heroui-native";
+import { Button, Typography } from "heroui-native";
 import type { StyleProp, ViewStyle } from "react-native";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
-import { AppHeading } from "@/components/shared/app-heading";
 
 export function TopicTopBar({
 	foregroundColor,
@@ -40,14 +39,14 @@ export function TopicTopBar({
 					className="absolute inset-x-14 items-center"
 					style={titleStyle}
 				>
-					<AppHeading
+					<Typography.Heading
 						type="h4"
 						weight="semibold"
 						numberOfLines={1}
 						className="text-foreground"
 					>
 						# {topicName}
-					</AppHeading>
+					</Typography.Heading>
 				</Animated.View>
 			) : null}
 		</View>

@@ -165,7 +165,7 @@ export default function MeScreen() {
 	);
 	const signOut = async () => {
 		await signOutCurrentUser();
-		router.replace("/" as Href);
+		router.replace("/login" as Href);
 	};
 
 	const openSearch = () => {

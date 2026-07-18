@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { type Href, router, Stack } from "expo-router";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import { View } from "react-native";
-import { AppHeading } from "@/components/shared/app-heading";
 import { Container } from "@/components/shared/container";
 
 type RecoveryIconName = keyof typeof Ionicons.glyphMap;
@@ -59,9 +58,9 @@ export default function NotFoundScreen() {
 							/>
 						</View>
 						<View className="items-center gap-1">
-							<AppHeading type="h2" align="center">
+							<Typography.Heading type="h2" align="center">
 								这篇内容走丢了
-							</AppHeading>
+							</Typography.Heading>
 							<Typography.Paragraph type="body-sm" color="muted" align="center">
 								可能已被删除、隐藏，或者链接不太对。
 							</Typography.Paragraph>

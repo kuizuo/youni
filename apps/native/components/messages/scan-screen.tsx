@@ -13,7 +13,6 @@ import { ScanFrame } from "@/components/messages/scan/scan-frame";
 import { ScanOverlay } from "@/components/messages/scan/scan-overlay";
 import { getUserIdFromCode } from "@/components/messages/scan/utils";
 import { APP_HEADER_ICON_SIZE } from "@/components/shared/app-header";
-import { AppHeading } from "@/components/shared/app-heading";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
 
@@ -82,9 +81,9 @@ export default function ScanScreen() {
 								color="#ffffff"
 							/>
 						</Button>
-						<AppHeading type="h2" style={{ color: "#ffffff" }}>
+						<Typography.Heading type="h2" style={{ color: "#ffffff" }}>
 							扫描二维码
-						</AppHeading>
+						</Typography.Heading>
 						<View className="h-11 w-11" />
 					</View>
 

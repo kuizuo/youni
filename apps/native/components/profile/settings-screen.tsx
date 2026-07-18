@@ -88,7 +88,7 @@ export default function SettingsScreen() {
 	const signOut = async () => {
 		fireHaptic();
 		await signOutCurrentUser();
-		router.replace("/" as Href);
+		router.replace("/login" as Href);
 	};
 
 	return (

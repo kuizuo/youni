@@ -13,7 +13,6 @@ import { useState } from "react";
 import { View } from "react-native";
 import { withUniwind } from "uniwind";
 import { YouniMark } from "@/components/brand/youni-logo";
-import { AppHeading } from "@/components/shared/app-heading";
 
 const StyledIonicons = withUniwind(Ionicons);
 
@@ -68,9 +67,13 @@ export function ForgotPasswordForm({
 			<View className="items-center gap-2">
 				<YouniMark size={42} />
 				<View className="items-center gap-1">
-					<AppHeading type="h1" align="center" className="text-foreground">
+					<Typography.Heading
+						type="h1"
+						align="center"
+						className="text-foreground"
+					>
 						{title}
-					</AppHeading>
+					</Typography.Heading>
 				</View>
 			</View>
 
