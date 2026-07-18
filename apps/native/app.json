@@ -6,7 +6,7 @@
 			"url": "https://u.expo.dev/b9972331-7d91-43c0-ad64-3282d625f644"
 		},
 		"runtimeVersion": {
-			"policy": "sdkVersion"
+			"policy": "appVersion"
 		},
 		"ios": {
 			"bundleIdentifier": "com.kuizuo.youni",
