@@ -37,7 +37,7 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           android_url="$(jq -r 'if type == "array" then .[0] else . end | .artifacts.applicationArchiveUrl' "$RUNNER_TEMP/android-build.json")"
           ios_url="$(jq -r 'if type == "array" then .[0] else . end | .artifacts.applicationArchiveUrl' "$RUNNER_TEMP/ios-build.json")"
-          curl --fail --location "$android_url" --output "youni-${version}-android.apk"
+          curl --fail --location "$android_url" --output "youni-android.apk"
           curl --fail --location "$ios_url" --output "youni-${version}-ios-simulator.tar.gz"
 
       - name: Publish app update
@@ -49,4 +49,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --generate-notes --title "$GITHUB_REF_NAME"
-          gh release upload "$GITHUB_REF_NAME" youni-*-android.apk youni-*-ios-simulator.tar.gz --clobber
+          gh release upload "$GITHUB_REF_NAME" youni-android.apk youni-*-ios-simulator.tar.gz --clobber
