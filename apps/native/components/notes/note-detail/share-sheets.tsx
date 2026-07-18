@@ -3,7 +3,6 @@ import type { HydratedContentNote } from "@youni/api/contracts/shared";
 import * as Clipboard from "expo-clipboard";
 import { File as ExpoFile, Paths } from "expo-file-system";
 import { Image } from "expo-image";
-import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
 import {
 	BottomSheet,
@@ -96,6 +95,7 @@ export function NoteShareSheets({
 		setActiveAction("save-images");
 		try {
 			if (!(await requestPhotoWritePermission())) return;
+			const MediaLibrary = await import("expo-media-library");
 
 			const batchId = Date.now();
 			let savedCount = 0;
@@ -536,6 +536,7 @@ function NoteSharePosterSheet({
 		setActiveAction("save");
 		try {
 			if (!(await requestPhotoWritePermission())) return;
+			const MediaLibrary = await import("expo-media-library");
 			const uri = await capturePoster();
 			await MediaLibrary.Asset.create(uri);
 			toast.show({ label: "分享图已保存", variant: "success" });
@@ -878,6 +879,7 @@ function PosterMetric({
 }
 
 async function requestPhotoWritePermission() {
+	const MediaLibrary = await import("expo-media-library");
 	let permission = await MediaLibrary.getPermissionsAsync(true);
 	if (!permission.granted && permission.canAskAgain) {
 		permission = await MediaLibrary.requestPermissionsAsync(true);
