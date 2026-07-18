@@ -18,7 +18,8 @@
 		"build:eas:android-internal": "EAS_BUILD_NO_EXPO_GO_WARNING=true bunx eas-cli@latest build --platform android --profile preview",
 		"build:eas:ios": "EAS_BUILD_NO_EXPO_GO_WARNING=true bunx eas-cli@latest build --platform ios --profile production",
 		"update:preview": "bunx eas-cli@latest update --channel preview --environment production",
-		"update:production": "bunx eas-cli@latest update:republish --destination-channel production"
+		"update:production": "bunx eas-cli@latest update --channel production --environment production",
+		"update:promote": "bunx eas-cli@latest update:republish --destination-channel production"
 	},
 	"dependencies": {
 		"@better-auth/expo": "catalog:",
