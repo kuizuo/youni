@@ -176,7 +176,7 @@ export default function MeScreen() {
 	};
 
 	const openCreate = () => {
-		router.push("/create" as Href);
+		router.push("/publish" as Href);
 	};
 
 	const openProfileSettings = () => {

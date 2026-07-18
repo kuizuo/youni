@@ -2,11 +2,11 @@ import type { SFSymbolIcon } from "expo-router/unstable-native-tabs";
 
 import type { SingleColorIconName } from "@/components/icons/single-color";
 
-export type TabRouteName = "index" | "search" | "create" | "messages" | "me";
+export type TabRouteName = "index" | "search" | "messages" | "me";
 
 export type TabIconName = Extract<
 	SingleColorIconName,
-	"create" | "home" | "message" | "search" | "user"
+	"home" | "message" | "search" | "user"
 >;
 
 export type TabIconFocusedName = Extract<
@@ -23,7 +23,6 @@ export interface TabConfig {
 	iconName: TabIconName;
 	iosIconName: IosTabIconName;
 	iosIconSelectedName: IosTabIconName;
-	isCreateAction?: boolean;
 	label: string;
 	name: TabRouteName;
 }
@@ -44,15 +43,6 @@ export const TABS: readonly TabConfig[] = [
 		iconFocusedName: "search-fill",
 		iosIconName: "magnifyingglass",
 		iosIconSelectedName: "magnifyingglass",
-	},
-	{
-		name: "create",
-		label: "发布",
-		iconName: "create",
-		iconFocusedName: "create-fill",
-		iosIconName: "plus.app",
-		iosIconSelectedName: "plus.app.fill",
-		isCreateAction: true,
 	},
 	{
 		name: "messages",

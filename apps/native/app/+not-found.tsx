@@ -23,7 +23,7 @@ const recoveryActions = [
 	{
 		label: "发布图文",
 		icon: "add-circle-outline",
-		href: "/create",
+		href: "/publish",
 		variant: "secondary",
 	},
 ] as const satisfies Array<{

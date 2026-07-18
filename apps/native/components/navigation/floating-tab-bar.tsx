@@ -1,11 +1,5 @@
 import type { Tabs } from "expo-router";
-import {
-	cn,
-	PressableFeedback,
-	Surface,
-	Typography,
-	useThemeColor,
-} from "heroui-native";
+import { cn, PressableFeedback, Surface, Typography } from "heroui-native";
 import type { ComponentProps } from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +16,6 @@ type TabsTabBarProps = Parameters<TabsTabBar>[0];
 
 export function FloatingTabBar({ navigation, state }: TabsTabBarProps) {
 	const insets = useSafeAreaInsets();
-	const backgroundColor = useThemeColor("background");
 	const socialNavigation = useSocialNavigation();
 	const showActiveLabel = Platform.OS !== "web";
 
@@ -51,11 +44,6 @@ export function FloatingTabBar({ navigation, state }: TabsTabBarProps) {
 
 					const handlePress = (): void => {
 						fireHaptic();
-						if (config.isCreateAction) {
-							socialNavigation.openPublish();
-							return;
-						}
-
 						if (
 							(config.name === "messages" || config.name === "me") &&
 							!socialNavigation.requireLogin(`/${config.name}`)
@@ -89,33 +77,23 @@ export function FloatingTabBar({ navigation, state }: TabsTabBarProps) {
 							onPress={handlePress}
 							className={cn(
 								"h-11 flex-row items-center justify-center rounded-full",
-								config.isCreateAction
-									? "w-12 bg-foreground shadow-sm"
-									: undefined,
-								!config.isCreateAction && isFocused
+								isFocused
 									? cn(
 											"bg-accent shadow-sm",
 											showActiveLabel ? "w-20 gap-1.5 px-3" : "w-12",
 										)
-									: !config.isCreateAction
-										? "w-12 bg-transparent"
-										: undefined,
+									: "w-12 bg-transparent",
 							)}
 						>
 							<PressableFeedback.Highlight />
 							<SingleColorIcon
 								name={isFocused ? config.iconFocusedName : config.iconName}
 								size={22}
-								color={config.isCreateAction ? backgroundColor : undefined}
 								colorClassName={
-									config.isCreateAction
-										? "text-background"
-										: isFocused
-											? "text-accent-foreground"
-											: "text-muted"
+									isFocused ? "text-accent-foreground" : "text-muted"
 								}
 							/>
-							{!config.isCreateAction && isFocused && showActiveLabel ? (
+							{isFocused && showActiveLabel ? (
 								<Typography.Paragraph
 									type="body-xs"
 									weight="semibold"
