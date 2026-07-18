@@ -8,7 +8,7 @@ import {
 	noteLike,
 	noteViewHistory,
 } from "@youni/db/schema/index";
-import { and, count, eq, inArray, notInArray, or } from "drizzle-orm";
+import { and, count, eq, inArray, notInArray, or, sum } from "drizzle-orm";
 import {
 	activeUserProcedure,
 	protectedProcedure,
@@ -163,29 +163,38 @@ export const notesRouter = {
 		async ({ context }) => {
 			const userId = context.session.user.id;
 			const db = createDb();
-			const [statusRows, [likeCount], [collectionCount], [commentCount]] =
-				await Promise.all([
-					db
-						.select({ status: note.status, value: count() })
-						.from(note)
-						.where(eq(note.userId, userId))
-						.groupBy(note.status),
-					db
-						.select({ value: count() })
-						.from(noteLike)
-						.innerJoin(note, eq(noteLike.noteId, note.id))
-						.where(eq(note.userId, userId)),
-					db
-						.select({ value: count() })
-						.from(noteCollection)
-						.innerJoin(note, eq(noteCollection.noteId, note.id))
-						.where(eq(note.userId, userId)),
-					db
-						.select({ value: count() })
-						.from(comment)
-						.innerJoin(note, eq(comment.noteId, note.id))
-						.where(eq(note.userId, userId)),
-				]);
+			const [
+				statusRows,
+				[viewCount],
+				[likeCount],
+				[collectionCount],
+				[commentCount],
+			] = await Promise.all([
+				db
+					.select({ status: note.status, value: count() })
+					.from(note)
+					.where(eq(note.userId, userId))
+					.groupBy(note.status),
+				db
+					.select({ value: sum(note.viewCount) })
+					.from(note)
+					.where(eq(note.userId, userId)),
+				db
+					.select({ value: count() })
+					.from(noteLike)
+					.innerJoin(note, eq(noteLike.noteId, note.id))
+					.where(eq(note.userId, userId)),
+				db
+					.select({ value: count() })
+					.from(noteCollection)
+					.innerJoin(note, eq(noteCollection.noteId, note.id))
+					.where(eq(note.userId, userId)),
+				db
+					.select({ value: count() })
+					.from(comment)
+					.innerJoin(note, eq(comment.noteId, note.id))
+					.where(eq(note.userId, userId)),
+			]);
 			const byStatus = new Map(
 				statusRows.map((row) => [row.status, toNumber(row.value)]),
 			);
@@ -200,6 +209,7 @@ export const notesRouter = {
 				audit,
 				rejected,
 				hidden,
+				views: toNumber(viewCount?.value),
 				liked: toNumber(likeCount?.value),
 				collected: toNumber(collectionCount?.value),
 				comments: toNumber(commentCount?.value),

@@ -147,6 +147,7 @@ export type NotesOutputs = {
 		audit: number;
 		rejected: number;
 		hidden: number;
+		views: number;
 		liked: number;
 		collected: number;
 		comments: number;
