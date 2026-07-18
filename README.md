@@ -2,15 +2,38 @@
 
 Youni 是一个仿小红书的图文社区项目，实现了内容发现、图文发布、话题搜索、点赞收藏、评论互动、用户关注、私信通知和内容审核等主要核心功能。
 
-项目基于 TypeScript 和 Bun 构建：用户端使用 React Native、Expo Router、HeroUI、TanStack Router，服务端使用 Hono、oRPC 与 Better Auth，数据存储在 Cloudflare D1 与 R2，并通过 Cloudflare 和 Alchemy 完成部署。
-
-项目同时支持 iOS、Android 和浏览器访问，线上资源统一部署在 Cloudflare。
+项目基于 TypeScript 和 Bun 构建：用户端使用 React Native、Expo Router、HeroUI、TanStack Router，服务端使用 Hono、oRPC 与 Better Auth，数据存储在 Cloudflare D1 与 R2；云端资源通过 Alchemy 部署，iOS 与 Android 应用通过 EAS 完成构建、发布和在线更新。
 
 ## 在线体验
 
 - 网页版：[youni.kuizuo.me](https://youni.kuizuo.me)
 - iPhone：[通过 TestFlight 安装 Youni](https://testflight.apple.com/join/cnNmDSvs)
 - Android：[下载最新 APK](https://github.com/kuizuo/youni/releases/latest/download/youni-android.apk)
+
+## 项目预览
+
+<table>
+  <tr>
+    <th align="center">发现页</th>
+    <th align="center">图文详情页</th>
+    <th align="center">搜索页</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="./images/native-discover.png" alt="发现页" width="260"></td>
+    <td align="center"><img src="./images/native-note-detail.png" alt="图文详情页" width="260"></td>
+    <td align="center"><img src="./images/native-search.png" alt="搜索页" width="260"></td>
+  </tr>
+  <tr>
+    <th align="center">话题页</th>
+    <th align="center">消息页</th>
+    <th align="center">用户主页</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="./images/native-topic.png" alt="话题页" width="260"></td>
+    <td align="center"><img src="./images/native-messages.png" alt="消息页" width="260"></td>
+    <td align="center"><img src="./images/native-profile.png" alt="用户主页" width="260"></td>
+  </tr>
+</table>
 
 ## 项目结构
 
