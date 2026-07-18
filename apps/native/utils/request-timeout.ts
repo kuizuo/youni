@@ -1,6 +1,6 @@
 import { showRequestTimeoutToast } from "@/utils/request-toast";
 
-export const API_REQUEST_TIMEOUT_MS = 12_000;
+export const API_REQUEST_TIMEOUT_MS = 15_000;
 export const REQUEST_TIMEOUT_MESSAGE = "请求超时，请检查网络后重试";
 
 export class RequestTimeoutError extends Error {
