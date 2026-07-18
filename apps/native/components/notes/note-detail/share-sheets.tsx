@@ -3,7 +3,6 @@ import type { HydratedContentNote } from "@youni/api/contracts/shared";
 import * as Clipboard from "expo-clipboard";
 import { File as ExpoFile, Paths } from "expo-file-system";
 import { Image } from "expo-image";
-import * as Sharing from "expo-sharing";
 import {
 	BottomSheet,
 	Button,
@@ -16,7 +15,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Linking, useWindowDimensions, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { captureRef, releaseCapture } from "react-native-view-shot";
 
 import { ListDivider } from "@/components/create/create-ui";
 import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
@@ -32,6 +30,22 @@ import { useAppToast } from "@/utils/app-toast";
 
 type SheetAction = "copy" | "save-images" | null;
 type PosterAction = "save" | "share" | null;
+
+async function loadSharing() {
+	try {
+		return await import("expo-sharing");
+	} catch {
+		throw new Error("当前版本暂不支持系统分享，请更新应用后重试");
+	}
+}
+
+async function loadViewShot() {
+	try {
+		return await import("react-native-view-shot");
+	} catch {
+		throw new Error("当前版本暂不支持生成分享图，请更新应用后重试");
+	}
+}
 
 export function NoteShareSheets({
 	isOpen,
@@ -406,11 +420,11 @@ function NoteSharePosterSheet({
 		const uri = capturedUriRef.current;
 		capturedUriRef.current = null;
 		if (!uri) return;
-		try {
-			releaseCapture(uri);
-		} catch {
-			// The operating system may have already removed the temporary file.
-		}
+		void loadViewShot()
+			.then(({ releaseCapture }) => releaseCapture(uri))
+			.catch(() => {
+				// The operating system may have already removed the temporary file.
+			});
 	}, []);
 
 	const clearPreparedImages = useCallback(() => {
@@ -519,6 +533,7 @@ function NoteSharePosterSheet({
 		await new Promise<void>((resolve) => {
 			requestAnimationFrame(() => resolve());
 		});
+		const { captureRef } = await loadViewShot();
 		const uri = await captureRef(posterRef, {
 			format: "png",
 			height: 1440,
@@ -555,6 +570,7 @@ function NoteSharePosterSheet({
 		fireHaptic();
 		setActiveAction("share");
 		try {
+			const Sharing = await loadSharing();
 			if (!(await Sharing.isAvailableAsync())) {
 				throw new Error("当前设备暂不支持系统分享");
 			}
