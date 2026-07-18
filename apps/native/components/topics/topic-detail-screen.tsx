@@ -56,9 +56,11 @@ export default function TopicDetailScreen() {
 	const [sort, setSort] = useState<TopicSort>("hot");
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [topicSummary, setTopicSummary] = useState<TopicSearchItem>();
+	const [contentWidth, setContentWidth] = useState(() =>
+		Math.min(dimensions.width, 576),
+	);
 	const topChromeHeight = insets.top + 64;
 	const [headerHeight, setHeaderHeight] = useState(topChromeHeight + 120);
-	const contentWidth = Math.min(dimensions.width, 576);
 	const minTabContentHeight = Math.max(
 		1,
 		dimensions.height - topChromeHeight - TOPIC_TAB_BAR_HEIGHT,
@@ -127,7 +129,14 @@ export default function TopicDetailScreen() {
 	}
 
 	return (
-		<View className="flex-1 bg-background">
+		<View
+			className="flex-1 bg-background"
+			onLayout={(event) => {
+				setContentWidth(
+					Math.min(Math.ceil(event.nativeEvent.layout.width), 576),
+				);
+			}}
+		>
 			<ProfileCollapsibleTabs
 				activeTab={sort}
 				backgroundColor={backgroundColor}

@@ -72,6 +72,9 @@ export default function MeScreen() {
 	const [isChangingCover, setIsChangingCover] = useState(false);
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [selectedNote, setSelectedNote] = useState<NoteCardNote | null>(null);
+	const [contentWidth, setContentWidth] = useState(() =>
+		Math.min(dimensions.width, MAX_PROFILE_WIDTH),
+	);
 	const hasFocusedRef = useRef(false);
 	const isAuthenticated = Boolean(currentUser);
 	const profileQuery = useQuery({
@@ -152,10 +155,6 @@ export default function MeScreen() {
 			notes: notesFeed.data ?? [],
 		}),
 		[collectionsFeed.data, likedFeed.data, notesFeed.data],
-	);
-	const contentWidth = Math.max(
-		1,
-		Math.min(dimensions.width, MAX_PROFILE_WIDTH),
 	);
 	const headerHeight =
 		measuredHeaderHeight ?? PROFILE_HEADER_FALLBACK_HEIGHT + insets.top;
@@ -321,7 +320,18 @@ export default function MeScreen() {
 	};
 
 	return (
-		<View className="flex-1" style={{ backgroundColor }}>
+		<View
+			className="flex-1"
+			style={{ backgroundColor }}
+			onLayout={(event) => {
+				setContentWidth(
+					Math.min(
+						Math.ceil(event.nativeEvent.layout.width),
+						MAX_PROFILE_WIDTH,
+					),
+				);
+			}}
+		>
 			<ProfileCollapsibleTabs
 				activeTab={activeTab}
 				backgroundColor={backgroundColor}

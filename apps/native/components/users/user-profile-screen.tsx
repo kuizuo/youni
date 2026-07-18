@@ -68,6 +68,9 @@ export default function UserProfileScreen() {
 	const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState<
 		null | number
 	>(null);
+	const [contentWidth, setContentWidth] = useState(() =>
+		Math.min(dimensions.width, MAX_PROFILE_WIDTH),
+	);
 
 	const profile = useQuery({
 		...orpc.profiles.profile.queryOptions({
@@ -116,10 +119,6 @@ export default function UserProfileScreen() {
 		: undefined;
 	const heroProfile = displayedProfile ?? previewProfile;
 	const topChromeHeight = insets.top + 64;
-	const contentWidth = Math.max(
-		1,
-		Math.min(dimensions.width, MAX_PROFILE_WIDTH),
-	);
 	const headerHeight =
 		measuredHeaderHeight ?? PROFILE_HEADER_FALLBACK_HEIGHT + insets.top;
 	const minTabContentHeight = Math.max(
@@ -237,7 +236,18 @@ export default function UserProfileScreen() {
 	}
 
 	return (
-		<View className="flex-1" style={{ backgroundColor }}>
+		<View
+			className="flex-1"
+			style={{ backgroundColor }}
+			onLayout={(event) => {
+				setContentWidth(
+					Math.min(
+						Math.ceil(event.nativeEvent.layout.width),
+						MAX_PROFILE_WIDTH,
+					),
+				);
+			}}
+		>
 			<ProfileCollapsibleTabs
 				activeTab="notes"
 				backgroundColor={backgroundColor}

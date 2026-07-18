@@ -44,7 +44,8 @@ export default function HomeScreen() {
 	const socialNavigation = useSocialNavigation();
 	const { toast } = useAppToast();
 	const insets = useSafeAreaInsets();
-	const { width: pageWidth } = useWindowDimensions();
+	const { width: windowWidth } = useWindowDimensions();
+	const [pageWidth, setPageWidth] = useState(windowWidth);
 	const [activeTab, setActiveTab] = useState<HomeTab>("discover");
 	const pagerRef = useRef<ScrollView>(null);
 	const [initialPagerOffset] = useState(() => ({ x: pageWidth, y: 0 }));
@@ -179,18 +180,15 @@ export default function HomeScreen() {
 		);
 		followingListRef.current?.scrollToOffset({ animated: true, offset: 0 });
 	}, []);
-	const selectTab = useCallback(
-		(tab: HomeTab) => {
-			const nextIndex = HOME_TABS.findIndex((item) => item.id === tab);
-			if (nextIndex < 0) return;
-			setActiveTab(tab);
-			pagerRef.current?.scrollTo({
-				animated: true,
-				x: nextIndex * pageWidth,
-			});
-		},
-		[pageWidth],
-	);
+	const selectTab = useCallback((tab: HomeTab) => {
+		setActiveTab(tab);
+	}, []);
+	useEffect(() => {
+		const activeIndex = HOME_TABS.findIndex((item) => item.id === activeTab);
+		const nextOffset = Math.max(0, activeIndex) * pageWidth;
+		pagerScrollX.value = nextOffset;
+		pagerRef.current?.scrollTo({ animated: true, x: nextOffset });
+	}, [activeTab, pageWidth, pagerScrollX]);
 	const onPagerScroll = useAnimatedScrollHandler((event) => {
 		pagerScrollX.value = event.contentOffset.x;
 	});
@@ -378,7 +376,12 @@ export default function HomeScreen() {
 	};
 
 	return (
-		<View className="flex-1 bg-background">
+		<View
+			className="flex-1 bg-background"
+			onLayout={(event) => {
+				setPageWidth(Math.ceil(event.nativeEvent.layout.width));
+			}}
+		>
 			<HomeTopBar
 				activeTab={activeTab}
 				pageWidth={pageWidth}

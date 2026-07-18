@@ -110,12 +110,15 @@ export function ErrorState({
 	onRetry?: () => void;
 }) {
 	const dangerForegroundColor = useThemeColor("danger-foreground");
+	const dangerColor = useThemeColor("danger");
 	const foregroundColor = useThemeColor("foreground");
 	const mutedColor = useThemeColor("muted");
 
 	return (
 		<Alert status="danger" className="mx-4 my-8 rounded-2xl">
-			<Alert.Indicator />
+			<Alert.Indicator>
+				<Ionicons name="alert-circle-outline" size={18} color={dangerColor} />
+			</Alert.Indicator>
 			<Alert.Content>
 				<Alert.Title style={{ color: foregroundColor }}>{title}</Alert.Title>
 				<Alert.Description style={{ color: mutedColor }}>

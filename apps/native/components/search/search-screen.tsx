@@ -29,6 +29,7 @@ export default function SearchScreen() {
 	}>();
 	const insets = useSafeAreaInsets();
 	const dimensions = useWindowDimensions();
+	const [pageWidth, setPageWidth] = useState(dimensions.width);
 	const pagerScrollX = useSharedValue(0);
 	const handledExternalSearch = useRef<string | null>(null);
 	const historyRevision = useRef(0);
@@ -166,13 +167,18 @@ export default function SearchScreen() {
 	};
 
 	return (
-		<View className="flex-1 bg-background">
+		<View
+			className="flex-1 bg-background"
+			onLayout={(event) => {
+				setPageWidth(Math.ceil(event.nativeEvent.layout.width));
+			}}
+		>
 			<SearchHeader
 				activeTab={activeTab}
 				canSubmitKeyword={canSubmitKeyword}
 				hasActiveSearch={hasActiveSearch}
 				keyword={keyword}
-				pageWidth={dimensions.width}
+				pageWidth={pageWidth}
 				pagerScrollX={pagerScrollX}
 				topInset={insets.top}
 				onChangeKeyword={setKeyword}
@@ -186,7 +192,7 @@ export default function SearchScreen() {
 					activeKeyword={activeKeyword}
 					activeTab={activeTab}
 					contentBottomPadding={contentBottomPadding}
-					pageWidth={dimensions.width}
+					pageWidth={pageWidth}
 					pagerScrollX={pagerScrollX}
 					onChangeTab={setActiveTab}
 				/>

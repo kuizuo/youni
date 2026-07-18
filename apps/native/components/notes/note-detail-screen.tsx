@@ -109,7 +109,7 @@ export default function NoteDetailScreen() {
 	const dangerColor = useThemeColor("danger");
 	const accentColor = useThemeColor("accent");
 	const { width } = useWindowDimensions();
-	const pageWidth = Math.min(width, 576);
+	const [pageWidth, setPageWidth] = useState(Math.min(width, 576));
 	const imageHeight = Math.min(620, Math.max(380, pageWidth * 1.08));
 	const topBarHeight = insets.top + 64;
 	const commentListRef = useRef<FlatList<NoteComment>>(null);
@@ -683,6 +683,9 @@ export default function NoteDetailScreen() {
 			<FlatList
 				ref={commentListRef}
 				className="mx-auto w-full max-w-xl bg-background"
+				onLayout={(event) => {
+					setPageWidth(Math.ceil(event.nativeEvent.layout.width));
+				}}
 				contentContainerClassName="bg-background pb-32"
 				contentContainerStyle={{ paddingTop: topBarHeight }}
 				data={rootComments}
