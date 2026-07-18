@@ -1,10 +1,11 @@
-import { AuthRequired } from "@/components/auth-required";
-import SettingsScreen from "@/components/profile/settings-screen";
+import { Stack } from "expo-router";
 
-export default function SettingsRoute() {
+import { AuthRequired } from "@/components/auth-required";
+
+export default function SettingsLayout() {
 	return (
 		<AuthRequired redirectTo="/settings">
-			<SettingsScreen />
+			<Stack screenOptions={{ headerShown: false }} />
 		</AuthRequired>
 	);
 }

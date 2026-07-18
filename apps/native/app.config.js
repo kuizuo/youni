@@ -1,4 +1,5 @@
 const GOOGLE_SIGN_IN_PLUGIN = "@react-native-google-signin/google-signin";
+const { version } = require("./package.json");
 
 function getGoogleIosUrlScheme() {
 	if (process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME) {
@@ -26,6 +27,7 @@ module.exports = ({ config }) => {
 
 	return {
 		...config,
+		version,
 		plugins: hasGoogleSignInPlugin
 			? plugins
 			: [

@@ -17,7 +17,6 @@ import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ListDivider } from "@/components/create/create-ui";
 import type { NoteCardNote } from "@/components/note-card";
-import { MeEditProfileSheetHost } from "@/components/profile/me/edit-profile-sheet-host";
 import { MeTabEmptyState } from "@/components/profile/me/empty-state";
 import { MeStickyChrome } from "@/components/profile/me/sticky-chrome";
 import { MeCommentsTab } from "@/components/profile/me-comments-tab";
@@ -44,6 +43,7 @@ import {
 	pickAndUploadAvatar,
 	pickAndUploadProfileCover,
 } from "@/lib/avatar-upload";
+import { signOutCurrentUser } from "@/lib/sign-out";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { confirmAction } from "@/utils/confirm-action";
@@ -66,7 +66,6 @@ export default function MeScreen() {
 		null | number
 	>(null);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const [isEditOpen, setIsEditOpen] = useState(false);
 	const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
 	const [isCoverPreviewOpen, setIsCoverPreviewOpen] = useState(false);
 	const [isChangingAvatar, setIsChangingAvatar] = useState(false);
@@ -165,11 +164,8 @@ export default function MeScreen() {
 		360,
 		dimensions.height - topChromeHeight - PROFILE_TAB_BAR_HEIGHT,
 	);
-	const activeFeed = tabQueries[activeTab];
-
-	const signOut = () => {
-		authClient.signOut();
-		queryClient.clear();
+	const signOut = async () => {
+		await signOutCurrentUser();
 		router.replace("/" as Href);
 	};
 
@@ -182,6 +178,11 @@ export default function MeScreen() {
 
 	const openCreate = () => {
 		router.push("/create" as Href);
+	};
+
+	const openProfileSettings = () => {
+		fireHaptic();
+		router.push("/settings/profile" as Href);
 	};
 
 	const openAvatarPreview = () => {
@@ -371,10 +372,7 @@ export default function MeScreen() {
 						style={style}
 						topChromeHeight={topChromeHeight}
 						onAvatarPress={openAvatarPreview}
-						onEdit={() => {
-							fireHaptic();
-							setIsEditOpen(true);
-						}}
+						onEdit={openProfileSettings}
 						onMenu={() => setIsMenuOpen(true)}
 						onSearch={openSearch}
 					/>
@@ -460,20 +458,6 @@ export default function MeScreen() {
 				isVisible={isCoverPreviewOpen && Boolean(coverImage)}
 				onChangeCover={changeCover}
 				onClose={() => setIsCoverPreviewOpen(false)}
-			/>
-
-			<MeEditProfileSheetHost
-				displayName={displayName}
-				isOpen={isEditOpen}
-				profile={profile}
-				user={currentUser}
-				onOpenChange={setIsEditOpen}
-				onSaved={async () => {
-					await profileQuery.refetch();
-					await activeFeed.refetch();
-					await queryClient.refetchQueries();
-					setIsEditOpen(false);
-				}}
 			/>
 
 			<MeNoteActionsSheet

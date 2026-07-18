@@ -1,5 +1,5 @@
 import type { Href } from "expo-router";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,12 +17,19 @@ import {
 	isRequestTimeoutError,
 	REQUEST_TIMEOUT_MESSAGE,
 } from "@/utils/request-timeout";
+import { getRouteParam } from "@/utils/route-params";
 
 export default function ForgotPasswordScreen() {
 	const router = useRouter();
+	const params = useLocalSearchParams<{
+		email?: string | string[];
+		mode?: string | string[];
+	}>();
 	const insets = useSafeAreaInsets();
 	const { toast } = useAppToast();
-	const [email, setEmail] = useState("");
+	const initialEmail = getRouteParam(params.email) ?? "";
+	const isPasswordSetup = getRouteParam(params.mode) === "set-password";
+	const [email, setEmail] = useState(initialEmail);
 	const [otp, setOtp] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -134,7 +141,7 @@ export default function ForgotPasswordScreen() {
 					},
 					onSuccess() {
 						toast.show({
-							label: "密码已重置",
+							label: isPasswordSetup ? "密码已设置" : "密码已重置",
 						});
 						router.replace("/login" as Href);
 					},
@@ -157,6 +164,10 @@ export default function ForgotPasswordScreen() {
 	};
 
 	const goLogin = () => {
+		if (isPasswordSetup) {
+			router.back();
+			return;
+		}
 		router.replace("/login" as Href);
 	};
 
@@ -179,15 +190,19 @@ export default function ForgotPasswordScreen() {
 					}}
 				>
 					<ForgotPasswordForm
+						backLabel={isPasswordSetup ? "返回账号与安全" : undefined}
 						confirmPassword={confirmPassword}
 						email={email}
 						errorMessage={errorMessage}
 						hasSent={hasSent}
+						isEmailLocked={isPasswordSetup}
+						isPasswordSetup={isPasswordSetup}
 						isResetting={isResetting}
 						isSendingOtp={isSendingOtp}
 						otp={otp}
 						password={password}
 						resendCooldown={resendCooldown}
+						title={isPasswordSetup ? "设置登录密码" : undefined}
 						onChangeConfirmPassword={setConfirmPassword}
 						onChangeEmail={setEmail}
 						onChangeOtp={setOtp}

@@ -11,7 +11,6 @@ import {
 import { Modal, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn, SlideInLeft } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Uniwind, useUniwind } from "uniwind";
 
 import { YouniMark } from "@/components/brand/youni-logo";
 import { AppSeparator } from "@/components/shared/app-separator";
@@ -60,8 +59,6 @@ export function ProfileMenuDrawer({
 	const insets = useSafeAreaInsets();
 	const { width } = useWindowDimensions();
 	const dangerColor = useThemeColor("danger");
-	const { theme } = useUniwind();
-	const isDark = theme === "dark";
 	const drawerWidth = Math.min(width * 0.82, 336);
 
 	const openRoute = (href: Href) => {
@@ -74,11 +71,6 @@ export function ProfileMenuDrawer({
 		fireHaptic();
 		onClose();
 		onSignOut();
-	};
-
-	const toggleAppearance = () => {
-		fireHaptic();
-		Uniwind.setTheme(isDark ? "light" : "dark");
 	};
 
 	return (
@@ -141,7 +133,6 @@ export function ProfileMenuDrawer({
 
 						<View className="gap-1 pt-3">
 							<AppSeparator className="mb-2" />
-							<AppearanceButton isDark={isDark} onPress={toggleAppearance} />
 							<DrawerButton
 								icon="settings-outline"
 								label="设置"
@@ -171,37 +162,6 @@ export function ProfileMenuDrawer({
 				</Animated.View>
 			</View>
 		</Modal>
-	);
-}
-
-function AppearanceButton({
-	isDark,
-	onPress,
-}: {
-	isDark: boolean;
-	onPress: () => void;
-}) {
-	const mutedColor = useThemeColor("muted");
-
-	return (
-		<Button
-			variant="ghost"
-			className="h-12 justify-start rounded-2xl px-3"
-			feedbackVariant="scale-ripple"
-			onPress={onPress}
-		>
-			<Ionicons
-				name={isDark ? "moon-outline" : "sunny-outline"}
-				size={22}
-				color={mutedColor}
-			/>
-			<Button.Label>外观</Button.Label>
-			<View className="ml-auto rounded-full bg-content2 px-2 py-1">
-				<Typography.Paragraph type="body-xs" color="muted">
-					{isDark ? "深色" : "浅色"}
-				</Typography.Paragraph>
-			</View>
-		</Button>
 	);
 }
 

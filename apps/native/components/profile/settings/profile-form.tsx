@@ -49,13 +49,12 @@ export function SettingsProfileForm({
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
 	useEffect(() => {
-		if (!profile) return;
-		setName(profile.name ?? "");
-		setHandle(profile.handle ?? "");
-		setBio(profile.bio ?? "");
-		setAvatarUrl(profile.image ?? user?.image ?? "");
+		setName(profile?.name ?? user?.name ?? "");
+		setHandle(profile?.handle ?? "");
+		setBio(profile?.bio ?? "");
+		setAvatarUrl(profile?.image ?? user?.image ?? "");
 		setGender(
-			profile.gender === "male" || profile.gender === "female"
+			profile?.gender === "male" || profile?.gender === "female"
 				? profile.gender
 				: "unknown",
 		);
@@ -66,6 +65,7 @@ export function SettingsProfileForm({
 			onSuccess: async () => {
 				await onProfileSaved();
 				await queryClient.refetchQueries();
+				toast.show({ variant: "success", label: "个人资料已保存" });
 			},
 			onError: (error) => {
 				if (isRequestTimeoutError(error)) return;
@@ -116,7 +116,7 @@ export function SettingsProfileForm({
 		<Surface className="gap-4 rounded-3xl p-4">
 			<View className="flex-row items-center justify-between gap-3">
 				<View className="min-w-0 flex-1">
-					<Typography.Paragraph weight="bold">编辑主页</Typography.Paragraph>
+					<Typography.Paragraph weight="bold">个人资料</Typography.Paragraph>
 				</View>
 				<EditableAvatar
 					alt={name || displayName}

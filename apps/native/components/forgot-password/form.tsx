@@ -18,15 +18,19 @@ import { AppHeading } from "@/components/shared/app-heading";
 const StyledIonicons = withUniwind(Ionicons);
 
 export function ForgotPasswordForm({
+	backLabel = "返回登录",
 	confirmPassword,
 	email,
 	errorMessage,
 	hasSent,
+	isEmailLocked = false,
+	isPasswordSetup = false,
 	isResetting,
 	isSendingOtp,
 	otp,
 	password,
 	resendCooldown,
+	title = "找回密码",
 	onChangeConfirmPassword,
 	onChangeEmail,
 	onChangeOtp,
@@ -35,15 +39,19 @@ export function ForgotPasswordForm({
 	onResetPassword,
 	onSendOtp,
 }: {
+	backLabel?: string;
 	confirmPassword: string;
 	email: string;
 	errorMessage: null | string;
 	hasSent: boolean;
+	isEmailLocked?: boolean;
+	isPasswordSetup?: boolean;
 	isResetting: boolean;
 	isSendingOtp: boolean;
 	otp: string;
 	password: string;
 	resendCooldown: number;
+	title?: string;
 	onChangeConfirmPassword: (value: string) => void;
 	onChangeEmail: (value: string) => void;
 	onChangeOtp: (value: string) => void;
@@ -61,7 +69,7 @@ export function ForgotPasswordForm({
 				<YouniMark size={42} />
 				<View className="items-center gap-1">
 					<AppHeading type="h1" align="center" className="text-foreground">
-						找回密码
+						{title}
 					</AppHeading>
 				</View>
 			</View>
@@ -76,6 +84,7 @@ export function ForgotPasswordForm({
 				{hasSent ? (
 					<SentCodeNotice
 						email={email}
+						isPasswordSetup={isPasswordSetup}
 						isResetting={isResetting}
 						isSendingOtp={isSendingOtp}
 						resendCooldown={resendCooldown}
@@ -95,7 +104,7 @@ export function ForgotPasswordForm({
 						textContentType="emailAddress"
 						returnKeyType="send"
 						onSubmitEditing={hasSent ? undefined : onSendOtp}
-						editable={!hasSent}
+						editable={!hasSent && !isEmailLocked}
 					/>
 				</TextField>
 
@@ -164,7 +173,7 @@ export function ForgotPasswordForm({
 						size={18}
 						className="text-muted"
 					/>
-					<Button.Label>返回登录</Button.Label>
+					<Button.Label>{backLabel}</Button.Label>
 				</Button>
 			</View>
 		</View>
@@ -173,12 +182,14 @@ export function ForgotPasswordForm({
 
 function SentCodeNotice({
 	email,
+	isPasswordSetup,
 	isResetting,
 	isSendingOtp,
 	onSendOtp,
 	resendCooldown,
 }: {
 	email: string;
+	isPasswordSetup: boolean;
 	isResetting: boolean;
 	isSendingOtp: boolean;
 	onSendOtp: () => void;
@@ -193,7 +204,9 @@ function SentCodeNotice({
 					className="text-success"
 				/>
 				<Typography.Paragraph type="body-sm" color="muted">
-					如果 {email.trim()} 已注册，你会收到验证码邮件。
+					{isPasswordSetup
+						? `验证码已发送至 ${email.trim()}。`
+						: `如果 ${email.trim()} 已注册，你会收到验证码邮件。`}
 				</Typography.Paragraph>
 			</View>
 			<Button

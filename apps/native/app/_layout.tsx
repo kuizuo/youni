@@ -17,8 +17,14 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { HeroUINativeProvider, useThemeColor } from "heroui-native";
-import { type ReactNode, useCallback, useEffect, useMemo } from "react";
-import { Appearance, LogBox } from "react-native";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
+import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
 	KeyboardAvoidingView,
@@ -28,10 +34,11 @@ import {
 	SafeAreaProvider,
 	useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { useUniwind } from "uniwind";
+import { Uniwind, useUniwind } from "uniwind";
 
 import { AppLayout } from "@/components/shared/app-layout";
 import { AnonymousSessionBridge } from "@/lib/anonymous-session-bridge";
+import { getAppearancePreference } from "@/lib/appearance-preference";
 import { PushNotificationBridge } from "@/lib/notifications/push-notification-bridge";
 import { ReactNativeQueryProvider } from "@/lib/query/react-native-query";
 import { useAppToast } from "@/utils/app-toast";
@@ -77,11 +84,10 @@ function AppContent() {
 	}, [backgroundColor, theme]);
 	const toastInsets = getAppToastInsets(safeAreaInsets);
 	useEffect(() => {
-		Appearance.setColorScheme(theme === "dark" ? "dark" : "light");
 		SystemUI.setBackgroundColorAsync(systemBackgroundColor).catch(
 			(): void => {},
 		);
-	}, [systemBackgroundColor, theme]);
+	}, [systemBackgroundColor]);
 	const toastContentWrapper = useCallback(
 		(children: ReactNode) => (
 			<KeyboardAvoidingView
@@ -135,6 +141,7 @@ function AppContent() {
 }
 
 export default function Layout() {
+	const [isAppearanceReady, setIsAppearanceReady] = useState(false);
 	const [fontsLoaded, fontError] = useFonts({
 		Nunito_300Light,
 		Nunito_400Regular,
@@ -143,12 +150,29 @@ export default function Layout() {
 		Nunito_700Bold,
 	});
 
+	useEffect(() => {
+		let isCanceled = false;
+		getAppearancePreference()
+			.then((preference) => {
+				if (!isCanceled) Uniwind.setTheme(preference);
+			})
+			.catch(() => {
+				if (!isCanceled) Uniwind.setTheme("system");
+			})
+			.finally(() => {
+				if (!isCanceled) setIsAppearanceReady(true);
+			});
+		return () => {
+			isCanceled = true;
+		};
+	}, []);
+
 	useEffect((): void => {
-		if (fontsLoaded || fontError !== null) {
+		if ((fontsLoaded || fontError !== null) && isAppearanceReady) {
 			SplashScreen.hideAsync().catch((): void => {});
 		}
-	}, [fontsLoaded, fontError]);
-	if (!fontsLoaded && fontError === null) {
+	}, [fontsLoaded, fontError, isAppearanceReady]);
+	if ((!fontsLoaded && fontError === null) || !isAppearanceReady) {
 		return null;
 	}
 

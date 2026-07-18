@@ -1,83 +1,25 @@
-import { isRunningInExpoGo } from "expo";
-import Constants from "expo-constants";
 import { router } from "expo-router";
-import { useEffect, useRef } from "react";
-import { Platform } from "react-native";
+import { useEffect } from "react";
 
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
+import {
+	canUseRemoteNotifications,
+	loadNotifications,
+	registerCurrentDevicePushToken,
+} from "@/lib/notifications/push-notifications";
 import {
 	getNotificationIntent,
 	type NotificationData,
 	toSocialHref,
 } from "@/lib/social/navigation-intents";
-import { client } from "@/utils/orpc";
-
-type NotificationsModule = typeof import("expo-notifications");
-
-let notificationsModulePromise: null | Promise<NotificationsModule> = null;
-
-function canUseRemoteNotifications() {
-	return Platform.OS !== "web" && !isRunningInExpoGo();
-}
-
-function loadNotifications() {
-	notificationsModulePromise ??= import("expo-notifications");
-	return notificationsModulePromise;
-}
-
-function getPlatform() {
-	if (Platform.OS === "android" || Platform.OS === "ios") {
-		return Platform.OS;
-	}
-	if (Platform.OS === "web") {
-		return "web";
-	}
-	return "unknown";
-}
-
-function hasNotificationPermission(value: unknown) {
-	return (value as { granted?: boolean }).granted === true;
-}
 
 function openNotificationTarget(data: NotificationData) {
 	router.push(toSocialHref(getNotificationIntent(data)));
 }
 
-async function getExpoPushToken(Notifications: NotificationsModule) {
-	if (Platform.OS === "android") {
-		await Notifications.setNotificationChannelAsync("default", {
-			name: "Youni 通知",
-			importance: Notifications.AndroidImportance.HIGH,
-			lightColor: "#FF4D6D",
-			sound: "default",
-			vibrationPattern: [0, 250, 250, 250],
-		});
-	}
-
-	const currentPermission = await Notifications.getPermissionsAsync();
-	const permission = hasNotificationPermission(currentPermission)
-		? currentPermission
-		: await Notifications.requestPermissionsAsync();
-
-	if (!hasNotificationPermission(permission)) {
-		return null;
-	}
-
-	const projectId =
-		Constants.easConfig?.projectId ??
-		Constants.expoConfig?.extra?.eas?.projectId;
-	if (!projectId) {
-		throw new Error("Expo project ID is missing");
-	}
-
-	const token = await Notifications.getExpoPushTokenAsync({ projectId });
-	return token.data;
-}
-
 export function PushNotificationBridge() {
 	const session = authClient.useSession();
-	const registeredTokenRef = useRef<null | string>(null);
 	const userId = isRegisteredUser(session.data?.user)
 		? session.data?.user.id
 		: undefined;
@@ -136,18 +78,9 @@ export function PushNotificationBridge() {
 		let isCanceled = false;
 		let tokenSubscription: undefined | { remove: () => void };
 
-		async function registerToken(Notifications: NotificationsModule) {
+		async function registerToken() {
 			try {
-				const token = await getExpoPushToken(Notifications);
-				if (!token || isCanceled || registeredTokenRef.current === token) {
-					return;
-				}
-
-				await client.notifications.registerPushToken({
-					token,
-					platform: getPlatform(),
-				});
-				registeredTokenRef.current = token;
+				await registerCurrentDevicePushToken();
 			} catch (error) {
 				console.warn("Push notification registration failed", error);
 			}
@@ -158,9 +91,9 @@ export function PushNotificationBridge() {
 				const Notifications = await loadNotifications();
 				if (isCanceled) return;
 
-				await registerToken(Notifications);
+				await registerToken();
 				tokenSubscription = Notifications.addPushTokenListener(() => {
-					void registerToken(Notifications);
+					void registerToken();
 				});
 			} catch (error) {
 				console.warn("Push notification setup failed", error);

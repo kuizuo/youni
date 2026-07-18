@@ -47,6 +47,19 @@ export function BlockedUsersCard() {
 					<View className="items-center py-3">
 						<Spinner size="sm" />
 					</View>
+				) : blockedUsers.isError ? (
+					<View className="items-start gap-2 py-1">
+						<Typography.Paragraph selectable color="muted" type="body-sm">
+							黑名单加载失败，请重试。
+						</Typography.Paragraph>
+						<Button
+							size="sm"
+							variant="secondary"
+							onPress={() => void blockedUsers.refetch()}
+						>
+							<Button.Label>重新加载</Button.Label>
+						</Button>
+					</View>
 				) : blockedUsers.data?.length ? (
 					<View className="gap-2">
 						{blockedUsers.data.map((item) => (
