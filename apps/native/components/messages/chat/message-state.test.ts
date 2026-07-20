@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
+import type { ConversationItem } from "@youni/api/contracts/messages";
 
-import { type ChatListMessage, mergeChatMessages } from "./message-state";
+import {
+	type ChatListMessage,
+	markConversationRead,
+	mergeChatMessages,
+} from "./message-state";
 
 const sentAt = new Date("2026-07-17T10:00:00.000Z");
 
@@ -19,6 +24,44 @@ describe("mergeChatMessages", () => {
 			mergeChatMessages([{ ...local, deliveryStatus: undefined }], [local]),
 		).toEqual([{ ...local, deliveryStatus: undefined }]);
 	});
+});
+
+test("opening a chat clears only that conversation's unread count", () => {
+	const conversations: ConversationItem[] = [
+		{
+			id: "chat-1",
+			lastMessage: null,
+			peer: {
+				bio: null,
+				email: "one@example.com",
+				handle: null,
+				id: "user-1",
+				image: null,
+				name: "用户一",
+			},
+			unreadCount: 2,
+			updatedAt: sentAt,
+		},
+		{
+			id: "chat-2",
+			lastMessage: null,
+			peer: {
+				bio: null,
+				email: "two@example.com",
+				handle: null,
+				id: "user-2",
+				image: null,
+				name: "用户二",
+			},
+			unreadCount: 3,
+			updatedAt: sentAt,
+		},
+	];
+
+	expect(markConversationRead(conversations, "chat-1")).toEqual([
+		{ ...conversations[0], unreadCount: 0 },
+		conversations[1],
+	]);
 });
 
 test("first message keeps the current chat screen mounted", async () => {

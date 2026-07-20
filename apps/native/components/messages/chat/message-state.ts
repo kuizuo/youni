@@ -1,4 +1,7 @@
-import type { ChatMessage } from "@youni/api/contracts/messages";
+import type {
+	ChatMessage,
+	ConversationItem,
+} from "@youni/api/contracts/messages";
 
 export type ChatMessageDeliveryStatus = "failed" | "pending";
 
@@ -15,4 +18,15 @@ export function mergeChatMessages(
 		...serverMessages,
 		...outgoingMessages.filter((message) => !serverIds.has(message.id)),
 	];
+}
+
+export function markConversationRead(
+	conversations: ConversationItem[],
+	conversationId: string,
+) {
+	return conversations.map((conversation) =>
+		conversation.id === conversationId
+			? { ...conversation, unreadCount: 0 }
+			: conversation,
+	);
 }

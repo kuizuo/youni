@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import type { ConversationItem } from "@youni/api/contracts/messages";
 import type { NotificationSummaryGroup } from "@youni/api/contracts/notifications";
 import type { Href } from "expo-router";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Spinner } from "heroui-native";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -35,6 +35,7 @@ export default function MessagesScreen() {
 		refetchOnWindowFocus: false,
 		staleTime: 30_000,
 	});
+	const refetchConversations = conversations.refetch;
 	const notificationSummary = useQuery({
 		...orpc.notifications.summary.queryOptions(),
 		enabled: isAuthenticated,
@@ -45,6 +46,13 @@ export default function MessagesScreen() {
 	const items: ConversationItem[] = conversations.data ?? [];
 	const messageGroups: NotificationSummaryGroup[] =
 		notificationSummary.data?.messageGroups ?? [];
+
+	useFocusEffect(
+		useCallback(() => {
+			if (!isAuthenticated) return;
+			void refetchConversations();
+		}, [isAuthenticated, refetchConversations]),
+	);
 
 	const openAction = (href: Href) => {
 		fireHaptic();

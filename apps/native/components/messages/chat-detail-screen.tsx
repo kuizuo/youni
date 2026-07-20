@@ -1,5 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ChatMessage, ChatPeer } from "@youni/api/contracts/messages";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+	ChatMessage,
+	ChatPeer,
+	ConversationItem,
+} from "@youni/api/contracts/messages";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -17,6 +21,7 @@ import { ChatInputBar } from "@/components/messages/chat/input-bar";
 import { ChatMessageList } from "@/components/messages/chat/message-list";
 import {
 	type ChatListMessage,
+	markConversationRead,
 	mergeChatMessages,
 } from "@/components/messages/chat/message-state";
 import { isRegisteredUser } from "@/lib/anonymous-session";
@@ -42,6 +47,7 @@ export default function ChatDetailScreen() {
 	const routeConversationId = getRouteParam(params.id) ?? "";
 	const draftUserId = getRouteParam(params.userId) ?? "";
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const insets = useSafeAreaInsets();
 	const session = authClient.useSession();
 	const socialNavigation = useSocialNavigation();
@@ -97,6 +103,7 @@ export default function ChatDetailScreen() {
 		}),
 		enabled: Boolean(conversationId && isAuthenticated),
 		refetchInterval: 2500,
+		refetchOnMount: "always",
 	});
 	const sendMutation = useMutation(orpc.messages.send.mutationOptions());
 	const serverMessages: ChatMessage[] = chat.data?.messages ?? [];
@@ -118,6 +125,17 @@ export default function ChatDetailScreen() {
 			!sendMutation.isPending &&
 			content.trim().length > 0,
 	);
+
+	useEffect(() => {
+		if (!conversationId || !chat.isFetchedAfterMount || !chat.isSuccess) return;
+
+		const conversationsQuery = orpc.messages.conversations.queryOptions();
+		queryClient.setQueryData<ConversationItem[]>(
+			conversationsQuery.queryKey,
+			(current) =>
+				current ? markConversationRead(current, conversationId) : current,
+		);
+	}, [chat.isFetchedAfterMount, chat.isSuccess, conversationId, queryClient]);
 
 	useEffect(() => {
 		const updateKeyboardHeight = (event: KeyboardEvent) => {
