@@ -42,11 +42,11 @@ const allowedCorsOrigins = new Set([
 	...(isProduction
 		? []
 		: [
-				"http://localhost:3001",
-				"http://127.0.0.1:3001",
-				"http://localhost:8081",
-				"http://127.0.0.1:8081",
-			]),
+			"http://localhost:3001",
+			"http://127.0.0.1:3001",
+			"http://localhost:8081",
+			"http://127.0.0.1:8081",
+		]),
 ]);
 const avatarPrefix = "avatar/";
 const avatarMaxSize = 2 * 1024 * 1024;
@@ -489,6 +489,7 @@ app.get("/uploads/note-images/:userId/:fileName", async (c) => {
 export const apiHandler = new OpenAPIHandler(appRouter, {
 	plugins: [
 		new OpenAPIReferencePlugin({
+			docsTitle: "Youni API Docs",
 			schemaConverters: [new ZodToJsonSchemaConverter()],
 		}),
 	],
