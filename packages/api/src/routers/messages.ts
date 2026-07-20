@@ -4,11 +4,23 @@ import {
 	directConversation,
 	directConversationParticipant,
 	directMessage,
+	directMessageUserDeletion,
 	follow,
 	user,
 	userBlock,
 } from "@youni/db/schema/index";
-import { and, count, desc, eq, exists, gt, ne } from "drizzle-orm";
+import {
+	and,
+	count,
+	desc,
+	eq,
+	exists,
+	gt,
+	isNull,
+	ne,
+	notExists,
+	or,
+} from "drizzle-orm";
 import { activeUserProcedure, protectedProcedure } from "../index";
 import { notifyMessage } from "../lib/notifications";
 import { hasMessagingBlock, setUserBlocked } from "../lib/users/blocks";
@@ -25,8 +37,10 @@ async function assertParticipant(conversationId: string, userId: string) {
 	const [participant] = await createDb()
 		.select({
 			conversationId: directConversationParticipant.conversationId,
-			clearedAt: directConversationParticipant.clearedAt,
-			lastReadAt: directConversationParticipant.lastReadAt,
+			clearedThroughMessageId:
+				directConversationParticipant.clearedThroughMessageId,
+			lastReadMessageId: directConversationParticipant.lastReadMessageId,
+			userId: directConversationParticipant.userId,
 		})
 		.from(directConversationParticipant)
 		.where(
@@ -44,21 +58,97 @@ async function assertParticipant(conversationId: string, userId: string) {
 	return participant;
 }
 
-function getVisibleMessageWhere(
-	conversationId: string,
-	clearedAt: Date | null,
-) {
-	const conversationWhere = eq(directMessage.conversationId, conversationId);
-	if (!clearedAt) return conversationWhere;
-	return and(conversationWhere, gt(directMessage.createdAt, clearedAt));
+type MessagePosition = Pick<
+	typeof directMessage.$inferSelect,
+	"createdAt" | "id"
+>;
+
+async function getMessagePosition(messageId: string | null) {
+	if (!messageId) return null;
+	const [position] = await createDb()
+		.select({ createdAt: directMessage.createdAt, id: directMessage.id })
+		.from(directMessage)
+		.where(eq(directMessage.id, messageId))
+		.limit(1);
+	return position ?? null;
 }
 
-function getLatestDate(...dates: Array<Date | null>) {
-	return dates.reduce<Date | null>((latest, date) => {
-		if (!date) return latest;
-		if (!latest || date.getTime() > latest.getTime()) return date;
-		return latest;
-	}, null);
+export function isMessageAfter(
+	message: MessagePosition,
+	cursor: MessagePosition,
+) {
+	const timeDifference =
+		message.createdAt.getTime() - cursor.createdAt.getTime();
+	return timeDifference > 0 || (timeDifference === 0 && message.id > cursor.id);
+}
+
+function isAfterCursor(cursor: MessagePosition) {
+	return or(
+		gt(directMessage.createdAt, cursor.createdAt),
+		and(
+			eq(directMessage.createdAt, cursor.createdAt),
+			gt(directMessage.id, cursor.id),
+		),
+	);
+}
+
+function getLaterPosition(
+	left: MessagePosition | null,
+	right: MessagePosition | null,
+) {
+	if (!left) return right;
+	if (!right) return left;
+	return isMessageAfter(left, right) ? left : right;
+}
+
+function getVisibleMessageWhere(
+	conversationId: string,
+	clearedThrough: MessagePosition | null,
+	viewerId: string,
+) {
+	const conversationWhere = eq(directMessage.conversationId, conversationId);
+	const visibleToViewer = notExists(
+		createDb()
+			.select({ messageId: directMessageUserDeletion.messageId })
+			.from(directMessageUserDeletion)
+			.where(
+				and(
+					eq(directMessageUserDeletion.messageId, directMessage.id),
+					eq(directMessageUserDeletion.userId, viewerId),
+				),
+			),
+	);
+	if (!clearedThrough) return and(conversationWhere, visibleToViewer);
+	return and(conversationWhere, visibleToViewer, isAfterCursor(clearedThrough));
+}
+
+async function advanceLastReadMessage(
+	participant: Awaited<ReturnType<typeof assertParticipant>>,
+	candidate: MessagePosition,
+) {
+	const currentPosition = await getMessagePosition(
+		participant.lastReadMessageId,
+	);
+	if (currentPosition && !isMessageAfter(candidate, currentPosition)) return;
+
+	await createDb()
+		.update(directConversationParticipant)
+		.set({ lastReadMessageId: candidate.id, updatedAt: new Date() })
+		.where(
+			and(
+				eq(
+					directConversationParticipant.conversationId,
+					participant.conversationId,
+				),
+				eq(directConversationParticipant.userId, participant.userId),
+				participant.lastReadMessageId
+					? eq(
+							directConversationParticipant.lastReadMessageId,
+							participant.lastReadMessageId,
+						)
+					: isNull(directConversationParticipant.lastReadMessageId),
+			),
+		);
 }
 
 async function getPeer(conversationId: string, viewerId: string) {
@@ -162,14 +252,12 @@ async function ensureConversation(viewerId: string, peerId: string) {
 			{
 				conversationId: conversation.id,
 				userId: viewerId,
-				lastReadAt: now,
 				createdAt: now,
 				updatedAt: now,
 			},
 			{
 				conversationId: conversation.id,
 				userId: peerId,
-				lastReadAt: null,
 				createdAt: now,
 				updatedAt: now,
 			},
@@ -272,9 +360,10 @@ export const messagesRouter = {
 			const rows = await db
 				.select({
 					id: directConversation.id,
-					clearedAt: directConversationParticipant.clearedAt,
 					updatedAt: directConversation.updatedAt,
-					lastReadAt: directConversationParticipant.lastReadAt,
+					clearedThroughMessageId:
+						directConversationParticipant.clearedThroughMessageId,
+					lastReadMessageId: directConversationParticipant.lastReadMessageId,
 				})
 				.from(directConversationParticipant)
 				.innerJoin(
@@ -284,23 +373,15 @@ export const messagesRouter = {
 						directConversation.id,
 					),
 				)
-				.where(
-					and(
-						eq(directConversationParticipant.userId, viewerId),
-						exists(
-							db
-								.select({ id: directMessage.id })
-								.from(directMessage)
-								.where(eq(directMessage.conversationId, directConversation.id)),
-						),
-					),
-				)
-				.orderBy(desc(directConversation.updatedAt))
-				.limit(60);
+				.where(eq(directConversationParticipant.userId, viewerId));
 
-			return Promise.all(
+			const conversations = await Promise.all(
 				rows.map(async (row) => {
-					const unreadAfter = getLatestDate(row.lastReadAt, row.clearedAt);
+					const [clearedThrough, lastRead] = await Promise.all([
+						getMessagePosition(row.clearedThroughMessageId),
+						getMessagePosition(row.lastReadMessageId),
+					]);
+					const unreadAfter = getLaterPosition(lastRead, clearedThrough);
 					const [peer, [lastMessage], [unread]] = await Promise.all([
 						getPeer(row.id, viewerId),
 						db
@@ -311,23 +392,18 @@ export const messagesRouter = {
 								createdAt: directMessage.createdAt,
 							})
 							.from(directMessage)
-							.where(getVisibleMessageWhere(row.id, row.clearedAt))
-							.orderBy(desc(directMessage.createdAt))
+							.where(getVisibleMessageWhere(row.id, clearedThrough, viewerId))
+							.orderBy(desc(directMessage.createdAt), desc(directMessage.id))
 							.limit(1),
 						db
 							.select({ value: count() })
 							.from(directMessage)
 							.where(
-								unreadAfter
-									? and(
-											eq(directMessage.conversationId, row.id),
-											ne(directMessage.senderId, viewerId),
-											gt(directMessage.createdAt, unreadAfter),
-										)
-									: and(
-											eq(directMessage.conversationId, row.id),
-											ne(directMessage.senderId, viewerId),
-										),
+								and(
+									getVisibleMessageWhere(row.id, clearedThrough, viewerId),
+									ne(directMessage.senderId, viewerId),
+									unreadAfter ? isAfterCursor(unreadAfter) : undefined,
+								),
 							),
 					]);
 
@@ -336,10 +412,21 @@ export const messagesRouter = {
 						peer,
 						lastMessage: lastMessage ?? null,
 						unreadCount: toNumber(unread?.value),
-						updatedAt: row.updatedAt,
+						updatedAt: lastMessage?.createdAt ?? row.updatedAt,
 					};
 				}),
 			);
+
+			return conversations
+				.sort((left, right) => {
+					const timeDifference =
+						right.updatedAt.getTime() - left.updatedAt.getTime();
+					if (timeDifference !== 0) return timeDifference;
+					return (right.lastMessage?.id ?? right.id).localeCompare(
+						left.lastMessage?.id ?? left.id,
+					);
+				})
+				.slice(0, 60);
 		},
 	),
 
@@ -348,6 +435,9 @@ export const messagesRouter = {
 		const participant = await assertParticipant(input.conversationId, viewerId);
 
 		const db = createDb();
+		const clearedThrough = await getMessagePosition(
+			participant.clearedThroughMessageId,
+		);
 		const [state, rows] = await Promise.all([
 			getConversationState(input.conversationId, viewerId),
 			db
@@ -359,24 +449,20 @@ export const messagesRouter = {
 				})
 				.from(directMessage)
 				.where(
-					getVisibleMessageWhere(input.conversationId, participant.clearedAt),
+					getVisibleMessageWhere(
+						input.conversationId,
+						clearedThrough,
+						viewerId,
+					),
 				)
-				.orderBy(desc(directMessage.createdAt))
+				.orderBy(desc(directMessage.createdAt), desc(directMessage.id))
 				.limit(input.limit),
 		]);
 
-		await db
-			.update(directConversationParticipant)
-			.set({ lastReadAt: new Date(), updatedAt: new Date() })
-			.where(
-				and(
-					eq(
-						directConversationParticipant.conversationId,
-						input.conversationId,
-					),
-					eq(directConversationParticipant.userId, viewerId),
-				),
-			);
+		const newestDisplayedMessage = rows[0];
+		if (newestDisplayedMessage) {
+			await advanceLastReadMessage(participant, newestDisplayedMessage);
+		}
 
 		return {
 			id: input.conversationId,
@@ -422,10 +508,21 @@ export const messagesRouter = {
 		async ({ input, context }) => {
 			const viewerId = context.session.user.id;
 			await assertParticipant(input.conversationId, viewerId);
+			const db = createDb();
+			const [latestMessage] = await db
+				.select({ id: directMessage.id })
+				.from(directMessage)
+				.where(eq(directMessage.conversationId, input.conversationId))
+				.orderBy(desc(directMessage.createdAt), desc(directMessage.id))
+				.limit(1);
 			const now = new Date();
-			await createDb()
+			await db
 				.update(directConversationParticipant)
-				.set({ clearedAt: now, lastReadAt: now, updatedAt: now })
+				.set({
+					clearedThroughMessageId: latestMessage?.id ?? null,
+					lastReadMessageId: latestMessage?.id ?? null,
+					updatedAt: now,
+				})
 				.where(
 					and(
 						eq(
@@ -436,7 +533,34 @@ export const messagesRouter = {
 					),
 				);
 
-			return { clearedAt: now, ok: true };
+			return { ok: true };
+		},
+	),
+
+	deleteForMe: activeUserProcedure.messages.deleteForMe.handler(
+		async ({ input, context }) => {
+			const viewerId = context.session.user.id;
+			await assertParticipant(input.conversationId, viewerId);
+			const db = createDb();
+			const [message] = await db
+				.select({ id: directMessage.id })
+				.from(directMessage)
+				.where(
+					and(
+						eq(directMessage.id, input.messageId),
+						eq(directMessage.conversationId, input.conversationId),
+					),
+				)
+				.limit(1);
+
+			if (!message) throw new ORPCError("NOT_FOUND");
+
+			await db
+				.insert(directMessageUserDeletion)
+				.values({ messageId: message.id, userId: viewerId })
+				.onConflictDoNothing();
+
+			return { ok: true };
 		},
 	),
 
@@ -511,7 +635,7 @@ export const messagesRouter = {
 					.where(eq(directConversation.id, conversationId)),
 				db
 					.update(directConversationParticipant)
-					.set({ lastReadAt: now, updatedAt: now })
+					.set({ lastReadMessageId: message.id, updatedAt: now })
 					.where(
 						and(
 							eq(directConversationParticipant.conversationId, conversationId),

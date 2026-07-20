@@ -477,22 +477,6 @@ export async function seedDatabase(database?: D1Database) {
 		createdAt: minutesAgo(40),
 		updatedAt: minutesAgo(28),
 	});
-	await db.insert(directConversationParticipant).values([
-		{
-			conversationId,
-			userId: test,
-			lastReadAt: minutesAgo(28),
-			createdAt: minutesAgo(40),
-			updatedAt: minutesAgo(28),
-		},
-		{
-			conversationId,
-			userId: lin,
-			lastReadAt: null,
-			createdAt: minutesAgo(40),
-			updatedAt: minutesAgo(28),
-		},
-	]);
 	await db.insert(directMessage).values([
 		{
 			id: "seed-message-walk-1",
@@ -516,6 +500,22 @@ export async function seedDatabase(database?: D1Database) {
 			senderId: lin,
 			content: "那就五点见，我带一杯咖啡过去。",
 			createdAt: minutesAgo(28),
+			updatedAt: minutesAgo(28),
+		},
+	]);
+	await db.insert(directConversationParticipant).values([
+		{
+			conversationId,
+			userId: test,
+			lastReadMessageId: "seed-message-walk-3",
+			createdAt: minutesAgo(40),
+			updatedAt: minutesAgo(28),
+		},
+		{
+			conversationId,
+			userId: lin,
+			lastReadMessageId: null,
+			createdAt: minutesAgo(40),
 			updatedAt: minutesAgo(28),
 		},
 	]);

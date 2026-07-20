@@ -13,6 +13,8 @@ export function ChatMessageList({
 	isLoading,
 	messages,
 	onDismissInputPanel,
+	onCopyMessage,
+	onDeleteMessage,
 	onRetry,
 	onRetryMessage,
 }: {
@@ -21,6 +23,8 @@ export function ChatMessageList({
 	isLoading: boolean;
 	messages: ChatListMessage[];
 	onDismissInputPanel: () => void;
+	onCopyMessage: (message: ChatListMessage) => void;
+	onDeleteMessage: (message: ChatListMessage) => void;
 	onRetry: () => void;
 	onRetryMessage: (message: ChatListMessage) => void;
 }) {
@@ -50,6 +54,8 @@ export function ChatMessageList({
 				<MessageBubble
 					item={item}
 					isMine={item.senderId === currentUserId}
+					onCopy={() => onCopyMessage(item)}
+					onDelete={() => onDeleteMessage(item)}
 					onRetry={
 						item.deliveryStatus === "failed"
 							? () => onRetryMessage(item)

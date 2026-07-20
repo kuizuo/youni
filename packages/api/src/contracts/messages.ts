@@ -14,6 +14,10 @@ export const conversationActionInput = z.object({
 	conversationId: z.string().min(1),
 });
 
+export const deleteForMeInput = conversationActionInput.extend({
+	messageId: z.string().min(1),
+});
+
 export const blockInput = conversationActionInput.extend({
 	blocked: z.boolean(),
 });
@@ -86,7 +90,8 @@ export type MessagesOutputs = {
 		id: string;
 	};
 	setBlocked: { blocked: boolean; isBlockedByPeer: boolean };
-	clear: { clearedAt: Date; ok: boolean };
+	clear: { ok: boolean };
+	deleteForMe: { ok: boolean };
 	send: { conversationId: string; message: ChatMessage };
 };
 
@@ -109,6 +114,9 @@ export const messagesContract = {
 	clear: procedure
 		.input(conversationActionInput)
 		.output(output<MessagesOutputs["clear"]>()),
+	deleteForMe: procedure
+		.input(deleteForMeInput)
+		.output(output<MessagesOutputs["deleteForMe"]>()),
 	send: procedure
 		.input(sendMessageInput)
 		.output(output<MessagesOutputs["send"]>()),

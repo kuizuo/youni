@@ -1,6 +1,15 @@
 import { describe, expect, test } from "bun:test";
 
-import { sendMessageInput } from "./messages";
+import { deleteForMeInput, sendMessageInput } from "./messages";
+
+test("deleteForMeInput requires both the chat and message", () => {
+	expect(
+		deleteForMeInput.parse({ conversationId: "chat-1", messageId: "msg-1" }),
+	).toEqual({ conversationId: "chat-1", messageId: "msg-1" });
+	expect(deleteForMeInput.safeParse({ conversationId: "chat-1" }).success).toBe(
+		false,
+	);
+});
 
 describe("sendMessageInput", () => {
 	test("accepts exactly one chat target", () => {

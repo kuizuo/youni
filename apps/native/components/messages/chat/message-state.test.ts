@@ -24,6 +24,18 @@ describe("mergeChatMessages", () => {
 			mergeChatMessages([{ ...local, deliveryStatus: undefined }], [local]),
 		).toEqual([{ ...local, deliveryStatus: undefined }]);
 	});
+
+	test("hides a message immediately and restores it when deletion fails", () => {
+		const message: ChatListMessage = {
+			content: "需要删除的消息",
+			createdAt: sentAt,
+			id: "message-1",
+			senderId: "me",
+		};
+
+		expect(mergeChatMessages([message], [], new Set([message.id]))).toEqual([]);
+		expect(mergeChatMessages([message], [], new Set())).toEqual([message]);
+	});
 });
 
 test("opening a chat clears only that conversation's unread count", () => {

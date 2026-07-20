@@ -20,6 +20,7 @@ export default defineConfig({
 		"direct_conversation",
 		"direct_conversation_participant",
 		"direct_message",
+		"direct_message_user_deletion",
 		"follow",
 		"note",
 		"note_collection",

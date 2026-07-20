@@ -29,32 +29,6 @@ export const directConversation = sqliteTable(
 	],
 );
 
-export const directConversationParticipant = sqliteTable(
-	"direct_conversation_participant",
-	{
-		conversationId: text("conversation_id")
-			.notNull()
-			.references(() => directConversation.id, { onDelete: "cascade" }),
-		userId: text("user_id")
-			.notNull()
-			.references(() => user.id, { onDelete: "cascade" }),
-		lastReadAt: timestampColumn("last_read_at"),
-		clearedAt: timestampColumn("cleared_at"),
-		createdAt: timestampColumn("created_at").defaultNow().notNull(),
-		updatedAt: timestampColumn("updated_at")
-			.defaultNow()
-			.$onUpdate(() => /* @__PURE__ */ new Date())
-			.notNull(),
-	},
-	(table) => [
-		primaryKey({ columns: [table.conversationId, table.userId] }),
-		index("direct_conversation_participant_user_idx").on(
-			table.userId,
-			table.updatedAt,
-		),
-	],
-);
-
 export const directMessage = sqliteTable(
 	"direct_message",
 	{
@@ -78,8 +52,61 @@ export const directMessage = sqliteTable(
 		index("direct_message_conversation_created_idx").on(
 			table.conversationId,
 			table.createdAt,
+			table.id,
 		),
 		index("direct_message_sender_idx").on(table.senderId),
+	],
+);
+
+export const directConversationParticipant = sqliteTable(
+	"direct_conversation_participant",
+	{
+		conversationId: text("conversation_id")
+			.notNull()
+			.references(() => directConversation.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		lastReadMessageId: text("last_read_message_id").references(
+			() => directMessage.id,
+			{ onDelete: "set null" },
+		),
+		clearedThroughMessageId: text("cleared_through_message_id").references(
+			() => directMessage.id,
+			{ onDelete: "set null" },
+		),
+		createdAt: timestampColumn("created_at").defaultNow().notNull(),
+		updatedAt: timestampColumn("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.conversationId, table.userId] }),
+		index("direct_conversation_participant_user_idx").on(
+			table.userId,
+			table.updatedAt,
+		),
+	],
+);
+
+export const directMessageUserDeletion = sqliteTable(
+	"direct_message_user_deletion",
+	{
+		messageId: text("message_id")
+			.notNull()
+			.references(() => directMessage.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		deletedAt: timestampColumn("deleted_at").defaultNow().notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.messageId, table.userId] }),
+		index("direct_message_user_deletion_user_idx").on(
+			table.userId,
+			table.messageId,
+		),
 	],
 );
 

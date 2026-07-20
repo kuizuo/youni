@@ -1,25 +1,37 @@
 import { Ionicons } from "@expo/vector-icons";
 import {
 	cn,
+	Menu,
+	type MenuTriggerRef,
 	PressableFeedback,
 	Typography,
 	useThemeColor,
 } from "heroui-native";
+import { useRef, useState } from "react";
 import { View } from "react-native";
 
+import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { formatTime } from "@/utils/format";
 import type { ChatListMessage } from "./message-state";
 
 export function MessageBubble({
 	isMine,
 	item,
+	onCopy,
+	onDelete,
 	onRetry,
 }: {
 	isMine: boolean;
 	item: ChatListMessage;
+	onCopy: () => void;
+	onDelete: () => void;
 	onRetry?: () => void;
 }) {
 	const dangerColor = useThemeColor("danger");
+	const foregroundColor = useThemeColor("foreground");
+	const openedByLongPressRef = useRef(false);
+	const triggerRef = useRef<MenuTriggerRef>(null);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const isFailed = isMine && item.deliveryStatus === "failed";
 	const isPending = isMine && item.deliveryStatus === "pending";
 
@@ -38,19 +50,73 @@ export function MessageBubble({
 						<Ionicons name="alert-circle" size={20} color={dangerColor} />
 					</PressableFeedback>
 				) : null}
-				<View
-					className={cn(
-						"max-w-[78%] rounded-3xl px-4 py-2",
-						isMine ? "bg-accent" : "bg-content2",
-						isPending && "opacity-70",
-					)}
+				<Menu
+					isOpen={isMenuOpen}
+					onOpenChange={(open) => {
+						if (!open) {
+							openedByLongPressRef.current = false;
+							setIsMenuOpen(false);
+						} else if (openedByLongPressRef.current) {
+							setIsMenuOpen(true);
+						}
+					}}
 				>
-					<Typography.Paragraph
-						className={isMine ? "text-accent-foreground" : "text-foreground"}
+					<Menu.Trigger
+						delayLongPress={350}
+						onLongPress={() => {
+							openedByLongPressRef.current = true;
+							fireHaptic();
+							triggerRef.current?.open();
+						}}
+						onPress={() => {
+							openedByLongPressRef.current = false;
+						}}
+						ref={triggerRef}
 					>
-						{item.content}
-					</Typography.Paragraph>
-				</View>
+						<View
+							className={cn(
+								"max-w-[78%] rounded-3xl px-4 py-2",
+								isMine ? "bg-accent" : "bg-content2",
+								isPending && "opacity-70",
+							)}
+						>
+							<Typography.Paragraph
+								className={
+									isMine ? "text-accent-foreground" : "text-foreground"
+								}
+							>
+								{item.content}
+							</Typography.Paragraph>
+						</View>
+					</Menu.Trigger>
+					<Menu.Portal>
+						<Menu.Overlay />
+						<Menu.Content
+							presentation="popover"
+							placement="bottom"
+							align={isMine ? "end" : "start"}
+							width={132}
+							className="p-1"
+						>
+							<Menu.Item accessibilityLabel="复制消息" onPress={onCopy}>
+								<Ionicons
+									name="copy-outline"
+									size={18}
+									color={foregroundColor}
+								/>
+								<Menu.ItemTitle>复制</Menu.ItemTitle>
+							</Menu.Item>
+							<Menu.Item
+								accessibilityLabel="删除消息"
+								variant="danger"
+								onPress={onDelete}
+							>
+								<Ionicons name="trash-outline" size={18} color={dangerColor} />
+								<Menu.ItemTitle>删除</Menu.ItemTitle>
+							</Menu.Item>
+						</Menu.Content>
+					</Menu.Portal>
+				</Menu>
 			</View>
 			<Typography.Paragraph
 				type="body-xs"

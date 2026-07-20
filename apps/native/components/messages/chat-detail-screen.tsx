@@ -4,6 +4,7 @@ import type {
 	ChatPeer,
 	ConversationItem,
 } from "@youni/api/contracts/messages";
+import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -26,7 +27,6 @@ import {
 } from "@/components/messages/chat/message-state";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
-import { refreshActiveQueries } from "@/lib/query/optimistic-cache";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { useAppToast } from "@/utils/app-toast";
 import { confirmAction } from "@/utils/confirm-action";
@@ -55,6 +55,7 @@ export default function ChatDetailScreen() {
 	const inputRef = useRef<TextInput>(null);
 	const contentRef = useRef("");
 	const messageSequenceRef = useRef(0);
+	const deletedForMeIdsRef = useRef(new Set<string>());
 	const isEmojiKeyboardOpenRef = useRef(false);
 	const isEmojiInputLockedRef = useRef(false);
 	const isSystemKeyboardVisibleRef = useRef(false);
@@ -66,6 +67,9 @@ export default function ChatDetailScreen() {
 	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
 	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
+	const [deletedForMeIds, setDeletedForMeIds] = useState<Set<string>>(
+		() => new Set(),
+	);
 	const [startedConversationId, setStartedConversationId] = useState("");
 	const [outgoingMessages, setOutgoingMessages] = useState<ChatListMessage[]>(
 		[],
@@ -106,8 +110,15 @@ export default function ChatDetailScreen() {
 		refetchOnMount: "always",
 	});
 	const sendMutation = useMutation(orpc.messages.send.mutationOptions());
+	const deleteForMeMutation = useMutation(
+		orpc.messages.deleteForMe.mutationOptions(),
+	);
 	const serverMessages: ChatMessage[] = chat.data?.messages ?? [];
-	const messages = mergeChatMessages(serverMessages, outgoingMessages);
+	const messages = mergeChatMessages(
+		serverMessages,
+		outgoingMessages,
+		deletedForMeIds,
+	);
 	const peer = chat.data?.peer ?? openedChat.data?.peer ?? previewPeer;
 	const hasBlockedPeer =
 		chat.data?.hasBlockedPeer ?? openedChat.data?.hasBlockedPeer;
@@ -257,9 +268,95 @@ export default function ChatDetailScreen() {
 		);
 	};
 
+	const hideMessage = (messageId: string) => {
+		deletedForMeIdsRef.current = new Set(deletedForMeIdsRef.current).add(
+			messageId,
+		);
+		setDeletedForMeIds(deletedForMeIdsRef.current);
+	};
+
+	const restoreMessage = (messageId: string) => {
+		const next = new Set(deletedForMeIdsRef.current);
+		next.delete(messageId);
+		deletedForMeIdsRef.current = next;
+		setDeletedForMeIds(next);
+	};
+
+	const refreshMessageQueries = (targetConversationId: string) => {
+		const refreshes = [
+			queryClient.invalidateQueries({
+				queryKey: orpc.messages.conversations.queryOptions().queryKey,
+			}),
+			queryClient.invalidateQueries({
+				queryKey: orpc.messages.byId.queryOptions({
+					input: { conversationId: targetConversationId, limit: 80 },
+				}).queryKey,
+			}),
+		];
+		if (draftUserId) {
+			refreshes.push(
+				queryClient.invalidateQueries({
+					queryKey: orpc.messages.open.queryOptions({
+						input: { userId: draftUserId },
+					}).queryKey,
+				}),
+			);
+		}
+		return Promise.all(refreshes);
+	};
+
+	const deleteServerMessage = (
+		targetConversationId: string,
+		message: ChatListMessage,
+	) => {
+		deleteForMeMutation.mutate(
+			{
+				conversationId: targetConversationId,
+				messageId: message.id,
+			},
+			{
+				onError: (error) => {
+					restoreMessage(message.id);
+					toast.show({
+						variant: "danger",
+						label: error.message || "删除失败",
+					});
+				},
+				onSuccess: () => {
+					setOutgoingMessages((current) =>
+						current.filter((item) => item.id !== message.id),
+					);
+					void refreshMessageQueries(targetConversationId);
+				},
+			},
+		);
+	};
+
+	const copyMessage = (message: ChatListMessage) => {
+		void Clipboard.setStringAsync(message.content).catch(() => undefined);
+	};
+
+	const deleteMessage = (message: ChatListMessage) => {
+		hideMessage(message.id);
+		if (message.deliveryStatus === "failed") {
+			setOutgoingMessages((current) =>
+				current.filter((item) => item.id !== message.id),
+			);
+			return;
+		}
+		if (message.deliveryStatus === "pending" || !conversationId) return;
+		deleteServerMessage(conversationId, message);
+	};
+
 	const sendOutgoingMessage = (message: ChatListMessage) => {
 		const callbacks = {
 			onError: (error: Error) => {
+				if (deletedForMeIdsRef.current.has(message.id)) {
+					setOutgoingMessages((current) =>
+						current.filter((item) => item.id !== message.id),
+					);
+					return;
+				}
 				updateOutgoingMessage(message.id, (current) => ({
 					...current,
 					deliveryStatus: "failed",
@@ -270,7 +367,11 @@ export default function ChatDetailScreen() {
 			onSuccess: (result: { conversationId: string; message: ChatMessage }) => {
 				updateOutgoingMessage(message.id, () => result.message);
 				setStartedConversationId(result.conversationId);
-				void refreshActiveQueries();
+				if (deletedForMeIdsRef.current.has(message.id)) {
+					deleteServerMessage(result.conversationId, result.message);
+					return;
+				}
+				void refreshMessageQueries(result.conversationId);
 			},
 		};
 
@@ -373,6 +474,8 @@ export default function ChatDetailScreen() {
 				}
 				messages={messages}
 				onDismissInputPanel={dismissInputPanel}
+				onCopyMessage={copyMessage}
+				onDeleteMessage={deleteMessage}
 				onRetry={() => {
 					if (openedChat.isError) void openedChat.refetch();
 					if (chat.isError) void chat.refetch();
