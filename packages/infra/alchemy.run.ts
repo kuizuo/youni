@@ -3,6 +3,7 @@ import {
 	Ai,
 	type Binding,
 	D1Database,
+	KVNamespace,
 	Queue,
 	R2Bucket,
 	RateLimit,
@@ -10,6 +11,7 @@ import {
 	Website,
 	Worker,
 } from "alchemy/cloudflare";
+import { RandomString } from "alchemy/random";
 import { config } from "dotenv";
 
 const appEnvFile =
@@ -19,6 +21,7 @@ config({ path: "./.env" });
 config({ path: `../../apps/native/${appEnvFile}` });
 config({ path: "../../apps/web/.env" });
 config({ path: `../../apps/server/${appEnvFile}` });
+config({ path: `../../apps/agent/${appEnvFile}` });
 
 const app = await alchemy("youni");
 
@@ -51,6 +54,27 @@ type YouniAiModels = {
 		inputs: MoondreamInput;
 		postProcessedOutputs: MoondreamOutput;
 	};
+	"@cf/zai-org/glm-4.7-flash": {
+		inputs: {
+			max_tokens?: number;
+			messages: Array<{
+				content: string;
+				role: "assistant" | "system" | "user";
+			}>;
+			response_format?: { type: "json_object" };
+			temperature?: number;
+		};
+		postProcessedOutputs: { response?: string };
+	};
+	"@cf/leonardo/lucid-origin": {
+		inputs: {
+			height?: number;
+			num_steps?: number;
+			prompt: string;
+			width?: number;
+		};
+		postProcessedOutputs: { image: string };
+	};
 };
 
 function requiredEnv<T>(value: T | undefined, name: string) {
@@ -77,9 +101,11 @@ function optionalSecretEnv(name: string): Binding {
 const nativeDomain = "youni.kuizuo.me";
 const adminDomain = "youni-admin.kuizuo.me";
 const apiDomain = "youni-api.kuizuo.me";
+const agentDomain = "youni-agent.kuizuo.me";
 const deployedNativeUrl = `https://${nativeDomain}`;
 const deployedAdminUrl = `https://${adminDomain}`;
 const deployedApiUrl = `https://${apiDomain}`;
+const deployedAgentUrl = `https://${agentDomain}`;
 const storageName = app.local ? "youni-local" : "youni-production";
 const googleWebClientId = requiredEnv(
 	alchemy.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
@@ -247,8 +273,41 @@ export const server = await Worker("server", {
 			],
 });
 
+export const agentState = await KVNamespace("agent-state");
+
+const agentInternalSecret = await RandomString("agent-internal-secret", {
+	length: 32,
+});
+
+export const agent = await Worker("agent", {
+	cwd: "../../apps/agent",
+	entrypoint: "src/index.ts",
+	compatibility: "node",
+	bindings: {
+		AI: workersAi,
+		AGENT_INTERNAL_SECRET: agentInternalSecret.value,
+		AGENT_STATE: agentState,
+		DB: youniDatabase,
+		PUBLIC_SERVER_URL: publicServerUrl,
+		YOUNI_BUCKET: youniBucket,
+	},
+	crons: ["0 */6 * * *"],
+	dev: {
+		port: 3002,
+	},
+	domains: app.local
+		? undefined
+		: [
+				{
+					domainName: agentDomain,
+					adopt: true,
+				},
+			],
+});
+
 console.log(`Native -> ${app.local ? native.url : deployedNativeUrl}`);
 console.log(`Admin  -> ${app.local ? web.url : deployedAdminUrl}`);
 console.log(`API    -> ${app.local ? server.url : deployedApiUrl}`);
+console.log(`Agent  -> ${app.local ? agent.url : deployedAgentUrl}`);
 
 await app.finalize();

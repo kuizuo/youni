@@ -1,0 +1,9 @@
+{
+	"extends": "../../packages/config/tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "WebWorker"],
+		"types": ["@cloudflare/workers-types"]
+	},
+	"include": ["scripts/**/*.ts", "src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts"]
+}

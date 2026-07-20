@@ -1,0 +1,24 @@
+{
+	"name": "@youni/agent",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --noEmit",
+		"check-types": "tsc --noEmit",
+		"control": "bun scripts/control.ts",
+		"test": "bun test src/policy.test.ts"
+	},
+	"dependencies": {
+		"@youni/api": "workspace:*",
+		"@youni/db": "workspace:*",
+		"drizzle-orm": "catalog:",
+		"hono": "catalog:",
+		"ulid": "^3.0.2",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "catalog:",
+		"@youni/config": "workspace:*",
+		"typescript": "^6"
+	}
+}
