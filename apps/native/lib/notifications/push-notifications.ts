@@ -7,12 +7,14 @@ import {
 	resolvePushNotificationStatus,
 } from "@/lib/notifications/push-notification-status";
 import { client } from "@/utils/orpc";
+import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export type { PushNotificationStatus } from "@/lib/notifications/push-notification-status";
 
 type NotificationsModule = typeof import("expo-notifications");
 
 const STORAGE_KEY = "youni.push-notifications-enabled";
+const PUSH_REGISTRATION_RETRY_DELAY_MS = 1_000;
 
 let notificationsModulePromise: null | Promise<NotificationsModule> = null;
 
@@ -47,7 +49,7 @@ function hasNotificationPermission(value: { granted?: boolean }) {
 	return value.granted === true;
 }
 
-function getPlatform() {
+function getPlatform(): "android" | "ios" | "unknown" | "web" {
 	if (process.env.EXPO_OS === "android" || process.env.EXPO_OS === "ios") {
 		return process.env.EXPO_OS;
 	}
@@ -119,10 +121,21 @@ export async function registerCurrentDevicePushToken() {
 	const token = await getExpoPushToken({ requestPermission: true });
 	if (!token) return null;
 
-	await client.notifications.registerPushToken({
+	const input = {
 		platform: getPlatform(),
 		token,
-	});
+	};
+	for (let attempt = 0; attempt < 2; attempt++) {
+		try {
+			await client.notifications.registerPushToken(input);
+			break;
+		} catch (error) {
+			if (attempt === 1 || !isRequestTimeoutError(error)) throw error;
+			await new Promise((resolve) =>
+				setTimeout(resolve, PUSH_REGISTRATION_RETRY_DELAY_MS),
+			);
+		}
+	}
 	return token;
 }
 

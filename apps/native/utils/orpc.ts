@@ -12,12 +12,20 @@ export { queryClient } from "@/lib/query/query-client";
 
 export const link = new RPCLink({
 	url: `${apiBaseUrl}/rpc`,
-	fetch: (request, init) =>
-		fetchWithTimeout(request, {
-			...init,
-			// Better Auth Expo forwards the session cookie manually on native.
-			credentials: Platform.OS === "web" ? "include" : "omit",
-		}),
+	fetch: (request, init, _options, path) =>
+		fetchWithTimeout(
+			request,
+			{
+				...init,
+				// Better Auth Expo forwards the session cookie manually on native.
+				credentials: Platform.OS === "web" ? "include" : "omit",
+			},
+			undefined,
+			{
+				showTimeoutToast:
+					path[0] !== "notifications" || path[1] !== "registerPushToken",
+			},
+		),
 	headers() {
 		if (Platform.OS === "web") {
 			return {};

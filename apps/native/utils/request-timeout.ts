@@ -33,6 +33,7 @@ export async function fetchWithTimeout(
 	input: Parameters<typeof fetch>[0],
 	init: Parameters<typeof fetch>[1] = {},
 	timeoutMs = API_REQUEST_TIMEOUT_MS,
+	{ showTimeoutToast = true }: { showTimeoutToast?: boolean } = {},
 ) {
 	const controller = new AbortController();
 	const sourceSignals = [
@@ -65,7 +66,7 @@ export async function fetchWithTimeout(
 		});
 	} catch (error) {
 		if (didTimeout) {
-			showRequestTimeoutToast();
+			if (showTimeoutToast) showRequestTimeoutToast();
 			throw new RequestTimeoutError();
 		}
 		throw error;

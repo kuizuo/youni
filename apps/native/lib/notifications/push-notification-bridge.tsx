@@ -1,5 +1,7 @@
+import { onlineManager } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect } from "react";
+import { AppState } from "react-native";
 
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
@@ -76,14 +78,21 @@ export function PushNotificationBridge() {
 		if (!userId || !canUseRemoteNotifications()) return;
 
 		let isCanceled = false;
+		let appStateSubscription: undefined | { remove: () => void };
+		let registrationPromise: null | Promise<unknown> = null;
 		let tokenSubscription: undefined | { remove: () => void };
+		let unsubscribeOnline: undefined | (() => void);
 
-		async function registerToken() {
-			try {
-				await registerCurrentDevicePushToken();
-			} catch (error) {
-				console.warn("Push notification registration failed", error);
-			}
+		function registerToken() {
+			if (isCanceled || registrationPromise) return;
+
+			registrationPromise = registerCurrentDevicePushToken()
+				.catch((error) => {
+					console.warn("Push notification registration failed", error);
+				})
+				.finally(() => {
+					registrationPromise = null;
+				});
 		}
 
 		async function startTokenRegistration() {
@@ -91,10 +100,16 @@ export function PushNotificationBridge() {
 				const Notifications = await loadNotifications();
 				if (isCanceled) return;
 
-				await registerToken();
 				tokenSubscription = Notifications.addPushTokenListener(() => {
-					void registerToken();
+					registerToken();
 				});
+				appStateSubscription = AppState.addEventListener("change", (state) => {
+					if (state === "active") registerToken();
+				});
+				unsubscribeOnline = onlineManager.subscribe((isOnline) => {
+					if (isOnline) registerToken();
+				});
+				registerToken();
 			} catch (error) {
 				console.warn("Push notification setup failed", error);
 			}
@@ -104,7 +119,9 @@ export function PushNotificationBridge() {
 
 		return () => {
 			isCanceled = true;
+			appStateSubscription?.remove();
 			tokenSubscription?.remove();
+			unsubscribeOnline?.();
 		};
 	}, [userId]);
 
