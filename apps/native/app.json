@@ -70,21 +70,21 @@
 			[
 				"expo-camera",
 				{
-					"cameraPermission": "允许 Youni 使用相机拍摄笔记照片。",
+					"cameraPermission": "允许 Youni 使用相机拍摄照片和扫描二维码。",
 					"recordAudioAndroid": false
 				}
 			],
 			[
 				"expo-image-picker",
 				{
-					"photosPermission": "允许 Youni 访问照片，用于发布笔记和选择头像。",
+					"photosPermission": "允许 Youni 访问照片，用于发布笔记、选择头像和识别好友二维码。",
 					"microphonePermission": false
 				}
 			],
 			[
 				"expo-media-library",
 				{
-					"photosPermission": "允许 Youni 访问照片，用于发布笔记和选择头像。",
+					"photosPermission": "允许 Youni 访问照片，用于发布笔记、选择头像和识别好友二维码。",
 					"savePhotosPermission": "允许 Youni 将图文图片和分享图保存到相册。",
 					"preventAutomaticLimitedAccessAlert": true,
 					"granularPermissions": ["photo"]

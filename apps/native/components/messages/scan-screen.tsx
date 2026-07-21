@@ -1,5 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { CameraView, useCameraPermissions } from "expo-camera";
+import {
+	CameraView,
+	scanFromURLAsync,
+	useCameraPermissions,
+} from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { Button, Typography, useThemeColor } from "heroui-native";
@@ -34,7 +39,64 @@ export default function ScanScreen() {
 			socialNavigation.replaceWith({ type: "user", id: userId });
 			return;
 		}
-		toast.show({ label: "已识别二维码" });
+		toast.show({
+			label: "不是有效的 Youni 好友二维码",
+			variant: "warning",
+		});
+	};
+
+	const handleGalleryScan = async () => {
+		try {
+			const mediaPermission =
+				await ImagePicker.requestMediaLibraryPermissionsAsync();
+			if (!mediaPermission.granted) {
+				toast.show({
+					label: "需要相册权限才能选择二维码",
+					variant: "warning",
+				});
+				return;
+			}
+
+			const result = await ImagePicker.launchImageLibraryAsync({
+				allowsEditing: false,
+				mediaTypes: "images",
+				preferredAssetRepresentationMode:
+					ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+				quality: 1,
+				shouldDownloadFromNetwork: true,
+			});
+			if (result.canceled) return;
+
+			const asset = result.assets[0];
+			if (!asset) return;
+
+			const codes = await scanFromURLAsync(asset.uri, ["qr"]);
+			if (codes.length === 0) {
+				toast.show({
+					label: "图片中没有识别到二维码",
+					variant: "warning",
+				});
+				return;
+			}
+
+			const userId = codes
+				.map(({ data }) => getUserIdFromCode(data))
+				.find((value) => value !== null);
+			if (!userId) {
+				toast.show({
+					label: "不是有效的 Youni 好友二维码",
+					variant: "warning",
+				});
+				return;
+			}
+
+			socialNavigation.replaceWith({ type: "user", id: userId });
+		} catch {
+			toast.show({
+				label: "二维码识别失败，请换一张图片重试",
+				variant: "danger",
+			});
+		}
 	};
 
 	if (!permission) {
@@ -59,11 +121,7 @@ export default function ScanScreen() {
 				barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
 				onBarcodeScanned={handleScan}
 			/>
-			<ScanOverlay
-				bottomInset={insets.bottom}
-				mutedColor={mutedColor}
-				topInset={insets.top}
-			/>
+			<ScanOverlay mutedColor={mutedColor} />
 			<View
 				className="flex-1"
 				style={{
@@ -133,11 +191,7 @@ export default function ScanScreen() {
 					<ScanBottomAction
 						icon="image-outline"
 						label="相册"
-						onPress={() =>
-							toast.show({
-								label: "相册入口已打开",
-							})
-						}
+						onPress={handleGalleryScan}
 					/>
 				</View>
 			</View>
