@@ -37,6 +37,8 @@ export function UserProfileHero({
 	onOpenChat,
 	onOpenConnections,
 	onOpenMe,
+	onAvatarPress,
+	onCoverPress,
 	onToggleFollow,
 	onMeasuredHeight,
 	profile,
@@ -53,6 +55,8 @@ export function UserProfileHero({
 	onOpenChat: () => void;
 	onOpenConnections: (type: ProfileConnectionType) => void;
 	onOpenMe: () => void;
+	onAvatarPress: () => void;
+	onCoverPress: () => void;
 	onToggleFollow: () => void;
 	onMeasuredHeight: (height: number) => void;
 	profile?: UserProfileHeroData;
@@ -98,30 +102,48 @@ export function UserProfileHero({
 						coverStretchStyle,
 					]}
 				>
-					{profile?.coverImage ? (
-						<Image
-							accessibilityLabel={`${displayName}的个人资料背景图`}
-							contentFit="cover"
-							source={{ uri: profile.coverImage }}
-							style={{ height: "100%", width: "100%" }}
-						/>
-					) : null}
+					<PressableFeedback
+						accessibilityLabel={`查看${displayName}的个人资料背景图`}
+						accessibilityRole="button"
+						className="flex-1"
+						isDisabled={!profile?.coverImage}
+						onPress={onCoverPress}
+					>
+						{profile?.coverImage ? (
+							<Image
+								contentFit="cover"
+								source={{ uri: profile.coverImage }}
+								style={{ height: "100%", width: "100%" }}
+							/>
+						) : null}
+						<PressableFeedback.Highlight className="bg-black/10" />
+					</PressableFeedback>
 				</Animated.View>
 
 				<View className="gap-2 px-4 pb-3" style={{ backgroundColor }}>
 					<View style={{ marginTop: -36 }}>
-						<View className="size-18 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-content2">
-							{isIdentityLoading || !profile ? (
-								<Skeleton className="size-18 rounded-full" />
-							) : (
-								<Avatar size="lg" alt={displayName} className="size-18">
-									{profile.image ? (
-										<Avatar.Image source={{ uri: profile.image }} />
-									) : null}
-									<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
-								</Avatar>
-							)}
-						</View>
+						<Button
+							isIconOnly
+							variant="ghost"
+							className="size-18 rounded-full p-0"
+							accessibilityLabel={`查看${displayName}的头像`}
+							feedbackVariant="scale-ripple"
+							isDisabled={isIdentityLoading || !profile}
+							onPress={onAvatarPress}
+						>
+							<View className="size-18 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-content2">
+								{isIdentityLoading || !profile ? (
+									<Skeleton className="size-18 rounded-full" />
+								) : (
+									<Avatar size="lg" alt={displayName} className="size-18">
+										{profile.image ? (
+											<Avatar.Image source={{ uri: profile.image }} />
+										) : null}
+										<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
+									</Avatar>
+								)}
+							</View>
+						</Button>
 					</View>
 
 					<View className="min-w-0 gap-0.5">

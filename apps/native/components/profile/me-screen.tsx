@@ -1,19 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { ProfileConnectionType } from "@youni/api/contracts/profiles";
-import { Image } from "expo-image";
 import type { Href } from "expo-router";
 import { useFocusEffect, useRouter } from "expo-router";
-import {
-	BottomSheet,
-	Button,
-	ListGroup,
-	Spinner,
-	Typography,
-	useThemeColor,
-} from "heroui-native";
+import { BottomSheet, ListGroup, useThemeColor } from "heroui-native";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Modal, Pressable, useWindowDimensions, View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ListDivider } from "@/components/create/create-ui";
 import type { NoteCardNote } from "@/components/note-card";
@@ -27,6 +19,10 @@ import {
 	ProfileTabPane,
 } from "@/components/profile/me-profile-tab-content";
 import { ProfileCollapsibleTabs } from "@/components/profile/profile-collapsible-tabs";
+import {
+	ProfileAvatarPreview,
+	ProfileCoverPreview,
+} from "@/components/profile/profile-media-preview";
 import { ProfileMenuDrawer } from "@/components/profile/profile-menu-drawer";
 import {
 	MAX_PROFILE_WIDTH,
@@ -448,25 +444,33 @@ export default function MeScreen() {
 				onSignOut={signOut}
 			/>
 
-			<AvatarPreviewModal
+			<ProfileAvatarPreview
+				action={{
+					isLoading: isChangingAvatar || updateProfile.isPending,
+					label: "更换头像",
+					loadingLabel: "更换中",
+					onPress: changeAvatar,
+				}}
 				displayName={displayName}
 				image={avatarImage}
 				initial={avatarInitial}
 				insetsBottom={insets.bottom}
 				insetsTop={insets.top}
-				isChanging={isChangingAvatar || updateProfile.isPending}
 				isVisible={isAvatarPreviewOpen}
-				onChangeAvatar={changeAvatar}
 				onClose={() => setIsAvatarPreviewOpen(false)}
 			/>
 
-			<CoverPreviewModal
+			<ProfileCoverPreview
+				action={{
+					isLoading: isChangingCover || updateProfile.isPending,
+					label: "更换背景图",
+					loadingLabel: "更换中",
+					onPress: changeCover,
+				}}
 				image={coverImage}
 				insetsBottom={insets.bottom}
 				insetsTop={insets.top}
-				isChanging={isChangingCover || updateProfile.isPending}
 				isVisible={isCoverPreviewOpen && Boolean(coverImage)}
-				onChangeCover={changeCover}
 				onClose={() => setIsCoverPreviewOpen(false)}
 			/>
 
@@ -553,193 +557,5 @@ function MeNoteActionsSheet({
 				</AppBottomSheetContent>
 			</BottomSheet.Portal>
 		</BottomSheet>
-	);
-}
-
-function CoverPreviewModal({
-	image,
-	insetsBottom,
-	insetsTop,
-	isChanging,
-	isVisible,
-	onChangeCover,
-	onClose,
-}: {
-	image?: null | string;
-	insetsBottom: number;
-	insetsTop: number;
-	isChanging: boolean;
-	isVisible: boolean;
-	onChangeCover: () => void;
-	onClose: () => void;
-}) {
-	const accentForegroundColor = useThemeColor("accent-foreground");
-	const dimensions = useWindowDimensions();
-	const previewWidth = dimensions.width;
-	const previewHeight = Math.min(dimensions.height * 0.5, previewWidth * 0.62);
-
-	return (
-		<Modal
-			animationType="fade"
-			onRequestClose={onClose}
-			transparent
-			visible={isVisible}
-		>
-			<View className="flex-1 bg-black">
-				<Pressable className="absolute inset-0" onPress={onClose} />
-				<View
-					className="absolute right-4 left-4 flex-row justify-end"
-					style={{ top: insetsTop + 12 }}
-				>
-					<Button
-						isIconOnly
-						variant="ghost"
-						className="rounded-full bg-white/15"
-						accessibilityLabel="关闭背景图预览"
-						onPress={onClose}
-					>
-						<Ionicons name="close" size={22} color="#ffffff" />
-					</Button>
-				</View>
-
-				<View className="flex-1 items-center justify-center">
-					{image ? (
-						<Image
-							source={{ uri: image }}
-							contentFit="cover"
-							className="bg-white/10"
-							style={{ height: previewHeight, width: previewWidth }}
-						/>
-					) : null}
-				</View>
-
-				<View
-					className="absolute right-4 left-4"
-					style={{ bottom: Math.max(insetsBottom, 16) }}
-				>
-					<Button
-						variant="primary"
-						className="rounded-full"
-						feedbackVariant="scale-ripple"
-						isDisabled={isChanging}
-						onPress={onChangeCover}
-					>
-						{isChanging ? (
-							<Spinner size="sm" color={accentForegroundColor} />
-						) : null}
-						<Button.Label>{isChanging ? "更换中" : "更换背景图"}</Button.Label>
-					</Button>
-				</View>
-			</View>
-		</Modal>
-	);
-}
-
-function AvatarPreviewModal({
-	displayName,
-	image,
-	initial,
-	insetsBottom,
-	insetsTop,
-	isChanging,
-	isVisible,
-	onChangeAvatar,
-	onClose,
-}: {
-	displayName: string;
-	image?: null | string;
-	initial: string;
-	insetsBottom: number;
-	insetsTop: number;
-	isChanging: boolean;
-	isVisible: boolean;
-	onChangeAvatar: () => void;
-	onClose: () => void;
-}) {
-	const accentForegroundColor = useThemeColor("accent-foreground");
-	const dimensions = useWindowDimensions();
-	const previewSize = Math.min(dimensions.width - 48, 320);
-
-	return (
-		<Modal
-			animationType="fade"
-			onRequestClose={onClose}
-			transparent
-			visible={isVisible}
-		>
-			<View className="flex-1 bg-black">
-				<Pressable className="absolute inset-0" onPress={onClose} />
-				<View
-					className="absolute right-4 left-4 flex-row justify-end"
-					style={{ top: insetsTop + 12 }}
-				>
-					<Button
-						isIconOnly
-						variant="ghost"
-						className="rounded-full bg-white/15"
-						accessibilityLabel="关闭头像预览"
-						onPress={onClose}
-					>
-						<Ionicons name="close" size={22} color="#ffffff" />
-					</Button>
-				</View>
-
-				<View className="flex-1 items-center justify-center px-6">
-					{image ? (
-						<Image
-							source={{ uri: image }}
-							contentFit="cover"
-							className="bg-white/10"
-							style={{
-								borderRadius: previewSize / 2,
-								height: previewSize,
-								width: previewSize,
-							}}
-						/>
-					) : (
-						<View
-							accessibilityLabel={displayName}
-							className="items-center justify-center bg-white/10"
-							style={{
-								borderRadius: previewSize / 2,
-								height: previewSize,
-								width: previewSize,
-							}}
-						>
-							<Typography.Paragraph
-								weight="bold"
-								style={{ color: "#ffffff", fontSize: 88, lineHeight: 104 }}
-							>
-								{initial}
-							</Typography.Paragraph>
-						</View>
-					)}
-				</View>
-
-				<View
-					className="absolute right-4 left-4"
-					style={{ bottom: Math.max(insetsBottom, 16) }}
-				>
-					<Button
-						variant="primary"
-						className="rounded-full"
-						feedbackVariant="scale-ripple"
-						isDisabled={isChanging}
-						onPress={onChangeAvatar}
-					>
-						{isChanging ? (
-							<Spinner size="sm" color={accentForegroundColor} />
-						) : (
-							<Ionicons
-								name="camera-outline"
-								size={18}
-								color={accentForegroundColor}
-							/>
-						)}
-						<Button.Label>{isChanging ? "更换中" : "更换头像"}</Button.Label>
-					</Button>
-				</View>
-			</View>
-		</Modal>
 	);
 }

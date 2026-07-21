@@ -21,6 +21,7 @@ export function UserProfileStickyChrome({
 	miniProfileStyle,
 	onBack,
 	onMore,
+	onAvatarPress,
 	onOpenMe,
 	onToggleFollow,
 	style,
@@ -35,6 +36,7 @@ export function UserProfileStickyChrome({
 	miniProfileStyle: StyleProp<ViewStyle>;
 	onBack: () => void;
 	onMore: () => void;
+	onAvatarPress: () => void;
 	onOpenMe: () => void;
 	onToggleFollow: () => void;
 	style: StyleProp<ViewStyle>;
@@ -58,15 +60,28 @@ export function UserProfileStickyChrome({
 			>
 				<ProfileTopBar
 					center={
-						<Animated.View style={miniProfileStyle}>
-							<Avatar
+						<Animated.View
+							pointerEvents={isSticky ? "auto" : "none"}
+							style={miniProfileStyle}
+						>
+							<Button
+								isIconOnly
 								size="sm"
-								alt={displayName}
-								className="size-7 border border-white"
+								variant="ghost"
+								className="size-7 rounded-full p-0"
+								accessibilityLabel={`查看${displayName}的头像`}
+								feedbackVariant="scale-ripple"
+								onPress={onAvatarPress}
 							>
-								{image ? <Avatar.Image source={{ uri: image }} /> : null}
-								<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
-							</Avatar>
+								<Avatar
+									size="sm"
+									alt={displayName}
+									className="size-7 border border-white"
+								>
+									{image ? <Avatar.Image source={{ uri: image }} /> : null}
+									<Avatar.Fallback>{displayName.slice(0, 1)}</Avatar.Fallback>
+								</Avatar>
+							</Button>
 						</Animated.View>
 					}
 					right={

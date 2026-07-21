@@ -13,6 +13,10 @@ import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProfileCollapsibleTabs } from "@/components/profile/profile-collapsible-tabs";
 import {
+	ProfileAvatarPreview,
+	ProfileCoverPreview,
+} from "@/components/profile/profile-media-preview";
+import {
 	MAX_PROFILE_WIDTH,
 	PROFILE_HEADER_FALLBACK_HEIGHT,
 	PROFILE_HERO_COLOR,
@@ -65,6 +69,8 @@ export default function UserProfileScreen() {
 	const socialActions = useSocialActions();
 	const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 	const [isMoreOpen, setIsMoreOpen] = useState(false);
+	const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
+	const [isCoverPreviewOpen, setIsCoverPreviewOpen] = useState(false);
 	const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState<
 		null | number
 	>(null);
@@ -128,16 +134,40 @@ export default function UserProfileScreen() {
 
 	const toggleFollow = () => {
 		if (!id || isSelf) return;
-		socialActions.toggleFollow(
-			{
-				active: followState.active,
-				count: followState.count,
-				userId: id,
-			},
-			{
-				redirectTo: `/user/${id}`,
-			},
-		);
+		const performToggle = () => {
+			socialActions.toggleFollow(
+				{
+					active: followState.active,
+					count: followState.count,
+					userId: id,
+				},
+				{
+					redirectTo: `/user/${id}`,
+				},
+			);
+		};
+
+		if (!followState.active) {
+			performToggle();
+			return;
+		}
+
+		confirmAction({
+			cancelText: "继续关注",
+			confirmText: "取消关注",
+			message: `确定不再关注 ${displayName} 吗？`,
+			onConfirm: performToggle,
+			title: "取消关注",
+		});
+	};
+	const openAvatarPreview = () => {
+		fireHaptic();
+		setIsAvatarPreviewOpen(true);
+	};
+	const openCoverPreview = () => {
+		if (!heroProfile?.coverImage) return;
+		fireHaptic();
+		setIsCoverPreviewOpen(true);
 	};
 
 	const openChat = () => {
@@ -277,6 +307,8 @@ export default function UserProfileScreen() {
 						onOpenChat={openChat}
 						onOpenConnections={openConnections}
 						onOpenMe={() => router.push("/me" as Href)}
+						onAvatarPress={openAvatarPreview}
+						onCoverPress={openCoverPreview}
 						onToggleFollow={toggleFollow}
 						onMeasuredHeight={(height) => {
 							setMeasuredHeaderHeight((current) =>
@@ -298,6 +330,7 @@ export default function UserProfileScreen() {
 						topChromeHeight={topChromeHeight}
 						onBack={() => router.back()}
 						onMore={openMore}
+						onAvatarPress={openAvatarPreview}
 						onOpenMe={() => router.push("/me" as Href)}
 						onToggleFollow={toggleFollow}
 					/>
@@ -321,6 +354,22 @@ export default function UserProfileScreen() {
 					openChat();
 				}}
 				onOpenChange={setIsMoreOpen}
+			/>
+			<ProfileAvatarPreview
+				displayName={displayName}
+				image={heroProfile?.image}
+				initial={displayName.slice(0, 1)}
+				insetsBottom={insets.bottom}
+				insetsTop={insets.top}
+				isVisible={isAvatarPreviewOpen}
+				onClose={() => setIsAvatarPreviewOpen(false)}
+			/>
+			<ProfileCoverPreview
+				image={heroProfile?.coverImage}
+				insetsBottom={insets.bottom}
+				insetsTop={insets.top}
+				isVisible={isCoverPreviewOpen && Boolean(heroProfile?.coverImage)}
+				onClose={() => setIsCoverPreviewOpen(false)}
 			/>
 		</View>
 	);
