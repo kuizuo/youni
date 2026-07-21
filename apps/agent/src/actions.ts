@@ -64,7 +64,6 @@ type PendingAction = {
 };
 
 const completeActionSchema = z.object({
-	actionId: z.string().min(1),
 	content: z.string().trim().max(1200).optional(),
 	sources: z
 		.array(z.object({ title: z.string().trim().min(1), url: z.string().url() }))
@@ -174,24 +173,22 @@ async function hasBlock(env: RuntimeEnv, leftId: string, rightId: string) {
 	return Boolean(row);
 }
 
-async function dailyCount(
-	env: RuntimeEnv,
-	creatorId: string,
-	type: AgentActionType,
-) {
-	return Number(
-		(await env.AGENT_STATE.get(`count:${chinaDay()}:${creatorId}:${type}`)) ??
-			0,
+async function dailyCounts(env: RuntimeEnv, creatorId: string) {
+	return (
+		(await env.AGENT_STATE.get<Partial<Record<AgentActionType, number>>>(
+			`counts:${chinaDay()}:${creatorId}`,
+			"json",
+		)) ?? {}
 	);
 }
 
 async function incrementDailyState(env: RuntimeEnv, action: PendingAction) {
-	const countKey = `count:${chinaDay()}:${action.creatorId}:${action.type}`;
-	await env.AGENT_STATE.put(
-		countKey,
-		String((await dailyCount(env, action.creatorId, action.type)) + 1),
-		{ expirationTtl: 172_800 },
-	);
+	const countKey = `counts:${chinaDay()}:${action.creatorId}`;
+	const counts = await dailyCounts(env, action.creatorId);
+	counts[action.type] = (counts[action.type] ?? 0) + 1;
+	await env.AGENT_STATE.put(countKey, JSON.stringify(counts), {
+		expirationTtl: 172_800,
+	});
 	if (
 		action.targetUserId &&
 		action.targetUserId !== action.creatorId &&
@@ -212,7 +209,7 @@ async function incrementDailyState(env: RuntimeEnv, action: PendingAction) {
 	);
 }
 
-async function chooseType(env: RuntimeEnv, creatorId: string) {
+export async function chooseType(env: RuntimeEnv, creatorId: string) {
 	const weighted: AgentActionType[] = [
 		"view",
 		"view",
@@ -226,10 +223,10 @@ async function chooseType(env: RuntimeEnv, creatorId: string) {
 		"reply",
 		"publish",
 	];
+	const counts = await dailyCounts(env, creatorId);
 	const allowed: AgentActionType[] = [];
 	for (const type of weighted) {
-		if (canRunDailyAction(type, await dailyCount(env, creatorId, type)))
-			allowed.push(type);
+		if (canRunDailyAction(type, counts[type] ?? 0)) allowed.push(type);
 	}
 	return allowed[Math.floor(Math.random() * allowed.length)] ?? "view";
 }
@@ -382,11 +379,12 @@ export async function claimAction(env: RuntimeEnv) {
 		0,
 		control.mode === "live" ? control.liveCreatorLimit : personas.length,
 	);
+	const nextRuns =
+		(await env.AGENT_STATE.get<Record<string, number>>("nextRuns", "json")) ??
+		{};
 	const due = [];
 	for (const persona of eligible) {
-		const next = Number(
-			(await env.AGENT_STATE.get(`next:creator_${persona.key}`)) ?? 0,
-		);
+		const next = nextRuns[`creator_${persona.key}`] ?? 0;
 		if (next <= now.getTime()) due.push(persona);
 	}
 	const persona = due[Math.floor(Math.random() * due.length)];
@@ -399,10 +397,9 @@ export async function claimAction(env: RuntimeEnv) {
 	const chosen = recheck
 		? { target: recheck, targetId: recheck.id, targetUserId: creatorId }
 		: await chooseTarget(env, creatorId, type);
-	await env.AGENT_STATE.put(
-		`next:${creatorId}`,
-		String(now.getTime() + nextRunDelayMinutes(spent >= 24_000) * 60_000),
-	);
+	nextRuns[creatorId] =
+		now.getTime() + nextRunDelayMinutes(spent >= 24_000) * 60_000;
+	await env.AGENT_STATE.put("nextRuns", JSON.stringify(nextRuns));
 	if (!chosen) return { action: null, reason: "no_safe_target" };
 	const action: PendingAction = {
 		contentKind:
@@ -415,17 +412,11 @@ export async function claimAction(env: RuntimeEnv) {
 		targetUserId: chosen.targetUserId,
 		type,
 	};
-	await env.AGENT_STATE.put(`action:${action.id}`, JSON.stringify(action), {
-		expirationTtl: 3_600,
-	});
 	return {
 		action: {
-			contentKind: action.contentKind,
-			id: action.id,
-			mode: action.mode,
+			...action,
 			persona,
 			target: chosen.target,
-			type: action.type,
 		},
 	};
 }
@@ -580,13 +571,12 @@ async function recordView(env: RuntimeEnv, noteId: string, creatorId: string) {
 	]);
 }
 
-export async function completeAction(env: RuntimeEnv, body: unknown) {
+async function completeAction(
+	env: RuntimeEnv,
+	action: PendingAction,
+	body: unknown,
+) {
 	const input = completeActionSchema.parse(body);
-	const action = await env.AGENT_STATE.get<PendingAction>(
-		`action:${input.actionId}`,
-		"json",
-	);
-	if (!action) return { ok: true, status: "missing" };
 	const db = createDb(env.DB);
 	try {
 		const control = await getControl(env);
@@ -602,7 +592,6 @@ export async function completeAction(env: RuntimeEnv, body: unknown) {
 				JSON.stringify({ action, input }),
 				{ expirationTtl: 604_800 },
 			);
-			await env.AGENT_STATE.delete(`action:${action.id}`);
 			return { ok: true, status: "shadow" };
 		}
 		let resultId = action.targetId;
@@ -735,7 +724,6 @@ export async function completeAction(env: RuntimeEnv, body: unknown) {
 				break;
 		}
 		await incrementDailyState(env, action);
-		await env.AGENT_STATE.delete(`action:${action.id}`);
 		return { ok: true, resultId, status: "completed" };
 	} catch (error) {
 		const reason = error instanceof Error ? error.message : "unknown_error";
@@ -744,7 +732,6 @@ export async function completeAction(env: RuntimeEnv, body: unknown) {
 			JSON.stringify({ action, input, reason }),
 			{ expirationTtl: 2_592_000 },
 		);
-		await env.AGENT_STATE.delete(`action:${action.id}`);
 		return { ok: false, reason, status: "quarantined" };
 	}
 }
@@ -869,9 +856,8 @@ export async function runScheduledAction(env: RuntimeEnv) {
 	const claimed = await claimAction(env);
 	if (!claimed.action) return claimed;
 	const { action } = claimed;
-	const base = { actionId: action.id };
 	if (["view", "like", "collect", "follow"].includes(action.type))
-		return completeAction(env, base);
+		return completeAction(env, action, {});
 	if (action.type === "recheck") {
 		const news = await researchNews(
 			env,
@@ -881,7 +867,7 @@ export async function runScheduledAction(env: RuntimeEnv) {
 				? String(action.target.title)
 				: action.persona.vertical,
 		);
-		return completeAction(env, { ...base, sources: news.sources });
+		return completeAction(env, action, { sources: news.sources });
 	}
 	if (action.type === "comment" || action.type === "reply") {
 		const generated = await generateJson(
@@ -889,14 +875,14 @@ export async function runScheduledAction(env: RuntimeEnv) {
 			generatedCommentSchema,
 			`以“${action.persona.name}”的口吻写一条自然、具体、友善的${action.type === "reply" ? "回复" : "评论"}，不超过80个汉字。账号风格：${action.persona.style}。目标内容：${JSON.stringify(action.target).slice(0, 2_500)}。返回格式：{"content":"..."}`,
 		);
-		return completeAction(env, { ...base, ...generated });
+		return completeAction(env, action, generated);
 	}
 	const news =
 		action.contentKind === "news"
 			? await researchNews(env, action.persona.vertical)
 			: { sources: [], summary: "" };
 	if (action.contentKind === "news" && news.sources.length < 2) {
-		return completeAction(env, base);
+		return completeAction(env, action, {});
 	}
 	const generated = await generateJson(
 		env,
@@ -905,5 +891,5 @@ export async function runScheduledAction(env: RuntimeEnv) {
 			? `根据以下已核对新闻摘要写一篇准确、克制的图文，不添加摘要之外的事实。摘要：${news.summary}。账号领域：${action.persona.vertical}，风格：${action.persona.style}。返回格式：{"title":"...","content":"...","topics":["..."]}`
 			: `为账号“${action.persona.name}”写一篇生活分享图文。领域：${action.persona.vertical}，风格：${action.persona.style}。80至350个汉字，不编造到访、购买、参加、旅行或亲眼见闻。返回格式：{"title":"...","content":"...","topics":["..."]}`,
 	);
-	return completeAction(env, { ...base, ...generated, sources: news.sources });
+	return completeAction(env, action, { ...generated, sources: news.sources });
 }

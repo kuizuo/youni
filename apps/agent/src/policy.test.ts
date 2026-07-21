@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseRssItems } from "./actions";
+import { chooseType, parseRssItems } from "./actions";
 import {
 	automaticControl,
 	canRunDailyAction,
@@ -29,6 +29,20 @@ test("自动分阶段开放账号", () => {
 });
 
 describe("创作者账号运行规则", () => {
+	test("选择行为只读取一次状态", async () => {
+		let reads = 0;
+		const env = {
+			AGENT_STATE: {
+				get: async () => {
+					reads += 1;
+					return null;
+				},
+			},
+		};
+		await chooseType(env as never, "creator_test");
+		expect(reads).toBe(1);
+	});
+
 	test("只在中国时区的白天运行", () => {
 		expect(isActiveHour(new Date("2026-07-21T00:00:00Z"))).toBe(true);
 		expect(isActiveHour(new Date("2026-07-21T15:00:00Z"))).toBe(false);
