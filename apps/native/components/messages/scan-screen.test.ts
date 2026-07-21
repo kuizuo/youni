@@ -13,6 +13,7 @@ test("相机预览不承载扫码界面", async () => {
 	).text();
 
 	expect(source).not.toContain("</CameraView>");
+	expect(source).not.toContain("扫描二维码");
 });
 
 test("扫码页面不遮挡相机画面并能从相册识别二维码", async () => {

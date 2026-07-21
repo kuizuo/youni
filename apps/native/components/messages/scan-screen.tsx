@@ -129,7 +129,7 @@ export default function ScanScreen() {
 					paddingTop: insets.top + 10,
 				}}
 			>
-				<View className="h-12 flex-row items-center justify-between px-4">
+				<View className="h-12 flex-row items-center px-4">
 					<Button
 						isIconOnly
 						variant="ghost"
@@ -144,10 +144,6 @@ export default function ScanScreen() {
 							color="#ffffff"
 						/>
 					</Button>
-					<Typography.Heading type="h2" style={{ color: "#ffffff" }}>
-						扫描二维码
-					</Typography.Heading>
-					<View className="h-11 w-11" />
 				</View>
 
 				<View className="flex-1 justify-center px-8">
