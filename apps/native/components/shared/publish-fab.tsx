@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import { PressableFeedback } from "heroui-native";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
-
-import { FAB } from "./fab";
 
 export function PublishFAB() {
 	const insets = useSafeAreaInsets();
@@ -20,20 +19,19 @@ export function PublishFAB() {
 				right: 20,
 			}}
 		>
-			<FAB>
-				<FAB.Trigger
-					accessibilityLabel="发布"
-					animation={false}
-					className="size-12 rounded-full shadow-overlay"
-					hitSlop={8}
-					onPress={() => {
-						fireHaptic();
-						socialNavigation.openPublish();
-					}}
-				>
-					<Ionicons name="add" size={26} color="#fff" />
-				</FAB.Trigger>
-			</FAB>
+			<PressableFeedback
+				accessibilityLabel="发布"
+				accessibilityRole="button"
+				className="size-12 items-center justify-center rounded-full bg-accent shadow-overlay"
+				hitSlop={8}
+				onPress={() => {
+					fireHaptic();
+					socialNavigation.openPublish();
+				}}
+			>
+				<PressableFeedback.Highlight />
+				<Ionicons name="add" size={26} color="#fff" />
+			</PressableFeedback>
 		</View>
 	);
 }
