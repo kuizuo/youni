@@ -4,7 +4,7 @@ import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScanBottomAction } from "@/components/messages/scan/bottom-action";
@@ -53,95 +53,94 @@ export default function ScanScreen() {
 	return (
 		<View className="flex-1 bg-black">
 			<CameraView
-				style={{ flex: 1 }}
+				style={StyleSheet.absoluteFill}
 				facing="back"
 				enableTorch={torchEnabled}
 				barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
 				onBarcodeScanned={handleScan}
-			>
-				<View
-					className="flex-1"
-					style={{
-						paddingBottom: insets.bottom + 28,
-						paddingTop: insets.top + 10,
-					}}
-				>
-					<View className="h-12 flex-row items-center justify-between px-4">
-						<Button
-							isIconOnly
-							variant="ghost"
-							className="h-11 w-11 rounded-full"
-							feedbackVariant="scale-ripple"
-							accessibilityLabel="返回"
-							onPress={() => router.back()}
-						>
-							<Ionicons
-								name="chevron-back"
-								size={APP_HEADER_ICON_SIZE}
-								color="#ffffff"
-							/>
-						</Button>
-						<Typography.Heading type="h2" style={{ color: "#ffffff" }}>
-							扫描二维码
-						</Typography.Heading>
-						<View className="h-11 w-11" />
-					</View>
-
-					<View className="flex-1 justify-center px-8">
-						<ScanFrame>
-							<View className="items-center gap-3">
-								<Button
-									isIconOnly
-									variant="ghost"
-									className="h-12 w-12 rounded-full bg-black/30"
-									feedbackVariant="scale-ripple"
-									accessibilityLabel="切换手电筒"
-									onPress={() => setTorchEnabled((value) => !value)}
-								>
-									<Ionicons
-										name={torchEnabled ? "flash" : "flashlight-outline"}
-										size={22}
-										color="#ffffff"
-									/>
-								</Button>
-								<Typography.Paragraph style={{ color: "#ffffff" }}>
-									轻触照亮
-								</Typography.Paragraph>
-							</View>
-						</ScanFrame>
-						<Typography.Paragraph
-							align="center"
-							weight="semibold"
-							className="pt-12"
-							style={{ color: "#ffffff" }}
-						>
-							请将二维码对准扫码框中心
-						</Typography.Paragraph>
-					</View>
-
-					<View className="flex-row items-center justify-around px-12">
-						<ScanBottomAction
-							icon="qr-code-outline"
-							label="我的二维码"
-							onPress={() => router.push("/add-friend" as Href)}
-						/>
-						<ScanBottomAction
-							icon="image-outline"
-							label="相册"
-							onPress={() =>
-								toast.show({
-									label: "相册入口已打开",
-								})
-							}
-						/>
-					</View>
-				</View>
-			</CameraView>
+			/>
 			<ScanOverlay
 				bottomInset={insets.bottom}
 				mutedColor={mutedColor}
 				topInset={insets.top}
 			/>
+			<View
+				className="flex-1"
+				style={{
+					paddingBottom: insets.bottom + 28,
+					paddingTop: insets.top + 10,
+				}}
+			>
+				<View className="h-12 flex-row items-center justify-between px-4">
+					<Button
+						isIconOnly
+						variant="ghost"
+						className="h-11 w-11 rounded-full"
+						feedbackVariant="scale-ripple"
+						accessibilityLabel="返回"
+						onPress={() => router.back()}
+					>
+						<Ionicons
+							name="chevron-back"
+							size={APP_HEADER_ICON_SIZE}
+							color="#ffffff"
+						/>
+					</Button>
+					<Typography.Heading type="h2" style={{ color: "#ffffff" }}>
+						扫描二维码
+					</Typography.Heading>
+					<View className="h-11 w-11" />
+				</View>
+
+				<View className="flex-1 justify-center px-8">
+					<ScanFrame>
+						<View className="items-center gap-3">
+							<Button
+								isIconOnly
+								variant="ghost"
+								className="h-12 w-12 rounded-full bg-black/30"
+								feedbackVariant="scale-ripple"
+								accessibilityLabel="切换手电筒"
+								onPress={() => setTorchEnabled((value) => !value)}
+							>
+								<Ionicons
+									name={torchEnabled ? "flash" : "flashlight-outline"}
+									size={22}
+									color="#ffffff"
+								/>
+							</Button>
+							<Typography.Paragraph style={{ color: "#ffffff" }}>
+								轻触照亮
+							</Typography.Paragraph>
+						</View>
+					</ScanFrame>
+					<Typography.Paragraph
+						align="center"
+						weight="semibold"
+						className="pt-12"
+						style={{ color: "#ffffff" }}
+					>
+						请将二维码对准扫码框中心
+					</Typography.Paragraph>
+				</View>
+
+				<View className="flex-row items-center justify-around px-12">
+					<ScanBottomAction
+						icon="qr-code-outline"
+						label="我的二维码"
+						onPress={() => router.push("/add-friend" as Href)}
+					/>
+					<ScanBottomAction
+						icon="image-outline"
+						label="相册"
+						onPress={() =>
+							toast.show({
+								label: "相册入口已打开",
+							})
+						}
+					/>
+				</View>
+			</View>
 		</View>
 	);
 }
