@@ -1,7 +1,33 @@
 import type { GravityIconName } from "./gravity-icon";
 
-export type EditorTool = "blur" | "crop" | "draw" | "text" | "transform";
-export type CropRatio = "1:1" | "16:9" | "4:5" | "free" | "original";
+export type EditorTool =
+	| "adjust"
+	| "blur"
+	| "crop"
+	| "draw"
+	| "filter"
+	| "text";
+export type CropRatio =
+	| "1:1"
+	| "3:4"
+	| "4:3"
+	| "4:5"
+	| "5:4"
+	| "9:16"
+	| "16:9"
+	| "free"
+	| "original";
+export type AdjustmentKey = "brightness" | "contrast" | "saturation" | "warmth";
+export type FilterPreset =
+	| "original"
+	| "vivid"
+	| "clear"
+	| "warm"
+	| "cool"
+	| "film"
+	| "mono";
+
+export type Adjustments = Record<AdjustmentKey, number>;
 
 export type ToolDefinition = {
 	icon: GravityIconName;
@@ -20,6 +46,7 @@ export type RectModel = Point & {
 };
 
 export type TransformModel = {
+	flipX: boolean;
 	rotation: number;
 	scale: number;
 	translateX: number;
@@ -48,10 +75,13 @@ export type BlurStroke = {
 };
 
 export type EditorSnapshot = {
+	adjustments: Adjustments;
 	blurStrokes: BlurStroke[];
 	cropDirty: boolean;
 	cropRatio: CropRatio;
 	cropRect: RectModel;
+	filter: FilterPreset;
+	filterIntensity: number;
 	selectedTextId: null | string;
 	strokes: StrokeLayer[];
 	texts: TextLayer[];

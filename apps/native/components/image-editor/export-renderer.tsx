@@ -19,7 +19,12 @@ export async function renderEditorExport({
 	imageRect,
 	sourceImage,
 }: RenderEditorExportOptions) {
-	const exportSize = makeExportSize(cropRect, sourceImage);
+	const exportSize = makeExportSize(
+		cropRect,
+		sourceImage,
+		imageRect,
+		editorState.transform.scale,
+	);
 	if (!exportSize) {
 		throw new Error("图片导出失败");
 	}

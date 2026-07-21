@@ -2,6 +2,7 @@ import {
 	BackdropBlur,
 	Canvas,
 	type CanvasRef,
+	ColorMatrix,
 	Group,
 	matchFont,
 	Path,
@@ -17,7 +18,7 @@ import {
 	type ComposedGesture,
 	GestureDetector,
 } from "react-native-gesture-handler";
-
+import { editorColorMatrix, textLayerWidth } from "./image-effects";
 import type {
 	BlurStroke,
 	EditorSnapshot,
@@ -26,12 +27,7 @@ import type {
 	RectModel,
 	TextLayer,
 } from "./types";
-import {
-	buildStrokeClipPath,
-	buildStrokePath,
-	clamp,
-	textLayerWidth,
-} from "./utils";
+import { buildStrokeClipPath, buildStrokePath, clamp } from "./utils";
 
 type EditorCanvasProps = {
 	canvasGesture: ComposedGesture;
@@ -44,6 +40,8 @@ type EditorCanvasProps = {
 	onCanvasLayout: (size: { height: number; width: number }) => void;
 	onRetryLoad: () => void;
 	onTextChange: (value: string) => void;
+	originalImage: null | SkImage;
+	showOriginal: boolean;
 	sourceImage: null | SkImage;
 	textFocusKey: number;
 	tool: EditorTool | null;
@@ -67,6 +65,8 @@ export function EditorCanvas({
 	onCanvasLayout,
 	onRetryLoad,
 	onTextChange,
+	originalImage,
+	showOriginal,
 	sourceImage,
 	textFocusKey,
 	tool,
@@ -91,28 +91,48 @@ export function EditorCanvas({
 				style={StyleSheet.absoluteFill}
 			>
 				<Canvas ref={canvasRef} style={StyleSheet.absoluteFill}>
-					<EditorSkiaScene
-						canvasSize={canvasSize}
-						editorState={editorState}
-						imageRect={imageRect}
-						sourceImage={sourceImage}
-					/>
+					{showOriginal && originalImage ? (
+						<OriginalImageScene
+							canvasSize={canvasSize}
+							sourceImage={originalImage}
+						/>
+					) : (
+						<EditorSkiaScene
+							canvasSize={canvasSize}
+							editorState={editorState}
+							imageRect={imageRect}
+							sourceImage={sourceImage}
+						/>
+					)}
 				</Canvas>
 
-				{tool === "crop" && editorState.cropRect.width > 0 ? (
+				{!showOriginal && tool === "crop" && editorState.cropRect.width > 0 ? (
 					<CropOverlay
 						canvasSize={canvasSize}
 						cropRect={editorState.cropRect}
 					/>
 				) : null}
-				{tool === "text" && selectedText ? (
-					<TextOverlayFrame
-						canvasSize={canvasSize}
-						isEditing={isEditingSelectedText}
-						onChangeText={onTextChange}
-						text={selectedText}
-						textFocusKey={textFocusKey}
-					/>
+				{!showOriginal && tool === "text" && selectedText ? (
+					<View
+						className="absolute overflow-hidden"
+						pointerEvents="box-none"
+						style={imageRect}
+					>
+						<TextOverlayFrame
+							canvasSize={{
+								height: imageRect.height,
+								width: imageRect.width,
+							}}
+							isEditing={isEditingSelectedText}
+							onChangeText={onTextChange}
+							text={{
+								...selectedText,
+								x: selectedText.x - imageRect.x,
+								y: selectedText.y - imageRect.y,
+							}}
+							textFocusKey={textFocusKey}
+						/>
+					</View>
 				) : null}
 				{imageLoadStatus === "loading" ? (
 					<View className="absolute inset-0 items-center justify-center bg-black">
@@ -135,6 +155,13 @@ export function EditorCanvas({
 						>
 							<Button.Label>重试</Button.Label>
 						</Button>
+					</View>
+				) : null}
+				{showOriginal ? (
+					<View className="absolute top-3 self-center rounded-full bg-black/60 px-3 py-1">
+						<Typography.Paragraph type="body-xs" className="text-white">
+							原图
+						</Typography.Paragraph>
 					</View>
 				) : null}
 			</View>
@@ -167,6 +194,7 @@ export function EditorSkiaScene({
 					{ translateY: editorState.transform.translateY },
 					{ rotate: editorState.transform.rotation },
 					{ scale: editorState.transform.scale },
+					{ scaleX: editorState.transform.flipX ? -1 : 1 },
 				]}
 			>
 				<SkiaImage
@@ -176,44 +204,92 @@ export function EditorSkiaScene({
 					width={imageRect.width}
 					height={imageRect.height}
 					fit="contain"
-				/>
+				>
+					<ColorMatrix
+						matrix={editorColorMatrix(
+							editorState.adjustments,
+							editorState.filter,
+							editorState.filterIntensity,
+						)}
+					/>
+				</SkiaImage>
 			</Group>
-			{editorState.blurStrokes.map((stroke) => (
-				<BlurStrokeOverlay key={stroke.id} stroke={stroke} />
-			))}
-			{editorState.strokes.map((stroke) => (
-				<Path
-					key={stroke.id}
-					path={buildStrokePath(stroke)}
-					color={stroke.color}
-					style="stroke"
-					strokeCap="round"
-					strokeJoin="round"
-					strokeWidth={stroke.width}
-				/>
-			))}
-			{editorState.texts.map((text) => {
-				const width = textLayerWidth(text);
-				const font = matchFont({
-					fontSize: text.size,
-					fontWeight: "700",
-				});
-				return (
-					<Group
-						key={text.id}
-						origin={{ x: text.x, y: text.y }}
-						transform={[{ rotate: text.rotation }]}
-					>
-						<SkiaText
-							text={text.value}
-							font={font}
-							x={text.x - width / 2}
-							y={text.y + text.size / 2}
-							color={text.color}
-						/>
-					</Group>
-				);
-			})}
+			<Group clip={imageRect}>
+				{editorState.blurStrokes.map((stroke) => (
+					<BlurStrokeOverlay key={stroke.id} stroke={stroke} />
+				))}
+				{editorState.strokes.map((stroke) => (
+					<Path
+						key={stroke.id}
+						path={buildStrokePath(stroke)}
+						color={stroke.color}
+						style="stroke"
+						strokeCap="round"
+						strokeJoin="round"
+						strokeWidth={stroke.width}
+					/>
+				))}
+				{editorState.texts.map((text) => {
+					const width = textLayerWidth(text);
+					const font = matchFont({
+						fontSize: text.size,
+						fontWeight: "700",
+					});
+					return (
+						<Group
+							key={text.id}
+							origin={{ x: text.x, y: text.y }}
+							transform={[{ rotate: text.rotation }]}
+						>
+							<SkiaText
+								text={text.value}
+								font={font}
+								x={text.x - width / 2}
+								y={text.y + text.size / 2}
+								color={text.color}
+							/>
+						</Group>
+					);
+				})}
+			</Group>
+		</>
+	);
+}
+
+function OriginalImageScene({
+	canvasSize,
+	sourceImage,
+}: {
+	canvasSize: { height: number; width: number };
+	sourceImage: SkImage;
+}) {
+	const imageRatio = sourceImage.width() / sourceImage.height();
+	const canvasRatio = canvasSize.width / canvasSize.height;
+	const width =
+		imageRatio > canvasRatio
+			? canvasSize.width
+			: canvasSize.height * imageRatio;
+	const height =
+		imageRatio > canvasRatio
+			? canvasSize.width / imageRatio
+			: canvasSize.height;
+	return (
+		<>
+			<Rect
+				x={0}
+				y={0}
+				width={canvasSize.width}
+				height={canvasSize.height}
+				color="#050505"
+			/>
+			<SkiaImage
+				image={sourceImage}
+				x={(canvasSize.width - width) / 2}
+				y={(canvasSize.height - height) / 2}
+				width={width}
+				height={height}
+				fit="contain"
+			/>
 		</>
 	);
 }

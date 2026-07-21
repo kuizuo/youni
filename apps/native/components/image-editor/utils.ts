@@ -2,7 +2,11 @@ import type { SkImage } from "@shopify/react-native-skia";
 import { Skia, StrokeCap, StrokeJoin } from "@shopify/react-native-skia";
 import * as FileSystem from "expo-file-system/legacy";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
-
+import {
+	DEFAULT_ADJUSTMENTS,
+	exportSizeForCrop,
+	textLayerWidth,
+} from "./image-effects";
 import type {
 	BlurStroke,
 	CropDragMode,
@@ -39,6 +43,7 @@ export const BRUSH_COLORS = [
 ] as const;
 
 export const initialTransform: TransformModel = {
+	flipX: false,
 	rotation: 0,
 	scale: 1,
 	translateX: 0,
@@ -47,10 +52,13 @@ export const initialTransform: TransformModel = {
 
 export function makeInitialSnapshot(): EditorSnapshot {
 	return {
+		adjustments: { ...DEFAULT_ADJUSTMENTS },
 		blurStrokes: [],
 		cropDirty: false,
 		cropRatio: "free",
 		cropRect: { height: 0, width: 0, x: 0, y: 0 },
+		filter: "original",
+		filterIntensity: 100,
 		selectedTextId: null,
 		strokes: [],
 		texts: [],
@@ -70,10 +78,6 @@ export function rectsEqual(a: RectModel, b: RectModel) {
 		Math.abs(a.width - b.width) < 0.5 &&
 		Math.abs(a.height - b.height) < 0.5
 	);
-}
-
-export function textLayerWidth(text: TextLayer) {
-	return Math.max(48, text.value.length * text.size * 0.62);
 }
 
 export function pointInText(point: Point, text: TextLayer) {
@@ -137,26 +141,20 @@ export function strokeBounds(stroke: StrokeLayer | BlurStroke): RectModel {
 	};
 }
 
-export function makeExportSize(rect: RectModel, sourceImage?: null | SkImage) {
-	const rectLongEdge = Math.max(rect.width, rect.height);
-	if (rectLongEdge <= 0) {
-		return null;
-	}
-
-	const sourceLongEdge = sourceImage
-		? Math.max(sourceImage.width(), sourceImage.height())
-		: MAX_EXPORT_LONG_EDGE;
-	const targetLongEdge = Math.max(
-		1,
-		Math.round(Math.min(MAX_EXPORT_LONG_EDGE, sourceLongEdge)),
-	);
-	const scale = targetLongEdge / rectLongEdge;
-
-	return {
-		height: Math.max(1, Math.round(rect.height * scale)),
-		scale,
-		width: Math.max(1, Math.round(rect.width * scale)),
-	};
+export function makeExportSize(
+	rect: RectModel,
+	sourceImage?: null | SkImage,
+	imageRect: RectModel = rect,
+	imageScale = 1,
+) {
+	return exportSizeForCrop({
+		cropRect: rect,
+		imageRect,
+		imageScale,
+		maxLongEdge: MAX_EXPORT_LONG_EDGE,
+		sourceHeight: sourceImage?.height() ?? imageRect.height,
+		sourceWidth: sourceImage?.width() ?? imageRect.width,
+	});
 }
 
 export function ratioValue(
@@ -166,7 +164,11 @@ export function ratioValue(
 	if (ratio === "free") return null;
 	if (ratio === "original") return sourceRatio;
 	if (ratio === "1:1") return 1;
+	if (ratio === "3:4") return 3 / 4;
+	if (ratio === "4:3") return 4 / 3;
 	if (ratio === "4:5") return 4 / 5;
+	if (ratio === "5:4") return 5 / 4;
+	if (ratio === "9:16") return 9 / 16;
 	return 16 / 9;
 }
 

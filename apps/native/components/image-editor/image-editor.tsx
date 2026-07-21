@@ -26,11 +26,18 @@ import { useAppToast } from "@/utils/app-toast";
 import { EditorCanvas } from "./editor-canvas";
 import { EditorBottomControls, EditorTopBar } from "./editor-controls";
 import { renderEditorExport } from "./export-renderer";
+import {
+	constrainImageTransform,
+	constrainTextLayer,
+	pointInRect,
+} from "./image-effects";
 import type {
+	AdjustmentKey,
 	CropDragMode,
 	CropRatio,
 	EditorSnapshot,
 	EditorTool,
+	FilterPreset,
 	ImageLoadStatus,
 	Point,
 	RectModel,
@@ -60,13 +67,20 @@ type ImageEditorProps = {
 	onSave: (editedImage: MediaImage) => void;
 };
 
-function snapshotsEqual(a: EditorSnapshot, b: EditorSnapshot) {
+type HistoryEntry = {
+	snapshot: EditorSnapshot;
+	sourceImage: SkImage;
+	sourceRevision: number;
+};
+
+function snapshotsEqual(a: unknown, b: unknown) {
 	return JSON.stringify(a) === JSON.stringify(b);
 }
 
 function imageOutputSnapshot(snapshot: EditorSnapshot) {
 	return {
 		...snapshot,
+		cropRect: snapshot.cropDirty ? snapshot.cropRect : null,
 		selectedTextId: null,
 		texts: snapshot.texts.filter((text) => text.value.trim().length > 0),
 	};
@@ -76,33 +90,52 @@ function outputSnapshotsEqual(a: EditorSnapshot, b: EditorSnapshot) {
 	return snapshotsEqual(imageOutputSnapshot(a), imageOutputSnapshot(b));
 }
 
+function hasVisibleEdits(snapshot: EditorSnapshot) {
+	return (
+		snapshot.cropDirty ||
+		snapshot.adjustments.brightness !== 0 ||
+		snapshot.adjustments.contrast !== 0 ||
+		snapshot.adjustments.saturation !== 0 ||
+		snapshot.adjustments.warmth !== 0 ||
+		snapshot.filter !== "original" ||
+		snapshot.blurStrokes.length > 0 ||
+		snapshot.strokes.length > 0 ||
+		snapshot.texts.some((text) => text.value.trim().length > 0)
+	);
+}
+
 export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 	const canvasRef = useCanvasRef();
 	const insets = useSafeAreaInsets();
 	const { height: windowHeight, width: windowWidth } = useWindowDimensions();
 	const { toast } = useAppToast();
 	const [sourceImage, setSourceImage] = useState<null | SkImage>(null);
+	const [originalImage, setOriginalImage] = useState<null | SkImage>(null);
 	const [imageLoadStatus, setImageLoadStatus] =
 		useState<ImageLoadStatus>("loading");
 	const [canvasSize, setCanvasSize] = useState({ height: 0, width: 0 });
 	const [editorState, setEditorState] = useState<EditorSnapshot>(() =>
 		makeInitialSnapshot(),
 	);
-	const [past, setPast] = useState<EditorSnapshot[]>([]);
-	const [future, setFuture] = useState<EditorSnapshot[]>([]);
+	const [past, setPast] = useState<HistoryEntry[]>([]);
+	const [future, setFuture] = useState<HistoryEntry[]>([]);
 	const [tool, setTool] = useState<EditorTool | null>(null);
 	const [editingTextId, setEditingTextId] = useState<null | string>(null);
 	const [textFocusKey, setTextFocusKey] = useState(0);
 	const [textColor, setTextColor] = useState<string>(TEXT_COLORS[0]);
+	const [textSize, setTextSize] = useState(24);
 	const [brushColor, setBrushColor] = useState<string>(BRUSH_COLORS[0]);
 	const [brushWidth, setBrushWidth] = useState(6);
 	const [blurWidth, setBlurWidth] = useState(30);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isApplyingTool, setIsApplyingTool] = useState(false);
+	const [showOriginal, setShowOriginal] = useState(false);
 	const [sourceRevision, setSourceRevision] = useState(0);
 	const [hasPendingToolChanges, setHasPendingToolChangesState] =
 		useState(false);
 	const editorStateRef = useRef(editorState);
+	const sourceImageRef = useRef<null | SkImage>(null);
+	const sourceRevisionRef = useRef(0);
 	const hasPendingToolChangesRef = useRef(false);
 	const originalEditorStateRef = useRef(editorState);
 	const originalSourceRevisionRef = useRef(0);
@@ -126,6 +159,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 	const activeLayerIdRef = useRef<null | string>(null);
 	const textGestureStartRef = useRef<{
 		id: string;
+		rotation: number;
 		size: number;
 	} | null>(null);
 	const sourceRatio = sourceImage
@@ -136,15 +170,22 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		setImageLoadStatus("loading");
 		setSourceImage(null);
 		originalSourceRevisionRef.current = 0;
+		sourceRevisionRef.current = 0;
 		setSourceRevision(0);
 		try {
 			const decodedImage = await loadEditorImage(image.uri);
+			const decodedOriginal =
+				image.originalUri && image.originalUri !== image.uri
+					? await loadEditorImage(image.originalUri)
+					: decodedImage;
+			setOriginalImage(decodedOriginal);
+			sourceImageRef.current = decodedImage;
 			setSourceImage(decodedImage);
 			setImageLoadStatus("ready");
 		} catch {
 			setImageLoadStatus("error");
 		}
-	}, [image.uri]);
+	}, [image.originalUri, image.uri]);
 
 	useEffect(() => {
 		void loadSourceImage();
@@ -153,6 +194,14 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 	useEffect(() => {
 		editorStateRef.current = editorState;
 	}, [editorState]);
+
+	useEffect(() => {
+		sourceImageRef.current = sourceImage;
+	}, [sourceImage]);
+
+	useEffect(() => {
+		sourceRevisionRef.current = sourceRevision;
+	}, [sourceRevision]);
 
 	useEffect(() => {
 		toolRef.current = tool;
@@ -224,6 +273,31 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		originalEditorStateRef.current = snapshot;
 	}, []);
 
+	const currentHistoryEntry = useCallback(
+		(snapshot = editorStateRef.current): HistoryEntry | null => {
+			const currentSourceImage = sourceImageRef.current;
+			if (!currentSourceImage) return null;
+			return {
+				snapshot,
+				sourceImage: currentSourceImage,
+				sourceRevision: sourceRevisionRef.current,
+			};
+		},
+		[],
+	);
+
+	const restoreHistoryEntry = useCallback(
+		(entry: HistoryEntry) => {
+			sourceImageRef.current = entry.sourceImage;
+			setSourceImage(entry.sourceImage);
+			sourceRevisionRef.current = entry.sourceRevision;
+			setSourceRevision(entry.sourceRevision);
+			setEditorStateAndRef(entry.snapshot);
+			resetToolDraftBase(entry.snapshot);
+		},
+		[resetToolDraftBase, setEditorStateAndRef],
+	);
+
 	const clearToolInteractionState = useCallback(() => {
 		gestureStartStateRef.current = null;
 		activeLayerIdRef.current = null;
@@ -286,6 +360,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 
 	const selectTextAtPoint = useCallback(
 		(point: Point, options?: { edit?: boolean }) => {
+			if (!pointInRect(point, imageRect)) return null;
 			const current = editorStateRef.current;
 			const hitText = [...current.texts]
 				.reverse()
@@ -296,6 +371,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 				selectedTextId: hitText.id,
 			}));
 			setTextColor(hitText.color);
+			setTextSize(hitText.size);
 			if (options?.edit) {
 				setEditingTextId(hitText.id);
 				setTextFocusKey((value) => value + 1);
@@ -304,22 +380,28 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 			}
 			return hitText;
 		},
-		[setEditorStateAndRef],
+		[imageRect, setEditorStateAndRef],
 	);
 
 	const createEditableTextAtPoint = useCallback(
 		(point: Point) => {
 			const id = `text-${Date.now()}`;
-			const nextText: TextLayer = {
-				color: textColorRef.current,
-				id,
-				rotation: 0,
-				size: 24,
-				value: "",
-				x: clamp(point.x, 80, Math.max(80, canvasSize.width - 80)),
-				y: clamp(point.y, 42, Math.max(42, canvasSize.height - 42)),
-			};
 			const current = editorStateRef.current;
+			const selectedText = current.texts.find(
+				(text) => text.id === current.selectedTextId,
+			);
+			const nextText = constrainTextLayer(
+				{
+					color: textColorRef.current,
+					id,
+					rotation: 0,
+					size: selectedText?.size ?? textSize,
+					value: "",
+					x: point.x,
+					y: point.y,
+				},
+				imageRect,
+			);
 			stageEditorState({
 				...current,
 				selectedTextId: id,
@@ -331,7 +413,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 			setEditingTextId(id);
 			setTextFocusKey((value) => value + 1);
 		},
-		[canvasSize.height, canvasSize.width, stageEditorState],
+		[imageRect, stageEditorState, textSize],
 	);
 
 	const clearTextSelection = useCallback(() => {
@@ -359,13 +441,14 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 	const handleDoubleTap = useCallback(
 		(x: number, y: number) => {
 			if (toolRef.current !== "text") return;
+			if (!pointInRect({ x, y }, imageRect)) return;
 			fireHaptic();
 			const hitText = selectTextAtPoint({ x, y }, { edit: true });
 			if (!hitText) {
 				createEditableTextAtPoint({ x, y });
 			}
 		},
-		[createEditableTextAtPoint, selectTextAtPoint],
+		[createEditableTextAtPoint, imageRect, selectTextAtPoint],
 	);
 
 	const handlePanBegin = useCallback(
@@ -376,6 +459,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 			const point = { x, y };
 
 			if (currentTool === "draw") {
+				if (!pointInRect(point, imageRect)) return;
 				const id = `stroke-${Date.now()}`;
 				activeLayerIdRef.current = id;
 				setEditorStateAndRef((state) => ({
@@ -395,6 +479,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 			}
 
 			if (currentTool === "blur") {
+				if (!pointInRect(point, imageRect)) return;
 				const id = `blur-${Date.now()}`;
 				activeLayerIdRef.current = id;
 				setEditorStateAndRef((state) => ({
@@ -423,17 +508,18 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 
 			if (currentTool === "crop") {
 				const mode = getCropDragMode(point, current.cropRect);
-				if (!mode) return;
-				dragStartRef.current = point;
-				cropStartRectRef.current = current.cropRect;
-				cropDragModeRef.current = mode;
+				if (mode && mode !== "move") {
+					dragStartRef.current = point;
+					cropStartRectRef.current = current.cropRect;
+					cropDragModeRef.current = mode;
+				} else {
+					cropDragModeRef.current = null;
+					transformStartRef.current = current.transform;
+				}
 				return;
 			}
-
-			if (currentTool !== "transform") return;
-			transformStartRef.current = current.transform;
 		},
-		[selectTextAtPoint, setEditorStateAndRef],
+		[imageRect, selectTextAtPoint, setEditorStateAndRef],
 	);
 
 	const handlePanChange = useCallback(
@@ -471,19 +557,14 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 					...state,
 					texts: state.texts.map((text) =>
 						text.id === activeId
-							? {
-									...text,
-									x: clamp(
-										x - offset.x,
-										18,
-										Math.max(18, canvasSize.width - 18),
-									),
-									y: clamp(
-										y - offset.y,
-										24,
-										Math.max(24, canvasSize.height - 24),
-									),
-								}
+							? constrainTextLayer(
+									{
+										...text,
+										x: x - offset.x,
+										y: y - offset.y,
+									},
+									imageRect,
+								)
 							: text,
 					),
 				}));
@@ -492,42 +573,47 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 
 			if (currentTool === "crop") {
 				const mode = cropDragModeRef.current;
-				if (!mode) return;
-				setEditorStateAndRef((state) => ({
-					...state,
-					cropDirty: true,
-					cropRect: resizeCropRect({
-						bounds: imageRect,
-						mode,
-						ratio: state.cropRatio,
-						sourceRatio,
-						startPoint: dragStartRef.current,
-						startRect: cropStartRectRef.current,
-						x,
-						y,
-					}),
-				}));
+				setEditorStateAndRef((state) => {
+					if (mode) {
+						const cropRect = resizeCropRect({
+							bounds: imageRect,
+							mode,
+							ratio: state.cropRatio,
+							sourceRatio,
+							startPoint: dragStartRef.current,
+							startRect: cropStartRectRef.current,
+							x,
+							y,
+						});
+						return {
+							...state,
+							cropDirty: true,
+							cropRect,
+							transform: constrainImageTransform(
+								state.transform,
+								imageRect,
+								cropRect,
+							),
+						};
+					}
+					return {
+						...state,
+						cropDirty: true,
+						transform: constrainImageTransform(
+							{
+								...state.transform,
+								translateX: transformStartRef.current.translateX + translationX,
+								translateY: transformStartRef.current.translateY + translationY,
+							},
+							imageRect,
+							state.cropRect,
+						),
+					};
+				});
 				return;
 			}
-
-			if (currentTool !== "transform") return;
-			setEditorStateAndRef((state) => ({
-				...state,
-				selectedTextId: null,
-				transform: {
-					...state.transform,
-					translateX: transformStartRef.current.translateX + translationX,
-					translateY: transformStartRef.current.translateY + translationY,
-				},
-			}));
 		},
-		[
-			canvasSize.height,
-			canvasSize.width,
-			imageRect,
-			setEditorStateAndRef,
-			sourceRatio,
-		],
+		[imageRect, setEditorStateAndRef, sourceRatio],
 	);
 
 	const handlePinchBegin = useCallback(() => {
@@ -539,6 +625,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		textGestureStartRef.current = selectedText
 			? {
 					id: selectedText.id,
+					rotation: selectedText.rotation,
 					size: selectedText.size,
 				}
 			: null;
@@ -552,23 +639,31 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 					...state,
 					texts: state.texts.map((text) =>
 						text.id === startText.id
-							? { ...text, size: clamp(startText.size * scale, 18, 96) }
+							? constrainTextLayer(
+									{ ...text, size: clamp(startText.size * scale, 12, 72) },
+									imageRect,
+								)
 							: text,
 					),
 				}));
 				return;
 			}
 
-			if (toolRef.current !== "transform") return;
+			if (toolRef.current !== "crop") return;
 			setEditorStateAndRef((state) => ({
 				...state,
-				transform: {
-					...state.transform,
-					scale: clamp(transformStartRef.current.scale * scale, 0.5, 4),
-				},
+				cropDirty: true,
+				transform: constrainImageTransform(
+					{
+						...state.transform,
+						scale: clamp(transformStartRef.current.scale * scale, 0.5, 4),
+					},
+					imageRect,
+					state.cropRect,
+				),
 			}));
 		},
-		[setEditorStateAndRef],
+		[imageRect, setEditorStateAndRef],
 	);
 
 	const handleRotationBegin = useCallback(() => {
@@ -580,6 +675,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		textGestureStartRef.current = selectedText
 			? {
 					id: selectedText.id,
+					rotation: selectedText.rotation,
 					size: selectedText.size,
 				}
 			: null;
@@ -587,16 +683,36 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 
 	const handleRotationChange = useCallback(
 		(rotation: number) => {
-			if (toolRef.current !== "transform") return;
+			if (toolRef.current === "text" && textGestureStartRef.current) {
+				const startText = textGestureStartRef.current;
+				setEditorStateAndRef((state) => ({
+					...state,
+					texts: state.texts.map((text) =>
+						text.id === startText.id
+							? constrainTextLayer(
+									{ ...text, rotation: startText.rotation + rotation },
+									imageRect,
+								)
+							: text,
+					),
+				}));
+				return;
+			}
+			if (toolRef.current !== "crop") return;
 			setEditorStateAndRef((state) => ({
 				...state,
-				transform: {
-					...state.transform,
-					rotation: transformStartRef.current.rotation + rotation,
-				},
+				cropDirty: true,
+				transform: constrainImageTransform(
+					{
+						...state.transform,
+						rotation: transformStartRef.current.rotation + rotation,
+					},
+					imageRect,
+					state.cropRect,
+				),
 			}));
 		},
-		[setEditorStateAndRef],
+		[imageRect, setEditorStateAndRef],
 	);
 
 	const panGesture = useMemo(
@@ -665,7 +781,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 	);
 	const canvasGesture = useMemo<ComposedGesture | GestureType>(
 		() =>
-			tool === "transform"
+			tool === "crop"
 				? Gesture.Simultaneous(
 						panGesture,
 						tapGesture,
@@ -673,7 +789,12 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 						rotationGesture,
 					)
 				: tool === "text"
-					? Gesture.Simultaneous(panGesture, tapGesture, pinchGesture)
+					? Gesture.Simultaneous(
+							panGesture,
+							tapGesture,
+							pinchGesture,
+							rotationGesture,
+						)
 					: Gesture.Simultaneous(panGesture, tapGesture),
 		[panGesture, pinchGesture, rotationGesture, tapGesture, tool],
 	);
@@ -684,9 +805,11 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		setPast((items) => {
 			const previous = items[items.length - 1];
 			if (!previous) return items;
-			setFuture((futureItems) => [editorStateRef.current, ...futureItems]);
-			setEditorStateAndRef(previous);
-			resetToolDraftBase(previous);
+			const current = currentHistoryEntry();
+			if (current) {
+				setFuture((futureItems) => [current, ...futureItems].slice(0, 30));
+			}
+			restoreHistoryEntry(previous);
 			return items.slice(0, -1);
 		});
 	};
@@ -697,9 +820,11 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		setFuture((items) => {
 			const next = items[0];
 			if (!next) return items;
-			setPast((pastItems) => [...pastItems.slice(-29), editorStateRef.current]);
-			setEditorStateAndRef(next);
-			resetToolDraftBase(next);
+			const current = currentHistoryEntry();
+			if (current) {
+				setPast((pastItems) => [...pastItems.slice(-29), current]);
+			}
+			restoreHistoryEntry(next);
 			return items.slice(1);
 		});
 	};
@@ -724,8 +849,8 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 				setEditingTextId(null);
 			} else if (!hasText) {
 				createEditableTextAtPoint({
-					x: canvasSize.width / 2,
-					y: canvasSize.height / 2,
+					x: imageRect.x + imageRect.width / 2,
+					y: imageRect.y + imageRect.height / 2,
 				});
 			} else {
 				setEditingTextId(null);
@@ -776,14 +901,20 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 					throw new Error("图片裁切失败");
 				}
 				const next = makeInitialSnapshot();
+				const historyEntry = currentHistoryEntry(base);
+				if (historyEntry) {
+					setPast((items) => [...items.slice(-29), historyEntry]);
+				}
+				setFuture([]);
+				sourceImageRef.current = croppedImage;
 				setSourceImage(croppedImage);
 				setImageLoadStatus("ready");
-				setPast([]);
-				setFuture([]);
 				setEditorStateAndRef(next);
 				resetToolDraftBase(next);
 				setHasPendingToolChanges(false);
-				setSourceRevision((value) => value + 1);
+				const nextRevision = sourceRevisionRef.current + 1;
+				sourceRevisionRef.current = nextRevision;
+				setSourceRevision(nextRevision);
 				toolRef.current = null;
 				setTool(null);
 			} catch (error) {
@@ -798,7 +929,10 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		}
 
 		if (hasOutputChanges) {
-			setPast((items) => [...items.slice(-29), base]);
+			const historyEntry = currentHistoryEntry(base);
+			if (historyEntry) {
+				setPast((items) => [...items.slice(-29), historyEntry]);
+			}
 			setFuture([]);
 		}
 		resetToolDraftBase(current);
@@ -807,48 +941,73 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		setTool(null);
 	};
 
-	const rotateImage = () => {
+	const rotateImage = (direction: -1 | 1) => {
 		fireHaptic();
+		const current = editorStateRef.current;
 		stageEditorState({
-			...editorStateRef.current,
+			...current,
+			cropDirty: true,
 			selectedTextId: null,
-			transform: {
-				...editorStateRef.current.transform,
-				rotation: editorStateRef.current.transform.rotation + Math.PI / 2,
-			},
+			transform: constrainImageTransform(
+				{
+					...current.transform,
+					rotation: current.transform.rotation + direction * (Math.PI / 2),
+				},
+				imageRect,
+				current.cropRect,
+			),
 		});
 	};
 
-	const zoomImage = (delta: number) => {
+	const flipImage = () => {
 		fireHaptic();
+		const current = editorStateRef.current;
 		stageEditorState({
-			...editorStateRef.current,
+			...current,
+			cropDirty: true,
 			selectedTextId: null,
 			transform: {
-				...editorStateRef.current.transform,
-				scale: clamp(editorStateRef.current.transform.scale + delta, 0.5, 4),
+				...current.transform,
+				flipX: !current.transform.flipX,
 			},
-		});
-	};
-
-	const resetTransform = () => {
-		fireHaptic();
-		stageEditorState({
-			...editorStateRef.current,
-			selectedTextId: null,
-			transform: initialTransform,
 		});
 	};
 
 	const setCropRatio = (ratio: CropRatio) => {
 		fireHaptic();
+		const current = editorStateRef.current;
+		const cropRect = makeCenteredCropRect(imageRect, ratio, sourceRatio);
 		stageEditorState({
-			...editorStateRef.current,
+			...current,
 			cropDirty: true,
 			cropRatio: ratio,
-			cropRect: makeCenteredCropRect(imageRect, ratio, sourceRatio),
+			cropRect,
 			selectedTextId: null,
+			transform: constrainImageTransform(
+				current.transform,
+				imageRect,
+				cropRect,
+			),
 		});
+	};
+
+	const updateAdjustment = (key: AdjustmentKey, value: number) => {
+		stageEditorState({
+			...editorStateRef.current,
+			adjustments: {
+				...editorStateRef.current.adjustments,
+				[key]: value,
+			},
+		});
+	};
+
+	const updateFilter = (filter: FilterPreset) => {
+		fireHaptic();
+		stageEditorState({ ...editorStateRef.current, filter });
+	};
+
+	const updateFilterIntensity = (filterIntensity: number) => {
+		stageEditorState({ ...editorStateRef.current, filterIntensity });
 	};
 
 	const updateSelectedText = (
@@ -876,22 +1035,38 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		updateSelectedText((text) => ({ ...text, color }), { commit: true });
 	};
 
-	const updateTextSize = (delta: number) => {
-		fireHaptic();
+	const updateTextSize = (size: number) => {
+		const nextSize = clamp(size, 12, 72);
+		setTextSize(nextSize);
 		updateSelectedText(
-			(text) => ({ ...text, size: clamp(text.size + delta, 18, 96) }),
+			(text) => constrainTextLayer({ ...text, size: nextSize }, imageRect),
 			{ commit: true },
 		);
 	};
 
+	const addText = () => {
+		fireHaptic();
+		createEditableTextAtPoint({
+			x: imageRect.x + imageRect.width / 2,
+			y: imageRect.y + imageRect.height / 2,
+		});
+	};
+
 	const updateSelectedTextValue = (value: string) => {
-		updateSelectedText((text) => ({ ...text, value }), { commit: true });
+		updateSelectedText(
+			(text) => constrainTextLayer({ ...text, value }, imageRect),
+			{ commit: true },
+		);
 	};
 
 	const deleteSelectedText = () => {
 		fireHaptic();
 		const current = editorStateRef.current;
 		if (!current.selectedTextId) return;
+		const selectedText = current.texts.find(
+			(text) => text.id === current.selectedTextId,
+		);
+		if (selectedText) setTextSize(selectedText.size);
 		stageEditorState({
 			...current,
 			selectedTextId: null,
@@ -913,12 +1088,50 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 			return;
 		}
 		fireHaptic();
+		const restoredOriginal =
+			sourceRevisionRef.current === -1 &&
+			originalImage &&
+			!hasVisibleEdits(editorStateRef.current);
+		if (restoredOriginal) {
+			const uri = image.originalUri ?? image.uri;
+			const isRemote = /^https?:\/\//i.test(uri);
+			if (
+				image.isEdited &&
+				image.uri !== uri &&
+				image.uri.includes("/youni-image-edits/")
+			) {
+				await deleteLocalFile(image.uri).catch(() => undefined);
+			}
+			onSave({
+				...image,
+				asset: isRemote ? undefined : { uri },
+				fileName: undefined,
+				fileSize: undefined,
+				height: originalImage.height(),
+				isEdited: false,
+				mimeType: undefined,
+				originalUri: uri,
+				remoteUrl: isRemote ? uri : undefined,
+				uri,
+				width: originalImage.width(),
+			});
+			return;
+		}
+		if (!hasImageChanges) {
+			onSave(image);
+			return;
+		}
 		setIsSaving(true);
 		try {
 			const snapshotRect = editorStateRef.current.cropDirty
 				? editorStateRef.current.cropRect
 				: imageRect;
-			const exportSize = makeExportSize(snapshotRect, sourceImage);
+			const exportSize = makeExportSize(
+				snapshotRect,
+				sourceImage,
+				imageRect,
+				editorStateRef.current.transform.scale,
+			);
 			if (!exportSize) {
 				throw new Error("图片导出失败");
 			}
@@ -952,7 +1165,7 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 				throw new Error("编辑后的图片仍超过 8MB");
 			}
 
-			onSave({
+			const editedImage: MediaImage = {
 				...image,
 				asset: {
 					fileName: exported.fileName,
@@ -969,7 +1182,15 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 				remoteUrl: undefined,
 				uri: exported.uri,
 				width: exportSize.width,
-			});
+			};
+			if (
+				image.isEdited &&
+				image.uri !== image.originalUri &&
+				image.uri.includes("/youni-image-edits/")
+			) {
+				await deleteLocalFile(image.uri).catch(() => undefined);
+			}
+			onSave(editedImage);
 		} catch (error) {
 			toast.show({
 				variant: "danger",
@@ -980,7 +1201,10 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 		}
 	};
 
-	const canvasHeight = Math.min(640, Math.max(360, windowHeight * 0.66));
+	const canvasHeight = Math.min(
+		640,
+		Math.max(180, windowHeight - insets.top - insets.bottom - 236),
+	);
 	const canvasWidth = Math.max(280, windowWidth - 24);
 	const hasImageChanges =
 		sourceRevision !== originalSourceRevisionRef.current ||
@@ -991,6 +1215,36 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 	const selectedText = editorState.texts.find(
 		(text) => text.id === editorState.selectedTextId,
 	);
+	const canRestore =
+		hasImageChanges ||
+		Boolean(
+			image.isEdited && image.originalUri && image.originalUri !== image.uri,
+		);
+	const restoreOriginal = () => {
+		if (!(originalImage && canRestore)) return;
+		Alert.alert("还原原图？", "当前图片的全部修改都会被移除。", [
+			{ text: "取消", style: "cancel" },
+			{
+				text: "还原",
+				style: "destructive",
+				onPress: () => {
+					const historyEntry = currentHistoryEntry();
+					if (historyEntry) {
+						setPast((items) => [...items.slice(-29), historyEntry]);
+					}
+					setFuture([]);
+					const next = makeInitialSnapshot();
+					sourceImageRef.current = originalImage;
+					setSourceImage(originalImage);
+					const nextRevision = image.originalUri !== image.uri ? -1 : 0;
+					sourceRevisionRef.current = nextRevision;
+					setSourceRevision(nextRevision);
+					setEditorStateAndRef(next);
+					resetToolDraftBase(next);
+				},
+			},
+		]);
+	};
 	const requestEditorCancel = () => {
 		if (!hasImageChanges) {
 			onCancel();
@@ -1020,30 +1274,31 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 					className="flex-1 bg-black"
 					style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}
 				>
-					<EditorTopBar
-						activeTool={tool}
-						canRedo={canRedo}
-						canUndo={canUndo}
-						isApplyingTool={isApplyingTool}
-						isSaving={isSaving}
-						onCancel={requestEditorCancel}
-						onCancelToolChanges={cancelToolChanges}
-						onConfirmToolChanges={confirmToolChanges}
-						onRedo={redo}
-						onSave={saveImage}
-						onUndo={undo}
-						saveDisabled={
-							isSaving ||
-							isApplyingTool ||
-							!sourceImage ||
-							canvasSize.width <= 0 ||
-							canvasSize.height <= 0 ||
-							Boolean(tool) ||
-							hasPendingToolChanges
-						}
-					/>
+					{tool ? null : (
+						<EditorTopBar
+							canRedo={canRedo}
+							canRestore={canRestore}
+							canUndo={canUndo}
+							isSaving={isSaving}
+							onCancel={requestEditorCancel}
+							onRedo={redo}
+							onRestore={restoreOriginal}
+							onSave={saveImage}
+							onShowOriginalChange={setShowOriginal}
+							onUndo={undo}
+							saveDisabled={
+								isSaving ||
+								isApplyingTool ||
+								!sourceImage ||
+								canvasSize.width <= 0 ||
+								canvasSize.height <= 0 ||
+								Boolean(tool) ||
+								hasPendingToolChanges
+							}
+						/>
+					)}
 
-					<View className="flex-1 justify-center px-3">
+					<View className="flex-1 justify-center px-3 py-3">
 						<View
 							className="relative self-center"
 							style={{ height: canvasHeight, width: canvasWidth }}
@@ -1059,6 +1314,8 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 								onRetryLoad={loadSourceImage}
 								onTextChange={updateSelectedTextValue}
 								editingTextId={editingTextId}
+								originalImage={originalImage}
+								showOriginal={showOriginal}
 								sourceImage={sourceImage}
 								textFocusKey={textFocusKey}
 								tool={tool}
@@ -1067,23 +1324,34 @@ export function ImageEditor({ image, onCancel, onSave }: ImageEditorProps) {
 					</View>
 
 					<EditorBottomControls
+						adjustments={editorState.adjustments}
 						blurWidth={blurWidth}
 						brushColor={brushColor}
 						brushWidth={brushWidth}
 						canDeleteText={Boolean(selectedText)}
 						cropRatio={editorState.cropRatio}
+						filter={editorState.filter}
+						filterIntensity={editorState.filterIntensity}
+						isApplyingTool={isApplyingTool}
+						onAddText={addText}
+						onAdjustmentChange={updateAdjustment}
 						onBlurWidthChange={setBlurWidth}
 						onBrushColorChange={setBrushColor}
 						onBrushWidthChange={setBrushWidth}
+						onCancelToolChanges={cancelToolChanges}
+						onConfirmToolChanges={confirmToolChanges}
 						onDeleteText={deleteSelectedText}
-						onResetTransform={resetTransform}
+						onFilterChange={updateFilter}
+						onFilterIntensityChange={updateFilterIntensity}
+						onFlipImage={flipImage}
 						onRotateImage={rotateImage}
 						onSetCropRatio={setCropRatio}
 						onSetTool={selectTool}
 						onTextColorChange={updateTextColor}
 						onTextSizeChange={updateTextSize}
-						onZoomImage={zoomImage}
+						sourceImage={sourceImage}
 						textColor={selectedText?.color ?? textColor}
+						textSize={selectedText?.size ?? textSize}
 						tool={tool}
 					/>
 				</View>
