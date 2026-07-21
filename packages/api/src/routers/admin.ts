@@ -783,6 +783,7 @@ export const adminRouter = {
 					bio: user.bio,
 					gender: user.gender,
 					isAnonymous: user.isAnonymous,
+					lastLoginMethod: user.lastLoginMethod,
 					role: user.role,
 					status: user.status,
 					createdAt: user.createdAt,
@@ -851,6 +852,7 @@ export const adminRouter = {
 					bio: user.bio,
 					gender: user.gender,
 					isAnonymous: user.isAnonymous,
+					lastLoginMethod: user.lastLoginMethod,
 					role: user.role,
 					status: user.status,
 					createdAt: user.createdAt,
@@ -864,45 +866,63 @@ export const adminRouter = {
 				throw new ORPCError("NOT_FOUND");
 			}
 
-			const [[followerCountRow], [followingCountRow], followers, following] =
-				await Promise.all([
-					db
-						.select({ value: count() })
-						.from(follow)
-						.where(eq(follow.followingId, input.id)),
-					db
-						.select({ value: count() })
-						.from(follow)
-						.where(eq(follow.followerId, input.id)),
-					db
-						.select({
-							userId: user.id,
-							name: user.name,
-							email: user.email,
-							image: user.image,
-							createdAt: follow.createdAt,
-						})
-						.from(follow)
-						.innerJoin(user, eq(follow.followerId, user.id))
-						.where(eq(follow.followingId, input.id))
-						.orderBy(desc(follow.createdAt))
-						.limit(20),
-					db
-						.select({
-							userId: user.id,
-							name: user.name,
-							email: user.email,
-							image: user.image,
-							createdAt: follow.createdAt,
-						})
-						.from(follow)
-						.innerJoin(user, eq(follow.followingId, user.id))
-						.where(eq(follow.followerId, input.id))
-						.orderBy(desc(follow.createdAt))
-						.limit(20),
-				]);
-
-			const notes = await listAdminContentNotesByUser(input.id);
+			const [
+				[followerCountRow],
+				[followingCountRow],
+				followers,
+				following,
+				loginDevices,
+				notes,
+			] = await Promise.all([
+				db
+					.select({ value: count() })
+					.from(follow)
+					.where(eq(follow.followingId, input.id)),
+				db
+					.select({ value: count() })
+					.from(follow)
+					.where(eq(follow.followerId, input.id)),
+				db
+					.select({
+						userId: user.id,
+						name: user.name,
+						email: user.email,
+						image: user.image,
+						createdAt: follow.createdAt,
+					})
+					.from(follow)
+					.innerJoin(user, eq(follow.followerId, user.id))
+					.where(eq(follow.followingId, input.id))
+					.orderBy(desc(follow.createdAt))
+					.limit(20),
+				db
+					.select({
+						userId: user.id,
+						name: user.name,
+						email: user.email,
+						image: user.image,
+						createdAt: follow.createdAt,
+					})
+					.from(follow)
+					.innerJoin(user, eq(follow.followingId, user.id))
+					.where(eq(follow.followerId, input.id))
+					.orderBy(desc(follow.createdAt))
+					.limit(20),
+				db
+					.select({
+						id: session.id,
+						createdAt: session.createdAt,
+						expiresAt: session.expiresAt,
+						ipAddress: session.ipAddress,
+						updatedAt: session.updatedAt,
+						userAgent: session.userAgent,
+					})
+					.from(session)
+					.where(eq(session.userId, input.id))
+					.orderBy(desc(session.updatedAt))
+					.limit(20),
+				listAdminContentNotesByUser(input.id),
+			]);
 
 			return {
 				user: {
@@ -912,6 +932,7 @@ export const adminRouter = {
 					followingCount: toNumber(followingCountRow?.value),
 				},
 				notes,
+				loginDevices,
 				followers,
 				following,
 			};

@@ -1,5 +1,8 @@
 import { Button, Card } from "@heroui/react";
-import type { AdminUserListItem } from "@youni/api/contracts/admin";
+import type {
+	AdminLoginDevice,
+	AdminUserListItem,
+} from "@youni/api/contracts/admin";
 import type {
 	AdminHydratedContentNote as AdminNoteListItem,
 	AdminUserReference,
@@ -18,6 +21,7 @@ export function UserDetailView({
 	followers,
 	following,
 	isFetching,
+	loginDevices,
 	notes,
 	onBack,
 	onOpenNote,
@@ -27,6 +31,7 @@ export function UserDetailView({
 	followers: AdminUserReference[];
 	following: AdminUserReference[];
 	isFetching: boolean;
+	loginDevices: AdminLoginDevice[];
 	notes: AdminNoteListItem[];
 	onBack: () => void;
 	onOpenNote: (item: AdminNoteListItem) => void;
@@ -71,6 +76,11 @@ export function UserDetailView({
 							<p className="mt-1 text-muted text-sm">
 								创建时间 {new Date(user.createdAt).toLocaleString()}
 							</p>
+							{user.lastLoginMethod ? (
+								<p className="mt-1 text-muted text-sm">
+									最近登录方式 {formatLoginMethod(user.lastLoginMethod)}
+								</p>
+							) : null}
 							<p className="mt-3 text-sm">{user.bio || "暂无简介"}</p>
 						</div>
 					</div>
@@ -82,6 +92,8 @@ export function UserDetailView({
 					</div>
 				</Card.Content>
 			</Card>
+
+			<LoginDeviceList devices={loginDevices} />
 
 			<div className="grid gap-4 lg:grid-cols-2">
 				<RelationList
@@ -106,6 +118,73 @@ export function UserDetailView({
 			/>
 		</div>
 	);
+}
+
+function LoginDeviceList({ devices }: { devices: AdminLoginDevice[] }) {
+	return (
+		<Card>
+			<Card.Header>
+				<Card.Title>登录设备</Card.Title>
+				<Card.Description>最近 20 条登录记录</Card.Description>
+			</Card.Header>
+			<Card.Content className="grid gap-2 p-4">
+				{devices.length > 0 ? (
+					devices.map((device) => {
+						const isActive = new Date(device.expiresAt).getTime() > Date.now();
+						const deviceName = formatDeviceName(device.userAgent);
+						return (
+							<div
+								className="grid gap-2 rounded-lg bg-surface-secondary p-3 md:grid-cols-[minmax(0,1fr)_auto]"
+								key={device.id}
+							>
+								<div className="min-w-0">
+									<div className="flex flex-wrap items-center gap-2">
+										<span className="font-medium">{deviceName}</span>
+										<span
+											className={
+												isActive ? "text-success text-xs" : "text-muted text-xs"
+											}
+										>
+											{isActive ? "当前有效" : "已过期"}
+										</span>
+									</div>
+									<div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-muted text-xs">
+										<span>
+											登录时间 {new Date(device.createdAt).toLocaleString()}
+										</span>
+										{device.ipAddress ? (
+											<span>IP {device.ipAddress}</span>
+										) : null}
+									</div>
+								</div>
+								<div className="text-muted text-xs tabular-nums md:text-right">
+									<div>最近活动</div>
+									<div>{new Date(device.updatedAt).toLocaleString()}</div>
+								</div>
+							</div>
+						);
+					})
+				) : (
+					<p className="text-muted text-sm">暂无登录设备记录</p>
+				)}
+			</Card.Content>
+		</Card>
+	);
+}
+
+function formatDeviceName(userAgent: string | null) {
+	if (!userAgent) return "未知设备";
+	if (userAgent.includes("CFNetwork")) return "iPhone / iPad";
+	if (userAgent.includes("okhttp")) return "Android 设备";
+	if (userAgent.includes("Windows")) return "Windows 浏览器";
+	if (userAgent.includes("Macintosh")) return "Mac 浏览器";
+	return userAgent;
+}
+
+function formatLoginMethod(method: string) {
+	if (method === "email") return "邮箱";
+	if (method === "google") return "Google";
+	return method;
 }
 
 function StatBox({ label, value }: { label: string; value: number }) {

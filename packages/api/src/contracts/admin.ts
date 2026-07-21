@@ -1,4 +1,4 @@
-import type { UserRow } from "@youni/db/schema/auth";
+import type { SessionRow, UserRow } from "@youni/db/schema/auth";
 import type {
 	NoteRow,
 	ProhibitedTermRow,
@@ -178,6 +178,7 @@ export type AdminUserListItem = Pick<
 	| "bio"
 	| "gender"
 	| "isAnonymous"
+	| "lastLoginMethod"
 	| "role"
 	| "status"
 	| "createdAt"
@@ -187,6 +188,11 @@ export type AdminUserListItem = Pick<
 	followerCount: number;
 	followingCount: number;
 };
+
+export type AdminLoginDevice = Pick<
+	SessionRow,
+	"id" | "createdAt" | "expiresAt" | "ipAddress" | "updatedAt" | "userAgent"
+>;
 
 export type AdminTopicListItem = Pick<TopicRow, "id" | "name" | "createdAt"> & {
 	noteCount: number;
@@ -315,6 +321,7 @@ export type AdminOutputs = {
 	};
 	userDetail: {
 		user: AdminUserListItem;
+		loginDevices: AdminLoginDevice[];
 		notes: AdminHydratedContentNote[];
 		followers: AdminUserReference[];
 		following: AdminUserReference[];

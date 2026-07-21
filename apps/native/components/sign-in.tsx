@@ -38,6 +38,7 @@ type EmailAuthenticationError = {
 
 export function SignIn({ onAuthenticated }: SignInProps) {
 	const router = useRouter();
+	const isLastUsedMethod = authClient.isLastUsedLoginMethod("email");
 	const { toast } = useAppToast();
 	const mutedColor = useThemeColor("muted");
 	const dangerColor = useThemeColor("danger");
@@ -173,7 +174,13 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 				onPress={submit}
 			>
 				{isSubmitting ? <Spinner size="sm" /> : null}
-				<Button.Label>{isSubmitting ? "登录中" : "登录"}</Button.Label>
+				<Button.Label>
+					{isSubmitting
+						? "登录中"
+						: isLastUsedMethod
+							? "登录 · 上次使用"
+							: "登录"}
+				</Button.Label>
 			</Button>
 		</View>
 	);

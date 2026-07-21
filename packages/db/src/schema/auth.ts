@@ -19,6 +19,7 @@ export const user = sqliteTable("user", {
 	emailVerified: booleanColumn("email_verified").default(false).notNull(),
 	image: text("image"),
 	coverImage: text("cover_image"),
+	lastLoginMethod: text("last_login_method"),
 	handle: text("handle").unique(),
 	bio: text("bio"),
 	gender: text("gender", { enum: userGenders }).default("unknown").notNull(),
@@ -56,6 +57,8 @@ export const session = sqliteTable(
 	},
 	(table) => [index("session_userId_idx").on(table.userId)],
 );
+
+export type SessionRow = typeof session.$inferSelect;
 
 export const account = sqliteTable(
 	"account",

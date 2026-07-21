@@ -25,6 +25,7 @@ function AdminUserDetailRoute() {
 					followers={userDetail.followers}
 					following={userDetail.following}
 					isFetching={detail.isInitialLoading}
+					loginDevices={userDetail.loginDevices}
 					notes={userDetail.notes}
 					user={userDetail.user}
 					onBack={() => navigate({ to: "/admin/users", search: true })}

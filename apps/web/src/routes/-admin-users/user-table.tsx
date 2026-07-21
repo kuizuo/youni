@@ -116,48 +116,24 @@ export function UserTable({
 	const columns = useMemo(() => {
 		const baseColumns = [
 			columnHelper.accessor("name", {
-				cell: (info) => (
-					<UserIdentityCell user={info.row.original} onOpenUser={onOpenUser} />
-				),
 				header: "用户",
 			}),
 			columnHelper.accessor("role", {
-				cell: (info) => (
-					<span className="inline-flex whitespace-nowrap">
-						<UserRoleBadge role={toUserRole(info.getValue())} />
-					</span>
-				),
 				header: "角色",
 			}),
 			columnHelper.accessor("status", {
-				cell: (info) => (
-					<span className="inline-flex whitespace-nowrap">
-						<UserStatusBadge status={toUserStatus(info.getValue())} />
-					</span>
-				),
 				header: "状态",
 			}),
 			columnHelper.accessor("bio", {
-				cell: (info) => (
-					<span className="line-clamp-2 text-muted">
-						{info.getValue() || "暂无简介"}
-					</span>
-				),
 				enableSorting: false,
 				header: "简介",
 			}),
 			columnHelper.display({
-				cell: (info) => <UserStatsCell user={info.row.original} />,
 				enableSorting: false,
 				header: "数据",
 				id: "stats",
 			}),
 			columnHelper.accessor((row) => new Date(row.createdAt).getTime(), {
-				cell: (info) => (
-					<span className="whitespace-nowrap text-muted text-sm tabular-nums">
-						{new Date(info.row.original.createdAt).toLocaleString()}
-					</span>
-				),
 				header: "创建时间",
 				id: "createdAt",
 			}),
@@ -170,50 +146,12 @@ export function UserTable({
 		return [
 			...baseColumns,
 			columnHelper.display({
-				cell: (info) => {
-					const item = info.row.original;
-					const canManage = canManageItem(currentRole, item.role);
-					const isSelf = item.id === currentUserId;
-					const isDeleted = item.status === "deleted";
-					const nextStatus = item.status === "active" ? "disabled" : "active";
-					const canChangeStatus = isDeleted ? canRestoreUsers : canBanUsers;
-
-					return (
-						<UserActionsCell
-							canChangeStatus={canChangeStatus}
-							canDelete={canDeleteUsers}
-							canManage={canManage}
-							canUpdate={canUpdateUsers}
-							isDeletePending={isDeletePending}
-							isDeleted={isDeleted}
-							isSelf={isSelf}
-							isStatusBusy={isStatusBusy}
-							item={item}
-							nextStatus={nextStatus}
-							onEdit={onEdit}
-							onUpdateStatus={onUpdateStatus}
-						/>
-					);
-				},
 				enableSorting: false,
 				header: "操作",
 				id: "actions",
 			}),
 		];
-	}, [
-		canBanUsers,
-		canDeleteUsers,
-		canRestoreUsers,
-		canUpdateUsers,
-		currentRole,
-		currentUserId,
-		hasUserActions,
-		isDeletePending,
-		isStatusBusy,
-		onEdit,
-		onOpenUser,
-		onUpdateStatus,
-	]);
+	}, [hasUserActions]);
 	const table = useReactTable({
 		columns,
 		data: users,
@@ -271,6 +209,7 @@ export function UserTable({
 						))}
 					</Table.Header>
 					<Table.Body
+						items={isFetching || loadError ? [] : users}
 						renderEmptyState={() => (
 							<AdminTableEmptyState
 								emptyText="暂无用户"
@@ -280,20 +219,23 @@ export function UserTable({
 							/>
 						)}
 					>
-						{isFetching || loadError
-							? []
-							: table.getRowModel().rows.map((row) => (
-									<Table.Row id={row.original.id} key={row.original.id}>
-										{row.getVisibleCells().map((cell) => (
-											<Table.Cell key={cell.id}>
-												{flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext(),
-												)}
-											</Table.Cell>
-										))}
-									</Table.Row>
-								))}
+						{(user) => (
+							<UserTableRow
+								canBanUsers={canBanUsers}
+								canDeleteUsers={canDeleteUsers}
+								canRestoreUsers={canRestoreUsers}
+								canUpdateUsers={canUpdateUsers}
+								currentRole={currentRole}
+								currentUserId={currentUserId}
+								hasUserActions={hasUserActions}
+								isDeletePending={isDeletePending}
+								isStatusBusy={isStatusBusy}
+								user={user}
+								onEdit={onEdit}
+								onOpenUser={onOpenUser}
+								onUpdateStatus={onUpdateStatus}
+							/>
+						)}
 					</Table.Body>
 				</Table.Content>
 			</Table.ScrollContainer>
@@ -312,6 +254,90 @@ export function UserTable({
 				total={total}
 			/>
 		</Table>
+	);
+}
+
+function UserTableRow({
+	canBanUsers,
+	canDeleteUsers,
+	canRestoreUsers,
+	canUpdateUsers,
+	currentRole,
+	currentUserId,
+	hasUserActions,
+	isDeletePending,
+	isStatusBusy,
+	onEdit,
+	onOpenUser,
+	onUpdateStatus,
+	user,
+}: {
+	canBanUsers: boolean;
+	canDeleteUsers: boolean;
+	canRestoreUsers: boolean;
+	canUpdateUsers: boolean;
+	currentRole?: AdminUserRole;
+	currentUserId?: string;
+	hasUserActions: boolean;
+	isDeletePending: boolean;
+	isStatusBusy: boolean;
+	onEdit: (item: AdminUserListItem) => void;
+	onOpenUser?: (item: AdminUserListItem) => void;
+	onUpdateStatus: (
+		item: AdminUserListItem,
+		status: AdminUserStatus,
+	) => Promise<void> | void;
+	user: AdminUserListItem;
+}) {
+	const isDeleted = user.status === "deleted";
+
+	return (
+		<Table.Row id={user.id}>
+			<Table.Cell>
+				<UserIdentityCell user={user} onOpenUser={onOpenUser} />
+			</Table.Cell>
+			<Table.Cell>
+				<span className="inline-flex whitespace-nowrap">
+					<UserRoleBadge role={toUserRole(user.role)} />
+				</span>
+			</Table.Cell>
+			<Table.Cell>
+				<span className="inline-flex whitespace-nowrap">
+					<UserStatusBadge status={toUserStatus(user.status)} />
+				</span>
+			</Table.Cell>
+			<Table.Cell>
+				<span className="line-clamp-2 text-muted">
+					{user.bio || "暂无简介"}
+				</span>
+			</Table.Cell>
+			<Table.Cell>
+				<UserStatsCell user={user} />
+			</Table.Cell>
+			<Table.Cell>
+				<span className="whitespace-nowrap text-muted text-sm tabular-nums">
+					{new Date(user.createdAt).toLocaleString()}
+				</span>
+			</Table.Cell>
+			{hasUserActions ? (
+				<Table.Cell>
+					<UserActionsCell
+						canChangeStatus={isDeleted ? canRestoreUsers : canBanUsers}
+						canDelete={canDeleteUsers}
+						canManage={canManageItem(currentRole, user.role)}
+						canUpdate={canUpdateUsers}
+						isDeletePending={isDeletePending}
+						isDeleted={isDeleted}
+						isSelf={user.id === currentUserId}
+						isStatusBusy={isStatusBusy}
+						item={user}
+						nextStatus={user.status === "active" ? "disabled" : "active"}
+						onEdit={onEdit}
+						onUpdateStatus={onUpdateStatus}
+					/>
+				</Table.Cell>
+			) : null}
+		</Table.Row>
 	);
 }
 

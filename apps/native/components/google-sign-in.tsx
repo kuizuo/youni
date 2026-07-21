@@ -97,6 +97,7 @@ function getGoogleErrorMessage(
 
 export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 	const { toast } = useAppToast();
+	const isLastUsedMethod = authClient.isLastUsedLoginMethod("google");
 	const dangerColor = useThemeColor("danger");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -184,7 +185,13 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 	return (
 		<View className="gap-2">
 			<GoogleAuthButton
-				label={isSubmitting ? "正在使用 Google 登录" : "使用 Google 登录"}
+				label={
+					isSubmitting
+						? "正在使用 Google 登录"
+						: isLastUsedMethod
+							? "使用 Google 登录 · 上次使用"
+							: "使用 Google 登录"
+				}
 				isDisabled={isSubmitting}
 				onPress={submit}
 			/>

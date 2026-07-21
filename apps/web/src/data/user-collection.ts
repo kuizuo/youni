@@ -29,6 +29,7 @@ export function useUsersCollection(input: UsersQueryInput) {
 				queryFn: ({ signal }) => client.admin.users(input, { signal }),
 				queryKey: ["admin", "users", input] as const,
 				select: (response) => response.items,
+				syncInterval: false,
 			}),
 		[input],
 	);

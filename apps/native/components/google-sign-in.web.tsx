@@ -65,6 +65,7 @@ function loadGoogleIdentity() {
 
 export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 	const { toast } = useAppToast();
+	const isLastUsedMethod = authClient.isLastUsedLoginMethod("google");
 	const dangerColor = useThemeColor("danger");
 	const buttonContainer = useRef<View>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -142,6 +143,11 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 	return (
 		<View className="items-center gap-2">
 			<View ref={buttonContainer} />
+			{isLastUsedMethod ? (
+				<Typography.Paragraph type="body-sm" color="muted">
+					上次使用 Google 登录
+				</Typography.Paragraph>
+			) : null}
 			{isSubmitting ? (
 				<Typography.Paragraph type="body-sm" color="muted">
 					正在使用 Google 登录
