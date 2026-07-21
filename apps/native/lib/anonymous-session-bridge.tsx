@@ -4,13 +4,16 @@ import { AppState } from "react-native";
 
 import { ensureAnonymousSession } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
+import { isNetworkRequestError } from "@/utils/request-timeout";
 
 async function establishAnonymousSession(refetch: () => Promise<unknown>) {
 	try {
 		await ensureAnonymousSession();
 		await refetch();
 	} catch (error) {
-		console.warn("Anonymous session setup failed", error);
+		if (!isNetworkRequestError(error)) {
+			console.warn("Anonymous session setup failed", error);
+		}
 	}
 }
 

@@ -10,6 +10,28 @@ export class RequestTimeoutError extends Error {
 	}
 }
 
+const NETWORK_ERROR_MESSAGE = /failed to fetch|network request failed/i;
+
+export function isNetworkRequestError(error: unknown): boolean {
+	if (error instanceof TypeError && NETWORK_ERROR_MESSAGE.test(error.message)) {
+		return true;
+	}
+	if (!error || typeof error !== "object") return false;
+
+	const candidate = error as {
+		cause?: unknown;
+		error?: unknown;
+		message?: unknown;
+	};
+
+	return (
+		(typeof candidate.message === "string" &&
+			NETWORK_ERROR_MESSAGE.test(candidate.message)) ||
+		isNetworkRequestError(candidate.cause) ||
+		isNetworkRequestError(candidate.error)
+	);
+}
+
 export function isRequestTimeoutError(error: unknown): boolean {
 	if (error instanceof RequestTimeoutError) return true;
 	if (!error || typeof error !== "object") return false;

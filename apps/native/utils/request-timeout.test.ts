@@ -5,9 +5,8 @@ const originalFetch = globalThis.fetch;
 
 mock.module("@/utils/request-toast", () => ({ showRequestTimeoutToast }));
 
-const { fetchWithTimeout, isRequestTimeoutError } = await import(
-	"./request-timeout"
-);
+const { fetchWithTimeout, isNetworkRequestError, isRequestTimeoutError } =
+	await import("./request-timeout");
 
 beforeEach(() => {
 	showRequestTimeoutToast.mockClear();
@@ -47,4 +46,12 @@ test("keeps showing a toast for normal requests", async () => {
 	} catch {}
 
 	expect(showRequestTimeoutToast).toHaveBeenCalledTimes(1);
+});
+
+test("recognizes browser network failures even when wrapped", () => {
+	const networkError = new TypeError("Failed to fetch");
+
+	expect(isNetworkRequestError(networkError)).toBe(true);
+	expect(isNetworkRequestError({ cause: networkError })).toBe(true);
+	expect(isNetworkRequestError(new Error("请求失败"))).toBe(false);
 });

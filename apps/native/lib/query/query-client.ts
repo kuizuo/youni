@@ -1,4 +1,5 @@
 import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { isNetworkRequestError } from "@/utils/request-timeout";
 
 export const queryClient = new QueryClient({
 	defaultOptions: {
@@ -15,7 +16,7 @@ export const queryClient = new QueryClient({
 	},
 	queryCache: new QueryCache({
 		onError: (error) => {
-			console.log(error);
+			if (!isNetworkRequestError(error)) console.log(error);
 		},
 	}),
 });

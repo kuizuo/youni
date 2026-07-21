@@ -187,6 +187,7 @@ export function NoteCard({
 								<PressableFeedback
 									onPress={(event) => {
 										event.stopPropagation();
+										event.preventDefault();
 										openAuthor();
 									}}
 									className="min-w-0 flex-1 flex-row items-center gap-2"
@@ -220,6 +221,7 @@ export function NoteCard({
 									hitSlop={8}
 									onPress={(event) => {
 										event.stopPropagation();
+										event.preventDefault();
 										toggleLike();
 									}}
 								>

@@ -1,5 +1,6 @@
 import { createAnonymousSessionManager } from "@/lib/anonymous-session-manager";
 import { authClient } from "@/lib/auth-client";
+import { isNetworkRequestError } from "@/utils/request-timeout";
 
 type SessionUser = {
 	isAnonymous?: boolean | null;
@@ -13,7 +14,9 @@ const anonymousSessionManager = createAnonymousSessionManager({
 	createAnonymousSession: () => authClient.signIn.anonymous(),
 	getSession: () => authClient.getSession(),
 	onPreparationError: (error) => {
-		console.warn("Anonymous session preparation failed", error);
+		if (!isNetworkRequestError(error)) {
+			console.warn("Anonymous session preparation failed", error);
+		}
 	},
 });
 

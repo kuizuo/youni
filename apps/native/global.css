@@ -41,8 +41,10 @@
 			--muted: hsl(240, 4%, 45%);
 			--default: hsl(240, 6%, 92%);
 			--default-foreground: hsl(240, 10%, 12%);
+			--color-default-hover: hsl(240, 6%, 89%);
 			--accent: hsl(129, 60%, 66%);
 			--accent-foreground: hsl(130, 25%, 10%);
+			--color-accent-hover: hsl(129, 54%, 60%);
 			--brand: hsl(129, 60%, 66%);
 			--brand-foreground: hsl(130, 25%, 10%);
 			--field-background: hsl(0, 0%, 100%);
@@ -55,6 +57,8 @@
 			--warning-foreground: hsl(240, 10%, 12%);
 			--danger: hsl(348, 92%, 57%);
 			--danger-foreground: hsl(0, 0%, 100%);
+			--color-danger-hover: hsl(348, 83%, 61%);
+			--color-danger-soft-hover: hsla(348, 92%, 57%, 0.2);
 			--segment: hsl(0, 0%, 100%);
 			--segment-foreground: hsl(240, 10%, 12%);
 			--border: hsl(240, 6%, 88%);
@@ -89,8 +93,10 @@
 			--muted: hsl(240, 5%, 68%);
 			--default: hsl(240, 6%, 19%);
 			--default-foreground: hsl(0, 0%, 96%);
+			--color-default-hover: hsl(240, 6%, 22%);
 			--accent: hsl(129, 60%, 66%);
 			--accent-foreground: hsl(130, 25%, 10%);
+			--color-accent-hover: hsl(129, 54%, 60%);
 			--brand: hsl(129, 60%, 66%);
 			--brand-foreground: hsl(130, 25%, 10%);
 			--field-background: hsl(240, 7%, 15%);
@@ -103,6 +109,8 @@
 			--warning-foreground: hsl(240, 10%, 12%);
 			--danger: hsl(348, 86%, 62%);
 			--danger-foreground: hsl(0, 0%, 100%);
+			--color-danger-hover: hsl(348, 78%, 66%);
+			--color-danger-soft-hover: hsla(348, 86%, 62%, 0.2);
 			--segment: hsl(240, 7%, 17%);
 			--segment-foreground: hsl(0, 0%, 96%);
 			--border: hsl(240, 6%, 23%);
