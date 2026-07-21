@@ -8,11 +8,14 @@ import {
 	useThemeColor,
 } from "heroui-native";
 import { useRef, useState } from "react";
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { formatTime } from "@/utils/format";
 import type { ChatListMessage } from "./message-state";
+
+const MESSAGE_LIST_HORIZONTAL_PADDING = 32;
+const MESSAGE_BUBBLE_MAX_WIDTH_RATIO = 0.78;
 
 export function MessageBubble({
 	isMine,
@@ -29,6 +32,7 @@ export function MessageBubble({
 }) {
 	const dangerColor = useThemeColor("danger");
 	const foregroundColor = useThemeColor("foreground");
+	const { width } = useWindowDimensions();
 	const openedByLongPressRef = useRef(false);
 	const triggerRef = useRef<MenuTriggerRef>(null);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -75,10 +79,15 @@ export function MessageBubble({
 					>
 						<View
 							className={cn(
-								"max-w-[78%] rounded-3xl px-4 py-2",
+								"rounded-3xl px-4 py-2",
 								isMine ? "bg-accent" : "bg-content2",
 								isPending && "opacity-70",
 							)}
+							style={{
+								maxWidth:
+									(width - MESSAGE_LIST_HORIZONTAL_PADDING) *
+									MESSAGE_BUBBLE_MAX_WIDTH_RATIO,
+							}}
 						>
 							<Typography.Paragraph
 								className={

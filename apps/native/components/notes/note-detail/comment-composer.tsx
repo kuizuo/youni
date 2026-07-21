@@ -19,8 +19,9 @@ import {
 	type TextStyle,
 	View,
 } from "react-native";
-import { EmojiKeyboard, type EmojiType } from "rn-emoji-keyboard";
+import type { EmojiType } from "rn-emoji-keyboard";
 
+import { ThemedEmojiKeyboard } from "@/components/shared/themed-emoji-keyboard";
 import { nativeQueryKeys } from "@/lib/query/query-keys";
 import type { TextSelection } from "@/lib/types/text-input";
 import { client } from "@/utils/orpc";
@@ -304,12 +305,9 @@ export function CommentComposerPanel({
 					className="overflow-hidden rounded-2xl bg-content2"
 					style={{ height: emojiPanelHeight }}
 				>
-					<EmojiKeyboard
+					<ThemedEmojiKeyboard
 						onEmojiSelected={onEmojiSelect}
-						categoryPosition="bottom"
 						disableSafeArea
-						enableSearchBar={false}
-						allowMultipleSelections
 					/>
 				</View>
 			) : null}

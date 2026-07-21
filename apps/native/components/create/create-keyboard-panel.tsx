@@ -2,7 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button } from "heroui-native";
 import type { ReactNode } from "react";
 import { View } from "react-native";
-import { EmojiKeyboard, type EmojiType } from "rn-emoji-keyboard";
+import type { EmojiType } from "rn-emoji-keyboard";
+
+import { ThemedEmojiKeyboard } from "@/components/shared/themed-emoji-keyboard";
 
 export type CreateInputField = "content" | "title";
 
@@ -75,12 +77,7 @@ export function CreateKeyboardPanel({
 						className="overflow-hidden rounded-2xl bg-content2"
 						style={{ height: emojiPanelHeight }}
 					>
-						<EmojiKeyboard
-							onEmojiSelected={onEmojiSelect}
-							categoryPosition="bottom"
-							enableSearchBar={false}
-							allowMultipleSelections
-						/>
+						<ThemedEmojiKeyboard onEmojiSelected={onEmojiSelect} />
 					</View>
 				) : null}
 			</View>
