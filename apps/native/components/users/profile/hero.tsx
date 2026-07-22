@@ -158,7 +158,7 @@ export function UserProfileHero({
 									weight="bold"
 									numberOfLines={1}
 									className="text-foreground"
-									style={{ fontSize: 24, lineHeight: 30 }}
+									style={{ fontSize: 24, lineHeight: 32 }}
 								>
 									{displayName}
 								</Typography.Paragraph>

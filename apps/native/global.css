@@ -12,6 +12,8 @@
 	--font-medium: "Nunito_500Medium";
 	--font-semibold: "Nunito_600SemiBold";
 	--font-bold: "Nunito_700Bold";
+	--text-3xl--line-height: 2.5rem;
+	--text-4xl--line-height: 3rem;
 }
 
 @theme inline {

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { PressableFeedback } from "heroui-native";
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
@@ -9,12 +9,13 @@ import { fireHaptic } from "@/lib/utils/fire-haptic";
 export function PublishFAB() {
 	const insets = useSafeAreaInsets();
 	const socialNavigation = useSocialNavigation();
+	const { width } = useWindowDimensions();
 
 	return (
 		<View
 			pointerEvents="box-none"
 			style={{
-				bottom: insets.bottom + 76,
+				bottom: insets.bottom + (width < 400 ? 100 : 76),
 				position: "absolute",
 				right: 20,
 			}}

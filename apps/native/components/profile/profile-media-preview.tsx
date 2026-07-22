@@ -144,7 +144,7 @@ export function ProfileAvatarPreview({
 						>
 							<Typography.Paragraph
 								weight="bold"
-								style={{ color: "#ffffff", fontSize: 88, lineHeight: 104 }}
+								style={{ color: "#ffffff", fontSize: 88, lineHeight: 116 }}
 							>
 								{initial}
 							</Typography.Paragraph>

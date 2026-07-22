@@ -763,7 +763,7 @@ function SharePoster({
 						className="text-black"
 						style={{
 							fontSize: posterWidth * 0.052,
-							lineHeight: posterWidth * 0.06,
+							lineHeight: posterWidth * 0.068,
 						}}
 					>
 						{note.title}

@@ -35,7 +35,7 @@ export function TopicHeader({
 			<View className="absolute top-10 right-6 size-36 rotate-12 items-center justify-center opacity-5">
 				<Typography.Heading
 					type="h1"
-					style={{ fontSize: 140, color: accentColor }}
+					style={{ color: accentColor, fontSize: 140, lineHeight: 168 }}
 				>
 					#
 				</Typography.Heading>
@@ -109,7 +109,7 @@ export function TopicSortBar({
 							<Typography.Paragraph
 								weight={active ? "bold" : "normal"}
 								className={active ? "text-foreground" : "text-muted"}
-								style={{ fontSize: 14, lineHeight: 18 }}
+								style={{ fontSize: 14, lineHeight: 20 }}
 							>
 								{item.label}
 							</Typography.Paragraph>

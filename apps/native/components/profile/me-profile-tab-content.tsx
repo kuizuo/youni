@@ -87,7 +87,7 @@ export function ProfileTabBar({
 								style={{
 									color: selected ? foregroundColor : mutedColor,
 									fontSize: 14,
-									lineHeight: 18,
+									lineHeight: 20,
 								}}
 							>
 								{tab.label}
