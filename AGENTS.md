@@ -8,7 +8,7 @@ Youni is a Bun-powered TypeScript monorepo generated from Better-T-Stack and ext
 
 - `apps/web`: React 19 + Vite + TanStack Router admin console. The public home route redirects to `/admin`.
 - `apps/native`: Expo Router + React Native mobile app for the user-facing feed, publishing, search, profile, messages, and note detail flows.
-- `apps/server`: Hono server exposing Better Auth routes, oRPC routes, OpenAPI reference routes, and an `/ai` streaming endpoint.
+- `apps/server`: Hono server exposing Better Auth routes, oRPC routes, and OpenAPI reference routes.
 - `packages/api`: Shared oRPC router and business logic. Add or change API procedures here.
 - `packages/db`: Drizzle Cloudflare D1 schema, migrations, seed script, and database client.
 - `packages/auth`: Better Auth configuration shared by server and clients.

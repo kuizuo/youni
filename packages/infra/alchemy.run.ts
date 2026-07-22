@@ -234,9 +234,6 @@ export const server = await Worker("server", {
 			"BETTER_AUTH_SECRET",
 		),
 		BETTER_AUTH_URL: publicServerUrl,
-		GOOGLE_GENERATIVE_AI_API_KEY: optionalSecretEnv(
-			"GOOGLE_GENERATIVE_AI_API_KEY",
-		),
 		GOOGLE_WEB_CLIENT_ID: optionalEnv("GOOGLE_WEB_CLIENT_ID"),
 		GOOGLE_IOS_CLIENT_ID: optionalEnv("GOOGLE_IOS_CLIENT_ID"),
 		GOOGLE_ANDROID_CLIENT_ID: optionalEnv("GOOGLE_ANDROID_CLIENT_ID"),
