@@ -18,7 +18,6 @@ import {
 	type ContentReviewJob,
 	processContentReviewJob,
 } from "@youni/api/lib/notes/moderation";
-import { linkAnonymousNoteViews } from "@youni/api/lib/notes/views";
 import { appRouter } from "@youni/api/routers/index";
 import { createAuth } from "@youni/auth";
 import { hasAdminPermission } from "@youni/auth/permissions";
@@ -112,11 +111,7 @@ app.use("/api/auth/admin/*", async (c, next) => {
 	return c.json({ message: "请使用后台业务接口管理用户" }, 403);
 });
 
-app.on(["POST", "GET"], "/api/auth/*", (c) =>
-	createAuth({ onLinkAnonymousAccount: linkAnonymousNoteViews }).handler(
-		c.req.raw,
-	),
-);
+app.on(["POST", "GET"], "/api/auth/*", (c) => createAuth().handler(c.req.raw));
 
 async function assertBackofficeAccess(c: HonoContext) {
 	const context = await createContext({ context: c });

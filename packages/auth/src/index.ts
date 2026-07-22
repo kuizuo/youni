@@ -67,14 +67,7 @@ const zhAuthErrorTranslations = {
 	USER_NOT_FOUND: "用户不存在",
 } satisfies Record<string, string>;
 
-export type CreateAuthOptions = {
-	onLinkAnonymousAccount?: (input: {
-		anonymousUserId: string;
-		newUserId: string;
-	}) => Promise<void>;
-};
-
-export function createAuth(options: CreateAuthOptions = {}) {
+export function createAuth() {
 	const db = createDb();
 
 	return betterAuth({
@@ -181,12 +174,6 @@ export function createAuth(options: CreateAuthOptions = {}) {
 		plugins: [
 			anonymous({
 				generateName: () => "匿名用户",
-				async onLinkAccount({ anonymousUser, newUser }) {
-					await options.onLinkAnonymousAccount?.({
-						anonymousUserId: anonymousUser.user.id,
-						newUserId: newUser.user.id,
-					});
-				},
 			}),
 			lastLoginMethod({
 				storeInDatabase: true,

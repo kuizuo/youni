@@ -1,22 +1,44 @@
-import { describe, expect, test } from "bun:test";
-import { runAccountAuthentication } from "./account-authentication";
+import { describe, expect, mock, test } from "bun:test";
+
+const clear = mock(() => {});
+mock.module("@/lib/auth-client", () => ({
+	authClient: { $store: { notify: () => {} } },
+}));
+mock.module("@/lib/query/query-client", () => ({ queryClient: { clear } }));
+
+const { runAccountAuthentication } = await import("./account-authentication");
 
 describe("account authentication", () => {
-	test("waits for the new session to be stored before leaving login", async () => {
-		let sessionStored = false;
-		let sessionWasReadyOnNavigation = false;
+	test("clears the previous identity before leaving login", async () => {
+		clear.mockClear();
+		let authenticated = false;
 
-		await runAccountAuthentication({
-			authenticate: async () => {
-				await Promise.resolve();
-				sessionStored = true;
-				return { error: null };
-			},
+		const error = await runAccountAuthentication({
+			authenticate: async () => ({ error: null }),
 			onAuthenticated: () => {
-				sessionWasReadyOnNavigation = sessionStored;
+				authenticated = true;
 			},
 		});
 
-		expect(sessionWasReadyOnNavigation).toBe(true);
+		expect(error).toBeNull();
+		expect(clear).toHaveBeenCalledTimes(1);
+		expect(authenticated).toBe(true);
+	});
+
+	test("does not continue after authentication is rejected", async () => {
+		clear.mockClear();
+		const authenticationError = { message: "邮箱或密码错误" };
+		let authenticated = false;
+
+		const error = await runAccountAuthentication({
+			authenticate: async () => ({ error: authenticationError }),
+			onAuthenticated: () => {
+				authenticated = true;
+			},
+		});
+
+		expect(error).toBe(authenticationError);
+		expect(clear).not.toHaveBeenCalled();
+		expect(authenticated).toBe(false);
 	});
 });

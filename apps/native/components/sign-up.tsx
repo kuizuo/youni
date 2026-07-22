@@ -13,11 +13,9 @@ import { useState } from "react";
 import { View } from "react-native";
 import z from "zod";
 import { runAccountAuthentication } from "@/lib/account-authentication";
-import { prepareForAccountAuthentication } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
 import { type FieldErrors, getFieldErrors } from "@/utils/form-errors";
-import { queryClient } from "@/utils/orpc";
 import {
 	isRequestTimeoutError,
 	REQUEST_TIMEOUT_MESSAGE,
@@ -73,7 +71,6 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 		setFieldErrors({});
 		setIsSubmitting(true);
 		try {
-			await prepareForAccountAuthentication();
 			const authenticationError =
 				await runAccountAuthentication<EmailAuthenticationError>({
 					authenticate: () =>
@@ -82,11 +79,7 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 							email: parsed.data.email.trim(),
 							password: parsed.data.password,
 						}),
-					onAuthenticated: async () => {
-						authClient.$store.notify("$sessionSignal");
-						await onAuthenticated?.();
-						queryClient.refetchQueries();
-					},
+					onAuthenticated,
 				});
 
 			if (authenticationError) {

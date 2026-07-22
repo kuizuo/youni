@@ -7,11 +7,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { YouniMark } from "@/components/brand/youni-logo";
 import { SignUp } from "@/components/sign-up";
-import { authClient } from "@/lib/auth-client";
 
 export default function RegisterScreen() {
 	const router = useRouter();
-	const session = authClient.useSession();
 	const insets = useSafeAreaInsets();
 	const mutedColor = useThemeColor("muted");
 
@@ -44,12 +42,7 @@ export default function RegisterScreen() {
 						</View>
 					</View>
 
-					<SignUp
-						onAuthenticated={async () => {
-							await session.refetch();
-							router.replace("/" as Href);
-						}}
-					/>
+					<SignUp onAuthenticated={() => router.replace("/" as Href)} />
 
 					<Button
 						variant="tertiary"

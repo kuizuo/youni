@@ -1,8 +1,11 @@
+import { markSignedOut } from "@/lib/anonymous-session-policy";
 import { authClient } from "@/lib/auth-client";
 import { unregisterCurrentDevicePushToken } from "@/lib/notifications/push-notifications";
 import { queryClient } from "@/utils/orpc";
 
 export async function signOutCurrentUser() {
+	await markSignedOut().catch(() => {});
+
 	try {
 		await unregisterCurrentDevicePushToken();
 	} catch {

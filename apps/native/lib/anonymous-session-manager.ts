@@ -3,7 +3,6 @@ export type AnonymousSessionManagerDependencies = {
 		error?: { message?: string } | null;
 	}>;
 	getSession: () => Promise<{ data?: { user?: unknown } | null }>;
-	onPreparationError?: (error: unknown) => void;
 };
 
 const globalForAnonymousSession = globalThis as typeof globalThis & {
@@ -13,7 +12,6 @@ const globalForAnonymousSession = globalThis as typeof globalThis & {
 export function createAnonymousSessionManager({
 	createAnonymousSession,
 	getSession,
-	onPreparationError,
 }: AnonymousSessionManagerDependencies) {
 	async function createIfMissing() {
 		const current = await getSession();
@@ -36,13 +34,5 @@ export function createAnonymousSessionManager({
 		return globalForAnonymousSession.youniAnonymousSessionPending;
 	}
 
-	async function prepareForAccountAuthentication() {
-		try {
-			await ensure();
-		} catch (error) {
-			onPreparationError?.(error);
-		}
-	}
-
-	return { ensure, prepareForAccountAuthentication };
+	return { ensure };
 }

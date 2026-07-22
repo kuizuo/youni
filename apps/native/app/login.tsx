@@ -56,12 +56,7 @@ export default function LoginScreen() {
 						</View>
 					</View>
 
-					<AuthPanel
-						onAuthenticated={async () => {
-							await session.refetch();
-							router.replace("/" as Href);
-						}}
-					/>
+					<AuthPanel onAuthenticated={() => router.replace("/" as Href)} />
 
 					<View className="gap-2">
 						<Button
