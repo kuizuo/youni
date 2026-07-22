@@ -12,7 +12,7 @@ import { useWindowDimensions, View } from "react-native";
 
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { formatTime } from "@/utils/format";
-import type { ChatListMessage } from "./message-state";
+import type { ChatListMessage } from "./conversation-session";
 
 const MESSAGE_LIST_HORIZONTAL_PADDING = 32;
 const MESSAGE_BUBBLE_MAX_WIDTH_RATIO = 0.78;

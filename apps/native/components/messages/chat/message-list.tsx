@@ -4,8 +4,8 @@ import { FlatList, View } from "react-native";
 
 import { ErrorState } from "@/components/social-states";
 
+import type { ChatListMessage } from "./conversation-session";
 import { MessageBubble } from "./message-bubble";
-import type { ChatListMessage } from "./message-state";
 
 export function ChatMessageList({
 	currentUserId,

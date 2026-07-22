@@ -17,6 +17,7 @@ export const conversationActionInput = z.object({
 export const deleteForMeInput = conversationActionInput.extend({
 	messageId: z.string().min(1),
 });
+export type DeleteForMeInput = z.infer<typeof deleteForMeInput>;
 
 export const blockInput = conversationActionInput.extend({
 	blocked: z.boolean(),
@@ -45,6 +46,7 @@ export const sendMessageInput = z.union([
 		})
 		.strict(),
 ]);
+export type SendMessageInput = z.infer<typeof sendMessageInput>;
 
 // ====== Output ======
 

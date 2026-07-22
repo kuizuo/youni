@@ -1,9 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type {
-	ChatMessage,
-	ChatPeer,
-	ConversationItem,
-} from "@youni/api/contracts/messages";
+import type { ChatPeer } from "@youni/api/contracts/messages";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -17,21 +12,15 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { EmojiType } from "rn-emoji-keyboard";
 
+import type { ChatListMessage } from "@/components/messages/chat/conversation-session";
 import { ChatHeader } from "@/components/messages/chat/header";
 import { ChatInputBar } from "@/components/messages/chat/input-bar";
 import { ChatMessageList } from "@/components/messages/chat/message-list";
-import {
-	type ChatListMessage,
-	markConversationRead,
-	mergeChatMessages,
-} from "@/components/messages/chat/message-state";
+import { useConversationSession } from "@/components/messages/chat/use-conversation-session";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useSocialNavigation } from "@/lib/social/use-social-actions";
-import { useAppToast } from "@/utils/app-toast";
 import { confirmAction } from "@/utils/confirm-action";
-import { orpc } from "@/utils/orpc";
-import { isRequestTimeoutError } from "@/utils/request-timeout";
 import { getRouteParam } from "@/utils/route-params";
 
 const DEFAULT_EMOJI_PANEL_HEIGHT = 304;
@@ -47,15 +36,11 @@ export default function ChatDetailScreen() {
 	const routeConversationId = getRouteParam(params.id) ?? "";
 	const draftUserId = getRouteParam(params.userId) ?? "";
 	const router = useRouter();
-	const queryClient = useQueryClient();
 	const insets = useSafeAreaInsets();
 	const session = authClient.useSession();
 	const socialNavigation = useSocialNavigation();
-	const { toast } = useAppToast();
 	const inputRef = useRef<TextInput>(null);
 	const contentRef = useRef("");
-	const messageSequenceRef = useRef(0);
-	const deletedForMeIdsRef = useRef(new Set<string>());
 	const isEmojiKeyboardOpenRef = useRef(false);
 	const isEmojiInputLockedRef = useRef(false);
 	const isSystemKeyboardVisibleRef = useRef(false);
@@ -67,13 +52,6 @@ export default function ChatDetailScreen() {
 	const [isEmojiInputLocked, setIsEmojiInputLocked] = useState(false);
 	const [isEmojiKeyboardOpen, setIsEmojiKeyboardOpen] = useState(false);
 	const [isSystemKeyboardVisible, setIsSystemKeyboardVisible] = useState(false);
-	const [deletedForMeIds, setDeletedForMeIds] = useState<Set<string>>(
-		() => new Set(),
-	);
-	const [startedConversationId, setStartedConversationId] = useState("");
-	const [outgoingMessages, setOutgoingMessages] = useState<ChatListMessage[]>(
-		[],
-	);
 	const [selection, setSelection] = useState({ end: 0, start: 0 });
 	const isAuthenticated = isRegisteredUser(session.data?.user);
 	contentRef.current = content;
@@ -89,64 +67,14 @@ export default function ChatDetailScreen() {
 				name: getRouteParam(params.name) ?? "用户",
 			}
 		: undefined;
-	const openedChat = useQuery({
-		...orpc.messages.open.queryOptions({
-			input: { userId: draftUserId || "missing" },
-		}),
-		enabled: Boolean(draftUserId && isAuthenticated),
-		staleTime: 30_000,
+	const conversation = useConversationSession({
+		currentUserId: session.data?.user?.id,
+		draftUserId,
+		isAuthenticated,
+		previewPeer,
+		routeConversationId,
 	});
-	const conversationId =
-		routeConversationId ||
-		startedConversationId ||
-		openedChat.data?.conversationId ||
-		"";
-	const chat = useQuery({
-		...orpc.messages.byId.queryOptions({
-			input: { conversationId: conversationId || "missing", limit: 80 },
-		}),
-		enabled: Boolean(conversationId && isAuthenticated),
-		refetchInterval: 2500,
-		refetchOnMount: "always",
-	});
-	const sendMutation = useMutation(orpc.messages.send.mutationOptions());
-	const deleteForMeMutation = useMutation(
-		orpc.messages.deleteForMe.mutationOptions(),
-	);
-	const serverMessages: ChatMessage[] = chat.data?.messages ?? [];
-	const messages = mergeChatMessages(
-		serverMessages,
-		outgoingMessages,
-		deletedForMeIds,
-	);
-	const peer = chat.data?.peer ?? openedChat.data?.peer ?? previewPeer;
-	const hasBlockedPeer =
-		chat.data?.hasBlockedPeer ?? openedChat.data?.hasBlockedPeer;
-	const isBlockedByPeer =
-		chat.data?.isBlockedByPeer ?? openedChat.data?.isBlockedByPeer;
-	const disabledReason = isBlockedByPeer
-		? "对方已将你加入黑名单，暂时不能发送私信"
-		: hasBlockedPeer
-			? "你已将对方加入黑名单，解除后才能发送私信"
-			: undefined;
-	const canSend = Boolean(
-		(conversationId || draftUserId) &&
-			isAuthenticated &&
-			!disabledReason &&
-			!sendMutation.isPending &&
-			content.trim().length > 0,
-	);
-
-	useEffect(() => {
-		if (!conversationId || !chat.isFetchedAfterMount || !chat.isSuccess) return;
-
-		const conversationsQuery = orpc.messages.conversations.queryOptions();
-		queryClient.setQueryData<ConversationItem[]>(
-			conversationsQuery.queryKey,
-			(current) =>
-				current ? markConversationRead(current, conversationId) : current,
-		);
-	}, [chat.isFetchedAfterMount, chat.isSuccess, conversationId, queryClient]);
+	const peer = conversation.peer;
 
 	useEffect(() => {
 		const updateKeyboardHeight = (event: KeyboardEvent) => {
@@ -259,163 +187,16 @@ export default function ChatDetailScreen() {
 		closeEmojiKeyboard();
 	};
 
-	const updateOutgoingMessage = (
-		id: string,
-		update: (message: ChatListMessage) => ChatListMessage,
-	) => {
-		setOutgoingMessages((current) =>
-			current.map((message) => (message.id === id ? update(message) : message)),
-		);
-	};
-
-	const hideMessage = (messageId: string) => {
-		deletedForMeIdsRef.current = new Set(deletedForMeIdsRef.current).add(
-			messageId,
-		);
-		setDeletedForMeIds(deletedForMeIdsRef.current);
-	};
-
-	const restoreMessage = (messageId: string) => {
-		const next = new Set(deletedForMeIdsRef.current);
-		next.delete(messageId);
-		deletedForMeIdsRef.current = next;
-		setDeletedForMeIds(next);
-	};
-
-	const refreshMessageQueries = (targetConversationId: string) => {
-		const refreshes = [
-			queryClient.invalidateQueries({
-				queryKey: orpc.messages.conversations.queryOptions().queryKey,
-			}),
-			queryClient.invalidateQueries({
-				queryKey: orpc.messages.byId.queryOptions({
-					input: { conversationId: targetConversationId, limit: 80 },
-				}).queryKey,
-			}),
-		];
-		if (draftUserId) {
-			refreshes.push(
-				queryClient.invalidateQueries({
-					queryKey: orpc.messages.open.queryOptions({
-						input: { userId: draftUserId },
-					}).queryKey,
-				}),
-			);
-		}
-		return Promise.all(refreshes);
-	};
-
-	const deleteServerMessage = (
-		targetConversationId: string,
-		message: ChatListMessage,
-	) => {
-		deleteForMeMutation.mutate(
-			{
-				conversationId: targetConversationId,
-				messageId: message.id,
-			},
-			{
-				onError: (error) => {
-					restoreMessage(message.id);
-					toast.show({
-						variant: "danger",
-						label: error.message || "删除失败",
-					});
-				},
-				onSuccess: () => {
-					setOutgoingMessages((current) =>
-						current.filter((item) => item.id !== message.id),
-					);
-					void refreshMessageQueries(targetConversationId);
-				},
-			},
-		);
-	};
-
 	const copyMessage = (message: ChatListMessage) => {
 		void Clipboard.setStringAsync(message.content).catch(() => undefined);
 	};
 
-	const deleteMessage = (message: ChatListMessage) => {
-		hideMessage(message.id);
-		if (message.deliveryStatus === "failed") {
-			setOutgoingMessages((current) =>
-				current.filter((item) => item.id !== message.id),
-			);
-			return;
-		}
-		if (message.deliveryStatus === "pending" || !conversationId) return;
-		deleteServerMessage(conversationId, message);
-	};
-
-	const sendOutgoingMessage = (message: ChatListMessage) => {
-		const callbacks = {
-			onError: (error: Error) => {
-				if (deletedForMeIdsRef.current.has(message.id)) {
-					setOutgoingMessages((current) =>
-						current.filter((item) => item.id !== message.id),
-					);
-					return;
-				}
-				updateOutgoingMessage(message.id, (current) => ({
-					...current,
-					deliveryStatus: "failed",
-				}));
-				if (isRequestTimeoutError(error)) return;
-				toast.show({ variant: "danger" as const, label: error.message });
-			},
-			onSuccess: (result: { conversationId: string; message: ChatMessage }) => {
-				updateOutgoingMessage(message.id, () => result.message);
-				setStartedConversationId(result.conversationId);
-				if (deletedForMeIdsRef.current.has(message.id)) {
-					deleteServerMessage(result.conversationId, result.message);
-					return;
-				}
-				void refreshMessageQueries(result.conversationId);
-			},
-		};
-
-		sendMutation.mutate(
-			conversationId
-				? {
-						clientMessageId: message.id,
-						conversationId,
-						content: message.content,
-					}
-				: {
-						clientMessageId: message.id,
-						userId: draftUserId,
-						content: message.content,
-					},
-			callbacks,
-		);
-	};
-
 	const send = () => {
-		const nextContent = content.trim();
-		const senderId = session.data?.user?.id;
-		if (
-			!nextContent ||
-			!senderId ||
-			!isAuthenticated ||
-			(!conversationId && !draftUserId) ||
-			sendMutation.isPending
-		)
-			return;
+		if (!conversation.send(content)) return;
 		closeEmojiKeyboard();
 		Keyboard.dismiss();
 		contentRef.current = "";
 		setContent("");
-		messageSequenceRef.current += 1;
-		const message: ChatListMessage = {
-			content: nextContent,
-			createdAt: new Date(),
-			deliveryStatus: "pending",
-			id: `local-${senderId}-${Date.now().toString(36)}-${messageSequenceRef.current.toString(36)}`,
-			senderId,
-		};
-		setOutgoingMessages((current) => [...current, message]);
-		sendOutgoingMessage(message);
 	};
 
 	const confirmRetryMessage = (message: ChatListMessage) => {
@@ -424,15 +205,7 @@ export default function ChatDetailScreen() {
 			confirmText: "重新发送",
 			isDestructive: false,
 			message: "确认后会再次发送这条私信。",
-			onConfirm: () => {
-				if (sendMutation.isPending) return;
-				const pendingMessage: ChatListMessage = {
-					...message,
-					deliveryStatus: "pending",
-				};
-				updateOutgoingMessage(message.id, () => pendingMessage);
-				sendOutgoingMessage(pendingMessage);
-			},
+			onConfirm: () => conversation.retryMessage(message),
 			title: "重新发送这条消息？",
 		});
 	};
@@ -458,8 +231,8 @@ export default function ChatDetailScreen() {
 						? () =>
 								socialNavigation.goTo({
 									type: "chatSettings",
-									...(conversationId
-										? { conversationId }
+									...(conversation.conversationId
+										? { conversationId: conversation.conversationId }
 										: { userId: peer.id }),
 								})
 						: undefined
@@ -468,27 +241,22 @@ export default function ChatDetailScreen() {
 
 			<ChatMessageList
 				currentUserId={isAuthenticated ? session.data?.user?.id : undefined}
-				isError={openedChat.isError || chat.isError}
-				isLoading={
-					openedChat.isLoading || (Boolean(conversationId) && chat.isLoading)
-				}
-				messages={messages}
+				isError={conversation.isError}
+				isLoading={conversation.isLoading}
+				messages={conversation.messages}
 				onDismissInputPanel={dismissInputPanel}
 				onCopyMessage={copyMessage}
-				onDeleteMessage={deleteMessage}
-				onRetry={() => {
-					if (openedChat.isError) void openedChat.refetch();
-					if (chat.isError) void chat.refetch();
-				}}
+				onDeleteMessage={conversation.deleteMessage}
+				onRetry={conversation.retryLoading}
 				onRetryMessage={confirmRetryMessage}
 			/>
 
 			<ChatInputBar
 				bottomInset={insets.bottom}
-				canSend={canSend}
+				canSend={conversation.canSend(content)}
 				content={content}
 				emojiPanelHeight={emojiPanelHeight}
-				disabledReason={disabledReason}
+				disabledReason={conversation.disabledReason}
 				isEmojiInputLocked={isEmojiInputLocked}
 				inputRef={inputRef}
 				isEmojiPickerOpen={isEmojiKeyboardOpen}
