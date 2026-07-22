@@ -69,8 +69,6 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 							password: parsed.data.password,
 						}),
 					onAuthenticated: async () => {
-						setEmail("");
-						setPassword("");
 						authClient.$store.notify("$sessionSignal");
 						await onAuthenticated?.();
 						queryClient.refetchQueries();
