@@ -1,9 +1,12 @@
+import type { ProfileMediaKind } from "@youni/api/contracts/profiles";
 import * as ImagePicker from "expo-image-picker";
 
 import { apiBaseUrl } from "@/lib/api-url";
 import { authClient } from "@/lib/auth-client";
 import type { ImageUploadResponse } from "@/lib/media/types";
 import { appendUploadFile } from "@/lib/media/upload-form-data";
+import { createProfileMediaSubmission } from "@/lib/profile-media-submission-flow";
+import { client, queryClient } from "@/utils/orpc";
 import { fetchWithTimeout } from "@/utils/request-timeout";
 
 const PROFILE_IMAGE_UPLOAD_TIMEOUT_MS = 30_000;
@@ -157,24 +160,52 @@ async function pickAndUploadProfileImage(options: ProfileImageOptions) {
 	return parseUploadResponse(response, options.label);
 }
 
-export function pickAndUploadAvatar() {
-	return pickAndUploadProfileImage({
+const profileImageOptions: Record<ProfileMediaKind, ProfileImageOptions> = {
+	avatar: {
 		aspect: [1, 1],
 		endpoint: "/uploads/avatar",
 		fieldName: "avatar",
 		label: "头像",
 		maxSize: 2 * 1024 * 1024,
 		namePrefix: "avatar",
-	});
-}
-
-export function pickAndUploadProfileCover() {
-	return pickAndUploadProfileImage({
+	},
+	cover: {
 		aspect: [3, 1],
 		endpoint: "/uploads/profile-cover",
 		fieldName: "cover",
 		label: "背景图",
 		maxSize: 5 * 1024 * 1024,
 		namePrefix: "profile-cover",
-	});
+	},
+};
+
+async function cleanupProfileMedia(key: string) {
+	const headers = new Headers({ "Content-Type": "application/json" });
+	const isWeb = process.env.EXPO_OS === "web";
+	if (!isWeb) {
+		const cookies = authClient.getCookie();
+		if (cookies) headers.set("Cookie", cookies);
+	}
+
+	const response = await fetchWithTimeout(
+		`${apiBaseUrl}/uploads/profile-media/cleanup`,
+		{
+			body: JSON.stringify({ key }),
+			credentials: isWeb ? "include" : "omit",
+			headers,
+			method: "POST",
+		},
+		PROFILE_IMAGE_UPLOAD_TIMEOUT_MS,
+	);
+	if (!response.ok) throw new Error("资料图片清理失败");
 }
+
+export const submitProfileMedia = createProfileMediaSubmission({
+	bind: (input) => client.profiles.updateProfileMedia(input),
+	cleanup: cleanupProfileMedia,
+	pickAndUpload: (kind) => pickAndUploadProfileImage(profileImageOptions[kind]),
+	refresh: async () => {
+		authClient.$store.notify("$sessionSignal");
+		await queryClient.refetchQueries();
+	},
+});

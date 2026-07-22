@@ -14,6 +14,10 @@ import {
 	selectContentNoteRows,
 } from "../lib/notes/content";
 import { notifyFollow } from "../lib/notifications";
+import {
+	parseProfileMediaIdentity,
+	profileMediaUrl,
+} from "../lib/profiles/media-identity";
 import { containsInsensitive } from "../lib/search";
 import {
 	getBlockedUserIds,
@@ -339,14 +343,54 @@ export const profilesRouter = {
 					handle: input.handle || null,
 					bio: input.bio || null,
 					gender: input.gender,
-					image: input.image || null,
-					...(input.coverImage !== undefined
-						? { coverImage: input.coverImage || null }
-						: {}),
 				})
 				.where(eq(user.id, context.session.user.id))
 				.returning();
 			return updated;
+		},
+	),
+
+	updateProfileMedia: activeUserProcedure.profiles.updateProfileMedia.handler(
+		async ({ input, context }) => {
+			const userId = context.session.user.id;
+			const identity = parseProfileMediaIdentity(input.key);
+			if (!identity || identity.origin !== null || identity.userId !== userId) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: "资料图片归属无效",
+				});
+			}
+
+			const db = createDb();
+			const [current] = await db
+				.select({ coverImage: user.coverImage, image: user.image })
+				.from(user)
+				.where(eq(user.id, userId))
+				.limit(1);
+			if (!current) throw new ORPCError("NOT_FOUND");
+
+			const previousValue =
+				identity.kind === "avatar" ? current.image : current.coverImage;
+			const previous = previousValue
+				? parseProfileMediaIdentity(previousValue)
+				: null;
+			const url = profileMediaUrl(
+				{ ...identity, userId },
+				context.requestOrigin,
+			);
+			const [profile] = await db
+				.update(user)
+				.set(identity.kind === "avatar" ? { image: url } : { coverImage: url })
+				.where(eq(user.id, userId))
+				.returning({ coverImage: user.coverImage, image: user.image });
+			if (!profile) throw new ORPCError("NOT_FOUND");
+
+			return {
+				previousKey:
+					previous?.kind === identity.kind && previous.userId === userId
+						? previous.key
+						: null,
+				profile,
+			};
 		},
 	),
 

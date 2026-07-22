@@ -25,6 +25,8 @@ export const meFeedInput = z.object({
 	limit: z.number().int().min(1).max(60).default(30),
 });
 
+export type ProfileMediaKind = "avatar" | "cover";
+
 export const profileUpdateInput = z.object({
 	name: z.string().trim().min(1).max(50),
 	handle: z
@@ -37,8 +39,10 @@ export const profileUpdateInput = z.object({
 		.or(z.literal("")),
 	bio: z.string().trim().max(160).optional(),
 	gender: z.enum(userGenders).default("unknown"),
-	image: z.string().trim().url().optional().or(z.literal("")),
-	coverImage: z.string().trim().url().optional().or(z.literal("")),
+});
+
+export const profileMediaUpdateInput = z.object({
+	key: z.string().trim().min(1).max(200),
 });
 
 export const userBlockInput = profileInput.extend({ blocked: z.boolean() });
@@ -88,6 +92,10 @@ export type ProfilesOutputs = {
 	meProfile: ProfileUser;
 	meFeed: Array<HydratedContentNote & { viewCount: number | null }>;
 	updateProfile: UserRow | undefined;
+	updateProfileMedia: {
+		previousKey: null | string;
+		profile: Pick<UserRow, "coverImage" | "image">;
+	};
 	toggleFollow: { following: boolean; followerCount: number };
 	blockedUsers: {
 		blockedAt: Date;
@@ -125,6 +133,9 @@ export const profilesContract = {
 	updateProfile: procedure
 		.input(profileUpdateInput)
 		.output(output<ProfilesOutputs["updateProfile"]>()),
+	updateProfileMedia: procedure
+		.input(profileMediaUpdateInput)
+		.output(output<ProfilesOutputs["updateProfileMedia"]>()),
 	toggleFollow: procedure
 		.input(profileInput)
 		.output(output<ProfilesOutputs["toggleFollow"]>()),

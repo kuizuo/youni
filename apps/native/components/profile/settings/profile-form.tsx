@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import type { AuthUser } from "@/lib/auth-client";
-import { pickAndUploadAvatar } from "@/lib/avatar-upload";
+import { submitProfileMedia } from "@/lib/profile-media-submission";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -106,7 +106,6 @@ export function SettingsProfileForm({
 			name: name.trim(),
 			handle: handle.trim(),
 			bio: bio.trim(),
-			image: avatarUrl.trim(),
 			gender,
 		});
 	};
@@ -115,11 +114,8 @@ export function SettingsProfileForm({
 		fireHaptic();
 		setIsUploadingAvatar(true);
 		try {
-			const uploaded = await pickAndUploadAvatar();
-			if (uploaded) {
-				setAvatarUrl(uploaded.url);
-				setHasUnsavedChanges(true);
-			}
+			const updated = await submitProfileMedia("avatar");
+			if (updated) setAvatarUrl(updated.image ?? "");
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
 			toast.show({

@@ -35,15 +35,12 @@ import {
 } from "@/components/profile/profile-tabs";
 import { AppBottomSheetContent } from "@/components/shared/app-bottom-sheet";
 import { authClient } from "@/lib/auth-client";
-import {
-	pickAndUploadAvatar,
-	pickAndUploadProfileCover,
-} from "@/lib/avatar-upload";
+import { submitProfileMedia } from "@/lib/profile-media-submission";
 import { signOutCurrentUser } from "@/lib/sign-out";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
 import { confirmAction } from "@/utils/confirm-action";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 export default function MeScreen() {
@@ -126,9 +123,6 @@ export default function MeScreen() {
 	const avatarImage = profile?.image ?? currentUser?.image;
 	const coverImage = profile?.coverImage;
 	const avatarInitial = displayName.slice(0, 1);
-	const updateProfile = useMutation(
-		orpc.profiles.updateProfile.mutationOptions(),
-	);
 	const deleteNote = useMutation(
 		orpc.notes.deleteMyNote.mutationOptions({
 			onError: (error) => {
@@ -189,21 +183,7 @@ export default function MeScreen() {
 		fireHaptic();
 		setIsChangingAvatar(true);
 		try {
-			const uploaded = await pickAndUploadAvatar();
-			if (!uploaded) return;
-
-			await updateProfile.mutateAsync({
-				bio: profile?.bio?.trim() ?? "",
-				gender:
-					profile?.gender === "male" || profile?.gender === "female"
-						? profile.gender
-						: "unknown",
-				handle: profile?.handle?.trim() ?? "",
-				image: uploaded.url,
-				name: displayName.trim() || "我",
-			});
-			await profileQuery.refetch();
-			await queryClient.refetchQueries();
+			await submitProfileMedia("avatar");
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
 			toast.show({
@@ -219,21 +199,7 @@ export default function MeScreen() {
 		fireHaptic();
 		setIsChangingCover(true);
 		try {
-			const uploaded = await pickAndUploadProfileCover();
-			if (!uploaded) return;
-
-			await updateProfile.mutateAsync({
-				bio: profile?.bio?.trim() ?? "",
-				coverImage: uploaded.url,
-				gender:
-					profile?.gender === "male" || profile?.gender === "female"
-						? profile.gender
-						: "unknown",
-				handle: profile?.handle?.trim() ?? "",
-				image: avatarImage ?? "",
-				name: displayName.trim() || "我",
-			});
-			await profileQuery.refetch();
+			await submitProfileMedia("cover");
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
 			toast.show({
@@ -353,7 +319,7 @@ export default function MeScreen() {
 						headerHeight={headerHeight}
 						image={avatarImage}
 						isAccountLoading={isAccountLoading}
-						isChangingCover={isChangingCover || updateProfile.isPending}
+						isChangingCover={isChangingCover}
 						isProfileLoading={isProfileLoading}
 						profile={profile}
 						scrollY={scrollY}
@@ -446,7 +412,7 @@ export default function MeScreen() {
 
 			<ProfileAvatarPreview
 				action={{
-					isLoading: isChangingAvatar || updateProfile.isPending,
+					isLoading: isChangingAvatar,
 					label: "更换头像",
 					loadingLabel: "更换中",
 					onPress: changeAvatar,
@@ -462,7 +428,7 @@ export default function MeScreen() {
 
 			<ProfileCoverPreview
 				action={{
-					isLoading: isChangingCover || updateProfile.isPending,
+					isLoading: isChangingCover,
 					label: "更换背景图",
 					loadingLabel: "更换中",
 					onPress: changeCover,
