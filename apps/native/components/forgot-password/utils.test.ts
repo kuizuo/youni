@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { getFieldErrors } from "@/utils/form-errors";
 
 import { changePasswordSchema, resetPasswordSchema } from "./utils";
 
@@ -11,13 +12,16 @@ describe("password settings validation", () => {
 				newPassword: "new-password",
 			}).success,
 		).toBe(true);
-		expect(
-			changePasswordSchema.safeParse({
-				confirmPassword: "different-password",
-				currentPassword: "old-password",
-				newPassword: "new-password",
-			}).success,
-		).toBe(false);
+		const mismatched = changePasswordSchema.safeParse({
+			confirmPassword: "different-password",
+			currentPassword: "old-password",
+			newPassword: "new-password",
+		});
+		expect(mismatched.success).toBe(false);
+		if (mismatched.success) throw new Error("expected validation to fail");
+		expect(getFieldErrors(mismatched.error).confirmPassword).toBe(
+			"两次输入的新密码不一致",
+		);
 		expect(
 			resetPasswordSchema.safeParse({
 				confirmPassword: "short",

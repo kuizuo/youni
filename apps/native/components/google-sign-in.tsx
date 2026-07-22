@@ -189,7 +189,7 @@ export function GoogleSignIn({ onAuthenticated }: GoogleSignInProps) {
 					isSubmitting
 						? "正在使用 Google 登录"
 						: isLastUsedMethod
-							? "使用 Google 登录 · 上次使用"
+							? "使用 Google 登录"
 							: "使用 Google 登录"
 				}
 				isDisabled={isSubmitting}

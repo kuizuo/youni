@@ -3,6 +3,7 @@ import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
 	Button,
+	FieldError,
 	Input,
 	Label,
 	Spinner,
@@ -17,6 +18,7 @@ import { runAccountAuthentication } from "@/lib/account-authentication";
 import { prepareForAccountAuthentication } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
+import { type FieldErrors, getFieldErrors } from "@/utils/form-errors";
 import { queryClient } from "@/utils/orpc";
 import {
 	isRequestTimeoutError,
@@ -27,6 +29,8 @@ const signInSchema = z.object({
 	email: z.string().trim().min(1, "请输入邮箱").email("请输入正确的邮箱"),
 	password: z.string().min(1, "请输入密码").min(8, "密码至少 8 位"),
 });
+
+type SignInValues = z.infer<typeof signInSchema>;
 
 type SignInProps = {
 	onAuthenticated?: () => Promise<void> | void;
@@ -47,17 +51,32 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<FieldErrors<SignInValues>>({});
+
+	const changeEmail = (value: string) => {
+		setEmail(value);
+		setErrorMessage(null);
+		setFieldErrors((current) => ({ ...current, email: undefined }));
+	};
+
+	const changePassword = (value: string) => {
+		setPassword(value);
+		setErrorMessage(null);
+		setFieldErrors((current) => ({ ...current, password: undefined }));
+	};
 
 	const submit = async () => {
 		if (isSubmitting) return;
 
 		const parsed = signInSchema.safeParse({ email, password });
 		if (!parsed.success) {
-			setErrorMessage(parsed.error.issues[0]?.message ?? "请检查登录信息");
+			setErrorMessage(null);
+			setFieldErrors(getFieldErrors(parsed.error));
 			return;
 		}
 
 		setErrorMessage(null);
+		setFieldErrors({});
 		setIsSubmitting(true);
 		try {
 			await prepareForAccountAuthentication();
@@ -104,11 +123,11 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 				</Typography.Paragraph>
 			) : null}
 
-			<TextField>
+			<TextField isInvalid={Boolean(fieldErrors.email)}>
 				<Label>邮箱</Label>
 				<Input
 					value={email}
-					onChangeText={setEmail}
+					onChangeText={changeEmail}
 					placeholder="email@example.com"
 					placeholderTextColor={mutedColor}
 					keyboardType="email-address"
@@ -117,19 +136,19 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 					textContentType="emailAddress"
 					returnKeyType="next"
 				/>
+				<FieldError>{fieldErrors.email}</FieldError>
 			</TextField>
 
-			<TextField>
+			<TextField isInvalid={Boolean(fieldErrors.password)}>
 				<Label>密码</Label>
 				<View className="relative">
 					<Input
 						value={password}
-						onChangeText={setPassword}
+						onChangeText={changePassword}
 						placeholder="至少 8 位"
 						placeholderTextColor={mutedColor}
 						secureTextEntry={!isPasswordVisible}
 						autoComplete="password"
-						textContentType="password"
 						returnKeyType="go"
 						onSubmitEditing={submit}
 						className="pr-12"
@@ -150,6 +169,7 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 						/>
 					</Button>
 				</View>
+				<FieldError>{fieldErrors.password}</FieldError>
 			</TextField>
 
 			<View className="-mt-2 -mb-1 flex-row justify-end">
@@ -173,11 +193,7 @@ export function SignIn({ onAuthenticated }: SignInProps) {
 			>
 				{isSubmitting ? <Spinner size="sm" /> : null}
 				<Button.Label>
-					{isSubmitting
-						? "登录中"
-						: isLastUsedMethod
-							? "登录 · 上次使用"
-							: "登录"}
+					{isSubmitting ? "登录中" : isLastUsedMethod ? "登录" : "登录"}
 				</Button.Label>
 			</Button>
 		</View>

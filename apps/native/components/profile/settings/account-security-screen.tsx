@@ -4,6 +4,7 @@ import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import {
 	Button,
+	FieldError,
 	Input,
 	Label,
 	ListGroup,
@@ -16,6 +17,7 @@ import {
 import { useState } from "react";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type z from "zod";
 
 import {
 	changePasswordSchema,
@@ -27,12 +29,15 @@ import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
+import { type FieldErrors, getFieldErrors } from "@/utils/form-errors";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 const PROVIDER_LABELS: Record<string, string> = {
 	credential: "邮箱密码",
 	google: "Google",
 };
+
+type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
 
 export default function AccountSecurityScreen() {
 	const router = useRouter();
@@ -44,6 +49,19 @@ export default function AccountSecurityScreen() {
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<
+		FieldErrors<ChangePasswordValues>
+	>({});
+	const changePasswordField = (
+		field: keyof ChangePasswordValues,
+		value: string,
+	) => {
+		if (field === "currentPassword") setCurrentPassword(value);
+		if (field === "newPassword") setNewPassword(value);
+		if (field === "confirmPassword") setConfirmPassword(value);
+		setErrorMessage(null);
+		setFieldErrors((current) => ({ ...current, [field]: undefined }));
+	};
 	const accounts = useQuery({
 		queryKey: ["auth", "accounts", user?.id],
 		enabled: Boolean(user),
@@ -79,6 +97,7 @@ export default function AccountSecurityScreen() {
 			setNewPassword("");
 			setConfirmPassword("");
 			setErrorMessage(null);
+			setFieldErrors({});
 			toast.show({ variant: "success", label: "密码已修改，其他设备已退出" });
 		},
 		onError: (error) => {
@@ -98,10 +117,12 @@ export default function AccountSecurityScreen() {
 			newPassword,
 		});
 		if (!parsed.success) {
-			setErrorMessage(parsed.error.issues[0]?.message ?? "请检查密码");
+			setErrorMessage(null);
+			setFieldErrors(getFieldErrors(parsed.error));
 			return;
 		}
 		setErrorMessage(null);
+		setFieldErrors({});
 		changePassword.mutate({
 			currentPassword: parsed.data.currentPassword,
 			newPassword: parsed.data.newPassword,
@@ -215,20 +236,29 @@ export default function AccountSecurityScreen() {
 
 								<PasswordField
 									autoComplete="password"
+									errorMessage={fieldErrors.currentPassword}
 									label="当前密码"
 									value={currentPassword}
-									onChangeText={setCurrentPassword}
+									onChangeText={(value) =>
+										changePasswordField("currentPassword", value)
+									}
 								/>
 								<PasswordField
+									errorMessage={fieldErrors.newPassword}
 									label="新密码"
 									value={newPassword}
-									onChangeText={setNewPassword}
+									onChangeText={(value) =>
+										changePasswordField("newPassword", value)
+									}
 								/>
 								<PasswordField
+									errorMessage={fieldErrors.confirmPassword}
 									label="确认新密码"
 									returnKeyType="go"
 									value={confirmPassword}
-									onChangeText={setConfirmPassword}
+									onChangeText={(value) =>
+										changePasswordField("confirmPassword", value)
+									}
 									onSubmitEditing={submit}
 								/>
 
@@ -298,6 +328,7 @@ function LoginMethodRow({ providerId }: { providerId: string }) {
 
 function PasswordField({
 	autoComplete = "new-password",
+	errorMessage,
 	label,
 	onChangeText,
 	onSubmitEditing,
@@ -305,6 +336,7 @@ function PasswordField({
 	value,
 }: {
 	autoComplete?: "new-password" | "password";
+	errorMessage?: string;
 	label: string;
 	onChangeText: (value: string) => void;
 	onSubmitEditing?: () => void;
@@ -314,7 +346,7 @@ function PasswordField({
 	const mutedColor = useThemeColor("muted");
 	const [isVisible, setIsVisible] = useState(false);
 	return (
-		<TextField>
+		<TextField isInvalid={Boolean(errorMessage)}>
 			<Label>{label}</Label>
 			<View className="relative">
 				<Input
@@ -326,9 +358,6 @@ function PasswordField({
 					placeholder="至少 8 位"
 					returnKeyType={returnKeyType}
 					secureTextEntry={!isVisible}
-					textContentType={
-						autoComplete === "password" ? "password" : "newPassword"
-					}
 				/>
 				<Button
 					accessibilityLabel={isVisible ? "隐藏密码" : "显示密码"}
@@ -346,6 +375,7 @@ function PasswordField({
 					/>
 				</Button>
 			</View>
+			<FieldError>{errorMessage}</FieldError>
 		</TextField>
 	);
 }

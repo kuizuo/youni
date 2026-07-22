@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import {
 	Button,
+	FieldError,
 	Input,
 	Label,
 	Spinner,
@@ -15,6 +16,7 @@ import { runAccountAuthentication } from "@/lib/account-authentication";
 import { prepareForAccountAuthentication } from "@/lib/anonymous-session";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
+import { type FieldErrors, getFieldErrors } from "@/utils/form-errors";
 import { queryClient } from "@/utils/orpc";
 import {
 	isRequestTimeoutError,
@@ -26,6 +28,8 @@ const signUpSchema = z.object({
 	email: z.string().trim().min(1, "请输入邮箱").email("请输入正确的邮箱"),
 	password: z.string().min(8, "密码至少 8 位"),
 });
+
+type SignUpValues = z.infer<typeof signUpSchema>;
 
 type SignUpProps = {
 	onAuthenticated?: () => Promise<void> | void;
@@ -45,17 +49,28 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<FieldErrors<SignUpValues>>({});
+
+	const changeField = (field: keyof SignUpValues, value: string) => {
+		if (field === "name") setName(value);
+		if (field === "email") setEmail(value);
+		if (field === "password") setPassword(value);
+		setErrorMessage(null);
+		setFieldErrors((current) => ({ ...current, [field]: undefined }));
+	};
 
 	const submit = async () => {
 		if (isSubmitting) return;
 
 		const parsed = signUpSchema.safeParse({ name, email, password });
 		if (!parsed.success) {
-			setErrorMessage(parsed.error.issues[0]?.message ?? "请检查注册信息");
+			setErrorMessage(null);
+			setFieldErrors(getFieldErrors(parsed.error));
 			return;
 		}
 
 		setErrorMessage(null);
+		setFieldErrors({});
 		setIsSubmitting(true);
 		try {
 			await prepareForAccountAuthentication();
@@ -103,24 +118,25 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 				</Typography.Paragraph>
 			) : null}
 
-			<TextField>
+			<TextField isInvalid={Boolean(fieldErrors.name)}>
 				<Label>昵称</Label>
 				<Input
 					value={name}
-					onChangeText={setName}
+					onChangeText={(value) => changeField("name", value)}
 					placeholder="你的昵称"
 					placeholderTextColor={mutedColor}
 					autoComplete="name"
 					textContentType="name"
 					returnKeyType="next"
 				/>
+				<FieldError>{fieldErrors.name}</FieldError>
 			</TextField>
 
-			<TextField>
+			<TextField isInvalid={Boolean(fieldErrors.email)}>
 				<Label>邮箱</Label>
 				<Input
 					value={email}
-					onChangeText={setEmail}
+					onChangeText={(value) => changeField("email", value)}
 					placeholder="email@example.com"
 					placeholderTextColor={mutedColor}
 					keyboardType="email-address"
@@ -129,19 +145,19 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 					textContentType="emailAddress"
 					returnKeyType="next"
 				/>
+				<FieldError>{fieldErrors.email}</FieldError>
 			</TextField>
 
-			<TextField>
+			<TextField isInvalid={Boolean(fieldErrors.password)}>
 				<Label>密码</Label>
 				<View className="relative">
 					<Input
 						value={password}
-						onChangeText={setPassword}
+						onChangeText={(value) => changeField("password", value)}
 						placeholder="至少 8 位"
 						placeholderTextColor={mutedColor}
 						secureTextEntry={!isPasswordVisible}
 						autoComplete="new-password"
-						textContentType="newPassword"
 						returnKeyType="go"
 						onSubmitEditing={submit}
 						className="pr-12"
@@ -162,6 +178,7 @@ export function SignUp({ onAuthenticated }: SignUpProps) {
 						/>
 					</Button>
 				</View>
+				<FieldError>{fieldErrors.password}</FieldError>
 			</TextField>
 
 			<Button

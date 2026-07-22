@@ -13,7 +13,7 @@ import {
 	Typography,
 	useThemeColor,
 } from "heroui-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { EditableAvatar } from "@/components/profile/editable-avatar";
 import type { AuthUser } from "@/lib/auth-client";
@@ -24,6 +24,7 @@ import { orpc, queryClient } from "@/utils/orpc";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 import { GenderSelector } from "./gender-selector";
+import { shouldReplaceProfileDraft } from "./profile-form-state";
 
 export function SettingsProfileForm({
 	displayName,
@@ -47,8 +48,23 @@ export function SettingsProfileForm({
 	const [avatarUrl, setAvatarUrl] = useState("");
 	const [gender, setGender] = useState<UserGender>("unknown");
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+	const loadedUserIdRef = useRef<string | undefined>(undefined);
 
 	useEffect(() => {
+		const nextUserId = profile?.id ?? user?.id;
+		const userChanged = loadedUserIdRef.current !== nextUserId;
+		if (
+			!shouldReplaceProfileDraft({
+				hasUnsavedChanges,
+				loadedUserId: loadedUserIdRef.current,
+				nextUserId,
+			})
+		) {
+			return;
+		}
+
+		loadedUserIdRef.current = nextUserId;
 		setName(profile?.name ?? user?.name ?? "");
 		setHandle(profile?.handle ?? "");
 		setBio(profile?.bio ?? "");
@@ -58,13 +74,15 @@ export function SettingsProfileForm({
 				? profile.gender
 				: "unknown",
 		);
-	}, [profile, user]);
+		if (userChanged) setHasUnsavedChanges(false);
+	}, [hasUnsavedChanges, profile, user]);
 
 	const updateProfile = useMutation(
 		orpc.profiles.updateProfile.mutationOptions({
 			onSuccess: async () => {
 				await onProfileSaved();
 				await queryClient.refetchQueries();
+				setHasUnsavedChanges(false);
 				toast.show({ variant: "success", label: "个人资料已保存" });
 			},
 			onError: (error) => {
@@ -100,6 +118,7 @@ export function SettingsProfileForm({
 			const uploaded = await pickAndUploadAvatar();
 			if (uploaded) {
 				setAvatarUrl(uploaded.url);
+				setHasUnsavedChanges(true);
 			}
 		} catch (error) {
 			if (isRequestTimeoutError(error)) return;
@@ -132,7 +151,10 @@ export function SettingsProfileForm({
 				<Label>昵称</Label>
 				<Input
 					value={name}
-					onChangeText={setName}
+					onChangeText={(value) => {
+						setName(value);
+						setHasUnsavedChanges(true);
+					}}
 					placeholder="你的昵称"
 					placeholderTextColor={mutedColor}
 				/>
@@ -142,7 +164,10 @@ export function SettingsProfileForm({
 				<Label>用户名</Label>
 				<Input
 					value={handle}
-					onChangeText={setHandle}
+					onChangeText={(value) => {
+						setHandle(value);
+						setHasUnsavedChanges(true);
+					}}
 					autoCapitalize="none"
 					placeholder="letters_and_numbers"
 					placeholderTextColor={mutedColor}
@@ -153,7 +178,10 @@ export function SettingsProfileForm({
 				<Label>简介</Label>
 				<TextArea
 					value={bio}
-					onChangeText={setBio}
+					onChangeText={(value) => {
+						setBio(value);
+						setHasUnsavedChanges(true);
+					}}
 					placeholder="一句话介绍你分享的内容"
 					placeholderTextColor={mutedColor}
 					className="min-h-24"
@@ -161,7 +189,13 @@ export function SettingsProfileForm({
 				/>
 			</TextField>
 
-			<GenderSelector value={gender} onChange={setGender} />
+			<GenderSelector
+				value={gender}
+				onChange={(value) => {
+					setGender(value);
+					setHasUnsavedChanges(true);
+				}}
+			/>
 
 			<Button
 				variant="primary"
