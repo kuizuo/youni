@@ -100,13 +100,14 @@ export function TopicSortBar({
 							key={item.key}
 							accessibilityRole="tab"
 							accessibilityState={active ? { selected: true } : undefined}
-							className="h-full w-7 items-center justify-center"
+							className="h-full min-w-8 items-center justify-center"
 							onPress={() => {
 								fireHaptic();
 								onSortChange(item.key);
 							}}
 						>
 							<Typography.Paragraph
+								truncate
 								weight={active ? "bold" : "normal"}
 								className={active ? "text-foreground" : "text-muted"}
 								style={{ fontSize: 14, lineHeight: 20 }}
