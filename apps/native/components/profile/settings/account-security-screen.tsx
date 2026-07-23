@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
@@ -17,7 +18,6 @@ import {
 import { useState } from "react";
 import { KeyboardAvoidingView, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type z from "zod";
 
 import {
 	changePasswordSchema,
@@ -29,7 +29,6 @@ import { ErrorState } from "@/components/social-states";
 import { authClient } from "@/lib/auth-client";
 import { fireHaptic } from "@/lib/utils/fire-haptic";
 import { useAppToast } from "@/utils/app-toast";
-import { type FieldErrors, getFieldErrors } from "@/utils/form-errors";
 import { isRequestTimeoutError } from "@/utils/request-timeout";
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -37,31 +36,13 @@ const PROVIDER_LABELS: Record<string, string> = {
 	google: "Google",
 };
 
-type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
-
 export default function AccountSecurityScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 	const { toast } = useAppToast();
 	const session = authClient.useSession();
 	const user = session.data?.user;
-	const [currentPassword, setCurrentPassword] = useState("");
-	const [newPassword, setNewPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [fieldErrors, setFieldErrors] = useState<
-		FieldErrors<ChangePasswordValues>
-	>({});
-	const changePasswordField = (
-		field: keyof ChangePasswordValues,
-		value: string,
-	) => {
-		if (field === "currentPassword") setCurrentPassword(value);
-		if (field === "newPassword") setNewPassword(value);
-		if (field === "confirmPassword") setConfirmPassword(value);
-		setErrorMessage(null);
-		setFieldErrors((current) => ({ ...current, [field]: undefined }));
-	};
 	const accounts = useQuery({
 		queryKey: ["auth", "accounts", user?.id],
 		enabled: Boolean(user),
@@ -92,41 +73,41 @@ export default function AccountSecurityScreen() {
 			}
 			return result.data;
 		},
-		onSuccess: () => {
-			setCurrentPassword("");
-			setNewPassword("");
-			setConfirmPassword("");
-			setErrorMessage(null);
-			setFieldErrors({});
-			toast.show({ variant: "success", label: "密码已修改，其他设备已退出" });
+	});
+	const form = useForm({
+		defaultValues: {
+			currentPassword: "",
+			newPassword: "",
+			confirmPassword: "",
 		},
-		onError: (error) => {
-			if (isRequestTimeoutError(error)) return;
-			const message = error instanceof Error ? error.message : "密码修改失败";
-			setErrorMessage(message);
-			toast.show({ variant: "danger", label: message });
+		validators: {
+			onSubmit: changePasswordSchema,
+		},
+		onSubmit: async ({ value }) => {
+			const parsed = changePasswordSchema.parse(value);
+			setErrorMessage(null);
+			try {
+				await changePassword.mutateAsync({
+					currentPassword: parsed.currentPassword,
+					newPassword: parsed.newPassword,
+				});
+				form.reset();
+				toast.show({
+					variant: "success",
+					label: "密码已修改，其他设备已退出",
+				});
+			} catch (error) {
+				if (isRequestTimeoutError(error)) return;
+				const message = error instanceof Error ? error.message : "密码修改失败";
+				setErrorMessage(message);
+				toast.show({ variant: "danger", label: message });
+			}
 		},
 	});
 
 	const submit = () => {
-		if (changePassword.isPending) return;
 		fireHaptic();
-		const parsed = changePasswordSchema.safeParse({
-			confirmPassword,
-			currentPassword,
-			newPassword,
-		});
-		if (!parsed.success) {
-			setErrorMessage(null);
-			setFieldErrors(getFieldErrors(parsed.error));
-			return;
-		}
-		setErrorMessage(null);
-		setFieldErrors({});
-		changePassword.mutate({
-			currentPassword: parsed.data.currentPassword,
-			newPassword: parsed.data.newPassword,
-		});
+		void form.handleSubmit();
 	};
 
 	const openPasswordSetup = () => {
@@ -234,46 +215,68 @@ export default function AccountSecurityScreen() {
 									</Typography.Paragraph>
 								) : null}
 
-								<PasswordField
-									autoComplete="password"
-									errorMessage={fieldErrors.currentPassword}
-									label="当前密码"
-									value={currentPassword}
-									onChangeText={(value) =>
-										changePasswordField("currentPassword", value)
-									}
-								/>
-								<PasswordField
-									errorMessage={fieldErrors.newPassword}
-									label="新密码"
-									value={newPassword}
-									onChangeText={(value) =>
-										changePasswordField("newPassword", value)
-									}
-								/>
-								<PasswordField
-									errorMessage={fieldErrors.confirmPassword}
-									label="确认新密码"
-									returnKeyType="go"
-									value={confirmPassword}
-									onChangeText={(value) =>
-										changePasswordField("confirmPassword", value)
-									}
-									onSubmitEditing={submit}
-								/>
+								<form.Field name="currentPassword">
+									{(field) => (
+										<PasswordField
+											autoComplete="password"
+											errorMessage={field.state.meta.errors[0]?.message}
+											label="当前密码"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChangeText={(value) => {
+												setErrorMessage(null);
+												field.handleChange(value);
+											}}
+										/>
+									)}
+								</form.Field>
+								<form.Field name="newPassword">
+									{(field) => (
+										<PasswordField
+											errorMessage={field.state.meta.errors[0]?.message}
+											label="新密码"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChangeText={(value) => {
+												setErrorMessage(null);
+												field.handleChange(value);
+											}}
+										/>
+									)}
+								</form.Field>
+								<form.Field name="confirmPassword">
+									{(field) => (
+										<PasswordField
+											errorMessage={field.state.meta.errors[0]?.message}
+											label="确认新密码"
+											returnKeyType="go"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChangeText={(value) => {
+												setErrorMessage(null);
+												field.handleChange(value);
+											}}
+											onSubmitEditing={submit}
+										/>
+									)}
+								</form.Field>
 
-								<Button
-									variant="primary"
-									className="rounded-full"
-									feedbackVariant="scale-ripple"
-									isDisabled={changePassword.isPending}
-									onPress={submit}
-								>
-									{changePassword.isPending ? <Spinner size="sm" /> : null}
-									<Button.Label>
-										{changePassword.isPending ? "修改中" : "修改密码"}
-									</Button.Label>
-								</Button>
+								<form.Subscribe selector={(state) => state.isSubmitting}>
+									{(isSubmitting) => (
+										<Button
+											variant="primary"
+											className="rounded-full"
+											feedbackVariant="scale-ripple"
+											isDisabled={isSubmitting}
+											onPress={submit}
+										>
+											{isSubmitting ? <Spinner size="sm" /> : null}
+											<Button.Label>
+												{isSubmitting ? "修改中" : "修改密码"}
+											</Button.Label>
+										</Button>
+									)}
+								</form.Subscribe>
 							</Surface>
 						) : (
 							<Surface className="gap-3 rounded-2xl p-4">
@@ -330,6 +333,7 @@ function PasswordField({
 	autoComplete = "new-password",
 	errorMessage,
 	label,
+	onBlur,
 	onChangeText,
 	onSubmitEditing,
 	returnKeyType,
@@ -338,6 +342,7 @@ function PasswordField({
 	autoComplete?: "new-password" | "password";
 	errorMessage?: string;
 	label: string;
+	onBlur: () => void;
 	onChangeText: (value: string) => void;
 	onSubmitEditing?: () => void;
 	returnKeyType?: "go";
@@ -353,6 +358,7 @@ function PasswordField({
 					value={value}
 					autoComplete={autoComplete}
 					className="pr-12"
+					onBlur={onBlur}
 					onChangeText={onChangeText}
 					onSubmitEditing={onSubmitEditing}
 					placeholder="至少 8 位"

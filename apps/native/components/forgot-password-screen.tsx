@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useForm, useStore } from "@tanstack/react-form";
 import type { Href } from "expo-router";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -16,7 +17,6 @@ import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import type z from "zod";
 
 import { YouniMark } from "@/components/brand/youni-logo";
 import {
@@ -27,7 +27,6 @@ import {
 } from "@/components/forgot-password/utils";
 import { authClient } from "@/lib/auth-client";
 import { useAppToast } from "@/utils/app-toast";
-import { type FieldErrors, getFieldErrors } from "@/utils/form-errors";
 import {
 	isRequestTimeoutError,
 	REQUEST_TIMEOUT_MESSAGE,
@@ -35,8 +34,6 @@ import {
 import { getRouteParam } from "@/utils/route-params";
 
 const StyledIonicons = withUniwind(Ionicons);
-
-type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 export default function ForgotPasswordScreen() {
 	const router = useRouter();
@@ -48,30 +45,120 @@ export default function ForgotPasswordScreen() {
 	const { toast } = useAppToast();
 	const initialEmail = getRouteParam(params.email) ?? "";
 	const isPasswordSetup = getRouteParam(params.mode) === "set-password";
-	const [email, setEmail] = useState(initialEmail);
-	const [otp, setOtp] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [isSendingOtp, setIsSendingOtp] = useState(false);
-	const [isResetting, setIsResetting] = useState(false);
 	const [hasSent, setHasSent] = useState(false);
 	const [resendCooldown, setResendCooldown] = useState(0);
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 	const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
 		useState(false);
-	const [fieldErrors, setFieldErrors] = useState<
-		FieldErrors<ResetPasswordValues>
-	>({});
-
-	const changeField = (field: keyof ResetPasswordValues, value: string) => {
-		if (field === "email") setEmail(value);
-		if (field === "otp") setOtp(value);
-		if (field === "password") setPassword(value);
-		if (field === "confirmPassword") setConfirmPassword(value);
-		setErrorMessage(null);
-		setFieldErrors((current) => ({ ...current, [field]: undefined }));
-	};
+	const resetForm = useForm({
+		defaultValues: {
+			email: initialEmail,
+			otp: "",
+			password: "",
+			confirmPassword: "",
+		},
+		validators: {
+			onSubmit: resetPasswordSchema,
+		},
+		onSubmit: async ({ value }) => {
+			const parsed = resetPasswordSchema.parse(value);
+			setErrorMessage(null);
+			try {
+				await authClient.emailOtp.resetPassword(
+					{
+						email: parsed.email,
+						otp: parsed.otp,
+						password: parsed.password,
+					},
+					{
+						onError(error) {
+							const message = getAuthErrorMessage(
+								error.error?.message,
+								"密码重置失败，请重新获取验证码",
+							);
+							setErrorMessage(message);
+							toast.show({
+								variant: "danger",
+								label: message,
+							});
+						},
+						onSuccess() {
+							toast.show({
+								label: isPasswordSetup ? "密码已设置" : "密码已重置",
+							});
+							router.replace("/login" as Href);
+						},
+					},
+				);
+			} catch (error) {
+				const message = isRequestTimeoutError(error)
+					? REQUEST_TIMEOUT_MESSAGE
+					: "密码重置失败，请重新获取验证码";
+				setErrorMessage(message);
+				if (!isRequestTimeoutError(error)) {
+					toast.show({
+						variant: "danger",
+						label: error instanceof Error ? error.message : "重置失败",
+					});
+				}
+			}
+		},
+	});
+	const emailForm = useForm({
+		defaultValues: {
+			email: initialEmail,
+		},
+		validators: {
+			onSubmit: forgotPasswordSchema,
+		},
+		onSubmit: async ({ value }) => {
+			const parsed = forgotPasswordSchema.parse(value);
+			setErrorMessage(null);
+			try {
+				await authClient.emailOtp.requestPasswordReset(
+					{
+						email: parsed.email,
+					},
+					{
+						onError(error) {
+							const message = getAuthErrorMessage(
+								error.error?.message,
+								"重置邮件发送失败，请稍后重试",
+							);
+							setErrorMessage(message);
+							toast.show({
+								variant: "danger",
+								label: message,
+							});
+						},
+						onSuccess() {
+							resetForm.setFieldValue("email", parsed.email);
+							setHasSent(true);
+							setResendCooldown(RESEND_COOLDOWN_SECONDS);
+							toast.show({
+								label: "验证码已发送",
+							});
+						},
+					},
+				);
+			} catch (error) {
+				const message = isRequestTimeoutError(error)
+					? REQUEST_TIMEOUT_MESSAGE
+					: "重置邮件发送失败，请稍后重试";
+				setErrorMessage(message);
+				if (!isRequestTimeoutError(error)) {
+					toast.show({
+						variant: "danger",
+						label: error instanceof Error ? error.message : "发送失败",
+					});
+				}
+			}
+		},
+	});
+	const email = useStore(emailForm.store, (state) => state.values.email);
+	const isSendingOtp = useStore(emailForm.store, (state) => state.isSubmitting);
+	const isResetting = useStore(resetForm.store, (state) => state.isSubmitting);
 
 	useEffect(() => {
 		if (resendCooldown <= 0) return;
@@ -83,123 +170,14 @@ export default function ForgotPasswordScreen() {
 		return () => clearTimeout(timer);
 	}, [resendCooldown]);
 
-	const sendOtp = async () => {
+	const sendOtp = () => {
 		if (isSendingOtp || isResetting || (hasSent && resendCooldown > 0)) return;
-
-		const parsed = forgotPasswordSchema.safeParse({ email });
-		if (!parsed.success) {
-			setErrorMessage(null);
-			setFieldErrors((current) => ({
-				...current,
-				email: getFieldErrors(parsed.error).email,
-			}));
-			return;
-		}
-
-		setErrorMessage(null);
-		setFieldErrors((current) => ({ ...current, email: undefined }));
-		setIsSendingOtp(true);
-		try {
-			await authClient.emailOtp.requestPasswordReset(
-				{
-					email: parsed.data.email,
-				},
-				{
-					onError(error) {
-						const message = getAuthErrorMessage(
-							error.error?.message,
-							"重置邮件发送失败，请稍后重试",
-						);
-						setErrorMessage(message);
-						toast.show({
-							variant: "danger",
-							label: message,
-						});
-					},
-					onSuccess() {
-						setHasSent(true);
-						setResendCooldown(RESEND_COOLDOWN_SECONDS);
-						toast.show({
-							label: "验证码已发送",
-						});
-					},
-				},
-			);
-		} catch (error) {
-			const message = isRequestTimeoutError(error)
-				? REQUEST_TIMEOUT_MESSAGE
-				: "重置邮件发送失败，请稍后重试";
-			setErrorMessage(message);
-			if (!isRequestTimeoutError(error)) {
-				toast.show({
-					variant: "danger",
-					label: error instanceof Error ? error.message : "发送失败",
-				});
-			}
-		} finally {
-			setIsSendingOtp(false);
-		}
+		void emailForm.handleSubmit();
 	};
 
-	const resetPassword = async () => {
+	const resetPassword = () => {
 		if (isSendingOtp || isResetting) return;
-
-		const parsed = resetPasswordSchema.safeParse({
-			confirmPassword,
-			email,
-			otp,
-			password,
-		});
-		if (!parsed.success) {
-			setErrorMessage(null);
-			setFieldErrors(getFieldErrors(parsed.error));
-			return;
-		}
-
-		setErrorMessage(null);
-		setFieldErrors({});
-		setIsResetting(true);
-		try {
-			await authClient.emailOtp.resetPassword(
-				{
-					email: parsed.data.email,
-					otp: parsed.data.otp,
-					password: parsed.data.password,
-				},
-				{
-					onError(error) {
-						const message = getAuthErrorMessage(
-							error.error?.message,
-							"密码重置失败，请重新获取验证码",
-						);
-						setErrorMessage(message);
-						toast.show({
-							variant: "danger",
-							label: message,
-						});
-					},
-					onSuccess() {
-						toast.show({
-							label: isPasswordSetup ? "密码已设置" : "密码已重置",
-						});
-						router.replace("/login" as Href);
-					},
-				},
-			);
-		} catch (error) {
-			const message = isRequestTimeoutError(error)
-				? REQUEST_TIMEOUT_MESSAGE
-				: "密码重置失败，请重新获取验证码";
-			setErrorMessage(message);
-			if (!isRequestTimeoutError(error)) {
-				toast.show({
-					variant: "danger",
-					label: error instanceof Error ? error.message : "重置失败",
-				});
-			}
-		} finally {
-			setIsResetting(false);
-		}
+		void resetForm.handleSubmit();
 	};
 
 	const goLogin = () => {
@@ -258,58 +236,90 @@ export default function ForgotPasswordScreen() {
 								/>
 							) : null}
 
-							<TextField isInvalid={Boolean(fieldErrors.email)}>
-								<Label>邮箱</Label>
-								<Input
-									value={email}
-									onChangeText={(value) => changeField("email", value)}
-									placeholder="email@example.com"
-									keyboardType="email-address"
-									autoCapitalize="none"
-									autoComplete="email"
-									textContentType="emailAddress"
-									returnKeyType="send"
-									onSubmitEditing={hasSent ? undefined : sendOtp}
-									editable={!hasSent && !isPasswordSetup}
-								/>
-								<FieldError>{fieldErrors.email}</FieldError>
-							</TextField>
+							<emailForm.Field name="email">
+								{(field) => {
+									const fieldError = field.state.meta.errors[0]?.message;
+									return (
+										<TextField isInvalid={Boolean(fieldError)}>
+											<Label>邮箱</Label>
+											<Input
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChangeText={(value) => {
+													setErrorMessage(null);
+													field.handleChange(value);
+												}}
+												placeholder="email@example.com"
+												keyboardType="email-address"
+												autoCapitalize="none"
+												autoComplete="email"
+												textContentType="emailAddress"
+												returnKeyType="send"
+												onSubmitEditing={hasSent ? undefined : sendOtp}
+												editable={!hasSent && !isPasswordSetup}
+											/>
+											<FieldError>{fieldError}</FieldError>
+										</TextField>
+									);
+								}}
+							</emailForm.Field>
 
 							{hasSent ? (
 								<>
-									<CodeInput
-										errorMessage={fieldErrors.otp}
-										value={otp}
-										onChange={(value) => changeField("otp", value)}
-									/>
+									<resetForm.Field name="otp">
+										{(field) => (
+											<CodeInput
+												errorMessage={field.state.meta.errors[0]?.message}
+												value={field.state.value}
+												onChange={(value) => {
+													setErrorMessage(null);
+													field.handleChange(value);
+												}}
+											/>
+										)}
+									</resetForm.Field>
 
-									<PasswordField
-										errorMessage={fieldErrors.password}
-										label="新密码"
-										placeholder="至少 8 位"
-										value={password}
-										isVisible={isPasswordVisible}
-										onChangeText={(value) => changeField("password", value)}
-										onToggleVisible={() =>
-											setIsPasswordVisible((current) => !current)
-										}
-									/>
+									<resetForm.Field name="password">
+										{(field) => (
+											<PasswordField
+												errorMessage={field.state.meta.errors[0]?.message}
+												label="新密码"
+												placeholder="至少 8 位"
+												value={field.state.value}
+												isVisible={isPasswordVisible}
+												onBlur={field.handleBlur}
+												onChangeText={(value) => {
+													setErrorMessage(null);
+													field.handleChange(value);
+												}}
+												onToggleVisible={() =>
+													setIsPasswordVisible((current) => !current)
+												}
+											/>
+										)}
+									</resetForm.Field>
 
-									<PasswordField
-										errorMessage={fieldErrors.confirmPassword}
-										label="确认新密码"
-										placeholder="再次输入新密码"
-										value={confirmPassword}
-										isVisible={isConfirmPasswordVisible}
-										returnKeyType="go"
-										onChangeText={(value) =>
-											changeField("confirmPassword", value)
-										}
-										onSubmitEditing={resetPassword}
-										onToggleVisible={() =>
-											setIsConfirmPasswordVisible((current) => !current)
-										}
-									/>
+									<resetForm.Field name="confirmPassword">
+										{(field) => (
+											<PasswordField
+												errorMessage={field.state.meta.errors[0]?.message}
+												label="确认新密码"
+												placeholder="再次输入新密码"
+												value={field.state.value}
+												isVisible={isConfirmPasswordVisible}
+												returnKeyType="go"
+												onBlur={field.handleBlur}
+												onChangeText={(value) => {
+													setErrorMessage(null);
+													field.handleChange(value);
+												}}
+												onSubmitEditing={resetPassword}
+												onToggleVisible={() =>
+													setIsConfirmPasswordVisible((current) => !current)
+												}
+											/>
+										)}
+									</resetForm.Field>
 
 									<Button
 										variant="primary"
@@ -456,6 +466,7 @@ function PasswordField({
 	errorMessage,
 	isVisible,
 	label,
+	onBlur,
 	onChangeText,
 	onSubmitEditing,
 	onToggleVisible,
@@ -466,6 +477,7 @@ function PasswordField({
 	errorMessage?: string;
 	isVisible: boolean;
 	label: string;
+	onBlur: () => void;
 	onChangeText: (value: string) => void;
 	onSubmitEditing?: () => void;
 	onToggleVisible: () => void;
@@ -479,6 +491,7 @@ function PasswordField({
 			<View className="relative">
 				<Input
 					value={value}
+					onBlur={onBlur}
 					onChangeText={onChangeText}
 					placeholder={placeholder}
 					secureTextEntry={!isVisible}

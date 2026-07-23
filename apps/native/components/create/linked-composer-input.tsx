@@ -14,6 +14,7 @@ const CONTENT_INPUT_STYLE: TextStyle = {
 type LinkedComposerInputProps = {
 	inputRef?: RefObject<TextInput | null>;
 	maxLength?: number;
+	onBlur?: () => void;
 	onChangeText: (value: string) => void;
 	onFocus?: () => void;
 	onSelectionChange?: (selection: TextSelection) => void;
@@ -26,6 +27,7 @@ type LinkedComposerInputProps = {
 export function LinkedComposerInput({
 	inputRef,
 	maxLength,
+	onBlur,
 	onChangeText,
 	onFocus,
 	onSelectionChange,
@@ -40,6 +42,7 @@ export function LinkedComposerInput({
 		<TextInput
 			ref={inputRef}
 			value={value}
+			onBlur={onBlur}
 			onChangeText={onChangeText}
 			onFocus={onFocus}
 			onSelectionChange={(event) =>

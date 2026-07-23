@@ -1,13 +1,18 @@
+import { useForm, useStore } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { NoteVisibility } from "@youni/api/contracts/shared";
 import { NOTE_IMAGE_MAX_COUNT } from "@youni/api/lib/notes/image-identity";
 import type * as ImagePicker from "expo-image-picker";
 import type { Href } from "expo-router";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { InteractionManager } from "react-native";
 
-import type { PublishSubmitMode } from "@/components/create/create-types";
+import {
+	type CreateFormValues,
+	createFormSchema,
+	type PublishSubmitMode,
+} from "@/components/create/create-types";
 import { reorderImages } from "@/components/media/image-order";
 import { isRegisteredUser } from "@/lib/anonymous-session";
 import { apiBaseUrl } from "@/lib/api-url";
@@ -137,13 +142,6 @@ export function useCreateComposer({
 	const session = authClient.useSession();
 	const { toast } = useAppToast();
 	const [hasAuthenticated, setHasAuthenticated] = useState(false);
-	const [title, setTitle] = useState("");
-	const [content, setContent] = useState("");
-	const [images, setImages] = useState<MediaImage[]>([]);
-	const [topics, setTopics] = useState<string[]>([]);
-	const [visibility, setVisibility] = useState<NoteVisibility>("public");
-	const [advancedOptions, setAdvancedOptions] =
-		useState<LocalDraftAdvancedOptions>(DEFAULT_ADVANCED_OPTIONS);
 	const [pendingSubmitMode, setPendingSubmitMode] =
 		useState<PublishSubmitMode | null>(null);
 	const [isAddingImages, setIsAddingImages] = useState(false);
@@ -154,7 +152,6 @@ export function useCreateComposer({
 	const [draftLoadAttempt, setDraftLoadAttempt] = useState(0);
 	const [hydratedDraftId, setHydratedDraftId] = useState<null | string>(null);
 	const [hydratedNoteId, setHydratedNoteId] = useState<null | string>(null);
-	const draftBaselineRef = useRef<null | string>(null);
 	const draftSaveInFlightRef = useRef(false);
 	const materializedDraftUrisRef = useRef<string[]>([]);
 	const publishAttemptRef =
@@ -172,6 +169,26 @@ export function useCreateComposer({
 		: undefined;
 	const isAuthenticated = Boolean(registeredUser) || hasAuthenticated;
 	const userId = registeredUser?.id;
+	const form = useForm({
+		defaultValues: {
+			advancedOptions: DEFAULT_ADVANCED_OPTIONS,
+			content: "",
+			images: [],
+			title: "",
+			topics: [],
+			visibility: "public" as NoteVisibility,
+		} as CreateFormValues,
+		validators: {
+			onSubmit: createFormSchema,
+		},
+		onSubmit: async ({ value }) => {
+			await submitNote(createFormSchema.parse(value));
+		},
+	});
+	const { advancedOptions, content, images, title, topics, visibility } =
+		useStore(form.store, (state) => state.values);
+	const isFormSubmitting = useStore(form.store, (state) => state.isSubmitting);
+	const hasUnsavedChanges = useStore(form.store, (state) => state.isDirty);
 
 	useEffect(() => {
 		if (registeredUser) {
@@ -179,40 +196,8 @@ export function useCreateComposer({
 		}
 	}, [registeredUser]);
 
-	const missingItems = useMemo(
-		() =>
-			[
-				images.length === 0 ? "图片" : null,
-				title.trim().length === 0 ? "标题" : null,
-				content.trim().length === 0 ? "正文" : null,
-			].filter((item): item is string => Boolean(item)),
-		[content, images.length, title],
-	);
-	const canPublish = missingItems.length === 0;
 	const hasSavableContent =
 		title.trim().length > 0 || content.trim().length > 0 || images.length > 0;
-	const hasUnsavedChanges =
-		hasSavableContent ||
-		topics.length > 0 ||
-		visibility !== "public" ||
-		advancedOptions.allowComment !== DEFAULT_ADVANCED_OPTIONS.allowComment ||
-		advancedOptions.allowShare !== DEFAULT_ADVANCED_OPTIONS.allowShare;
-	const currentComposerSignature = useMemo(
-		() =>
-			composerSignature({
-				advancedOptions,
-				content,
-				images,
-				title,
-				topics,
-				visibility,
-			}),
-		[advancedOptions, content, images, title, topics, visibility],
-	);
-	const hasDraftChanges =
-		isEditingDraft &&
-		draftBaselineRef.current !== null &&
-		draftBaselineRef.current !== currentComposerSignature;
 	const visibilityLabel =
 		visibility === "public"
 			? "公开可见"
@@ -233,15 +218,9 @@ export function useCreateComposer({
 		if (materializedUris.length > 0) {
 			void releaseMaterializedDraftImages(materializedUris);
 		}
-		setTitle("");
-		setContent("");
-		setImages([]);
-		setTopics([]);
-		setVisibility("public");
-		setAdvancedOptions(DEFAULT_ADVANCED_OPTIONS);
+		form.reset();
 		setHydratedDraftId(null);
 		setHydratedNoteId(null);
-		draftBaselineRef.current = null;
 	};
 
 	const createMutation = useMutation(orpc.notes.create.mutationOptions());
@@ -275,14 +254,7 @@ export function useCreateComposer({
 				materializedDraftUrisRef.current = draftImages.map(
 					(image) => image.uri,
 				);
-				setTitle(draft.title);
-				setContent(draft.content);
-				setImages(draftImages);
-				setTopics(draft.topics);
-				setVisibility(draft.visibility);
-				setAdvancedOptions(draft.advancedOptions);
-				setHydratedDraftId(draft.id);
-				draftBaselineRef.current = composerSignature({
+				form.reset({
 					advancedOptions: draft.advancedOptions,
 					content: draft.content,
 					images: draftImages,
@@ -290,6 +262,7 @@ export function useCreateComposer({
 					topics: draft.topics,
 					visibility: draft.visibility,
 				});
+				setHydratedDraftId(draft.id);
 			})
 			.catch((error: unknown) => {
 				if (cancelled) return;
@@ -318,42 +291,41 @@ export function useCreateComposer({
 	useEffect(() => {
 		const editableNote = editNoteQuery.data;
 		if (!noteId || !editableNote || hydratedNoteId === noteId) return;
-		setTitle(editableNote.title ?? "");
 		const noteContent = editableNote.content ?? "";
-		setContent(noteContent);
-		setImages(
-			(editableNote.images ?? []).map((url) => {
-				const meta = (editableNote.imageMetas ?? []).find(
-					(item) => item.url === url,
-				);
-				const previewUrl = resolveStoredNoteImageUrl(url, apiBaseUrl);
-				return {
-					height: meta?.height,
-					id: url,
-					originalUri: url,
-					remoteUrl: url,
-					uri: previewUrl,
-					width: meta?.width,
-				};
-			}),
-		);
-		setTopics(
-			mergeTopics(
+		const noteImages = (editableNote.images ?? []).map((url) => {
+			const meta = (editableNote.imageMetas ?? []).find(
+				(item) => item.url === url,
+			);
+			const previewUrl = resolveStoredNoteImageUrl(url, apiBaseUrl);
+			return {
+				height: meta?.height,
+				id: url,
+				originalUri: url,
+				remoteUrl: url,
+				uri: previewUrl,
+				width: meta?.width,
+			};
+		});
+		form.reset({
+			advancedOptions: {
+				allowComment:
+					editableNote.advancedOptions.allowComment ??
+					DEFAULT_ADVANCED_OPTIONS.allowComment,
+				allowShare:
+					editableNote.advancedOptions.allowShare ??
+					DEFAULT_ADVANCED_OPTIONS.allowShare,
+			},
+			content: noteContent,
+			images: noteImages,
+			title: editableNote.title ?? "",
+			topics: mergeTopics(
 				editableNote.topics ?? [],
 				extractTopicsFromContent(noteContent),
 			),
-		);
-		setVisibility(editableNote.visibility ?? "public");
-		setAdvancedOptions({
-			allowComment:
-				editableNote.advancedOptions.allowComment ??
-				DEFAULT_ADVANCED_OPTIONS.allowComment,
-			allowShare:
-				editableNote.advancedOptions.allowShare ??
-				DEFAULT_ADVANCED_OPTIONS.allowShare,
+			visibility: editableNote.visibility ?? "public",
 		});
 		setHydratedNoteId(noteId);
-	}, [editNoteQuery.data, hydratedNoteId, noteId]);
+	}, [editNoteQuery.data, form, hydratedNoteId, noteId]);
 
 	const imageMetasFrom = (items: MediaImage[]) =>
 		items.flatMap((image) => {
@@ -405,15 +377,10 @@ export function useCreateComposer({
 		}
 	};
 
-	const buildPayload = async (publishAttemptId: string) => {
-		const source = {
-			advancedOptions,
-			content,
-			images,
-			title,
-			topics,
-			visibility,
-		};
+	const buildPayload = async (
+		source: CreateFormValues,
+		publishAttemptId: string,
+	) => {
 		const { uploadedKeys, ...uploadedImages } = await uploadLocalImages(
 			source.images,
 		);
@@ -433,19 +400,18 @@ export function useCreateComposer({
 		};
 	};
 	const isSubmitting =
-		createMutation.isPending ||
-		updateNoteMutation.isPending ||
+		isFormSubmitting ||
 		isAddingImages ||
 		isLocalDraftSaving ||
 		isUploadingImages;
 
-	const submitNote = async () => {
+	async function submitNote(source: CreateFormValues) {
 		try {
 			const result = await publishAttempt.run({
 				cleanup: deleteUploadedNoteImages,
 				isUnknownResult: isUnknownPublishResult,
-				key: `${isEditingNote ? `edit:${noteId}` : "create"}:${currentComposerSignature}`,
-				prepare: buildPayload,
+				key: `${isEditingNote ? `edit:${noteId}` : "create"}:${composerSignature(source)}`,
+				prepare: (publishAttemptId) => buildPayload(source, publishAttemptId),
 				submit: async ({ publishAttemptId, ...payload }) => {
 					if (isEditingNote && noteId) {
 						return updateNoteMutation.mutateAsync({ id: noteId, ...payload });
@@ -479,10 +445,8 @@ export function useCreateComposer({
 				variant: "danger",
 				label: error instanceof Error ? error.message : "图片上传失败",
 			});
-		} finally {
-			setPendingSubmitMode(null);
 		}
-	};
+	}
 
 	const leaveComposer = () => {
 		if (onRequestClose) {
@@ -498,13 +462,13 @@ export function useCreateComposer({
 
 	const goBack = () => {
 		fireHaptic();
-		if (hasDraftChanges) {
+		if (hasUnsavedChanges) {
 			confirmAction({
 				cancelText: "继续编辑",
 				confirmText: "放弃并返回",
 				message: "当前修改还没有保存，返回后将会丢失。",
 				onConfirm: leaveComposer,
-				title: "放弃草稿修改？",
+				title: "放弃未保存内容？",
 			});
 			return;
 		}
@@ -555,7 +519,7 @@ export function useCreateComposer({
 				assets.slice(0, remaining).map((asset) => prepareMediaImage(asset)),
 			);
 
-			setImages((current) =>
+			form.setFieldValue("images", (current) =>
 				[...current, ...selectedImages].slice(0, NOTE_IMAGE_MAX_COUNT),
 			);
 			return true;
@@ -592,11 +556,13 @@ export function useCreateComposer({
 
 	const removeImage = (id: string) => {
 		fireHaptic();
-		setImages((current) => current.filter((item) => item.id !== id));
+		form.setFieldValue("images", (current) =>
+			current.filter((item) => item.id !== id),
+		);
 	};
 
 	const moveImage = (imageId: string, toIndex: number) => {
-		setImages((current) => {
+		form.setFieldValue("images", (current) => {
 			const fromIndex = current.findIndex((image) => image.id === imageId);
 			if (fromIndex < 0) return current;
 			return reorderImages(current, fromIndex, toIndex);
@@ -604,21 +570,21 @@ export function useCreateComposer({
 	};
 
 	const updateImage = (image: MediaImage) => {
-		setImages((current) =>
+		form.setFieldValue("images", (current) =>
 			current.map((item) => (item.id === image.id ? image : item)),
 		);
 	};
 
 	const setComposerContent = (value: string) => {
-		setContent(value);
-		setTopics(extractTopicsFromContent(value));
+		form.setFieldValue("content", value);
+		form.setFieldValue("topics", extractTopicsFromContent(value));
 	};
 
 	const toggleTopic = (topic: string) => {
 		fireHaptic();
 		const cleanTopic = topic.replace(/^#/, "").trim();
 		if (!cleanTopic) return;
-		setTopics((current) =>
+		form.setFieldValue("topics", (current) =>
 			current.includes(cleanTopic)
 				? current.filter((item) => item !== cleanTopic)
 				: [...current, cleanTopic].slice(0, 8),
@@ -629,7 +595,7 @@ export function useCreateComposer({
 		fireHaptic();
 		const cleanLabel = label.replace(/^@/, "").trim();
 		if (!cleanLabel) return;
-		setContent((current) => {
+		form.setFieldValue("content", (current) => {
 			const prefix = current.trimEnd();
 			return `${prefix}${prefix ? " " : ""}@${cleanLabel} `;
 		});
@@ -706,29 +672,13 @@ export function useCreateComposer({
 			});
 			return;
 		}
-		if (images.length === 0) {
-			toast.show({
-				variant: "warning",
-				label: "请添加图片，或使用「文字图」生成",
-			});
-			return;
-		}
-
-		if (!canPublish) {
-			toast.show({
-				variant: "warning",
-				label: `还差：${missingItems.join("、")}`,
-			});
-			return;
-		}
-
 		setPendingSubmitMode("publish");
-		void submitNote();
+		void form.handleSubmit().finally(() => setPendingSubmitMode(null));
 	};
 
 	const cycleVisibility = () => {
 		fireHaptic();
-		setVisibility((value) => {
+		form.setFieldValue("visibility", (value) => {
 			if (value === "public") return "followers";
 			if (value === "followers") return "private";
 			return "public";
@@ -737,7 +687,7 @@ export function useCreateComposer({
 
 	const setAllowComment = (value: boolean) => {
 		fireHaptic();
-		setAdvancedOptions((current) => ({
+		form.setFieldValue("advancedOptions", (current) => ({
 			...current,
 			allowComment: value,
 		}));
@@ -745,7 +695,7 @@ export function useCreateComposer({
 
 	const setAllowShare = (value: boolean) => {
 		fireHaptic();
-		setAdvancedOptions((current) => ({
+		form.setFieldValue("advancedOptions", (current) => ({
 			...current,
 			allowShare: value,
 		}));
@@ -758,6 +708,7 @@ export function useCreateComposer({
 		content,
 		cycleVisibility,
 		editNoteQuery,
+		form,
 		goBack,
 		images,
 		isAddingImages,
@@ -778,7 +729,7 @@ export function useCreateComposer({
 		setAllowComment,
 		setAllowShare,
 		setContent: setComposerContent,
-		setTitle,
+		setTitle: (value: string) => form.setFieldValue("title", value),
 		retryLoadExistingContent: () => {
 			if (isEditingDraft) {
 				setDraftLoadAttempt((current) => current + 1);

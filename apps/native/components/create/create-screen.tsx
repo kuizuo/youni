@@ -1,5 +1,5 @@
 import { NOTE_IMAGE_MAX_COUNT } from "@youni/api/lib/notes/image-identity";
-import { Spinner, useThemeColor } from "heroui-native";
+import { FieldError, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import {
 	Keyboard,
@@ -51,6 +51,7 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 	const insets = useSafeAreaInsets();
 	const { toast } = useAppToast();
 	const composer = useCreateComposer({ onRequestClose });
+	const { form } = composer;
 	const titleInputRef = useRef<TextInput>(null);
 	const contentInputRef = useRef<TextInput>(null);
 	const activeInputFieldRef = useRef<CreateInputField | null>(null);
@@ -385,38 +386,60 @@ export default function CreateScreen({ onRequestClose }: CreateScreenProps) {
 					contentContainerClassName="gap-4 px-4 pt-3"
 					contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
 				>
-					<SortableMediaStrip
-						images={composer.images}
-						isDisabled={composer.isAddingImages}
-						maxItems={9}
-						onAddImage={openMediaPicker}
-						onEditImage={openImageEditor}
-						onMoveImage={composer.moveImage}
-						onRemoveImage={composer.removeImage}
-					/>
-
-					<ContentEditor
-						content={composer.content}
-						contentInputRef={contentInputRef}
-						foregroundColor={foregroundColor}
-						isEmojiInputLocked={isEmojiInputLocked}
-						mutedColor={mutedColor}
-						title={composer.title}
-						titleInputRef={titleInputRef}
-						onContentChange={handleContentChange}
-						onContentFocus={() => handleInputFocus("content")}
-						onContentSelectionChange={handleContentSelectionChange}
-						onTitleChange={handleTitleChange}
-						onTitleFocus={() => handleInputFocus("title")}
-						onTitleSelectionChange={(selection) => {
-							setTitleSelection(selection);
-							if (selection.start !== selection.end) {
-								setInlineTrigger(null);
-								return;
-							}
-							updateInlineTrigger(titleRef.current, selection.start);
+					<form.Field name="images">
+						{(field) => {
+							const fieldError = field.state.meta.errors[0]?.message;
+							return (
+								<TextField isRequired isInvalid={Boolean(fieldError)}>
+									<SortableMediaStrip
+										images={field.state.value}
+										isDisabled={composer.isAddingImages}
+										maxItems={9}
+										onAddImage={openMediaPicker}
+										onEditImage={openImageEditor}
+										onMoveImage={composer.moveImage}
+										onRemoveImage={composer.removeImage}
+									/>
+									<FieldError>{fieldError}</FieldError>
+								</TextField>
+							);
 						}}
-					/>
+					</form.Field>
+
+					<form.Field name="title">
+						{(titleField) => (
+							<form.Field name="content">
+								{(contentField) => (
+									<ContentEditor
+										content={contentField.state.value}
+										contentError={contentField.state.meta.errors[0]?.message}
+										contentInputRef={contentInputRef}
+										foregroundColor={foregroundColor}
+										isEmojiInputLocked={isEmojiInputLocked}
+										mutedColor={mutedColor}
+										title={titleField.state.value}
+										titleError={titleField.state.meta.errors[0]?.message}
+										titleInputRef={titleInputRef}
+										onContentBlur={contentField.handleBlur}
+										onContentChange={handleContentChange}
+										onContentFocus={() => handleInputFocus("content")}
+										onContentSelectionChange={handleContentSelectionChange}
+										onTitleBlur={titleField.handleBlur}
+										onTitleChange={handleTitleChange}
+										onTitleFocus={() => handleInputFocus("title")}
+										onTitleSelectionChange={(selection) => {
+											setTitleSelection(selection);
+											if (selection.start !== selection.end) {
+												setInlineTrigger(null);
+												return;
+											}
+											updateInlineTrigger(titleRef.current, selection.start);
+										}}
+									/>
+								)}
+							</form.Field>
+						)}
+					</form.Field>
 
 					<PublishingOptions
 						advancedLabel={composer.advancedLabel}
