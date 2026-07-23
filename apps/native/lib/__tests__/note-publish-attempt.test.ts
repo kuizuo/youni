@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
-import { NotePublishAttempt } from "./note-publish-attempt";
+import { describe, expect, test } from "@jest/globals";
+import { NotePublishAttempt } from "../note-publish-attempt";
 
 describe("note publish attempt", () => {
 	test("reuses preparation after an unknown result and cleans confirmed failures", async () => {

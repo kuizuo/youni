@@ -1,6 +1,6 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 import type { ProfilesOutputs } from "@youni/api/contracts/profiles";
-import { createProfileMediaSubmission } from "./profile-media-submission-flow";
+import { createProfileMediaSubmission } from "../profile-media-submission-flow";
 
 const profile = {
 	image: "new-avatar",

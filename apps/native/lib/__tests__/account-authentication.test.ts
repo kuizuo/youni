@@ -1,16 +1,20 @@
-import { describe, expect, mock, test } from "bun:test";
+import { describe, expect, jest, test } from "@jest/globals";
+import { queryClient } from "@/lib/query/query-client";
 
-const clear = mock(() => {});
-mock.module("@/lib/auth-client", () => ({
+import { runAccountAuthentication } from "../account-authentication";
+
+jest.mock("@/lib/auth-client", () => ({
 	authClient: { $store: { notify: () => {} } },
 }));
-mock.module("@/lib/query/query-client", () => ({ queryClient: { clear } }));
+jest.mock("@/lib/query/query-client", () => ({
+	queryClient: { clear: jest.fn() },
+}));
 
-const { runAccountAuthentication } = await import("./account-authentication");
+const mockClearQueryClient = jest.mocked(queryClient.clear);
 
 describe("account authentication", () => {
 	test("clears the previous identity before leaving login", async () => {
-		clear.mockClear();
+		mockClearQueryClient.mockClear();
 		let authenticated = false;
 
 		const error = await runAccountAuthentication({
@@ -21,12 +25,12 @@ describe("account authentication", () => {
 		});
 
 		expect(error).toBeNull();
-		expect(clear).toHaveBeenCalledTimes(1);
+		expect(mockClearQueryClient).toHaveBeenCalledTimes(1);
 		expect(authenticated).toBe(true);
 	});
 
 	test("does not continue after authentication is rejected", async () => {
-		clear.mockClear();
+		mockClearQueryClient.mockClear();
 		const authenticationError = { message: "邮箱或密码错误" };
 		let authenticated = false;
 
@@ -38,7 +42,7 @@ describe("account authentication", () => {
 		});
 
 		expect(error).toBe(authenticationError);
-		expect(clear).not.toHaveBeenCalled();
+		expect(mockClearQueryClient).not.toHaveBeenCalled();
 		expect(authenticated).toBe(false);
 	});
 });

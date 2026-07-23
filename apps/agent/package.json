@@ -5,8 +5,7 @@
 	"scripts": {
 		"build": "tsc --noEmit",
 		"check-types": "tsc --noEmit",
-		"control": "bun scripts/control.ts",
-		"test": "bun test src/policy.test.ts"
+		"control": "bun scripts/control.ts"
 	},
 	"dependencies": {
 		"@youni/api": "workspace:*",

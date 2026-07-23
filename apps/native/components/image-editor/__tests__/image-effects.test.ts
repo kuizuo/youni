@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 
 import {
 	constrainImageTransform,
@@ -7,7 +7,7 @@ import {
 	editorColorMatrix,
 	exportSizeForCrop,
 	pointInRect,
-} from "./image-effects";
+} from "../image-effects";
 
 describe("image editor math", () => {
 	test("keeps the original filter neutral", () => {

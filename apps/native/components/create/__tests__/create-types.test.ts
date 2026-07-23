@@ -1,5 +1,5 @@
-import { expect, test } from "bun:test";
-import { createFormSchema } from "./create-types";
+import { expect, test } from "@jest/globals";
+import { createFormSchema } from "../create-types";
 
 test("publish requires an image, title, and content", () => {
 	const result = createFormSchema.safeParse({

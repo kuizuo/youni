@@ -1,6 +1,6 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 
-import { createAnonymousSessionManager } from "./anonymous-session-manager";
+import { createAnonymousSessionManager } from "../anonymous-session-manager";
 
 describe("anonymous session manager", () => {
 	test("coalesces anonymous sign-in across development reloads", async () => {

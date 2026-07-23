@@ -1,6 +1,6 @@
-import { expect, test } from "bun:test";
+import { expect, test } from "@jest/globals";
 
-import { shouldReplaceProfileDraft } from "./profile-form-state";
+import { shouldReplaceProfileDraft } from "../profile-form-state";
 
 test("keeps an edited draft during refresh but resets it for another user", () => {
 	expect(

@@ -9,6 +9,8 @@
 		"android": "expo run:android",
 		"ios": "expo run:ios",
 		"prebuild": "expo prebuild",
+		"test": "jest --runInBand",
+		"test:watch": "jest --watch",
 		"web": "expo start --web",
 		"build:web": "EXPO_PUBLIC_SERVER_URL=https://youni-api.kuizuo.me expo export --platform web",
 		"build:ios": "EXPO_PUBLIC_SERVER_URL=https://youni-api.kuizuo.me expo run:ios --configuration Release",
@@ -89,9 +91,15 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
+		"@testing-library/react-native": "^14.0.1",
+		"@types/jest": "29.5.14",
 		"@types/node": "^24.10.0",
 		"@types/react": "~19.2.10",
 		"@youni/config": "workspace:*",
+		"babel-plugin-dynamic-import-node": "^2.3.3",
+		"jest": "~29.7.0",
+		"jest-expo": "~57.0.2",
+		"test-renderer": "^1.2.0",
 		"typescript": "~6.0.3"
 	},
 	"trustedDependencies": [

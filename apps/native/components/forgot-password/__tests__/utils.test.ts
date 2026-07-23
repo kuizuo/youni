@@ -1,7 +1,7 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 import { getFieldErrors } from "@/utils/form-errors";
 
-import { changePasswordSchema, resetPasswordSchema } from "./utils";
+import { changePasswordSchema, resetPasswordSchema } from "../utils";
 
 describe("password settings validation", () => {
 	test("requires matching passwords within the supported length", () => {

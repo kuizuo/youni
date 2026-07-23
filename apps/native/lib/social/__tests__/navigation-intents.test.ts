@@ -1,6 +1,6 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 
-import { getUserProfileIntent, toSocialHref } from "./navigation-intents";
+import { getUserProfileIntent, toSocialHref } from "../navigation-intents";
 
 describe("chat settings navigation", () => {
 	test("supports chats before and after the first message", () => {

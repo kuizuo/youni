@@ -1,8 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 import {
 	createCommentComposerSessionState,
 	transitionCommentComposerSession,
-} from "./comment-composer-session";
+} from "../comment-composer-session";
 
 describe("comment composer session", () => {
 	test("keeps editing, keyboard switching, replies, and failure recovery together", () => {

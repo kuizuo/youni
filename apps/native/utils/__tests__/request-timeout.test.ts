@@ -1,16 +1,26 @@
-import { afterAll, beforeEach, expect, mock, test } from "bun:test";
+import { afterAll, beforeEach, expect, jest, test } from "@jest/globals";
+import { showRequestTimeoutToast } from "@/utils/request-toast";
 
-const showRequestTimeoutToast = mock(() => {});
-const originalFetch = globalThis.fetch;
+import {
+	fetchWithTimeout,
+	isNetworkRequestError,
+	isRequestTimeoutError,
+} from "../request-timeout";
 
-mock.module("@/utils/request-toast", () => ({ showRequestTimeoutToast }));
+const originalFetchDescriptor = Object.getOwnPropertyDescriptor(
+	globalThis,
+	"fetch",
+);
 
-const { fetchWithTimeout, isNetworkRequestError, isRequestTimeoutError } =
-	await import("./request-timeout");
+jest.mock("@/utils/request-toast", () => ({
+	showRequestTimeoutToast: jest.fn(),
+}));
+
+const mockShowRequestTimeoutToast = jest.mocked(showRequestTimeoutToast);
 
 beforeEach(() => {
-	showRequestTimeoutToast.mockClear();
-	globalThis.fetch = mock(
+	mockShowRequestTimeoutToast.mockClear();
+	globalThis.fetch = jest.fn(
 		(_input: RequestInfo | URL, init?: RequestInit) =>
 			new Promise<Response>((_resolve, reject) => {
 				init?.signal?.addEventListener(
@@ -23,7 +33,11 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-	globalThis.fetch = originalFetch;
+	if (originalFetchDescriptor) {
+		Object.defineProperty(globalThis, "fetch", originalFetchDescriptor);
+	} else {
+		Reflect.deleteProperty(globalThis, "fetch");
+	}
 });
 
 test("can time out a background request without showing a toast", async () => {
@@ -37,7 +51,7 @@ test("can time out a background request without showing a toast", async () => {
 	}
 
 	expect(isRequestTimeoutError(error)).toBe(true);
-	expect(showRequestTimeoutToast).not.toHaveBeenCalled();
+	expect(mockShowRequestTimeoutToast).not.toHaveBeenCalled();
 });
 
 test("keeps showing a toast for normal requests", async () => {
@@ -45,7 +59,7 @@ test("keeps showing a toast for normal requests", async () => {
 		await fetchWithTimeout("https://example.test", {}, 5);
 	} catch {}
 
-	expect(showRequestTimeoutToast).toHaveBeenCalledTimes(1);
+	expect(mockShowRequestTimeoutToast).toHaveBeenCalledTimes(1);
 });
 
 test("recognizes browser network failures even when wrapped", () => {

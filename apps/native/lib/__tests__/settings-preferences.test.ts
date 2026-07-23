@@ -1,7 +1,7 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 
-import { parseAppearancePreference } from "./appearance-preference";
-import { resolvePushNotificationStatus } from "./notifications/push-notification-status";
+import { parseAppearancePreference } from "../appearance-preference";
+import { resolvePushNotificationStatus } from "../notifications/push-notification-status";
 
 describe("settings preferences", () => {
 	test("repairs invalid appearance values", () => {

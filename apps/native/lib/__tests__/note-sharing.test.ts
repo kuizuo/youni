@@ -1,11 +1,11 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 
 import {
 	formatNoteShareDate,
 	getDownloadedImageFileName,
 	getPublicNoteUrl,
 	getSavedImagesFeedback,
-} from "./note-sharing";
+} from "../note-sharing";
 
 describe("note sharing helpers", () => {
 	test("builds public links and safe image filenames", () => {

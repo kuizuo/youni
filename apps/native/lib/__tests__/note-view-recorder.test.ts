@@ -1,5 +1,5 @@
-import { expect, test } from "bun:test";
-import { createNoteViewRecorder } from "./note-view-recorder";
+import { expect, test } from "@jest/globals";
+import { createNoteViewRecorder } from "../note-view-recorder";
 
 test("records one view per note and viewer", async () => {
 	const writes: string[] = [];

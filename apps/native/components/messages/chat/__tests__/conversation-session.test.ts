@@ -1,10 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 import type { SendMessageInput } from "@youni/api/contracts/messages";
 
 import {
 	type ConversationTransport,
 	createConversationSession,
-} from "./conversation-session";
+} from "../conversation-session";
 
 const sentAt = new Date("2026-07-17T10:00:00.000Z");
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));

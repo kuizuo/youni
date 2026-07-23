@@ -44,7 +44,8 @@
 		"deploy": "turbo -F @youni/infra deploy",
 		"release": "bumpp --recursive --git-check --commit 'chore(release): v%s' --tag 'v%s' --push",
 		"destroy": "turbo -F @youni/infra destroy",
-		"check": "biome check --write ."
+		"check": "biome check --write .",
+		"test": "turbo test"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.0",

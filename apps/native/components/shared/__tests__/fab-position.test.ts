@@ -1,10 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "@jest/globals";
 
 import {
 	getFABContentPosition,
 	resolveFABAlign,
 	resolveFABPlacement,
-} from "./fab-position";
+} from "../fab-position";
 
 const screen = { height: 800, width: 400 };
 
