@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { createFormSchema } from "../create-types";
 
-test("publish requires an image, title, and content", () => {
+test("rejects publishing without an image, title, and content", () => {
 	const result = createFormSchema.safeParse({
 		advancedOptions: { allowComment: true, allowShare: true },
 		content: "",
