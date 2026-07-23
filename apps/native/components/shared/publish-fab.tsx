@@ -15,7 +15,9 @@ export function PublishFAB() {
 		<View
 			pointerEvents="box-none"
 			style={{
-				bottom: insets.bottom + (width < 400 ? 100 : 76),
+				bottom:
+					insets.bottom +
+					(process.env.EXPO_OS !== "ios" && width < 400 ? 100 : 76),
 				position: "absolute",
 				right: 20,
 			}}
